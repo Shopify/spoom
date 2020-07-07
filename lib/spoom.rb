@@ -3,7 +3,11 @@
 
 require "sorbet-runtime"
 
+module Spoom
+  class Error < StandardError; end
+end
+
 require "spoom/cli"
 require "spoom/config"
+require "spoom/sorbet"
 require "spoom/version"
-require "spoom/sorbet/config"
