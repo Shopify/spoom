@@ -1,0 +1,16 @@
+name: spoom
+
+type: ruby
+
+up:
+  - ruby: 2.6.3
+  - bundler
+
+commands:
+  typecheck:
+    aliases: [ "tc" ]
+    run:     "bin/typecheck"
+  console:   "bin/console"
+  test:      "bin/test"
+  style:     "bin/style"
+  sanity:    "bin/typecheck && bin/style && bin/test"
