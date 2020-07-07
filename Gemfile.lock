@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    spoom (0.0.0)
+    spoom (1.0.0)
       sorbet (~> 0.5.5)
       sorbet-runtime
       tapioca (~> 0.4)
