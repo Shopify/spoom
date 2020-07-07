@@ -1,0 +1,6 @@
+# https://services.shopify.io/services/spoom/production
+owners:
+  - Shopify/sorbet
+classification: library
+slack_channels:
+  - help-ruby-typing
