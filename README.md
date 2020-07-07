@@ -20,7 +20,26 @@ Or install it yourself as:
 
 ## Usage
 
-TODO
+### Parsing Sorbet config
+
+Parses a Sorbet config file:
+
+```ruby
+config = Spoom::Sorbet::Config.parse_file("sorbet/config")
+puts config.paths   # "."
+```
+
+Parses a Sorbet config string:
+
+```ruby
+config = Spoom::Sorbet::Config.parse_string(<<~CONFIG)
+  a
+  --file=b
+  --ignore=c
+CONFIG
+puts config.paths   # "a", "b"
+puts config.ignore  # "c"
+```
 
 ## Development
 
