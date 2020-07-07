@@ -4,4 +4,6 @@ source "https://rubygems.org"
 
 gemspec
 
-gem 'rubocop-shopify', require: false
+group(:development) do
+  gem('rubocop-shopify', require: false)
+end
