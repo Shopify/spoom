@@ -1,0 +1,4 @@
+# https://services.shopify.io/services/spoom/production
+owners:
+- Shopify/ruby-and-rails
+classification: library
