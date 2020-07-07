@@ -4,6 +4,7 @@ PATH
     spoom (1.0.3)
       sorbet (~> 0.5.5)
       sorbet-runtime
+      thor (>= 0.19.2)
 
 GEM
   remote: https://rubygems.org/
@@ -35,6 +36,7 @@ GEM
       sorbet-static (= 0.5.5803)
     sorbet-runtime (0.5.5803)
     sorbet-static (0.5.5803-universal-darwin-14)
+    thor (1.0.1)
     unicode-display_width (1.7.0)
 
 PLATFORMS

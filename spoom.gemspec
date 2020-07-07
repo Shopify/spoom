@@ -33,6 +33,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency("rake", "~> 10.0")
   spec.add_development_dependency("minitest", "~> 5.0")
   spec.add_dependency("sorbet", "~> 0.5.5")
+  spec.add_dependency("thor", ">= 0.19.2")
 
   spec.required_ruby_version = ">= 2.3.7"
 end
