@@ -2,5 +2,6 @@
 
 require "sorbet-runtime"
 
+require "spoom/config"
 require "spoom/version"
 require "spoom/sorbet/config"
