@@ -789,7 +789,9 @@ RakeFileUtils = Rake::FileUtilsExt
 class String
   include(::Comparable)
   include(::JSON::Ext::Generator::GeneratorMethods::String)
+  include(::Colorize::InstanceMethods)
   extend(::JSON::Ext::Generator::GeneratorMethods::String::Extend)
+  extend(::Colorize::ClassMethods)
 
   def ext(newext = _); end
   def pathmap(spec = _, &block); end

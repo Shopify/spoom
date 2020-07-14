@@ -28,13 +28,14 @@ Gem::Specification.new do |spec|
 
   spec.metadata['allowed_push_host'] = "https://rubygems.org"
 
-  spec.add_dependency("sorbet-runtime")
-
   spec.add_development_dependency("bundler", "~> 1.17")
   spec.add_development_dependency("rake", "~> 10.0")
   spec.add_development_dependency("minitest", "~> 5.0")
+
+  spec.add_dependency("sorbet-runtime")
   spec.add_dependency("sorbet", "~> 0.5.5")
   spec.add_dependency("thor", ">= 0.19.2")
+  spec.add_dependency("colorize")
 
   spec.required_ruby_version = ">= 2.3.7"
 end
