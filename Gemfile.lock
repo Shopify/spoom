@@ -4,6 +4,7 @@ PATH
     spoom (1.0.3)
       sorbet (~> 0.5.5)
       sorbet-runtime
+      thor (>= 0.19.2)
 
 GEM
   remote: https://rubygems.org/
@@ -30,11 +31,14 @@ GEM
       parser (>= 2.7.0.1)
     rubocop-shopify (1.0.4)
       rubocop (>= 0.85, < 0.87)
+    rubocop-sorbet (0.4.0)
+      rubocop
     ruby-progressbar (1.10.1)
     sorbet (0.5.5803)
       sorbet-static (= 0.5.5803)
     sorbet-runtime (0.5.5803)
     sorbet-static (0.5.5803-universal-darwin-14)
+    thor (1.0.1)
     unicode-display_width (1.7.0)
 
 PLATFORMS
@@ -45,6 +49,7 @@ DEPENDENCIES
   minitest (~> 5.0)
   rake (~> 10.0)
   rubocop-shopify
+  rubocop-sorbet
   spoom!
 
 BUNDLED WITH
