@@ -5,6 +5,7 @@ require "thor"
 
 require_relative "cli/commands/config"
 require_relative "cli/commands/lsp"
+require_relative "cli/commands/run"
 
 module Spoom
   module Cli
@@ -18,6 +19,9 @@ module Spoom
 
       desc "lsp", "send LSP requests to Sorbet"
       subcommand "lsp", Spoom::Cli::Commands::LSP
+
+      desc "tc", "run Sorbet and parses its output"
+      subcommand "tc", Spoom::Cli::Commands::Run
 
       # Utils
 

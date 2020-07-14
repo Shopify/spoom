@@ -6,6 +6,8 @@ module Spoom
     module Errors
       # Parse errors from Sorbet output
       class Parser
+        extend T::Sig
+
         HEADER = [
           "👋 Hey there! Heads up that this is not a release build of sorbet.",
           "Release builds are faster and more well-supported by the Sorbet team.",
@@ -14,20 +16,23 @@ module Spoom
           "or set SORBET_SILENCE_DEV_MESSAGE=1 in your shell environment.",
         ]
 
+        sig { params(output: String).returns(T::Array[Error]) }
         def self.parse_string(output)
           parser = Spoom::Sorbet::Errors::Parser.new
           parser.parse(output)
         end
 
+        sig { void }
         def initialize
           @errors = []
           @current_error = nil
         end
 
+        sig { params(output: String).returns(T::Array[Error]) }
         def parse(output)
           output.each_line do |line|
-            break @errors if /^No errors! Great job\./.match?(line)
-            break @errors if /^Errors: /.match?(line)
+            break if /^No errors! Great job\./.match?(line)
+            break if /^Errors: /.match?(line)
             next if HEADER.include?(line.strip)
 
             next if line == "\n"
@@ -38,27 +43,33 @@ module Spoom
               next
             end
 
-            append_error(line)
+            append_error(line) if @current_error
           end
           close_error if @current_error
           @errors
         end
 
+        private
+
+        sig { params(line: String).returns(T.nilable(Integer)) }
         def leading_spaces(line)
           line.index(/[^ ]/)
         end
 
+        sig { params(line: String).void }
         def open_error(line)
           raise "Error: Already parsing an error!" if @current_error
           @current_error = Error.from_error_line(line)
         end
 
+        sig { void }
         def close_error
-          return unless @current_error
+          raise "Error: Not already parsing an error!" unless @current_error
           @errors << @current_error
           @current_error = nil
         end
 
+        sig { params(line: String).void }
         def append_error(line)
           raise "Error: Not already parsing an error!" unless @current_error
           @current_error.more << line
@@ -67,9 +78,26 @@ module Spoom
 
       class Error
         include Comparable
+        extend T::Sig
 
-        attr_reader :file, :line, :message, :code, :details, :more
+        sig { returns(T.nilable(String)) }
+        attr_reader :file, :message
 
+        sig { returns(T.nilable(Integer)) }
+        attr_reader :line, :code
+
+        sig { returns(T::Array[String]) }
+        attr_reader :more
+
+        sig do
+          params(
+            file: T.nilable(String),
+            line: T.nilable(Integer),
+            message: T.nilable(String),
+            code: T.nilable(Integer),
+            more: T::Array[String]
+          ).void
+        end
         def initialize(file, line, message, code, more = [])
           @file = file
           @line = line
@@ -78,19 +106,20 @@ module Spoom
           @more = more
         end
 
+        sig { params(line: String).returns(Error) }
         def self.from_error_line(line)
-          file, rest = line.split(":", 2)
-          line, rest = rest&.split(": ", 2)
+          file, line, rest = line.split(/: ?/, 3)
           message, code = rest&.split(%r{ https://srb\.help/}, 2)
           Error.new(file, line&.to_i, message, code&.to_i)
         end
 
+        sig { params(other: T.untyped).returns(Integer) }
         def <=>(other)
           return 0 unless other.is_a?(Error)
-          return line <=> other.line if file == other.file
-          file <=> other.file
+          [file, line, code, message] <=> [other.file, other.line, other.code, other.message]
         end
 
+        sig { returns(String) }
         def to_s
           "#{file}:#{line}: #{message} (#{code})"
         end

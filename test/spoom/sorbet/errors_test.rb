@@ -24,7 +24,7 @@ module Spoom
         ERR
         assert_equal(1, errors.size)
 
-        error = errors.first
+        error = T.must(errors.first)
         assert_equal("lib/test/file.rb", error.file)
         assert_equal(80, error.line)
         assert_equal("unexpected token \"end\"", error.message)
@@ -40,16 +40,22 @@ module Spoom
               foo.rb:96: Previous definition
                 96 |    class Foo < T::Struct
                 97 |    end
-
         ERR
         assert_equal(1, errors.size)
 
-        error = errors.first
+        error = T.must(errors.first)
         assert_equal("test.rb", error.file)
         assert_equal(100, error.line)
         exp_message = "Method Foo#initialize redefined without matching argument count. Expected: 0, got: 2"
         assert_equal(exp_message, error.message)
         assert_equal(4010, error.code)
+        assert_equal(<<~MORE, error.more.each(&:lstrip!).join(""))
+          100 |    class Foo < T::Struct
+          101 |    end
+          foo.rb:96: Previous definition
+          96 |    class Foo < T::Struct
+          97 |    end
+        MORE
       end
 
       def test_parses_a_method_missing_error
@@ -60,11 +66,15 @@ module Spoom
         ERR
         assert_equal(1, errors.size)
 
-        error = errors.first
+        error = T.must(errors.first)
         assert_equal("test.rb", error.file)
         assert_equal(105, error.line)
         assert_equal("Method foo does not exist on String", error.message)
         assert_equal(7003, error.code)
+        assert_equal(<<~MORE, error.more.each(&:lstrip!).join(""))
+          105 |        printer.print "foo".light_black
+          ^^^^^^^^^^^^^^^^^
+        MORE
       end
 
       def test_parses_a_not_enough_arguments_error
@@ -78,11 +88,18 @@ module Spoom
         ERR
         assert_equal(1, errors.size)
 
-        error = errors.first
+        error = T.must(errors.first)
         assert_equal("test.rb", error.file)
         assert_equal(28, error.line)
         assert_equal("Not enough arguments provided for method Foo#bar. Expected: 1..2, got: 1", error.message)
         assert_equal(7004, error.code)
+        assert_equal(<<~MORE, error.more.each(&:lstrip!).join(""))
+          28 |              bar "hello"
+          ^^^^^^^^^^^
+          test.rb:11: Foo#bar defined here
+          11 |          def bar(title = "Error", name)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        MORE
       end
 
       def test_parses_multiple_errors
