@@ -32,6 +32,17 @@ module Spoom
               say(" * #{path}")
             end
           end
+
+          say("\nAllowed extensions:")
+          if config.allowed_extensions.empty?
+            say(" * .rb (default)")
+            say(" * .rbi (default)")
+          else
+            config.allowed_extensions.each do |ext|
+              say(" * #{ext}")
+            end
+          end
+
         end
         default_task :show
       end

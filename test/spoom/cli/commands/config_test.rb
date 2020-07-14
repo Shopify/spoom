@@ -43,6 +43,10 @@ module Spoom
 
             Paths ignored:
              * (default: none)
+
+            Allowed extensions:
+             * .rb (default)
+             * .rbi (default)
           MSG
         end
 
@@ -57,6 +61,10 @@ module Spoom
 
             Paths ignored:
              * (default: none)
+
+            Allowed extensions:
+             * .rb (default)
+             * .rbi (default)
           MSG
         end
 
@@ -78,6 +86,10 @@ module Spoom
 
             Paths ignored:
              * (default: none)
+
+            Allowed extensions:
+             * .rb (default)
+             * .rbi (default)
           MSG
         end
 
@@ -98,6 +110,40 @@ module Spoom
             Paths ignored:
              * lib/main
              * test
+
+            Allowed extensions:
+             * .rb (default)
+             * .rbi (default)
+          MSG
+        end
+
+        def test_display_config_with_allowed_extensions
+          use_sorbet_config(test_project, <<~CFG)
+            lib/project.rb
+            --ignore=lib/main
+            --ignore
+            test
+            --allowed-extension=.rb
+            --allowed-extension=.rbi
+            --allowed-extension=.rake
+            --allowed-extension=.ru
+          CFG
+          out, _ = run_cli(test_project, "config")
+          assert_equal(<<~MSG, out)
+            Found Sorbet config at `sorbet/config`.
+
+            Paths typechecked:
+             * lib/project.rb
+
+            Paths ignored:
+             * lib/main
+             * test
+
+            Allowed extensions:
+             * .rb
+             * .rbi
+             * .rake
+             * .ru
           MSG
         end
       end
