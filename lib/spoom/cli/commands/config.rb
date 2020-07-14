@@ -8,6 +8,8 @@ module Spoom
   module Cli
     module Commands
       class Config < Base
+        default_task :show
+
         desc "show", "show Sorbet config"
         def show
           in_sorbet_project!
@@ -42,9 +44,23 @@ module Spoom
               say(" * #{ext}")
             end
           end
-
         end
-        default_task :show
+
+        desc "files", "show files matching Sorbet config"
+        def files
+          in_sorbet_project!
+          config = Spoom::Sorbet::Config.parse_file(Spoom::Config::SORBET_CONFIG)
+          files = Spoom::Sorbet.srb_files(config)
+
+          say("Files matching `#{Spoom::Config::SORBET_CONFIG}`:")
+          if files.empty?
+            say(" NONE")
+          else
+            files.each do |path|
+              say(" * #{path}")
+            end
+          end
+        end
       end
     end
   end
