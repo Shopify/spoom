@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     spoom (1.0.3)
+      colorize
       sorbet (~> 0.5.5)
       sorbet-runtime
       thor (>= 0.19.2)
@@ -10,6 +11,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.1)
+    colorize (0.8.1)
     minitest (5.14.1)
     parallel (1.19.2)
     parser (2.7.1.4)
