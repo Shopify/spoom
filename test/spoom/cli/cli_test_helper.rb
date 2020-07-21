@@ -45,13 +45,15 @@ module Spoom
         end
       end
 
-      def run_cli(work_dir, command, args = [], run_opts = {})
+      # Run `bundle exec spoom` inside `project_name` and returns the out, err and status from the process.
+      sig { params(project_name: String, args: String).returns([T.nilable(String), T.nilable(String), T::Boolean]) }
+      def run_cli(project_name, *args)
         Bundler.with_clean_env do
-          run_opts[:chdir] = work_dir
-          Open3.popen3(["bundle", "exec", "spoom", command, *args].join(' '), run_opts) do |_, o, e, s|
-            out = o.read
-            err = e.read
-            return out, err, s.value
+          opts = {}
+          opts[:chdir] = "#{TEST_PROJECTS_PATH}/#{project_name}"
+          Open3.popen3(["bundle", "exec", "spoom", *args].join(' '), opts) do |_, o, e, t|
+            status = T.cast(t.value, Process::Status)
+            return o.read, e.read, status.success?
           end
         end
       end

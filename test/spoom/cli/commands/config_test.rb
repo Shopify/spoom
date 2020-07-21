@@ -12,6 +12,10 @@ module Spoom
         include Spoom::Cli::TestHelper
         extend Spoom::Cli::TestHelper
 
+        def test_project
+          "project"
+        end
+
         before_all do
           install_sorbet("project")
           clean_sorbet_config
@@ -22,7 +26,7 @@ module Spoom
         end
 
         def test_return_error_if_no_sorbet_config
-          _, err = run_cli(project_path, "config")
+          _, err = run_cli(test_project, "config")
           assert_equal(<<~MSG, err)
             Error: not in a Sorbet project (no sorbet/config)
           MSG
@@ -30,7 +34,7 @@ module Spoom
 
         def test_display_empty_config
           set_sorbet_config("")
-          out, _ = run_cli(project_path, "config")
+          out, _ = run_cli(test_project, "config")
           assert_equal(<<~MSG, out)
             Found Sorbet config at `sorbet/config`.
 
@@ -44,7 +48,7 @@ module Spoom
 
         def test_display_simple_config
           set_sorbet_config(".")
-          out, _ = run_cli(project_path, "config")
+          out, _ = run_cli(test_project, "config")
           assert_equal(<<~MSG, out)
             Found Sorbet config at `sorbet/config`.
 
@@ -63,7 +67,7 @@ module Spoom
             --dir
             tasks
           CFG
-          out, _ = run_cli(project_path, "config")
+          out, _ = run_cli(test_project, "config")
           assert_equal(<<~MSG, out)
             Found Sorbet config at `sorbet/config`.
 
@@ -84,7 +88,7 @@ module Spoom
             --ignore
             test
           CFG
-          out, _ = run_cli(project_path, "config")
+          out, _ = run_cli(test_project, "config")
           assert_equal(<<~MSG, out)
             Found Sorbet config at `sorbet/config`.
 
