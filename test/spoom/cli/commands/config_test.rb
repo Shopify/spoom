@@ -13,7 +13,7 @@ module Spoom
         extend Spoom::Cli::TestHelper
 
         before_all do
-          install_sorbet
+          install_sorbet("project")
           clean_sorbet_config
         end
 
