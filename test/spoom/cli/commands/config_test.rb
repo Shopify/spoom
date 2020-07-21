@@ -18,14 +18,14 @@ module Spoom
 
         before_all do
           install_sorbet("project")
-          clean_sorbet_config
         end
 
         def teardown
-          clean_sorbet_config
+          use_sorbet_config(test_project, nil)
         end
 
         def test_return_error_if_no_sorbet_config
+          use_sorbet_config(test_project, nil)
           _, err = run_cli(test_project, "config")
           assert_equal(<<~MSG, err)
             Error: not in a Sorbet project (no sorbet/config)
@@ -33,7 +33,7 @@ module Spoom
         end
 
         def test_display_empty_config
-          set_sorbet_config("")
+          use_sorbet_config(test_project, "")
           out, _ = run_cli(test_project, "config")
           assert_equal(<<~MSG, out)
             Found Sorbet config at `sorbet/config`.
@@ -47,7 +47,7 @@ module Spoom
         end
 
         def test_display_simple_config
-          set_sorbet_config(".")
+          use_sorbet_config(test_project, ".")
           out, _ = run_cli(test_project, "config")
           assert_equal(<<~MSG, out)
             Found Sorbet config at `sorbet/config`.
@@ -61,7 +61,7 @@ module Spoom
         end
 
         def test_display_multi_config
-          set_sorbet_config(<<~CFG)
+          use_sorbet_config(test_project, <<~CFG)
             lib
             --dir=test
             --dir
@@ -82,7 +82,7 @@ module Spoom
         end
 
         def test_display_config_with_ignored_files
-          set_sorbet_config(<<~CFG)
+          use_sorbet_config(test_project, <<~CFG)
             lib/project.rb
             --ignore=lib/main
             --ignore

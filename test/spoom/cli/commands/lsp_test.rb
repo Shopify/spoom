@@ -12,18 +12,29 @@ module Spoom
         include Spoom::Cli::TestHelper
         extend Spoom::Cli::TestHelper
 
+        def test_project
+          "project"
+        end
+
         before_all do
           install_sorbet("project")
-          clean_sorbet_config
+        end
+
+        def setup
+          use_sorbet_config(test_project, <<~CFG)
+            .
+            --ignore=errors
+          CFG
         end
 
         def teardown
-          clean_sorbet_config
+          use_sorbet_config(test_project, nil)
         end
 
         # Errors
 
         def test_cant_open_without_config
+          use_sorbet_config(test_project, nil)
           _, err = run_cli(test_project, "lsp --no-color find Foo")
           assert_equal(<<~MSG, err)
             Error: not in a Sorbet project (no sorbet/config)
@@ -31,7 +42,7 @@ module Spoom
         end
 
         def test_cant_open_with_errors
-          set_sorbet_config("errors")
+          use_sorbet_config(test_project, "errors")
           _, err = run_cli(test_project, "lsp --no-color find Foo")
           assert_equal(<<~MSG, err)
             Error: Sorbet returned typechecking errors for `/errors.rb`
@@ -49,7 +60,6 @@ module Spoom
 
         def test_list_defs
           out, _ = run_cli(test_project, "lsp --no-color defs lib/defs.rb 3 6")
-          set_sorbet_config(simple_config)
           assert_equal(<<~MSG, out)
             Definitions for `lib/defs.rb:3:6`:
              * /lib/defs.rb:3:7-3:17
@@ -59,7 +69,6 @@ module Spoom
         # Hover
 
         def test_list_hover_empty
-          set_sorbet_config(simple_config)
           out, _ = run_cli(test_project, "lsp --no-color hover lib/hover.rb 0 0")
           assert_equal(<<~MSG, out)
             Hovering `lib/hover.rb:0:0`:
@@ -68,7 +77,6 @@ module Spoom
         end
 
         def test_list_hover_class
-          set_sorbet_config(simple_config)
           out, _ = run_cli(test_project, "lsp --no-color hover lib/hover.rb 3 12")
           assert_equal(<<~MSG, out)
             Hovering `lib/hover.rb:3:12`:
@@ -77,7 +85,6 @@ module Spoom
         end
 
         def test_list_hover_def
-          set_sorbet_config(simple_config)
           out, _ = run_cli(test_project, "lsp --no-color hover lib/hover.rb 7 8")
           assert_equal(<<~MSG, out)
             Hovering `lib/hover.rb:7:8`:
@@ -87,7 +94,6 @@ module Spoom
         end
 
         def test_list_hover_param
-          set_sorbet_config(simple_config)
           out, _ = run_cli(test_project, "lsp --no-color hover lib/hover.rb 7 11")
           assert_equal(<<~MSG, out)
             Hovering `lib/hover.rb:7:11`:
@@ -96,7 +102,6 @@ module Spoom
         end
 
         def test_list_hover_call
-          set_sorbet_config(simple_config)
           out, _ = run_cli(test_project, "lsp hover lib/hover.rb 13 4")
           assert_equal(<<~MSG, out)
             Hovering `lib/hover.rb:13:4`:
@@ -108,7 +113,6 @@ module Spoom
         # Find
 
         def test_find
-          set_sorbet_config(simple_config)
           out, _ = run_cli(test_project, "lsp --no-color find Hover")
           assert_equal(<<~MSG, out)
             Symbols matching `Hover`:
@@ -119,7 +123,6 @@ module Spoom
         # Refs
 
         def test_list_refs
-          set_sorbet_config(simple_config)
           out, _ = run_cli(test_project, "lsp --no-color refs lib/refs.rb 2 1")
           assert_equal(<<~MSG, out)
             References to `lib/refs.rb:2:1`:
@@ -134,7 +137,6 @@ module Spoom
         # Sigs
 
         def test_list_sigs
-          set_sorbet_config(simple_config)
           out, _ = run_cli(test_project, "lsp --no-color sigs lib/sigs.rb 13 4")
           assert_equal(<<~MSG, out)
             Signature for `lib/sigs.rb:13:4`:
@@ -145,7 +147,6 @@ module Spoom
         # Symbols
 
         def test_list_symbols
-          set_sorbet_config(simple_config)
           out, _ = run_cli(test_project, "lsp --no-color symbols lib/symbols.rb")
           assert_equal(<<~MSG, out)
             Symbols from `lib/symbols.rb`:
@@ -166,21 +167,11 @@ module Spoom
         # Types
 
         def test_list_types
-          set_sorbet_config(simple_config)
           out, _ = run_cli(test_project, "lsp --no-color types lib/types.rb 6 5")
           assert_equal(<<~MSG, out)
             Type for `lib/types.rb:6:5`:
              * /lib/types.rb:3:6-3:14
           MSG
-        end
-
-        private
-
-        def simple_config
-          <<~CFG
-            .
-            --ignore=errors
-          CFG
         end
       end
     end
