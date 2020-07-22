@@ -27,12 +27,13 @@ module Spoom
       extend T::Sig
 
       sig { returns(T::Array[String]) }
-      attr_reader :paths, :ignore
+      attr_reader :paths, :ignore, :allowed_extensions
 
       sig { void }
       def initialize
         @paths = T.let([], T::Array[String])
         @ignore = T.let([], T::Array[String])
+        @allowed_extensions = T.let([], T::Array[String])
       end
 
       class << self
@@ -46,13 +47,21 @@ module Spoom
         sig { params(sorbet_config: String).returns(Spoom::Sorbet::Config) }
         def parse_string(sorbet_config)
           config = Config.new
-          ignore = T.let(false, T::Boolean)
-          skip = T.let(false, T::Boolean)
+          state = T.let(nil, T.nilable(Symbol))
           sorbet_config.each_line do |line|
             line = line.strip
             case line
+            when /^--allowed-extension$/
+              state = :extension
+              next
+            when /^--allowed-extension=/
+              config.allowed_extensions << parse_option(line)
+              next
+            when /^--ignore=/
+              config.ignore << parse_option(line)
+              next
             when /^--ignore$/
-              ignore = true
+              state = :ignore
               next
             when /^--ignore=/
               config.ignore << parse_option(line)
@@ -70,18 +79,21 @@ module Spoom
             when /^--.*=/
               next
             when /^--/
-              skip = true
+              state = :skip
             when /^-.*=?/
               next
             else
-              if ignore
+              case state
+              when :ignore
                 config.ignore << line
-                ignore = false
-              elsif skip
-                skip = false
+              when :extension
+                config.allowed_extensions << line
+              when :skip
+                # nothing
               else
                 config.paths << line
               end
+              state = nil
             end
           end
           config

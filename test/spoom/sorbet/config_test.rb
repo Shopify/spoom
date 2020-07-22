@@ -10,12 +10,14 @@ module Spoom
         config = Spoom::Sorbet::Config.parse_string('')
         assert_empty(config.paths)
         assert_empty(config.ignore)
+        assert_empty(config.allowed_extensions)
       end
 
       def test_parses_a_simple_config_string
         config = Spoom::Sorbet::Config.parse_string('.')
         assert_equal(['.'], config.paths)
         assert_empty(config.ignore)
+        assert_empty(config.allowed_extensions)
       end
 
       def test_parses_a_config_string_with_paths
@@ -25,6 +27,7 @@ module Spoom
         CONFIG
         assert_equal(['lib/a', 'lib/b'], config.paths)
         assert_empty(config.ignore)
+        assert_empty(config.allowed_extensions)
       end
 
       def test_parses_a_config_string_with_file_options
@@ -38,6 +41,7 @@ module Spoom
         CONFIG
         assert_equal(['a', 'b', 'c', 'd', 'e'], config.paths)
         assert_empty(config.ignore)
+        assert_empty(config.allowed_extensions)
       end
 
       def test_parses_a_config_string_with_dir_options
@@ -64,6 +68,7 @@ module Spoom
         CONFIG
         assert_equal(['a', 'c', 'e'], config.paths)
         assert_equal(['b', 'd'], config.ignore)
+        assert_empty(config.allowed_extensions)
       end
 
       def test_parses_a_config_string_with_other_options
@@ -78,6 +83,7 @@ module Spoom
         CONFIG
         assert_equal(['a', 'c', 'e'], config.paths)
         assert_empty(config.ignore)
+        assert_empty(config.allowed_extensions)
       end
 
       def test_parses_a_config_string_with_mixed_options
@@ -104,6 +110,7 @@ module Spoom
         CONFIG
         assert_equal(['a', 'c', 'f', 'h', 'i', 'l', 'm'], config.paths)
         assert_equal(['j', 'k'], config.ignore)
+        assert_empty(config.allowed_extensions)
       end
 
       def test_parses_a_real_config_string
@@ -120,6 +127,27 @@ module Spoom
         CONFIG
         assert_equal(['.'], config.paths)
         assert_equal(['.git/', '.idea/', 'vendor/'], config.ignore)
+        assert_equal(['.rb', '.rbi', '.rake', '.ru'], config.allowed_extensions)
+      end
+
+      def test_parses_a_config_file_with_errors
+        config = Spoom::Sorbet::Config.parse_string(<<~CONFIG)
+          .
+          --error-black-list
+          --ignore
+          --ignore
+          .idea/
+          --ignore
+          --allowed-extension
+          --allowed-extension
+          --allowed-extension=.rake
+          --allowed-extension
+          --allowed-extension
+          .ru
+        CONFIG
+        assert_equal(['.'], config.paths)
+        assert_equal(['.idea/'], config.ignore)
+        assert_equal(['.rake', '.ru'], config.allowed_extensions)
       end
     end
   end
