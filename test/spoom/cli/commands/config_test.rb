@@ -12,29 +12,27 @@ module Spoom
         include Spoom::Cli::TestHelper
         extend Spoom::Cli::TestHelper
 
-        def test_project
-          "project"
-        end
+        PROJECT = "project"
 
         before_all do
-          install_sorbet("project")
+          install_sorbet(PROJECT)
         end
 
         def teardown
-          use_sorbet_config(test_project, nil)
+          use_sorbet_config(PROJECT, nil)
         end
 
         def test_return_error_if_no_sorbet_config
-          use_sorbet_config(test_project, nil)
-          _, err = run_cli(test_project, "config")
+          use_sorbet_config(PROJECT, nil)
+          _, err = run_cli(PROJECT, "config")
           assert_equal(<<~MSG, err)
             Error: not in a Sorbet project (no sorbet/config)
           MSG
         end
 
         def test_display_empty_config
-          use_sorbet_config(test_project, "")
-          out, _ = run_cli(test_project, "config")
+          use_sorbet_config(PROJECT, "")
+          out, _ = run_cli(PROJECT, "config")
           assert_equal(<<~MSG, out)
             Found Sorbet config at `sorbet/config`.
 
@@ -51,8 +49,8 @@ module Spoom
         end
 
         def test_display_simple_config
-          use_sorbet_config(test_project, ".")
-          out, _ = run_cli(test_project, "config")
+          use_sorbet_config(PROJECT, ".")
+          out, _ = run_cli(PROJECT, "config")
           assert_equal(<<~MSG, out)
             Found Sorbet config at `sorbet/config`.
 
@@ -69,13 +67,13 @@ module Spoom
         end
 
         def test_display_multi_config
-          use_sorbet_config(test_project, <<~CFG)
+          use_sorbet_config(PROJECT, <<~CFG)
             lib
             --dir=test
             --dir
             tasks
           CFG
-          out, _ = run_cli(test_project, "config")
+          out, _ = run_cli(PROJECT, "config")
           assert_equal(<<~MSG, out)
             Found Sorbet config at `sorbet/config`.
 
@@ -94,13 +92,13 @@ module Spoom
         end
 
         def test_display_config_with_ignored_files
-          use_sorbet_config(test_project, <<~CFG)
+          use_sorbet_config(PROJECT, <<~CFG)
             lib/project.rb
             --ignore=lib/main
             --ignore
             test
           CFG
-          out, _ = run_cli(test_project, "config")
+          out, _ = run_cli(PROJECT, "config")
           assert_equal(<<~MSG, out)
             Found Sorbet config at `sorbet/config`.
 
@@ -118,7 +116,7 @@ module Spoom
         end
 
         def test_display_config_with_allowed_extensions
-          use_sorbet_config(test_project, <<~CFG)
+          use_sorbet_config(PROJECT, <<~CFG)
             lib/project.rb
             --ignore=lib/main
             --ignore
@@ -128,7 +126,7 @@ module Spoom
             --allowed-extension=.rake
             --allowed-extension=.ru
           CFG
-          out, _ = run_cli(test_project, "config")
+          out, _ = run_cli(PROJECT, "config")
           assert_equal(<<~MSG, out)
             Found Sorbet config at `sorbet/config`.
 
@@ -148,8 +146,8 @@ module Spoom
         end
 
         def test_display_files_from_config
-          use_sorbet_config(test_project, ".")
-          out, _ = run_cli(test_project, "config files")
+          use_sorbet_config(PROJECT, ".")
+          out, _ = run_cli(PROJECT, "config files")
           assert_equal(<<~MSG, out)
             Files matching `sorbet/config`:
              * errors/errors.rb
@@ -163,12 +161,12 @@ module Spoom
         end
 
         def test_display_files_from_config_with_ignored_files
-          use_sorbet_config(test_project, <<~CFG)
+          use_sorbet_config(PROJECT, <<~CFG)
             .
             --ignore=efs
             --ignore=errors
           CFG
-          out, _ = run_cli(test_project, "config files")
+          out, _ = run_cli(PROJECT, "config files")
           assert_equal(<<~MSG, out)
             Files matching `sorbet/config`:
              * lib/hover.rb
@@ -179,11 +177,11 @@ module Spoom
         end
 
         def test_display_files_from_config_with_allowed_exts
-          use_sorbet_config(test_project, <<~CFG)
+          use_sorbet_config(PROJECT, <<~CFG)
             .
             --allowed-extension=.rake
           CFG
-          out, _ = run_cli(test_project, "config files")
+          out, _ = run_cli(PROJECT, "config files")
           assert_equal(<<~MSG, out)
             Files matching `sorbet/config`:
              * task1.rake
