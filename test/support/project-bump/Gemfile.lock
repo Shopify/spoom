@@ -1,0 +1,27 @@
+PATH
+  remote: ../../..
+  specs:
+    spoom (1.0.3)
+      colorize
+      sorbet (~> 0.5.5)
+      sorbet-runtime
+      thor (>= 0.19.2)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    colorize (0.8.1)
+    sorbet (0.5.5808)
+      sorbet-static (= 0.5.5808)
+    sorbet-runtime (0.5.5808)
+    sorbet-static (0.5.5808-universal-darwin-14)
+    thor (1.0.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  spoom!
+
+BUNDLED WITH
+   1.17.3
