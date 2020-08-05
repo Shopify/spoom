@@ -53,6 +53,18 @@ module Spoom
           1
         end
 
+        desc "metrics", "run srb tc and display metrics"
+        def metrics
+          in_sorbet_project!
+
+          metrics = Spoom::Sorbet.srb_metrics(capture_err: false)
+          if metrics
+            metrics.show
+          else
+            puts "no data"
+          end
+        end
+
         no_commands do
           def colorize_code(code, colors = true)
             return code.to_s unless colors

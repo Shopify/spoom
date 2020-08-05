@@ -4,6 +4,7 @@
 require "spoom/sorbet/config"
 require "spoom/sorbet/errors"
 require "spoom/sorbet/lsp"
+require "spoom/sorbet/metrics"
 
 require "open3"
 
@@ -51,6 +52,19 @@ module Spoom
       out, res = srb(*T.unsafe(["--version", *arg]), path: path, capture_err: capture_err)
       return nil unless res
       out.split(" ")[2]
+    end
+
+    sig { params(arg: String, path: String, capture_err: T::Boolean).returns(T.nilable(Metrics)) }
+    def self.srb_metrics(*arg, path: '.', capture_err: false)
+      metrics_file = "metrics.tmp"
+      metrics_path = "#{path}/#{metrics_file}"
+      srb_tc(*T.unsafe(["--metrics-file=#{metrics_file}", *arg]), path: path, capture_err: capture_err)
+      if File.exist?(metrics_path)
+        metrics = Spoom::Sorbet::Metrics.parse_file(metrics_path)
+        File.delete(metrics_path)
+        return metrics
+      end
+      nil
     end
   end
 end
