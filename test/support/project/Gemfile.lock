@@ -1,7 +1,7 @@
 PATH
   remote: ../../..
   specs:
-    spoom (1.0.3)
+    spoom (1.0.4)
       colorize
       sorbet (~> 0.5.5)
       sorbet-runtime
