@@ -45,5 +45,12 @@ module Spoom
         regs.any? { |re| re.match?(f) }
       end.sort
     end
+
+    sig { params(arg: String, path: String, capture_err: T::Boolean).returns(T.nilable(String)) }
+    def self.srb_version(*arg, path: '.', capture_err: false)
+      out, res = srb(*T.unsafe(["--version", *arg]), path: path, capture_err: capture_err)
+      return nil unless res
+      out.split(" ")[2]
+    end
   end
 end
