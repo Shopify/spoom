@@ -84,8 +84,7 @@ module Spoom
           directory: T.any(String, Pathname),
           strictness: String,
           extension: String
-        )
-          .returns(T::Array[String])
+        ).returns(T::Array[String])
       end
       def self.files_with_sigil_strictness(directory, strictness, extension = ".rb")
         paths = Dir.glob("#{File.expand_path(directory)}/**/*#{extension}").sort.uniq
