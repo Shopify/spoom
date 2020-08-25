@@ -3,10 +3,10 @@
 
 require "thor"
 
+require_relative "cli/commands/bump"
 require_relative "cli/commands/config"
 require_relative "cli/commands/lsp"
 require_relative "cli/commands/run"
-require_relative "cli/commands/bump"
 
 module Spoom
   module Cli

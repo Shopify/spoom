@@ -14,14 +14,14 @@ module Spoom
 
         default_task :bump
 
-        desc "bump", "change Sorbet sigils from one strictness to another when no errors"
-        option :from, type: :string
-        option :to, type: :string
-        option :force, type: :boolean, default: false, aliases: :f
+        desc "bump DIRECTORY", "change Sorbet sigils from one strictness to another when no errors"
+        option :from, type: :string, default: Spoom::Sorbet::Sigils::STRICTNESS_FALSE
+        option :to, type: :string, default: Spoom::Sorbet::Sigils::STRICTNESS_TRUE
+        option :force, desc: "change strictness without type checking", type: :boolean, default: false, aliases: :f
         sig { params(directory: String).void }
         def bump(directory = ".")
-          from = options[:from] ? options[:from] : Sorbet::Sigils::STRICTNESS_FALSE
-          to = options[:to] ? options[:to] : Sorbet::Sigils::STRICTNESS_TRUE
+          from = options[:from]
+          to = options[:to]
           force = options[:force]
 
           unless Sorbet::Sigils.valid_strictness?(from)

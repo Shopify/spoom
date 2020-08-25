@@ -1,6 +1,9 @@
 # typed: strict
 # frozen_string_literal: true
 
+# The term "sigil" refers to the magic comment at the top of the file that has the form `# typed: <strictness>`,
+# where "strictness" represents the level at which Sorbet will report errors
+# See https://sorbet.org/docs/static for a more complete explanation
 module Spoom
   module Sorbet
     module Sigils
@@ -21,6 +24,7 @@ module Spoom
         STRICTNESS_STRONG,
         STRICTNESS_INTERNAL,
       ].freeze, T::Array[String])
+
       SIGIL_REGEXP = T.let(/^#\s*typed\s*:\s*(\w*)\s*$/.freeze, Regexp)
 
       # returns the full sigil comment string for the passed strictness
@@ -84,8 +88,7 @@ module Spoom
           .returns(T::Array[String])
       end
       def self.files_with_sigil_strictness(directory, strictness, extension = ".rb")
-        # TODO: make sure the result contains unique entries
-        paths = Dir.glob("#{File.expand_path(directory)}/**/*#{extension}")
+        paths = Dir.glob("#{File.expand_path(directory)}/**/*#{extension}").sort.uniq
         paths.filter do |path|
           file_strictness(path) == strictness
         end

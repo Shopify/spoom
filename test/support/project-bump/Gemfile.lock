@@ -1,7 +1,7 @@
 PATH
   remote: ../../..
   specs:
-    spoom (1.0.3)
+    spoom (1.0.4)
       colorize
       sorbet (~> 0.5.5)
       sorbet-runtime
@@ -11,10 +11,10 @@ GEM
   remote: https://rubygems.org/
   specs:
     colorize (0.8.1)
-    sorbet (0.5.5808)
-      sorbet-static (= 0.5.5808)
-    sorbet-runtime (0.5.5808)
-    sorbet-static (0.5.5808-universal-darwin-14)
+    sorbet (0.5.5878)
+      sorbet-static (= 0.5.5878)
+    sorbet-runtime (0.5.5878)
+    sorbet-static (0.5.5878-universal-darwin-14)
     thor (1.0.1)
 
 PLATFORMS
