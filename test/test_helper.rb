@@ -8,9 +8,9 @@ module Spoom
   module TestHelper
     # Run an action before all tests only once
     def before_all
-      unless $before_all # rubocop:disable Style/GlobalVars
+      unless @before_all
         yield
-        $before_all = true # rubocop:disable Style/GlobalVars
+        @before_all = true
       end
     end
   end
