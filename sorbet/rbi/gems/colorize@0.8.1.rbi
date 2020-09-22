@@ -8,11 +8,11 @@ end
 
 module Colorize::ClassMethods
   def color_codes; end
-  def color_matrix(_ = _); end
+  def color_matrix(_ = T.unsafe(nil)); end
   def color_methods; end
   def color_samples; end
   def colors; end
-  def disable_colorization(value = _); end
+  def disable_colorization(value = T.unsafe(nil)); end
   def disable_colorization=(value); end
   def mode_codes; end
   def modes; end

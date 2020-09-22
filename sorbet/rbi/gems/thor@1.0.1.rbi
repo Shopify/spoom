@@ -28,7 +28,7 @@ class Thor
   def self.method_options(options = _); end
   def self.option(name, options = _); end
   def self.options(options = _); end
-  def self.package_name(name, _ = _); end
+  def self.package_name(name, _ = T.unsafe(nil)); end
   def self.printable_commands(all = _, subcommand = _); end
   def self.printable_tasks(all = _, subcommand = _); end
   def self.register(klass, subcommand_name, usage, description, options = _); end
