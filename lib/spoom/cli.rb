@@ -14,6 +14,7 @@ module Spoom
       extend T::Sig
 
       class_option :no_color, desc: "Don't use colors", type: :boolean
+      map T.unsafe(%w[--version -v] => :__print_version)
 
       desc "config", "manage Sorbet config"
       subcommand "config", Spoom::Cli::Commands::Config
@@ -26,6 +27,11 @@ module Spoom
 
       desc "bump", "bump Sorbet sigils from `false` to `true` when no errors"
       subcommand "bump", Spoom::Cli::Commands::Bump
+
+      desc "--version", "show version"
+      def __print_version
+        puts "Spoom v#{Spoom::VERSION}"
+      end
 
       # Utils
 
