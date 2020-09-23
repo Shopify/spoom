@@ -124,7 +124,7 @@ module Spoom
             true: 2 (40%)
 
           Classes & Modules:
-            classes: 20
+            classes: 20 (including singleton classes)
             modules: 15
 
           Methods:
@@ -183,7 +183,7 @@ module Spoom
             true: 0
 
           Classes & Modules:
-            classes: 0
+            classes: 0 (including singleton classes)
             modules: 0
 
           Methods:

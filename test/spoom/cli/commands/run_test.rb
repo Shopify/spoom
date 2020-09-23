@@ -128,7 +128,7 @@ module Spoom
               true: 6 (100%)
 
             Classes & Modules:
-              classes: 16
+              classes: 16 (including singleton classes)
               modules: 2
 
             Methods:

@@ -80,7 +80,7 @@ module Spoom
         out.puts "\nClasses & Modules:"
         cc = self['types.input.classes.total']
         cm = self['types.input.modules.total']
-        out.puts "  classes: #{cc}"
+        out.puts "  classes: #{cc} (including singleton classes)"
         out.puts "  modules: #{cm}"
 
         out.puts "\nMethods:"
