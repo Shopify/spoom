@@ -58,7 +58,7 @@ module Spoom
 
       sig { params(key: String).returns(T.nilable(Integer)) }
       def [](key)
-        metrics[key]
+        metrics[key] || 0
       end
 
       sig { returns(String) }
@@ -77,15 +77,21 @@ module Spoom
           out.puts "  #{sigil}: #{value}#{percent(value, files)}"
         end
 
+        out.puts "\nClasses & Modules:"
+        cc = self['types.input.classes.total']
+        cm = self['types.input.modules.total']
+        out.puts "  classes: #{cc}"
+        out.puts "  modules: #{cm}"
+
         out.puts "\nMethods:"
-        m = metrics['types.input.methods.total']
-        s = metrics['types.sig.count']
+        m = self['types.input.methods.total']
+        s = self['types.sig.count']
         out.puts "  methods: #{m}"
         out.puts "  signatures: #{s}#{percent(s, m)}"
 
         out.puts "\nSends:"
-        t = metrics['types.input.sends.typed']
-        s = metrics['types.input.sends.total']
+        t = self['types.input.sends.typed']
+        s = self['types.input.sends.total']
         out.puts "  sends: #{s}"
         out.puts "  typed: #{t}#{percent(t, s)}"
       end

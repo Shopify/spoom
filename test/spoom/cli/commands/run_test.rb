@@ -127,6 +127,10 @@ module Spoom
               files: 6
               true: 6 (100%)
 
+            Classes & Modules:
+              classes: 16
+              modules: 2
+
             Methods:
               methods: 22
               signatures: 2 (9%)
