@@ -28,7 +28,7 @@ module Spoom
       def test_return_version_string
         Bundler.with_clean_env do
           version = Spoom::Sorbet.srb_version(path: "#{Cli::TestHelper::TEST_PROJECTS_PATH}/project")
-          assert_equal("0.5.5808", version)
+          assert_match(/\d\.\d\.\d{4}/, version)
         end
       end
     end
