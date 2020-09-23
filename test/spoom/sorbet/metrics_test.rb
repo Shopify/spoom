@@ -93,6 +93,14 @@ module Spoom
              "value": 10
             },
             {
+             "name": "metrics.types.input.classes.total",
+             "value": 20
+            },
+            {
+             "name": "metrics.types.input.modules.total",
+             "value": 15
+            },
+            {
              "name": "metrics.types.sig.count",
              "value": 1
             },
@@ -114,6 +122,10 @@ module Spoom
             files: 5
             false: 3 (60%)
             true: 2 (40%)
+
+          Classes & Modules:
+            classes: 20 (including singleton classes)
+            modules: 15
 
           Methods:
             methods: 10
@@ -169,6 +181,10 @@ module Spoom
             files: 0
             false: 0
             true: 0
+
+          Classes & Modules:
+            classes: 0 (including singleton classes)
+            modules: 0
 
           Methods:
             methods: 0

@@ -11,10 +11,10 @@ GEM
   remote: https://rubygems.org/
   specs:
     colorize (0.8.1)
-    sorbet (0.5.5808)
-      sorbet-static (= 0.5.5808)
+    sorbet (0.5.5916)
+      sorbet-static (= 0.5.5916)
     sorbet-runtime (0.5.5808)
-    sorbet-static (0.5.5808-universal-darwin-14)
+    sorbet-static (0.5.5916-universal-darwin-14)
     thor (1.0.1)
 
 PLATFORMS
