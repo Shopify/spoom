@@ -179,8 +179,6 @@ module Spoom
         assert_equal(<<~OUT, out.string)
           Sigils:
             files: 0
-            false: 0
-            true: 0
 
           Classes & Modules:
             classes: 0 (including singleton classes)
