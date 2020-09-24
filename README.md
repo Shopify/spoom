@@ -180,7 +180,7 @@ puts Spoom::Sorbet.srb_metrics(capture_err: false)
 
 #### Interacting with LSP
 
-Create a LSP client:
+Create an LSP client:
 
 ```rb
 client = Spoom::LSP::Client.new(
