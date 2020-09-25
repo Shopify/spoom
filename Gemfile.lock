@@ -26,7 +26,7 @@ GEM
       byebug (~> 11.0)
       pry (~> 0.13.0)
     rainbow (3.0.0)
-    rake (10.5.0)
+    rake (13.0.1)
     regexp_parser (1.7.1)
     rexml (3.2.4)
     rubocop (0.86.0)
@@ -60,7 +60,7 @@ DEPENDENCIES
   byebug
   minitest (~> 5.0)
   pry-byebug
-  rake (~> 10.0)
+  rake (~> 13.0.1)
   rubocop-shopify
   rubocop-sorbet
   spoom!
