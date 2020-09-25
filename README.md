@@ -20,7 +20,129 @@ Or install it yourself as:
 
 ## Usage
 
-### Parsing Sorbet config
+`spoom` provides both a CLI and an API to interact with Sorbet.
+
+### Command Line Interface
+
+#### Sorbet configuration commands
+
+Spoom works with your `sorbet/config` file. No additional configuration is needed.
+
+Show Sorbet config options:
+
+```
+$ spoom config
+```
+
+List the files that will be typchecked with the current Sorbet config options:
+
+```
+$ spoom config files
+```
+
+#### Errors sorting and filtering
+
+List all typechecking errors sorted by location:
+
+```
+$ spoom tc -s
+```
+
+List all typechecking errors sorted by error code first:
+
+```
+$ spoom tc -s code
+```
+
+List only typechecking errors from a specific error code:
+
+```
+$ spoom tc -c 7004
+```
+
+List only the first 10 typechecking errors
+
+```
+$ spoom tc -l 10
+```
+
+These options can be combined:
+
+```
+$ spoom tc -s -c 7004 -l 10
+```
+
+#### Typechecking metrics
+
+Show metrics about the project contents and the typing:
+
+```
+$ spoom tc metrics
+```
+
+#### Change the sigil used in files
+
+Bump the strictness from all files currently at `typed: false` to `typed: true` where it does not create typechecking errors:
+
+```
+$ spoom bump --from false --to true
+```
+
+Bump the strictness from all files currently at `typed: false` to `typed: true` even if it creates typechecking errors:
+
+```
+$ spoom bump --from false --to true -f
+```
+
+#### Interact with Sorbet LSP mode
+
+**Experimental**
+
+Find all definitions for `Foo`:
+
+```
+$ spoom lsp find Foo
+```
+
+List all symbols in a file:
+
+```
+$ spoom lsp symbols <file.rb>
+```
+
+List all definitions for a specific code location:
+
+```
+$ spoom lsp defs <file.rb> <line> <column>
+```
+
+List all references for a specific code location:
+
+```
+$ spoom lsp refs <file.rb> <line> <column>
+```
+
+Show hover information for a specific code location:
+
+```
+$ spoom lsp hover <file.rb> <line> <column>
+```
+
+Show signature information for a specific code location:
+
+```
+$ spoom lsp sig <file.rb> <line> <column>
+```
+
+Show type information for a specific code location:
+
+```
+$ spoom lsp sig <file.rb> <line> <column>
+```
+
+### API
+
+#### Parsing Sorbet config
 
 Parses a Sorbet config file:
 
@@ -39,6 +161,47 @@ config = Spoom::Sorbet::Config.parse_string(<<~CONFIG)
 CONFIG
 puts config.paths   # "a", "b"
 puts config.ignore  # "c"
+```
+
+List all files typchecked by Sorbet:
+
+```ruby
+config = Spoom::Sorbet::Config.parse_file("sorbet/config")
+puts Spoom::Sorbet.srb_files(config)
+```
+
+#### Parsing Sorbet metrics
+
+Display metrics collected during typechecking:
+
+```ruby
+puts Spoom::Sorbet.srb_metrics(capture_err: false)
+```
+
+#### Interacting with LSP
+
+Create an LSP client:
+
+```rb
+client = Spoom::LSP::Client.new(
+  Spoom::Config::SORBET_PATH,
+  "--lsp",
+  "--enable-all-experimental-lsp-features",
+  "--disable-watchman",
+)
+client.open(Spoom::Config::WORKSPACE_PATH)
+```
+
+Find all the symbols matching a string:
+
+```rb
+puts client.symbols("Foo")
+```
+
+Find all the symbols for a file:
+
+```rb
+puts client.document_symbols("file://path/to/my/file.rb")
 ```
 
 ## Development
