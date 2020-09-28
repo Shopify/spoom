@@ -124,7 +124,7 @@ module Spoom
           end
 
           def symbol_printer
-            Spoom::LSP::SymbolPrinter.new(indent_level: 2, colors: !options["no_color"])
+            Spoom::LSP::SymbolPrinter.new(indent_level: 2, colors: options[:color])
           end
 
           def run(&block)
