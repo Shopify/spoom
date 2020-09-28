@@ -1,12 +1,14 @@
 # typed: true
 # frozen_string_literal: true
 
-require_relative "base"
+require_relative '../command_helper'
 
 module Spoom
   module Cli
     module Commands
-      class Run < Base
+      class Run < Thor
+        include Spoom::Cli::CommandHelper
+
         default_task :tc
 
         desc "tc", "run srb tc"

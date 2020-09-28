@@ -3,14 +3,16 @@
 
 require 'shellwords'
 
-require_relative "base"
+require_relative '../command_helper'
 require_relative "../symbol_printer"
 require_relative "../../sorbet/lsp"
 
 module Spoom
   module Cli
     module Commands
-      class LSP < Base
+      class LSP < Thor
+        include Spoom::Cli::CommandHelper
+
         default_task :show
 
         desc "interactive", "interactive LSP mode"

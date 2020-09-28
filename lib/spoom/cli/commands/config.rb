@@ -1,13 +1,15 @@
 # typed: true
 # frozen_string_literal: true
 
-require_relative "base"
 require_relative "../../sorbet/config"
+require_relative '../command_helper'
 
 module Spoom
   module Cli
     module Commands
-      class Config < Base
+      class Config < Thor
+        include Spoom::Cli::CommandHelper
+
         default_task :show
 
         desc "show", "show Sorbet config"
