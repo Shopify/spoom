@@ -56,3 +56,13 @@ module Spoom
     end
   end
 end
+
+class String
+  def to_uri
+    "file://" + File.join(Spoom::Config::WORKSPACE_PATH, self)
+  end
+
+  def from_uri
+    sub("file://#{Spoom::Config::WORKSPACE_PATH}", "")
+  end
+end

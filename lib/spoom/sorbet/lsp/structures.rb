@@ -1,9 +1,24 @@
 # typed: true
 # frozen_string_literal: true
 
+require_relative "../../printer"
+
 module Spoom
   module LSP
+    module PrintableSymbol
+      extend T::Sig
+      extend T::Helpers
+
+      interface!
+
+      sig { abstract.params(printer: SymbolPrinter).void }
+      def accept_printer(printer); end
+    end
+
     class Hover < T::Struct
+      extend T::Sig
+      include PrintableSymbol
+
       const :contents, String
       const :range, T.nilable(Range)
 
@@ -14,9 +29,10 @@ module Spoom
         )
       end
 
+      sig { override.params(printer: SymbolPrinter).void }
       def accept_printer(printer)
         printer.print("#{contents}\n")
-        printer.visit(range) if range
+        printer.print_object(range) if range
       end
 
       def to_s
@@ -25,6 +41,9 @@ module Spoom
     end
 
     class Position < T::Struct
+      extend T::Sig
+      include PrintableSymbol
+
       const :line, Integer
       const :char, Integer
 
@@ -35,8 +54,9 @@ module Spoom
         )
       end
 
+      sig { override.params(printer: SymbolPrinter).void }
       def accept_printer(printer)
-        printer.print("#{line}:#{char}".light_black)
+        printer.print_colored("#{line}:#{char}", :light_black)
       end
 
       def to_s
@@ -45,6 +65,9 @@ module Spoom
     end
 
     class Range < T::Struct
+      extend T::Sig
+      include PrintableSymbol
+
       const :start, Position
       const :end, Position
 
@@ -55,10 +78,11 @@ module Spoom
         )
       end
 
+      sig { override.params(printer: SymbolPrinter).void }
       def accept_printer(printer)
-        printer.visit(start)
-        printer.print("-".light_black)
-        printer.visit(self.end)
+        printer.print_object(start)
+        printer.print_colored("-", :light_black)
+        printer.print_object(self.end)
       end
 
       def to_s
@@ -67,6 +91,9 @@ module Spoom
     end
 
     class Location < T::Struct
+      extend T::Sig
+      include PrintableSymbol
+
       const :uri, String
       const :range, LSP::Range
 
@@ -77,17 +104,21 @@ module Spoom
         )
       end
 
+      sig { override.params(printer: SymbolPrinter).void }
       def accept_printer(printer)
-        printer.print("#{uri.from_uri}:".light_black)
-        printer.visit(range)
+        printer.print_colored("#{uri.from_uri}:", :light_black)
+        printer.print_object(range)
       end
 
       def to_s
-        "#{uri}:#{range})."
+        "#{uri}:#{range}"
       end
     end
 
     class SignatureHelp < T::Struct
+      extend T::Sig
+      include PrintableSymbol
+
       const :label, T.nilable(String)
       const :doc, Object # TODO
       const :params, T::Array[T.untyped] # TODO
@@ -100,6 +131,7 @@ module Spoom
         )
       end
 
+      sig { override.params(printer: SymbolPrinter).void }
       def accept_printer(printer)
         printer.print(label)
         printer.print("(")
@@ -113,6 +145,9 @@ module Spoom
     end
 
     class Diagnostic < T::Struct
+      extend T::Sig
+      include PrintableSymbol
+
       const :range, LSP::Range
       const :code, Integer
       const :message, String
@@ -127,12 +162,20 @@ module Spoom
         )
       end
 
+      sig { override.params(printer: SymbolPrinter).void }
+      def accept_printer(printer)
+        printer.print(to_s)
+      end
+
       def to_s
         "Error: #{message} (#{code})."
       end
     end
 
     class DocumentSymbol < T::Struct
+      extend T::Sig
+      include PrintableSymbol
+
       const :name, String
       const :detail, T.nilable(String)
       const :kind, Integer
@@ -151,6 +194,7 @@ module Spoom
         )
       end
 
+      sig { override.params(printer: SymbolPrinter).void }
       def accept_printer(printer)
         h = serialize.hash
         return if printer.seen.include?(h)
@@ -159,18 +203,18 @@ module Spoom
         printer.printt
         printer.print(kind_string)
         printer.print(' ')
-        printer.print(name.blue.bold)
-        printer.print(' ('.light_black)
+        printer.print_colored(name, :blue, :bold)
+        printer.print_colored(' (', :light_black)
         if range
-          printer.visit(range)
+          printer.print_object(range)
         elsif location
-          printer.visit(location)
+          printer.print_object(location)
         end
-        printer.print(')'.light_black)
+        printer.print_colored(')', :light_black)
         printer.printn
         unless children.empty?
           printer.indent
-          printer.visit(children)
+          printer.print_objects(children)
           printer.dedent
         end
         # TODO: also display details?
@@ -213,6 +257,32 @@ module Spoom
         25 => "operator",
         26 => "type_parameter",
       }
+    end
+
+    class SymbolPrinter < Printer
+      extend T::Sig
+
+      attr_accessor :seen
+
+      sig { params(out: T.any(IO, StringIO), colors: T::Boolean, indent_level: Integer).void }
+      def initialize(out: $stdout, colors: true, indent_level: 0)
+        super(out: out, colors: colors, indent_level: indent_level)
+        @seen = Set.new
+        @out = out
+        @colors = colors
+        @indent_level = indent_level
+      end
+
+      sig { params(object: T.nilable(PrintableSymbol)).void }
+      def print_object(object)
+        return unless object
+        object.accept_printer(self)
+      end
+
+      sig { params(objects: T::Array[PrintableSymbol]).void }
+      def print_objects(objects)
+        objects.each { |object| print_object(object) }
+      end
     end
   end
 end
