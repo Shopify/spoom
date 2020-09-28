@@ -1,6 +1,7 @@
 # typed: true
 # frozen_string_literal: true
 
+require_relative "../../file_tree"
 require_relative "../../sorbet/config"
 require_relative '../command_helper'
 
@@ -44,22 +45,6 @@ module Spoom
           else
             config.allowed_extensions.each do |ext|
               say(" * #{ext}")
-            end
-          end
-        end
-
-        desc "files", "show files matching Sorbet config"
-        def files
-          in_sorbet_project!
-          config = Spoom::Sorbet::Config.parse_file(Spoom::Config::SORBET_CONFIG)
-          files = Spoom::Sorbet.srb_files(config)
-
-          say("Files matching `#{Spoom::Config::SORBET_CONFIG}`:")
-          if files.empty?
-            say(" NONE")
-          else
-            files.each do |path|
-              say(" * #{path}")
             end
           end
         end

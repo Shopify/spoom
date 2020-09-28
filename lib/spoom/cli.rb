@@ -12,6 +12,7 @@ module Spoom
   module Cli
     class Main < Thor
       extend T::Sig
+      include Spoom::Cli::CommandHelper
 
       class_option :no_color, desc: "Don't use colors", type: :boolean
       map T.unsafe(%w[--version -v] => :__print_version)
@@ -27,6 +28,21 @@ module Spoom
 
       desc "tc", "run Sorbet and parses its output"
       subcommand "tc", Spoom::Cli::Commands::Run
+
+      desc "files", "list all the files typechecked by Sorbet"
+      def files
+        in_sorbet_project!
+        config = Spoom::Sorbet::Config.parse_file(Spoom::Config::SORBET_CONFIG)
+        files = Spoom::Sorbet.srb_files(config)
+
+        say("Files matching `#{Spoom::Config::SORBET_CONFIG}`:")
+        if files.empty?
+          say(" NONE")
+        else
+          tree = FileTree.new(files)
+          tree.print(colors: !options[:no_color], indent: 2)
+        end
+      end
 
       desc "--version", "show version"
       def __print_version
