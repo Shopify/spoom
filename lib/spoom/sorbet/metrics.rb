@@ -36,7 +36,7 @@ module Spoom
           branch: obj.fetch("branch"),
           timestamp: obj.fetch("timestamp").to_i,
           uuid: obj.fetch("uuid"),
-          metrics: obj["metrics"].each_with_object({}) do |metric, all|
+          metrics: obj["metrics"].each_with_object(Hash.new(0)) do |metric, all|
             name = metric["name"]
             name = name.sub(prefix, '')
             all[name] = metric["value"].to_i
@@ -58,7 +58,7 @@ module Spoom
 
       sig { params(key: String).returns(T.nilable(Integer)) }
       def [](key)
-        metrics[key] || 0
+        metrics[key]
       end
 
       sig { returns(String) }
@@ -73,7 +73,7 @@ module Spoom
         out.puts "Sigils:"
         out.puts "  files: #{files}"
         files_by_strictness.each do |sigil, value|
-          next unless value
+          next unless value && value > 0
           out.puts "  #{sigil}: #{value}#{percent(value, files)}"
         end
 
