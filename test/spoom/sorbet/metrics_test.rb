@@ -33,10 +33,6 @@ module Spoom
            ]
           }
         ERR
-        assert_equal("MyRepo", metrics.repo)
-        assert_equal("1234", metrics.sha)
-        assert_equal("master", metrics.branch)
-        assert_equal("Success", metrics.status)
         assert_equal(1, metrics["error.total"])
         assert_equal(2094, metrics["types.input.sends.total"])
       end
@@ -62,10 +58,6 @@ module Spoom
            ]
           }
         ERR
-        assert_equal("MyRepo", metrics.repo)
-        assert_equal("1234", metrics.sha)
-        assert_equal("master", metrics.branch)
-        assert_equal("Success", metrics.status)
         assert_equal(1, metrics["error.total"])
         assert_equal(2094, metrics["types.input.sends.total"])
       end
