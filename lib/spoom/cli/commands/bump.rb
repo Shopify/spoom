@@ -4,13 +4,14 @@
 require 'find'
 require 'open3'
 
-require_relative 'base'
+require_relative '../command_helper'
 
 module Spoom
   module Cli
     module Commands
-      class Bump < Base
+      class Bump < Thor
         extend T::Sig
+        include Spoom::Cli::CommandHelper
 
         default_task :bump
 
