@@ -40,7 +40,7 @@ module Spoom
           say(" NONE")
         else
           tree = FileTree.new(files)
-          tree.print(colors: !options[:no_color], indent: 2)
+          tree.print(colors: !options[:no_color], indent_level: 2)
         end
       end
 

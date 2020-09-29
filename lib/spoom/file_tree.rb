@@ -54,9 +54,16 @@ module Spoom
       nodes.collect(&:path)
     end
 
-    sig { params(out: T.any(IO, StringIO), show_strictness: T::Boolean, colors: T::Boolean, indent: Integer).void }
-    def print(out: $stdout, show_strictness: true, colors: true, indent: 0)
-      printer = Printer.new(out: out, show_strictness: show_strictness, colors: colors, indent: indent)
+    sig do
+      params(
+        out: T.any(IO, StringIO),
+        show_strictness: T::Boolean,
+        colors: T::Boolean,
+        indent_level: Integer
+      ).void
+    end
+    def print(out: $stdout, show_strictness: true, colors: true, indent_level: 0)
+      printer = TreePrinter.new(out: out, show_strictness: show_strictness, colors: colors, indent_level: indent_level)
       printer.print_tree(self)
     end
 
@@ -100,15 +107,20 @@ module Spoom
     # An internal class used to print a FileTree
     #
     # See `FileTree#print`
-    class Printer
+    class TreePrinter < Spoom::Printer
       extend T::Sig
 
-      sig { params(out: T.any(IO, StringIO), show_strictness: T::Boolean, colors: T::Boolean, indent: Integer).void }
-      def initialize(out: $stdout, show_strictness: true, colors: true, indent: 0)
-        @out = out
+      sig do
+        params(
+          out: T.any(IO, StringIO),
+          show_strictness: T::Boolean,
+          colors: T::Boolean,
+          indent_level: Integer
+        ).void
+      end
+      def initialize(out: $stdout, show_strictness: true, colors: true, indent_level: 0)
+        super(out: out, colors: colors, indent_level: indent_level)
         @show_strictness = show_strictness
-        @colors = colors
-        @indent = indent
       end
 
       sig { params(tree: FileTree).void }
@@ -118,26 +130,28 @@ module Spoom
 
       sig { params(node: FileTree::Node).void }
       def print_node(node)
-        @out.print(" " * @indent)
+        printt
         if node.children.empty?
           if @show_strictness
             strictness = node.strictness
             if @colors
-              @out.print(node.name.colorize(strictness_color(strictness)))
+              print_colored(node.name, strictness_color(strictness))
             elsif strictness
-              @out.print("#{node.name} (#{strictness})")
+              print("#{node.name} (#{strictness})")
             else
-              @out.print(node.name.to_s)
+              print(node.name.to_s)
             end
           else
-            @out.print(node.name.to_s)
+            print(node.name.to_s)
           end
-          @out.print("\n")
+          print("\n")
         else
-          @out.print("#{@colors ? node.name.colorize(:blue) : node.name}/\n")
-          @indent += 2
+          print_colored(node.name, :blue)
+          print("/")
+          printn
+          indent
           print_nodes(node.children.values)
-          @indent -= 2
+          dedent
         end
       end
 
