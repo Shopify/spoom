@@ -32,6 +32,7 @@ module Spoom
               spoom files           # list all the files typechecked by Sorbet
               spoom help [COMMAND]  # Describe available commands or one specific command
               spoom lsp             # send LSP requests to Sorbet
+              spoom metrics         # collect metrics related to Sorbet
               spoom tc              # run Sorbet and parses its output
 
             Options:

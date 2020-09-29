@@ -117,29 +117,6 @@ module Spoom
             Errors: 1 shown, 7 total
           MSG
         end
-
-        # Metrics
-
-        def test_display_metrics
-          out, _ = run_cli(PROJECT, "tc metrics")
-          assert_equal(<<~MSG, out)
-            Sigils:
-              files: 6
-              true: 6 (100%)
-
-            Classes & Modules:
-              classes: 16 (including singleton classes)
-              modules: 2
-
-            Methods:
-              methods: 22
-              signatures: 2 (9%)
-
-            Sends:
-              sends: 51
-              typed: 47 (92%)
-          MSG
-        end
       end
     end
   end
