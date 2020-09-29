@@ -1,13 +1,14 @@
 # typed: strict
 # frozen_string_literal: true
 
+require_relative "sigils"
+
 module Spoom
   module Sorbet
     class Metrics < T::Struct
       extend T::Sig
 
       DEFAULT_PREFIX = "ruby_typer.unknown.."
-      SIGILS = T.let(["ignore", "false", "true", "strict", "strong", "__STDLIB_INTERNAL"], T::Array[String])
 
       const :raw_metrics, T::Hash[String, T.nilable(Integer)]
 
@@ -34,7 +35,7 @@ module Spoom
 
       sig { returns(T::Hash[String, T.nilable(Integer)]) }
       def files_by_strictness
-        SIGILS.each_with_object({}) do |sigil, map|
+        Spoom::Sorbet::Sigils::VALID_STRICTNESS.each_with_object({}) do |sigil, map|
           map[sigil] = raw_metrics["types.input.files.sigil.#{sigil}"]
         end
       end
