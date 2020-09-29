@@ -79,7 +79,7 @@ $ spoom tc -s -c 7004 -l 10
 Show metrics about the project contents and the typing:
 
 ```
-$ spoom tc metrics
+$ spoom metrics
 ```
 
 #### Change the sigil used in files
