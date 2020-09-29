@@ -2,13 +2,20 @@
 # frozen_string_literal: true
 
 module Spoom
-  class Snapshot < Hash
+  class Snapshot < T::Struct
     extend T::Sig
-    extend T::Generic
 
-    K = type_member(fixed: String)
-    V = type_member(fixed: T.untyped)
-    Elem = type_member(fixed: T.untyped)
+    prop :files, Integer, default: 0
+    prop :modules, Integer, default: 0
+    prop :classes, Integer, default: 0
+    prop :methods_without_sig, Integer, default: 0
+    prop :methods_with_sig, Integer, default: 0
+    prop :calls_untyped, Integer, default: 0
+    prop :calls_typed, Integer, default: 0
+    prop :sigils, T::Hash[String, Integer], default: Hash.new(0)
+
+    # The strictness name as found in the Sorbet metrics file
+    STRICTNESSES = T.let(["ignore", "false", "true", "strict", "strong", "stdlib"].freeze, T::Array[String])
 
     sig { params(path: String).returns(Snapshot) }
     def self.snapshot(path: '.')
@@ -16,24 +23,18 @@ module Spoom
       metrics = Spoom::Sorbet.srb_metrics(path: path, capture_err: false)
       return snapshot unless metrics
 
-      snapshot["user_time"] = metrics["run.utilization.user_time.us"]
-      snapshot["system_time"] = metrics["run.utilization.system_time.us"]
-      snapshot["files"] = metrics["types.input.files"]
-      snapshot["modules"] = metrics["types.input.modules.total"]
-      snapshot["classes"] = metrics["types.input.classes.total"]
-      snapshot["methods"] = metrics["types.input.methods.total"]
-      snapshot["signatures"] = metrics["types.sig.count"]
-      snapshot["calls"] = metrics["types.input.sends.total"]
-      snapshot["calls_typed"] = metrics["types.input.sends.typed"]
+      snapshot.files = metrics["types.input.files"] || 0
+      snapshot.modules = metrics["types.input.modules.total"] || 0
+      snapshot.classes = metrics["types.input.classes.total"] || 0
+      snapshot.methods_with_sig = metrics["types.sig.count"] || 0
+      snapshot.methods_without_sig = (metrics["types.input.methods.total"] || 0) - snapshot.methods_with_sig
+      snapshot.calls_typed = metrics["types.input.sends.typed"] || 0
+      snapshot.calls_untyped = (metrics["types.input.sends.total"] || 0) - snapshot.calls_typed
 
-      sigils = {}
-      sigils["ignore"] = metrics["types.input.files.sigil.ignore"]
-      sigils["false"] = metrics["types.input.files.sigil.false"]
-      sigils["true"] = metrics["types.input.files.sigil.true"]
-      sigils["strict"] = metrics["types.input.files.sigil.strict"]
-      sigils["strong"] = metrics["types.input.files.sigil.strong"]
-      sigils["stdlib"] = metrics["types.input.files.sigil.stdlib"]
-      snapshot["sigils"] = sigils
+      STRICTNESSES.each do |strictness|
+        next unless metrics.key?("types.input.files.sigil.#{strictness}")
+        snapshot.sigils[strictness] = T.must(metrics["types.input.files.sigil.#{strictness}"])
+      end
 
       snapshot
     end
@@ -43,13 +44,6 @@ module Spoom
       printer = SnapshotPrinter.new(out: out, colors: colors, indent_level: indent_level)
       printer.print_snapshot(self)
     end
-
-    sig { returns(T::Hash[String, T.nilable(Integer)]) }
-    def files_by_strictness
-      Spoom::Sorbet::Sigils::VALID_STRICTNESS.each_with_object({}) do |sigil, map|
-        map[sigil] = self["sigils"][sigil]
-      end
-    end
   end
 
   class SnapshotPrinter < Spoom::Printer
@@ -57,35 +51,46 @@ module Spoom
 
     sig { params(snapshot: Snapshot).void }
     def print_snapshot(snapshot)
-      printl("Sigils:")
+      methods = snapshot.methods_with_sig + snapshot.methods_without_sig
+      calls = snapshot.calls_typed + snapshot.calls_untyped
+
+      printl("Content:")
       indent
-      printl("files: #{snapshot['files']}")
-      snapshot.files_by_strictness.each do |sigil, value|
-        next unless value && value > 0
-        printl("#{sigil}: #{value}#{percent(value, snapshot['files'])}")
-      end
+      printl("files: #{snapshot.files}")
+      printl("modules: #{snapshot.modules}")
+      printl("classes: #{snapshot.classes} (including singleton classes)")
+      printl("methods: #{methods}")
       dedent
       printn
-      printl("Classes & Modules:")
-      indent
-      printl("classes: #{snapshot['classes']} (including singleton classes)")
-      printl("modules: #{snapshot['modules']}")
-      dedent
+      printl("Sigils:")
+      print_map(snapshot.sigils, snapshot.files)
       printn
       printl("Methods:")
-      indent
-      printl("methods: #{snapshot['methods']}")
-      printl("signatures: #{snapshot['signatures']}#{percent(snapshot['signatures'], snapshot['methods'])}")
-      dedent
+      methods_map = {
+        "with signature" => snapshot.methods_with_sig,
+        "without signature" => snapshot.methods_without_sig,
+      }
+      print_map(methods_map, methods)
       printn
-      printl("Sends:")
-      indent
-      printl("sends: #{snapshot['calls']}")
-      printl("typed: #{snapshot['calls_typed']}#{percent(snapshot['calls_typed'], snapshot['calls'])}")
-      dedent
+      printl("Calls:")
+      calls_map = {
+        "typed" => snapshot.calls_typed,
+        "untyped" => snapshot.calls_untyped,
+      }
+      print_map(calls_map, calls)
     end
 
     private
+
+    sig { params(hash: T::Hash[String, Integer], total: Integer).void }
+    def print_map(hash, total)
+      indent
+      hash.each do |key, value|
+        next unless value > 0
+        printl("#{key}: #{value}#{percent(value, total)}")
+      end
+      dedent
+    end
 
     sig { params(value: T.nilable(Integer), total: T.nilable(Integer)).returns(String) }
     def percent(value, total)

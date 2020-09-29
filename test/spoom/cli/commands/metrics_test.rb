@@ -28,21 +28,22 @@ module Spoom
         def test_display_metrics
           out, _ = run_cli(PROJECT, "metrics")
           assert_equal(<<~MSG, out)
-            Sigils:
+            Content:
               files: 6
+              modules: 2
+              classes: 16 (including singleton classes)
+              methods: 22
+
+            Sigils:
               true: 6 (100%)
 
-            Classes & Modules:
-              classes: 16 (including singleton classes)
-              modules: 2
-
             Methods:
-              methods: 22
-              signatures: 2 (9%)
+              with signature: 2 (9%)
+              without signature: 20 (90%)
 
-            Sends:
-              sends: 51
+            Calls:
               typed: 47 (92%)
+              untyped: 4 (7%)
           MSG
         end
       end
