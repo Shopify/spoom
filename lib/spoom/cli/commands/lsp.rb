@@ -26,11 +26,12 @@ module Spoom
         # TODO: options, filter, limit, kind etc.. filter rbi
         def list
           run do |client|
+            printer = symbol_printer
             Dir["**/*.rb"].each do |file|
               res = client.document_symbols(file.to_uri)
               next if res.empty?
               puts "Symbols from `#{file}`:"
-              print_object(res)
+              printer.print_objects(res)
             end
           end
         end
@@ -42,7 +43,7 @@ module Spoom
             res = client.hover(file.to_uri, line.to_i, col.to_i)
             say "Hovering `#{file}:#{line}:#{col}`:"
             if res
-              print_object(res)
+              symbol_printer.print_object(res)
             else
               puts "<no data>"
             end
@@ -55,7 +56,7 @@ module Spoom
           run do |client|
             res = client.definitions(file.to_uri, line.to_i, col.to_i)
             puts "Definitions for `#{file}:#{line}:#{col}`:"
-            print_list(res)
+            symbol_printer.print_list(res)
           end
         end
 
@@ -65,7 +66,7 @@ module Spoom
           run do |client|
             res = client.symbols(query).reject { |symbol| symbol.location.uri.start_with?("https") }
             puts "Symbols matching `#{query}`:"
-            res.each { |symbol| print_object(symbol) }
+            symbol_printer.print_objects(res)
           end
         end
 
@@ -75,7 +76,7 @@ module Spoom
           run do |client|
             res = client.document_symbols(file.to_uri)
             puts "Symbols from `#{file}`:"
-            res.each { |symbol| print_object(symbol) }
+            symbol_printer.print_objects(res)
           end
         end
 
@@ -85,7 +86,7 @@ module Spoom
           run do |client|
             res = client.references(file.to_uri, line.to_i, col.to_i)
             puts "References to `#{file}:#{line}:#{col}`:"
-            print_list(res)
+            symbol_printer.print_list(res)
           end
         end
 
@@ -95,7 +96,7 @@ module Spoom
           run do |client|
             res = client.signatures(file.to_uri, line.to_i, col.to_i)
             puts "Signature for `#{file}:#{line}:#{col}`:"
-            print_list(res)
+            symbol_printer.print_list(res)
           end
         end
 
@@ -105,7 +106,7 @@ module Spoom
           run do |client|
             res = client.type_definitions(file.to_uri, line.to_i, col.to_i)
             say "Type for `#{file}:#{line}:#{col}`:"
-            print_list(res)
+            symbol_printer.print_list(res)
           end
         end
 
@@ -122,19 +123,8 @@ module Spoom
             client
           end
 
-          def print_list(list)
-            printer = Spoom::LSP::SymbolPrinter.new(indent_level: 1, colors: !options["no_color"])
-            list.each do |item|
-              printer.printt
-              printer.print("* ")
-              printer.print_object(item)
-              printer.printn
-            end
-          end
-
-          def print_object(object)
-            printer = Spoom::LSP::SymbolPrinter.new(indent_level: 2, colors: !options["no_color"])
-            printer.print_object(object)
+          def symbol_printer
+            Spoom::LSP::SymbolPrinter.new(indent_level: 2, colors: !options["no_color"])
           end
 
           def run(&block)

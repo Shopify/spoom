@@ -283,6 +283,16 @@ module Spoom
       def print_objects(objects)
         objects.each { |object| print_object(object) }
       end
+
+      sig { params(objects: T::Array[PrintableSymbol]).void }
+      def print_list(objects)
+        objects.each do |object|
+          printt
+          print "* "
+          print_object(object)
+          printn
+        end
+      end
     end
   end
 end

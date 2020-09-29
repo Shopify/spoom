@@ -60,7 +60,7 @@ module Spoom
           out, _ = run_cli(PROJECT, "lsp --no-color defs lib/defs.rb 3 6")
           assert_equal(<<~MSG, out)
             Definitions for `lib/defs.rb:3:6`:
-             * /lib/defs.rb:3:7-3:17
+              * /lib/defs.rb:3:7-3:17
           MSG
         end
 
@@ -124,11 +124,11 @@ module Spoom
           out, _ = run_cli(PROJECT, "lsp --no-color refs lib/refs.rb 2 1")
           assert_equal(<<~MSG, out)
             References to `lib/refs.rb:2:1`:
-             * /lib/refs.rb:3:0-3:3
-             * /lib/refs.rb:4:0-4:3
-             * /lib/refs.rb:4:6-4:9
-             * /lib/refs.rb:5:0-5:3
-             * /lib/refs.rb:6:5-6:8
+              * /lib/refs.rb:3:0-3:3
+              * /lib/refs.rb:4:0-4:3
+              * /lib/refs.rb:4:6-4:9
+              * /lib/refs.rb:5:0-5:3
+              * /lib/refs.rb:6:5-6:8
           MSG
         end
 
@@ -138,7 +138,7 @@ module Spoom
           out, _ = run_cli(PROJECT, "lsp --no-color sigs lib/sigs.rb 13 4")
           assert_equal(<<~MSG, out)
             Signature for `lib/sigs.rb:13:4`:
-             * SigsTest#bar(a: Integer, <blk>: T.untyped)
+              * SigsTest#bar(a: Integer, <blk>: T.untyped)
           MSG
         end
 
@@ -168,7 +168,7 @@ module Spoom
           out, _ = run_cli(PROJECT, "lsp --no-color types lib/types.rb 6 5")
           assert_equal(<<~MSG, out)
             Type for `lib/types.rb:6:5`:
-             * /lib/types.rb:3:6-3:14
+              * /lib/types.rb:3:6-3:14
           MSG
         end
       end
