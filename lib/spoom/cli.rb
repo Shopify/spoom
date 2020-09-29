@@ -14,7 +14,7 @@ module Spoom
       extend T::Sig
       include Spoom::Cli::CommandHelper
 
-      class_option :no_color, desc: "Don't use colors", type: :boolean
+      class_option :color, desc: "Use colors", type: :boolean, default: true
       map T.unsafe(%w[--version -v] => :__print_version)
 
       desc "bump", "bump Sorbet sigils from `false` to `true` when no errors"
@@ -40,7 +40,7 @@ module Spoom
           say(" NONE")
         else
           tree = FileTree.new(files)
-          tree.print(colors: !options[:no_color], indent_level: 2)
+          tree.print(colors: options[:color], indent_level: 2)
         end
       end
 

@@ -21,7 +21,7 @@ module Spoom
           limit = options[:limit]
           sort = options[:sort]
           code = options[:code]
-          colors = !options[:no_color]
+          colors = options[:color]
 
           unless limit || code || sort
             return Spoom::Sorbet.srb_tc(capture_err: false).last

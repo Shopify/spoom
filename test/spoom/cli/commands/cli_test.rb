@@ -22,6 +22,25 @@ module Spoom
           assert_equal("Spoom v#{Spoom::VERSION}", out&.strip)
         end
 
+        def test_display_help_long_option
+          out, _ = run_cli("", "--help")
+          assert_equal(<<~OUT, out)
+            Commands:
+              spoom --version       # show version
+              spoom bump            # bump Sorbet sigils from `false` to `true` when no e...
+              spoom config          # manage Sorbet config
+              spoom files           # list all the files typechecked by Sorbet
+              spoom help [COMMAND]  # Describe available commands or one specific command
+              spoom lsp             # send LSP requests to Sorbet
+              spoom tc              # run Sorbet and parses its output
+
+            Options:
+              [--color], [--no-color]  # Use colors
+                                       # Default: true
+
+          OUT
+        end
+
         def test_display_files_from_config
           use_sorbet_config(PROJECT, ".")
           out, _ = run_cli(PROJECT, "files --no-color")
