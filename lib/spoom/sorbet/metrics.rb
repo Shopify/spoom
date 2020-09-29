@@ -9,13 +9,7 @@ module Spoom
       DEFAULT_PREFIX = "ruby_typer.unknown.."
       SIGILS = T.let(["ignore", "false", "true", "strict", "strong", "__STDLIB_INTERNAL"], T::Array[String])
 
-      const :repo, String
-      const :sha, String
-      const :status, String
-      const :branch, String
-      const :timestamp, Integer
-      const :uuid, String
-      const :metrics, T::Hash[String, T.nilable(Integer)]
+      const :raw_metrics, T::Hash[String, T.nilable(Integer)]
 
       sig { params(path: String, prefix: String).returns(Metrics) }
       def self.parse_file(path, prefix = DEFAULT_PREFIX)
@@ -30,24 +24,18 @@ module Spoom
       sig { params(obj: T::Hash[String, T.untyped], prefix: String).returns(Metrics) }
       def self.parse_hash(obj, prefix = DEFAULT_PREFIX)
         Metrics.new(
-          repo: obj.fetch("repo"),
-          sha: obj.fetch("sha"),
-          status: obj.fetch("status"),
-          branch: obj.fetch("branch"),
-          timestamp: obj.fetch("timestamp").to_i,
-          uuid: obj.fetch("uuid"),
-          metrics: obj["metrics"].each_with_object(Hash.new(0)) do |metric, all|
+          raw_metrics: obj["metrics"].each_with_object(Hash.new(0)) do |metric, all|
             name = metric["name"]
             name = name.sub(prefix, '')
             all[name] = metric["value"].to_i
-          end,
+          end
         )
       end
 
       sig { returns(T::Hash[String, T.nilable(Integer)]) }
       def files_by_strictness
         SIGILS.each_with_object({}) do |sigil, map|
-          map[sigil] = metrics["types.input.files.sigil.#{sigil}"]
+          map[sigil] = raw_metrics["types.input.files.sigil.#{sigil}"]
         end
       end
 
@@ -58,12 +46,7 @@ module Spoom
 
       sig { params(key: String).returns(T.nilable(Integer)) }
       def [](key)
-        metrics[key]
-      end
-
-      sig { returns(String) }
-      def to_s
-        "Metrics<#{repo}-#{timestamp}-#{status}>"
+        raw_metrics[key]
       end
 
       sig { params(out: T.any(IO, StringIO)).void }
