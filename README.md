@@ -34,10 +34,12 @@ Show Sorbet config options:
 $ spoom config
 ```
 
-List the files that will be typchecked with the current Sorbet config options:
+#### Listing files
+
+List the files (and related strictness) that will be typchecked with the current Sorbet config options:
 
 ```
-$ spoom config files
+$ spoom files
 ```
 
 #### Errors sorting and filtering

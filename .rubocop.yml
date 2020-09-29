@@ -19,6 +19,8 @@ Sorbet/ValidSigil:
 
 Sorbet/TrueSigil:
   Enabled: true
+  Exclude:
+    - test/support/project/task1.rake
 
 Sorbet/EnforceSigilOrder:
   Enabled: true
