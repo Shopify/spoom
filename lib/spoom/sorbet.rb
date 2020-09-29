@@ -55,7 +55,7 @@ module Spoom
       out.split(" ")[2]
     end
 
-    sig { params(arg: String, path: String, capture_err: T::Boolean).returns(T.nilable(Metrics)) }
+    sig { params(arg: String, path: String, capture_err: T::Boolean).returns(T.nilable(T::Hash[String, Integer])) }
     def self.srb_metrics(*arg, path: '.', capture_err: false)
       metrics_file = "metrics.tmp"
       metrics_path = "#{path}/#{metrics_file}"
