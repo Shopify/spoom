@@ -1,8 +1,8 @@
 # typed: strict
 # frozen_string_literal: true
 
-require_relative "../../lib/spoom/git"
 require_relative "cli/cli_test_helper"
+require_relative "../../lib/spoom/git"
 
 require "fileutils"
 
@@ -36,6 +36,12 @@ module Spoom
           full_path = "#{self.path}/#{path}"
           FileUtils.mkdir_p(File.dirname(full_path))
           File.write(full_path, content)
+        end
+
+        sig { params(path: String).void }
+        def remove_file(path)
+          full_path = "#{self.path}/#{path}"
+          FileUtils.rm_rf(full_path)
         end
 
         sig { params(message: String, date: Time).void }
