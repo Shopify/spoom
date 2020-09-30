@@ -49,7 +49,7 @@ module Spoom
 
           files_with_errors = errors.map do |err|
             File.join(directory, err.file)
-          end.compact
+          end.compact.uniq
 
           Sorbet::Sigils.change_sigil_in_files(files_with_errors, from)
         end
