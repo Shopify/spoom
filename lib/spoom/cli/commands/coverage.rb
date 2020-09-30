@@ -7,7 +7,7 @@ require_relative '../command_helper'
 module Spoom
   module Cli
     module Commands
-      class Metrics < Thor
+      class Coverage < Thor
         include Spoom::Cli::CommandHelper
 
         default_task :snapshot
@@ -16,7 +16,7 @@ module Spoom
         def snapshot
           in_sorbet_project!
 
-          snapshot = Spoom::Snapshot.snapshot
+          snapshot = Spoom::Coverage.snapshot
           snapshot.print
         end
       end

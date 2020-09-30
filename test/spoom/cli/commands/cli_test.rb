@@ -29,10 +29,10 @@ module Spoom
               spoom --version       # show version
               spoom bump            # bump Sorbet sigils from `false` to `true` when no e...
               spoom config          # manage Sorbet config
+              spoom coverage        # collect metrics related to Sorbet coverage
               spoom files           # list all the files typechecked by Sorbet
               spoom help [COMMAND]  # Describe available commands or one specific command
               spoom lsp             # send LSP requests to Sorbet
-              spoom metrics         # collect metrics related to Sorbet
               spoom tc              # run Sorbet and parses its output
 
             Options:

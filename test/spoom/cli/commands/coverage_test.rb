@@ -8,7 +8,7 @@ require_relative "../cli_test_helper"
 module Spoom
   module Cli
     module Commands
-      class MetricsTest < Minitest::Test
+      class CoverageTest < Minitest::Test
         include Spoom::Cli::TestHelper
         extend Spoom::Cli::TestHelper
 
@@ -26,7 +26,7 @@ module Spoom
         end
 
         def test_display_metrics
-          out, _ = run_cli(PROJECT, "metrics")
+          out, _ = run_cli(PROJECT, "coverage snapshot")
           assert_equal(<<~MSG, out)
             Content:
               files: 6
@@ -49,7 +49,7 @@ module Spoom
 
         def test_display_metrics_do_not_show_errors
           use_sorbet_config(PROJECT, ".")
-          out, _ = run_cli(PROJECT, "metrics")
+          out, _ = run_cli(PROJECT, "coverage")
           assert_equal(<<~MSG, out)
             Content:
               files: 7
