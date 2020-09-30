@@ -5,7 +5,7 @@ require_relative "sigils"
 
 module Spoom
   module Sorbet
-    module Metrics
+    module MetricsParser
       extend T::Sig
 
       DEFAULT_PREFIX = "ruby_typer.unknown.."

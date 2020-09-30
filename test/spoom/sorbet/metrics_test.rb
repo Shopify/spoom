@@ -8,12 +8,12 @@ module Spoom
     class MetricsTest < Minitest::Test
       def test_parses_metrics_error
         assert_raises JSON::ParserError do
-          Spoom::Sorbet::Metrics.parse_string("")
+          Spoom::Sorbet::MetricsParser.parse_string("")
         end
       end
 
       def test_parses_metrics
-        metrics = Spoom::Sorbet::Metrics.parse_string(<<~ERR)
+        metrics = Spoom::Sorbet::MetricsParser.parse_string(<<~ERR)
           {
            "repo": "MyRepo",
            "sha": "1234",
@@ -38,7 +38,7 @@ module Spoom
       end
 
       def test_parses_metrics_and_removes_prefix
-        metrics = Spoom::Sorbet::Metrics.parse_string(<<~ERR, "metrics.")
+        metrics = Spoom::Sorbet::MetricsParser.parse_string(<<~ERR, "metrics.")
           {
            "repo": "MyRepo",
            "sha": "1234",
