@@ -29,6 +29,8 @@ module Spoom
           FileUtils.rm_rf(@path)
           FileUtils.mkdir_p(@path)
           Spoom::Git.exec("git init -q", path: @path)
+          Spoom::Git.exec("git config user.name 'spoom-tests'", path: @path)
+          Spoom::Git.exec("git config user.email 'spoom@shopify.com'", path: @path)
         end
 
         sig { params(path: String, content: String).void }
