@@ -57,6 +57,15 @@ module Spoom
       print("\n")
     end
 
+    # Print `string` with indent and newline
+    sig { params(string: T.nilable(String)).void }
+    def printl(string)
+      return unless string
+      printt
+      print(string)
+      printn
+    end
+
     # Print an indent space into `out`
     sig { void }
     def printt

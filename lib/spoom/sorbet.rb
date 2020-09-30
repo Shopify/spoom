@@ -55,13 +55,13 @@ module Spoom
       out.split(" ")[2]
     end
 
-    sig { params(arg: String, path: String, capture_err: T::Boolean).returns(T.nilable(Metrics)) }
+    sig { params(arg: String, path: String, capture_err: T::Boolean).returns(T.nilable(T::Hash[String, Integer])) }
     def self.srb_metrics(*arg, path: '.', capture_err: false)
       metrics_file = "metrics.tmp"
       metrics_path = "#{path}/#{metrics_file}"
       srb_tc(*T.unsafe(["--metrics-file=#{metrics_file}", *arg]), path: path, capture_err: capture_err)
       if File.exist?(metrics_path)
-        metrics = Spoom::Sorbet::Metrics.parse_file(metrics_path)
+        metrics = Spoom::Sorbet::MetricsParser.parse_file(metrics_path)
         File.delete(metrics_path)
         return metrics
       end

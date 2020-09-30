@@ -6,6 +6,7 @@ require "thor"
 require_relative "cli/commands/bump"
 require_relative "cli/commands/config"
 require_relative "cli/commands/lsp"
+require_relative "cli/commands/coverage"
 require_relative "cli/commands/run"
 
 module Spoom
@@ -22,6 +23,9 @@ module Spoom
 
       desc "config", "manage Sorbet config"
       subcommand "config", Spoom::Cli::Commands::Config
+
+      desc "coverage", "collect metrics related to Sorbet coverage"
+      subcommand "coverage", Spoom::Cli::Commands::Coverage
 
       desc "lsp", "send LSP requests to Sorbet"
       subcommand "lsp", Spoom::Cli::Commands::LSP

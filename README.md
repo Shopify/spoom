@@ -74,12 +74,12 @@ These options can be combined:
 $ spoom tc -s -c 7004 -l 10
 ```
 
-#### Typechecking metrics
+#### Typing coverage
 
-Show metrics about the project contents and the typing:
+Show metrics about the project contents and the typing coverage:
 
 ```
-$ spoom tc metrics
+$ spoom coverage
 ```
 
 #### Change the sigil used in files
