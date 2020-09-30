@@ -95,7 +95,7 @@ module Spoom
     sig { params(value: T.nilable(Integer), total: T.nilable(Integer)).returns(String) }
     def percent(value, total)
       return "" if value.nil? || total.nil? || total == 0
-      " (#{value * 100 / total}%)"
+      " (#{(value.to_f * 100.0 / total.to_f).round}%)"
     end
   end
 end

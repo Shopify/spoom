@@ -39,11 +39,11 @@ module Spoom
 
             Methods:
               with signature: 2 (9%)
-              without signature: 20 (90%)
+              without signature: 20 (91%)
 
             Calls:
               typed: 47 (92%)
-              untyped: 4 (7%)
+              untyped: 4 (8%)
           MSG
         end
       end
