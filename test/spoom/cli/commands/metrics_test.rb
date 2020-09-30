@@ -46,6 +46,29 @@ module Spoom
               untyped: 4 (8%)
           MSG
         end
+
+        def test_display_metrics_do_not_show_errors
+          use_sorbet_config(PROJECT, ".")
+          out, _ = run_cli(PROJECT, "metrics")
+          assert_equal(<<~MSG, out)
+            Content:
+              files: 7
+              modules: 2
+              classes: 18 (including singleton classes)
+              methods: 25
+
+            Sigils:
+              true: 7 (100%)
+
+            Methods:
+              with signature: 3 (12%)
+              without signature: 22 (88%)
+
+            Calls:
+              typed: 53 (87%)
+              untyped: 8 (13%)
+          MSG
+        end
       end
     end
   end

@@ -20,7 +20,7 @@ module Spoom
     sig { params(path: String).returns(Snapshot) }
     def self.snapshot(path: '.')
       snapshot = Snapshot.new
-      metrics = Spoom::Sorbet.srb_metrics(path: path, capture_err: false)
+      metrics = Spoom::Sorbet.srb_metrics(path: path, capture_err: true)
       return snapshot unless metrics
 
       snapshot.files = metrics["types.input.files"] || 0
