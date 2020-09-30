@@ -11,13 +11,13 @@ module Spoom
       metrics = Spoom::Sorbet.srb_metrics(path: path, capture_err: true)
       return snapshot unless metrics
 
-      snapshot.files = metrics["types.input.files"] || 0
-      snapshot.modules = metrics["types.input.modules.total"] || 0
-      snapshot.classes = metrics["types.input.classes.total"] || 0
-      snapshot.methods_with_sig = metrics["types.sig.count"] || 0
-      snapshot.methods_without_sig = (metrics["types.input.methods.total"] || 0) - snapshot.methods_with_sig
-      snapshot.calls_typed = metrics["types.input.sends.typed"] || 0
-      snapshot.calls_untyped = (metrics["types.input.sends.total"] || 0) - snapshot.calls_typed
+      snapshot.files = metrics.fetch("types.input.files", 0)
+      snapshot.modules = metrics.fetch("types.input.modules.total", 0)
+      snapshot.classes = metrics.fetch("types.input.classes.total", 0)
+      snapshot.methods_with_sig = metrics.fetch("types.sig.count", 0)
+      snapshot.methods_without_sig = metrics.fetch("types.input.methods.total", 0) - snapshot.methods_with_sig
+      snapshot.calls_typed = metrics.fetch("types.input.sends.typed", 0)
+      snapshot.calls_untyped = metrics.fetch("types.input.sends.total", 0) - snapshot.calls_typed
 
       Snapshot::STRICTNESSES.each do |strictness|
         next unless metrics.key?("types.input.files.sigil.#{strictness}")
