@@ -48,7 +48,8 @@ module Spoom
           errors = Sorbet::Errors::Parser.parse_string(output)
 
           files_with_errors = errors.map do |err|
-            File.join(directory, err.file) if File.file?(err.file)
+            path = err.file
+            File.join(directory, path) if path && File.file?(path)
           end.compact
 
           Sorbet::Sigils.change_sigil_in_files(files_with_errors, from)
