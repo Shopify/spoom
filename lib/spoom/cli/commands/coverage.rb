@@ -17,7 +17,7 @@ module Spoom
         def snapshot
           in_sorbet_project!
 
-          snapshot = Spoom::Coverage.snapshot
+          snapshot = Spoom::Coverage.snapshot(path: exec_path)
           snapshot.print
         end
 
@@ -27,15 +27,16 @@ module Spoom
         option :save_dir, type: :string
         def timeline
           in_sorbet_project!
+          path = exec_path
 
-          sha_before = Spoom::Git.last_commit
+          sha_before = Spoom::Git.last_commit(path: path)
           unless sha_before
             say_error("Not in a git repository")
             $stderr.puts "\nSpoom needs to checkout into your previous commits to build the timeline."
             exit(1)
           end
 
-          unless Spoom::Git.workdir_clean?
+          unless Spoom::Git.workdir_clean?(path: path)
             say_error("Uncommited changes")
             $stderr.puts "\nSpoom needs to checkout into your previous commits to build the timeline."
             $stderr.puts "\nPlease git commit or git stash your changes then try again."
@@ -49,12 +50,12 @@ module Spoom
           to = parse_date(options[:to], "--to")
 
           unless from
-            intro_sha = Spoom::Git.sorbet_intro_commit
+            intro_sha = Spoom::Git.sorbet_intro_commit(path: path)
             intro_sha = T.must(intro_sha) # we know it's in there since in_sorbet_project!
-            from = Spoom::Git.commit_date(intro_sha)
+            from = Spoom::Git.commit_date(intro_sha, path: path)
           end
 
-          timeline = Spoom::Timeline.new(from, to)
+          timeline = Spoom::Timeline.new(from, to, path: path)
           ticks = timeline.ticks
 
           if ticks.empty?
@@ -63,11 +64,11 @@ module Spoom
           end
 
           ticks.each_with_index do |sha, i|
-            date = Spoom::Git.commit_date(sha)
+            date = Spoom::Git.commit_date(sha, path: path)
             puts "Analyzing commit #{sha} - #{date&.strftime('%F')} (#{i + 1} / #{ticks.size})"
 
-            Spoom::Git.checkout(sha)
-            snapshot = Spoom::Coverage.snapshot
+            Spoom::Git.checkout(sha, path: path)
+            snapshot = Spoom::Coverage.snapshot(path: path)
             snapshot.commit_sha = sha
             snapshot.commit_timestamp = date&.strftime('%s').to_i
             snapshot.print(indent_level: 2)
@@ -78,7 +79,7 @@ module Spoom
             puts "  Snapshot data saved under #{file}\n\n"
             File.write(file, snapshot.serialize.to_json)
           end
-          Spoom::Git.checkout(sha_before)
+          Spoom::Git.checkout(sha_before, path: path)
         end
 
         no_commands do
