@@ -281,6 +281,23 @@ module Spoom
               * /lib/types.rb:2:6-2:14
           MSG
         end
+
+        # --path
+
+        def test_lsp_with_path_option
+          @project.write("lib/find.rb", <<~RB)
+            # typed: true
+
+            class Test; end
+          RB
+          project = spoom_project("test_lsp_with_path_option")
+          out, _ = project.bundle_exec("spoom lsp -p #{@project.path} --no-color find Test")
+          assert_equal(<<~MSG, out)
+            Symbols matching `Test`:
+              class Test (/lib/find.rb:2:0-2:10)
+          MSG
+          project.destroy
+        end
       end
     end
   end

@@ -106,7 +106,7 @@ module Spoom
 
       sig { override.params(printer: SymbolPrinter).void }
       def accept_printer(printer)
-        printer.print_colored("#{uri.from_uri}:", :light_black)
+        printer.print_colored("#{printer.clean_uri(uri)}:", :light_black)
         printer.print_object(range)
       end
 
@@ -262,15 +262,23 @@ module Spoom
     class SymbolPrinter < Printer
       extend T::Sig
 
-      attr_accessor :seen
+      attr_accessor :seen, :prefix
 
-      sig { params(out: T.any(IO, StringIO), colors: T::Boolean, indent_level: Integer).void }
-      def initialize(out: $stdout, colors: true, indent_level: 0)
+      sig do
+        params(
+          out: T.any(IO, StringIO),
+          colors: T::Boolean,
+          indent_level: Integer,
+          prefix: T.nilable(String)
+        ).void
+      end
+      def initialize(out: $stdout, colors: true, indent_level: 0, prefix: nil)
         super(out: out, colors: colors, indent_level: indent_level)
         @seen = Set.new
         @out = out
         @colors = colors
         @indent_level = indent_level
+        @prefix = prefix
       end
 
       sig { params(object: T.nilable(PrintableSymbol)).void }
@@ -282,6 +290,12 @@ module Spoom
       sig { params(objects: T::Array[PrintableSymbol]).void }
       def print_objects(objects)
         objects.each { |object| print_object(object) }
+      end
+
+      sig { params(uri: String).returns(String) }
+      def clean_uri(uri)
+        return uri unless prefix
+        uri.delete_prefix(prefix)
       end
 
       sig { params(objects: T::Array[PrintableSymbol]).void }
