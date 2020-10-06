@@ -119,6 +119,26 @@ module Spoom
                 a.rake (ignore)
           MSG
         end
+
+        def test_display_files_with_path_option
+          project = spoom_project("test_files")
+          project.sorbet_config(".")
+          project.write("lib/file1.rb", "# typed: true")
+          project.write("lib/file2.rb", "# typed: true")
+
+          out, _ = @project.bundle_exec("spoom files --no-color --path #{project.path}")
+          assert_equal(<<~MSG, out)
+            Files matching `/tmp/spoom/tests/test_files/sorbet/config`:
+              /
+                tmp/
+                  spoom/
+                    tests/
+                      test_files/
+                        lib/
+                          file1.rb (true)
+                          file2.rb (true)
+          MSG
+        end
       end
     end
   end

@@ -37,10 +37,12 @@ module Spoom
       desc "files", "list all the files typechecked by Sorbet"
       def files
         in_sorbet_project!
-        config = Spoom::Sorbet::Config.parse_file(Spoom::Config::SORBET_CONFIG)
-        files = Spoom::Sorbet.srb_files(config)
 
-        say("Files matching `#{Spoom::Config::SORBET_CONFIG}`:")
+        path = exec_path
+        config = Spoom::Sorbet::Config.parse_file(sorbet_config)
+        files = Spoom::Sorbet.srb_files(config, path: path)
+
+        say("Files matching `#{sorbet_config}`:")
         if files.empty?
           say(" NONE")
         else
