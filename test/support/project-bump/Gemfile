@@ -1,6 +1,0 @@
-# typed: true
-# frozen_string_literal: true
-
-source("https://rubygems.org")
-
-gem('spoom', path: '../../../')

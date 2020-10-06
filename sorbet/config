@@ -1,3 +1,2 @@
 .
 --ignore=vendor/
---ignore=test/support/project/

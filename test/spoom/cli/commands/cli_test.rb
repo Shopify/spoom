@@ -1,29 +1,36 @@
 # typed: true
 # frozen_string_literal: true
 
-require_relative "../cli_test_helper"
+require "test_helper"
 
 module Spoom
   module Cli
     module Commands
       class CliTest < Minitest::Test
-        include Spoom::Cli::TestHelper
-        extend Spoom::Cli::TestHelper
+        include Spoom::TestHelper
+
+        def setup
+          @project = spoom_project("test_cli")
+        end
+
+        def teardown
+          @project.destroy
+        end
 
         PROJECT = "project"
 
         def test_display_current_version_short_option
-          out, _ = run_cli("", "-v")
+          out, _ = @project.bundle_exec("spoom -v")
           assert_equal("Spoom v#{Spoom::VERSION}", out&.strip)
         end
 
         def test_display_current_version_long_option
-          out, _ = run_cli("", "--version")
+          out, _ = @project.bundle_exec("spoom --version")
           assert_equal("Spoom v#{Spoom::VERSION}", out&.strip)
         end
 
         def test_display_help_long_option
-          out, _ = run_cli("", "--help")
+          out, _ = @project.bundle_exec("spoom --help")
           assert_equal(<<~OUT, out)
             Commands:
               spoom --version       # show version
@@ -43,49 +50,71 @@ module Spoom
         end
 
         def test_display_files_from_config
-          use_sorbet_config(PROJECT, ".")
-          out, _ = run_cli(PROJECT, "files --no-color")
+          @project.write("test/a.rb", "# typed: ignore")
+          @project.write("test/b.rb", "# typed: false")
+          @project.write("lib/c.rb", "# typed: true")
+          @project.write("lib/d.rb", "# typed: strict")
+          @project.write("lib/e.rb", "# typed: strong")
+          @project.write("lib/f.rb", "# typed: __STDLIB_INTERNAL")
+          @project.sorbet_config(".")
+          out, _ = @project.bundle_exec("spoom files --no-color")
           assert_equal(<<~MSG, out)
             Files matching `sorbet/config`:
-              errors/
-                errors.rb (true)
               lib/
-                defs.rb (true)
-                hover.rb (true)
-                refs.rb (true)
-                sigs.rb (true)
-                symbols.rb (true)
-                types.rb (true)
+                c.rb (true)
+                d.rb (strict)
+                e.rb (strong)
+                f.rb (__STDLIB_INTERNAL)
+              test/
+                a.rb (ignore)
+                b.rb (false)
           MSG
         end
 
         def test_display_files_from_config_with_ignored_files
-          use_sorbet_config(PROJECT, <<~CFG)
+          @project.write("test/a.rb", "# typed: ignore")
+          @project.write("test/b.rb", "# typed: false")
+          @project.write("lib/c.rb", "# typed: true")
+          @project.write("lib/d.rb", "# typed: strict")
+          @project.write("lib/e.rb", "# typed: strong")
+          @project.write("lib/f.rb", "# typed: __STDLIB_INTERNAL")
+          @project.sorbet_config(<<~CFG)
             .
-            --ignore=efs
-            --ignore=errors
+            --ignore=test
           CFG
-          out, _ = run_cli(PROJECT, "files --no-color")
+          out, _ = @project.bundle_exec("spoom files --no-color")
           assert_equal(<<~MSG, out)
             Files matching `sorbet/config`:
               lib/
-                hover.rb (true)
-                sigs.rb (true)
-                symbols.rb (true)
-                types.rb (true)
+                c.rb (true)
+                d.rb (strict)
+                e.rb (strong)
+                f.rb (__STDLIB_INTERNAL)
           MSG
         end
 
         def test_display_files_from_config_with_allowed_exts
-          use_sorbet_config(PROJECT, <<~CFG)
+          @project.write("test/a.rake", "# typed: ignore")
+          @project.write("test/b.rbi", "# typed: false")
+          @project.write("lib/c.rbi", "# typed: true")
+          @project.write("lib/d.ru", "# typed: strict")
+          @project.write("lib/e.rb", "# typed: strong")
+          @project.write("lib/f.rb", "# typed: __STDLIB_INTERNAL")
+          @project.sorbet_config(<<~CFG)
             .
             --allowed-extension=.rake
+            --allowed-extension=.ru
+            --allowed-extension=.rb
           CFG
-          out, _ = run_cli(PROJECT, "files --no-color")
+          out, _ = @project.bundle_exec("spoom files --no-color")
           assert_equal(<<~MSG, out)
             Files matching `sorbet/config`:
-              task1.rake (false)
-              task2.rake (strong)
+              lib/
+                d.ru (strict)
+                e.rb (strong)
+                f.rb (__STDLIB_INTERNAL)
+              test/
+                a.rake (ignore)
           MSG
         end
       end

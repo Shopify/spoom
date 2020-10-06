@@ -3,36 +3,32 @@
 
 require "pathname"
 
-require_relative "../cli_test_helper"
+require "test_helper"
 
 module Spoom
   module Cli
     module Commands
       class ConfigTest < Minitest::Test
-        include Spoom::Cli::TestHelper
-        extend Spoom::Cli::TestHelper
+        include Spoom::TestHelper
 
-        PROJECT = "project"
-
-        before_all do
-          install_sorbet(PROJECT)
+        def setup
+          @project = spoom_project("test_config")
         end
 
         def teardown
-          use_sorbet_config(PROJECT, nil)
+          @project.destroy
         end
 
         def test_return_error_if_no_sorbet_config
-          use_sorbet_config(PROJECT, nil)
-          _, err = run_cli(PROJECT, "config")
+          _, err, _ = @project.bundle_exec("spoom config")
           assert_equal(<<~MSG, err)
             Error: not in a Sorbet project (no sorbet/config)
           MSG
         end
 
         def test_display_empty_config
-          use_sorbet_config(PROJECT, "")
-          out, _ = run_cli(PROJECT, "config")
+          @project.sorbet_config("")
+          out, _ = @project.bundle_exec("spoom config")
           assert_equal(<<~MSG, out)
             Found Sorbet config at `sorbet/config`.
 
@@ -49,8 +45,8 @@ module Spoom
         end
 
         def test_display_simple_config
-          use_sorbet_config(PROJECT, ".")
-          out, _ = run_cli(PROJECT, "config")
+          @project.sorbet_config(".")
+          out, _ = @project.bundle_exec("spoom config")
           assert_equal(<<~MSG, out)
             Found Sorbet config at `sorbet/config`.
 
@@ -67,13 +63,13 @@ module Spoom
         end
 
         def test_display_multi_config
-          use_sorbet_config(PROJECT, <<~CFG)
+          @project.sorbet_config(<<~CFG)
             lib
             --dir=test
             --dir
             tasks
           CFG
-          out, _ = run_cli(PROJECT, "config")
+          out, _ = @project.bundle_exec("spoom config")
           assert_equal(<<~MSG, out)
             Found Sorbet config at `sorbet/config`.
 
@@ -92,13 +88,13 @@ module Spoom
         end
 
         def test_display_config_with_ignored_files
-          use_sorbet_config(PROJECT, <<~CFG)
+          @project.sorbet_config(<<~CFG)
             lib/project.rb
             --ignore=lib/main
             --ignore
             test
           CFG
-          out, _ = run_cli(PROJECT, "config")
+          out, _ = @project.bundle_exec("spoom config")
           assert_equal(<<~MSG, out)
             Found Sorbet config at `sorbet/config`.
 
@@ -116,7 +112,7 @@ module Spoom
         end
 
         def test_display_config_with_allowed_extensions
-          use_sorbet_config(PROJECT, <<~CFG)
+          @project.sorbet_config(<<~CFG)
             lib/project.rb
             --ignore=lib/main
             --ignore
@@ -126,7 +122,7 @@ module Spoom
             --allowed-extension=.rake
             --allowed-extension=.ru
           CFG
-          out, _ = run_cli(PROJECT, "config")
+          out, _ = @project.bundle_exec("spoom config")
           assert_equal(<<~MSG, out)
             Found Sorbet config at `sorbet/config`.
 
