@@ -82,6 +82,24 @@ Show metrics about the project contents and the typing coverage:
 $ spoom coverage
 ```
 
+Show typing coverage evolution based on the commits history:
+
+```
+$ spoom coverage timeline
+```
+
+Show typing coverage evolution based on the commits history between specific dates:
+
+```
+$ spoom coverage timeline --from YYYY-MM-DD --to YYYY-MM-DD
+```
+
+Save the typing coverage evolution as JSON in a specific directory:
+
+```
+$ spoom coverage timeline --save-dir data/
+```
+
 #### Change the sigil used in files
 
 Bump the strictness from all files currently at `typed: false` to `typed: true` where it does not create typechecking errors:

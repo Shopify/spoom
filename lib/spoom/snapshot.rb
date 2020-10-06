@@ -30,6 +30,8 @@ module Spoom
     class Snapshot < T::Struct
       extend T::Sig
 
+      prop :commit_sha, T.nilable(String), default: nil
+      prop :commit_timestamp, T.nilable(Integer), default: nil
       prop :files, Integer, default: 0
       prop :modules, Integer, default: 0
       prop :classes, Integer, default: 0
