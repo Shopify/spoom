@@ -1,63 +1,68 @@
 # typed: true
 # frozen_string_literal: true
 
-require "pathname"
-
-require_relative "../cli_test_helper"
+require "test_helper"
 
 module Spoom
   module Cli
     module Commands
       class LSPTest < Minitest::Test
-        include Spoom::Cli::TestHelper
-        extend Spoom::Cli::TestHelper
-
-        PROJECT = "project"
-
-        before_all do
-          install_sorbet(PROJECT)
-        end
+        include Spoom::TestHelper
 
         def setup
-          use_sorbet_config(PROJECT, <<~CFG)
-            .
-            --ignore=errors
-          CFG
+          @project = spoom_project("test_lsp")
+          @project.sorbet_config(".")
         end
 
         def teardown
-          use_sorbet_config(PROJECT, nil)
+          @project.destroy
         end
 
         # Errors
 
         def test_cant_open_without_config
-          use_sorbet_config(PROJECT, nil)
-          _, err = run_cli(PROJECT, "lsp --no-color find Foo")
+          @project.remove("sorbet/config")
+          _, err = @project.bundle_exec("spoom lsp --no-color find Foo")
           assert_equal(<<~MSG, err)
             Error: not in a Sorbet project (no sorbet/config)
           MSG
         end
 
         def test_cant_open_with_errors
-          use_sorbet_config(PROJECT, "errors")
-          _, err = run_cli(PROJECT, "lsp --no-color find Foo")
+          @project.write("errors.rb", <<~RB)
+            # typed: true
+
+            class Foo
+              sig { params(a: String).returns(String) }
+              def foo(a)
+              end
+            end
+
+            Foo.new.foo
+            Bar.new.bar
+          RB
+          _, err = @project.bundle_exec("spoom lsp --no-color find Foo")
           assert_equal(<<~MSG, err)
             Error: Sorbet returned typechecking errors for `/errors.rb`
-              9:4-9:15: Wrong number of arguments for constructor. Expected: `0`, got: `1` (7004)
-              10:9-10:10: Method `c` does not exist on `T.class_of(<root>)` (7003)
-              10:0-10:11: Too many arguments provided for method `Foo#foo`. Expected: `1`, got: `2` (7004)
-              4:2-4:37: Method `sig` does not exist on `T.class_of(Foo)` (7003)
-              4:8-4:24: Method `params` does not exist on `T.class_of(Foo)` (7003)
-              4:20-4:23: Unable to resolve constant `Bar` (5002)
-              4:33-4:34: Unable to resolve constant `C` (fix available) (5002)
+              8:0-8:11: Not enough arguments provided for method `Foo#foo`. Expected: `1`, got: `0` (7004)
+              4:2-5:5: Returning value that does not conform to method result type (7005)
+              3:2-3:43: Method `sig` does not exist on `T.class_of(Foo)` (7003)
+              3:8-3:25: Method `params` does not exist on `T.class_of(Foo)` (7003)
+              9:0-9:3: Unable to resolve constant `Bar` (fix available) (5002)
           MSG
         end
 
         # Defs
 
         def test_list_defs
-          out, _ = run_cli(PROJECT, "lsp --no-color defs lib/defs.rb 3 6")
+          @project.write("lib/defs.rb", <<~RB)
+            # typed: true
+            # frozen_string_literal: true
+
+            adef = ARGV.first
+            puts adef
+          RB
+          out, _ = @project.bundle_exec("spoom lsp --no-color defs lib/defs.rb 3 6")
           assert_equal(<<~MSG, out)
             Definitions for `lib/defs.rb:3:6`:
               * /lib/defs.rb:3:7-3:17
@@ -67,7 +72,8 @@ module Spoom
         # Hover
 
         def test_list_hover_empty
-          out, _ = run_cli(PROJECT, "lsp --no-color hover lib/hover.rb 0 0")
+          @project.write("lib/hover.rb")
+          out, _ = @project.bundle_exec("spoom lsp --no-color hover lib/hover.rb 0 0")
           assert_equal(<<~MSG, out)
             Hovering `lib/hover.rb:0:0`:
             <no data>
@@ -75,34 +81,78 @@ module Spoom
         end
 
         def test_list_hover_class
-          out, _ = run_cli(PROJECT, "lsp --no-color hover lib/hover.rb 3 12")
+          @project.write("lib/hover.rb", <<~RB)
+            # typed: true
+
+            class HoverTest; end
+          RB
+          out, _ = @project.bundle_exec("spoom lsp --no-color hover lib/hover.rb 2 12")
           assert_equal(<<~MSG, out)
-            Hovering `lib/hover.rb:3:12`:
+            Hovering `lib/hover.rb:2:12`:
             T.class_of(HoverTest)
           MSG
         end
 
         def test_list_hover_def
-          out, _ = run_cli(PROJECT, "lsp --no-color hover lib/hover.rb 7 8")
+          @project.write("lib/hover.rb", <<~RB)
+            # typed: true
+
+            class HoverTest
+              extend T::Sig
+
+              sig { params(a: Integer).returns(String) }
+              def foo(a)
+                a.to_s
+              end
+            end
+           RB
+          out, _ = @project.bundle_exec("spoom lsp --no-color hover lib/hover.rb 6 8")
           assert_equal(<<~MSG, out)
-            Hovering `lib/hover.rb:7:8`:
+            Hovering `lib/hover.rb:6:8`:
             sig {params(a: Integer).returns(String)}
             def foo(a); end
-          MSG
+           MSG
         end
 
         def test_list_hover_param
-          out, _ = run_cli(PROJECT, "lsp --no-color hover lib/hover.rb 7 11")
+          @project.write("lib/hover.rb", <<~RB)
+            # typed: true
+
+            class HoverTest
+              extend T::Sig
+
+              sig { params(a: Integer).returns(String) }
+              def foo(a)
+                a.to_s
+              end
+            end
+          RB
+          out, _ = @project.bundle_exec("spoom lsp --no-color hover lib/hover.rb 6 11")
           assert_equal(<<~MSG, out)
-            Hovering `lib/hover.rb:7:11`:
+            Hovering `lib/hover.rb:6:11`:
             Integer
           MSG
         end
 
         def test_list_hover_call
-          out, _ = run_cli(PROJECT, "lsp hover lib/hover.rb 13 4")
+          @project.write("lib/hover.rb", <<~RB)
+            # typed: true
+
+            class HoverTest
+              extend T::Sig
+
+              sig { params(a: Integer).returns(String) }
+              def foo(a)
+                a.to_s
+              end
+            end
+
+            ht = HoverTest.new
+            ht.foo(42)
+          RB
+          out, _ = @project.bundle_exec("spoom lsp hover lib/hover.rb 12 4")
           assert_equal(<<~MSG, out)
-            Hovering `lib/hover.rb:13:4`:
+            Hovering `lib/hover.rb:12:4`:
             sig {params(a: Integer).returns(String)}
             def foo(a); end
           MSG
@@ -111,33 +161,61 @@ module Spoom
         # Find
 
         def test_find
-          out, _ = run_cli(PROJECT, "lsp --no-color find Hover")
+          @project.write("lib/find.rb", <<~RB)
+            # typed: true
+
+            class Test; end
+          RB
+          out, _ = @project.bundle_exec("spoom lsp --no-color find Test")
           assert_equal(<<~MSG, out)
-            Symbols matching `Hover`:
-              class HoverTest (/lib/hover.rb:3:0-3:15)
+            Symbols matching `Test`:
+              class Test (/lib/find.rb:2:0-2:10)
           MSG
         end
 
         # Refs
 
         def test_list_refs
-          out, _ = run_cli(PROJECT, "lsp --no-color refs lib/refs.rb 2 1")
+          @project.write("lib/refs.rb", <<~RB)
+            # typed: true
+
+            ref = ARGV.first
+            ref = ref.downcase
+            ref.sub!("name", "Alex")
+            puts ref
+          RB
+          out, _ = @project.bundle_exec("spoom lsp --no-color refs lib/refs.rb 2 1")
           assert_equal(<<~MSG, out)
             References to `lib/refs.rb:2:1`:
+              * /lib/refs.rb:2:0-2:3
               * /lib/refs.rb:3:0-3:3
+              * /lib/refs.rb:3:6-3:9
               * /lib/refs.rb:4:0-4:3
-              * /lib/refs.rb:4:6-4:9
-              * /lib/refs.rb:5:0-5:3
-              * /lib/refs.rb:6:5-6:8
+              * /lib/refs.rb:5:5-5:8
           MSG
         end
 
         # Sigs
 
         def test_list_sigs
-          out, _ = run_cli(PROJECT, "lsp --no-color sigs lib/sigs.rb 13 4")
+          @project.write("lib/sigs.rb", <<~RB)
+            # typed: true
+
+            class SigsTest
+              extend T::Sig
+
+              sig { params(a: Integer).returns(String) }
+              def bar(a)
+                a.to_s
+              end
+            end
+
+            y = SigsTest.new
+            y.bar(42)
+          RB
+          out, _ = @project.bundle_exec("spoom lsp --no-color sigs lib/sigs.rb 12 4")
           assert_equal(<<~MSG, out)
-            Signature for `lib/sigs.rb:13:4`:
+            Signature for `lib/sigs.rb:12:4`:
               * SigsTest#bar(a: Integer, <blk>: T.untyped)
           MSG
         end
@@ -145,30 +223,62 @@ module Spoom
         # Symbols
 
         def test_list_symbols
-          out, _ = run_cli(PROJECT, "lsp --no-color symbols lib/symbols.rb")
+          @project.write("lib/symbols.rb", <<~RB)
+            # typed: true
+
+            module Symbols
+              class A
+                attr_reader :a, :b
+
+                def foo; end
+
+                def bar; end
+
+                def self.baz; end
+              end
+
+              class B < A
+                include Symbols
+                class C; end
+              end
+            end
+
+            module OtherModule; end
+            class OtherClass; end
+          RB
+          out, _ = @project.bundle_exec("spoom lsp --no-color symbols lib/symbols.rb")
           assert_equal(<<~MSG, out)
             Symbols from `lib/symbols.rb`:
-              module Symbols (3:0-3:14)
-                class A (4:2-4:9)
-                  def a (5:4-5:22)
-                  def b (5:4-5:22)
-                  def bar (9:4-9:11)
-                  def foo (7:4-7:11)
-                  def self.baz (11:4-11:16)
-                class B (14:2-14:13)
-                  class C (16:4-16:11)
-              module OtherModule (20:0-20:18)
-              class OtherClass (21:0-21:16)
+              module Symbols (2:0-2:14)
+                class A (3:2-3:9)
+                  def a (4:4-4:22)
+                  def b (4:4-4:22)
+                  def bar (8:4-8:11)
+                  def foo (6:4-6:11)
+                  def self.baz (10:4-10:16)
+                class B (13:2-13:13)
+                  class C (15:4-15:11)
+              module OtherModule (19:0-19:18)
+              class OtherClass (20:0-20:16)
           MSG
         end
 
         # Types
 
         def test_list_types
-          out, _ = run_cli(PROJECT, "lsp --no-color types lib/types.rb 6 5")
+          @project.write("lib/types.rb", <<~RB)
+            # typed: true
+
+            class SomeType
+            end
+
+            a = SomeType.new
+            puts a
+          RB
+          out, _ = @project.bundle_exec("spoom lsp --no-color types lib/types.rb 5 5")
           assert_equal(<<~MSG, out)
-            Type for `lib/types.rb:6:5`:
-              * /lib/types.rb:3:6-3:14
+            Type for `lib/types.rb:5:5`:
+              * /lib/types.rb:2:6-2:14
           MSG
         end
       end

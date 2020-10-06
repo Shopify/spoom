@@ -6,11 +6,7 @@ require "test_helper"
 module Spoom
   module Sorbet
     class SigilsTest < Minitest::Test
-      TEMPORARY_DIRECTORY = "test-sigils"
-
-      def teardown
-        FileUtils.remove_dir(TEMPORARY_DIRECTORY, true)
-      end
+      include Spoom::TestHelper
 
       def test_sigil_returns_the_sigil_from_a_strictness_string
         sigil = Sigils.sigil_string("false")
@@ -121,106 +117,58 @@ module Spoom
       end
 
       def test_files_with_sigil_strictness_nested_directory
-        content_false = <<~STR
-          # typed: false
-        STR
+        project = spoom_project("test_sigils")
+        project.write("false.rb", "# typed: false")
+        project.write("true.rb", "# typed: true")
+        project.write("nested/false.rb", "# typed: false")
+        project.write("nested/true.rb", "# typed: true")
 
-        content_true = <<~STR
-          # typed: true
-        STR
-
-        FileUtils.mkdir_p(TEMPORARY_DIRECTORY)
-        FileUtils.mkdir_p("#{TEMPORARY_DIRECTORY}/nested")
-
-        File.write("#{TEMPORARY_DIRECTORY}/false.tmp", content_false)
-        File.write("#{TEMPORARY_DIRECTORY}/true.tmp", content_true)
-
-        File.write("#{TEMPORARY_DIRECTORY}/nested/false.tmp", content_false)
-        File.write("#{TEMPORARY_DIRECTORY}/nested/true.tmp", content_true)
-
-        files = Sigils.files_with_sigil_strictness(TEMPORARY_DIRECTORY, "false", ".tmp").sort
+        files = Sigils.files_with_sigil_strictness(project.path, "false").sort
 
         expected_files = [
-          "#{File.expand_path(TEMPORARY_DIRECTORY)}/false.tmp",
-          "#{File.expand_path(TEMPORARY_DIRECTORY)}/nested/false.tmp",
+          "#{project.path}/false.rb",
+          "#{project.path}/nested/false.rb",
         ]
-
         assert_equal(expected_files, files)
+
+        project.destroy
       end
 
       def test_file_strictness_with_valid_sigil
-        content = <<~STR
-          # typed: true
-          class A; end
-        STR
-
-        File.write("file.tmp", content)
-
-        strictness = Sigils.file_strictness("file.tmp")
-
-        File.delete("file.tmp")
-
+        project = spoom_project("test_sigils")
+        project.write("file.rb", "# typed: true")
+        strictness = Sigils.file_strictness("#{project.path}/file.rb")
         assert_equal("true", strictness)
       end
 
       def test_file_strictness_with_invalid_sigil
-        content = <<~STR
-          # typed: asdf
-          class A; end
-        STR
-
-        File.write("file.tmp", content)
-
-        strictness = Sigils.file_strictness("file.tmp")
-
-        File.delete("file.tmp")
-
+        project = spoom_project("test_sigils")
+        project.write("file.rb", "# typed: asdf")
+        strictness = Sigils.file_strictness("#{project.path}/file.rb")
         assert_equal("asdf", strictness)
       end
 
       def test_change_sigil_in_file_false_to_true
-        content = <<~STR
-          # typed: false
-          class A; end
-        STR
-
-        File.write("file.tmp", content)
-
-        updated = Sigils.change_sigil_in_file("file.tmp", "true")
-
-        new_strictness = Sigils.file_strictness("file.tmp")
-
-        File.delete("file.tmp")
-
-        assert_equal("true", new_strictness)
+        project = spoom_project("test_sigils")
+        project.write("file.rb", "# typed: false")
+        updated = Sigils.change_sigil_in_file("#{project.path}/file.rb", "true")
         assert(updated)
+        strictness = Sigils.file_strictness("#{project.path}/file.rb")
+        assert_equal("true", strictness)
       end
 
       def test_change_sigil_in_files_false_to_true
-        content1 = <<~STR
-          # typed: false
-          class A; end
-        STR
+        project = spoom_project("test_sigils")
+        project.write("file1.rb", "# typed: false")
+        project.write("file2.rb", "# typed: ignore")
 
-        content2 = <<~STR
-          # typed: ignore
-          class B; end
-        STR
+        changed_files = Sigils.change_sigil_in_files(["#{project.path}/file1.rb", "#{project.path}/file2.rb"], "true")
+        assert_equal(["#{project.path}/file1.rb", "#{project.path}/file2.rb"], changed_files)
 
-        File.write("file1.tmp", content1)
-        File.write("file2.tmp", content2)
-
-        changed_files = Sigils.change_sigil_in_files(["file1.tmp", "file2.tmp"], "true")
-
-        new_strictness1 = Sigils.file_strictness("file1.tmp")
-        new_strictness2 = Sigils.file_strictness("file2.tmp")
-
-        File.delete("file1.tmp")
-        File.delete("file2.tmp")
-
-        assert_equal(["file1.tmp", "file2.tmp"], changed_files)
-        assert_equal("true", new_strictness1)
-        assert_equal("true", new_strictness2)
+        strictness1 = Sigils.file_strictness("#{project.path}/file1.rb")
+        strictness2 = Sigils.file_strictness("#{project.path}/file2.rb")
+        assert_equal("true", strictness1)
+        assert_equal("true", strictness2)
       end
     end
   end

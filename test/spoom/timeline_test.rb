@@ -2,13 +2,28 @@
 # frozen_string_literal: true
 
 require "test_helper"
-require_relative "git_test_helper"
-require_relative "../../lib/spoom/timeline.rb"
 
 module Spoom
   module Sorbet
     class TimelineTest < Minitest::Test
-      include Spoom::Git::TestHelper
+      include Spoom::TestHelper
+
+      def setup
+        @project = spoom_project("test_git")
+        @project.git_init
+        @project.write("sorbet/config", "")
+        @project.commit("commit 1", date: Time.parse("2010-01-02 03:04:05"))
+        @project.write("file2", "")
+        @project.commit("commit 2", date: Time.parse("2010-04-01 03:04:05"))
+        @project.write("file3", "")
+        @project.commit("commit 3", date: Time.parse("2010-06-30 03:04:05"))
+        @project.write("file4", "")
+        @project.commit("commit 4", date: Time.parse("2011-01-02 03:04:05"))
+      end
+
+      def teardown
+        @project.destroy
+      end
 
       def test_timeline_months
         from = Time.parse("2010-01-02 03:04:05")
@@ -18,12 +33,10 @@ module Spoom
       end
 
       def test_timeline_commits_for_dates
-        repo = test_repo("test_timeline_commits_for_dates")
-
         timeline = Spoom::Timeline.new(
           Time.parse("2010-01-01 00:00:00"),
           Time.parse("2020-01-01 00:00:00"),
-          path: repo.path
+          path: @project.path
         )
 
         dates = [
@@ -46,35 +59,15 @@ module Spoom
 
         dates << Time.parse("2011-01-01 00:00:00")
         assert_equal(4, timeline.commits_for_dates(dates).size)
-
-        repo.destroy
       end
 
       def test_timeline_ticks
-        repo = test_repo("test_timeline_ticks")
-
         timeline = Spoom::Timeline.new(
           Time.parse("2010-01-01 00:00:00"),
           Time.parse("2020-01-01 00:00:00"),
-          path: repo.path
+          path: @project.path
         )
         assert_equal(4, timeline.ticks.size)
-        repo.destroy
-      end
-
-      private
-
-      def test_repo(name)
-        repo = repo(name)
-        repo.write_file("sorbet/config", "")
-        repo.commit("commit 1", date: Time.parse("2010-01-02 03:04:05"))
-        repo.write_file("file2", "")
-        repo.commit("commit 2", date: Time.parse("2010-04-01 03:04:05"))
-        repo.write_file("file3", "")
-        repo.commit("commit 3", date: Time.parse("2010-06-30 03:04:05"))
-        repo.write_file("file4", "")
-        repo.commit("commit 4", date: Time.parse("2011-01-02 03:04:05"))
-        repo
       end
     end
   end

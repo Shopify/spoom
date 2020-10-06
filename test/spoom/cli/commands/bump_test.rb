@@ -1,131 +1,98 @@
 # typed: true
 # frozen_string_literal: true
 
-require 'pathname'
-
-require_relative "../cli_test_helper"
+require "test_helper"
 
 module Spoom
   module Cli
     module Commands
       class BumpTest < Minitest::Test
-        include Spoom::Cli::TestHelper
-        extend Spoom::Cli::TestHelper
-
-        PROJECT = "project-bump"
-        TEMPORARY_DIRECTORY = "#{TEST_PROJECTS_PATH}/#{PROJECT}/test-bump"
-
-        before_all do
-          install_sorbet(PROJECT)
-        end
+        include Spoom::TestHelper
 
         def setup
-          use_sorbet_config(PROJECT, <<~CFG)
-            .
-          CFG
+          @project = spoom_project("test_bump")
+          @project.sorbet_config(".")
         end
 
         def teardown
-          FileUtils.remove_dir(TEMPORARY_DIRECTORY, true)
+          @project.destroy
         end
 
         def test_bump_files_one_error_no_bump_one_no_error_bump
-          content1 = <<~STR
+          @project.write("file1.rb", <<~RB)
             # typed: false
             class A; end
-          STR
-
-          content2 = <<~STR
+          RB
+          @project.write("file2.rb", <<~RB)
             # typed: false
             T.reveal_type(1)
-          STR
+          RB
 
-          FileUtils.mkdir_p(TEMPORARY_DIRECTORY)
+          @project.bundle_exec("spoom bump")
 
-          File.write("#{TEMPORARY_DIRECTORY}/file1.rb", content1)
-          File.write("#{TEMPORARY_DIRECTORY}/file2.rb", content2)
-
-          run_cli(PROJECT, "bump")
-
-          strictness1 = Sorbet::Sigils.file_strictness("#{TEMPORARY_DIRECTORY}/file1.rb")
-          strictness2 = Sorbet::Sigils.file_strictness("#{TEMPORARY_DIRECTORY}/file2.rb")
-
-          assert_equal("true", strictness1)
-          assert_equal("false", strictness2)
+          assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
+          assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
         end
 
         def test_bump_doesnt_change_sigils_outside_directory
-          content = <<~STR
-            # typed: true
-            T.reveal_type(1)
-          STR
+          project = spoom_project("test_bump2")
+          project.write("file1.rb", "# typed: false")
+          @project.write("file2.rb", "# typed: false")
 
-          File.write("file.rb", content)
+          @project.bundle_exec("spoom bump")
 
-          run_cli(PROJECT, "bump")
+          assert_equal("false", Sorbet::Sigils.file_strictness("#{project.path}/file1.rb"))
+          assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
 
-          strictness = Sorbet::Sigils.file_strictness("file.rb")
-
-          assert_equal("true", strictness)
-
-          File.delete("file.rb")
+          project.destroy
         end
 
         def test_bump_nondefault_from_to_complete
-          from = "true"
-          to = "strict"
-
-          content = <<~STR
-            # typed: #{from}
+          @project.write("file1.rb", <<~RB)
+            # typed: false
             class A; end
-          STR
+          RB
+          @project.write("file2.rb", <<~RB)
+            # typed: true
+            class B; end
+          RB
 
-          FileUtils.mkdir_p(TEMPORARY_DIRECTORY)
+          @project.bundle_exec("spoom bump --from true --to strict")
 
-          File.write("#{TEMPORARY_DIRECTORY}/file.rb", content)
-
-          run_cli(PROJECT, "bump --from #{from} --to #{to}")
-
-          strictness = Sorbet::Sigils.file_strictness("#{TEMPORARY_DIRECTORY}/file.rb")
-
-          assert_equal("strict", strictness)
+          assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
+          assert_equal("strict", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
         end
 
         def test_bump_nondefault_from_to_revert
-          from = "ignore"
-          to = "strong"
-
-          content = <<~STR
-            # typed: #{from}
+          @project.write("file1.rb", <<~RB)
+            # typed: ignore
+            class A; end
+          RB
+          @project.write("file2.rb", <<~RB)
+            # typed: ignore
             T.reveal_type(1)
-          STR
+          RB
 
-          FileUtils.mkdir_p(TEMPORARY_DIRECTORY)
+          @project.bundle_exec("spoom bump --from ignore --to strong")
 
-          File.write("#{TEMPORARY_DIRECTORY}/file.rb", content)
-
-          run_cli(PROJECT, "bump --from #{from} --to #{to}")
-
-          strictness = Sorbet::Sigils.file_strictness("#{TEMPORARY_DIRECTORY}/file.rb")
-
-          assert_equal("ignore", strictness)
+          assert_equal("strong", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
+          assert_equal("ignore", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
         end
 
         def test_force_bump_without_typecheck
-          content = <<~STR
-            # typed: false
+          @project.write("file1.rb", <<~RB)
+            # typed: ignore
+            class A; end
+          RB
+          @project.write("file2.rb", <<~RB)
+            # typed: ignore
             T.reveal_type(1)
-          STR
+          RB
 
-          FileUtils.mkdir_p(TEMPORARY_DIRECTORY)
+          @project.bundle_exec("spoom bump --force --from ignore --to strong")
 
-          File.write("#{TEMPORARY_DIRECTORY}/file.rb", content)
-
-          run_cli(PROJECT, "bump --force")
-
-          strictness = Sorbet::Sigils.file_strictness("#{TEMPORARY_DIRECTORY}/file.rb")
-
-          assert_equal("true", strictness)
+          assert_equal("strong", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
+          assert_equal("strong", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
         end
       end
     end
