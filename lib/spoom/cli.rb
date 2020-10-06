@@ -16,6 +16,7 @@ module Spoom
       include Spoom::Cli::CommandHelper
 
       class_option :color, desc: "Use colors", type: :boolean, default: true
+      class_option :path, desc: "Run spoom in a specific path", type: :string, default: ".", aliases: :p
       map T.unsafe(%w[--version -v] => :__print_version)
 
       desc "bump", "bump Sorbet sigils from `false` to `true` when no errors"

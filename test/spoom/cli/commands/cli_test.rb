@@ -43,8 +43,10 @@ module Spoom
               spoom tc              # run Sorbet and parses its output
 
             Options:
-              [--color], [--no-color]  # Use colors
-                                       # Default: true
+                  [--color], [--no-color]  # Use colors
+                                           # Default: true
+              p, [--path=PATH]             # Run spoom in a specific path
+                                           # Default: .
 
           OUT
         end

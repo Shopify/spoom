@@ -1,7 +1,8 @@
 # typed: strict
 # frozen_string_literal: true
 
-require 'stringio'
+require "pathname"
+require "stringio"
 
 module Spoom
   module Cli
@@ -27,7 +28,7 @@ module Spoom
       # Is `spoom` ran inside a project with a `sorbet/config` file?
       sig { returns(T::Boolean) }
       def in_sorbet_project?
-        File.file?(Spoom::Config::SORBET_CONFIG)
+        File.file?(sorbet_config)
       end
 
       # Enforce that `spoom` is ran inside a project with a `sorbet/config` file
@@ -39,6 +40,17 @@ module Spoom
           say_error("not in a Sorbet project (no sorbet/config)")
           Kernel.exit(1)
         end
+      end
+
+      # Return the path specified through `--path`
+      sig { returns(String) }
+      def exec_path
+        T.unsafe(self).options[:path] # TODO: requires_ancestor
+      end
+
+      sig { returns(String) }
+      def sorbet_config
+        Pathname.new("#{exec_path}/#{Spoom::Config::SORBET_CONFIG}").cleanpath.to_s
       end
     end
   end
