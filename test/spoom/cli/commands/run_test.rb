@@ -116,6 +116,16 @@ module Spoom
             Errors: 1 shown, 7 total
           MSG
         end
+
+        def test_display_errors_with_path_option
+          project = spoom_project("test_display_errors_with_path_option")
+          _, err = project.bundle_exec("spoom tc --no-color -s code -l 1 -p #{@project.path}")
+          assert_equal(<<~MSG, err)
+            5002 - errors/errors.rb:5: Unable to resolve constant `Bar`
+            Errors: 1 shown, 7 total
+          MSG
+          project.destroy
+        end
       end
     end
   end
