@@ -56,6 +56,41 @@ module Spoom
         printer = SnapshotPrinter.new(out: out, colors: colors, indent_level: indent_level)
         printer.print_snapshot(self)
       end
+
+      sig { params(json: String).returns(Snapshot) }
+      def self.from_json(json)
+        from_obj(JSON.parse(json))
+      end
+
+      sig { params(obj: T::Hash[String, T.untyped]).returns(Snapshot) }
+      def self.from_obj(obj)
+        snapshot = Snapshot.new
+        snapshot.sorbet_version = obj.fetch("sorbet_version", nil)
+        snapshot.commit_sha = obj.fetch("commit_sha", nil)
+        snapshot.commit_timestamp = obj.fetch("commit_timestamp", nil)
+        snapshot.files = obj.fetch("files", 0)
+        snapshot.modules = obj.fetch("modules", 0)
+        snapshot.classes = obj.fetch("classes", 0)
+        snapshot.methods_with_sig = obj.fetch("methods_with_sig", 0)
+        snapshot.methods_without_sig = obj.fetch("methods_without_sig", 0)
+        snapshot.calls_typed = obj.fetch("calls_typed", 0)
+        snapshot.calls_untyped = obj.fetch("calls_untyped", 0)
+
+        sigils = obj.fetch("sigils", {})
+        if sigils
+          Snapshot::STRICTNESSES.each do |strictness|
+            next unless sigils.key?(strictness)
+            snapshot.sigils[strictness] = sigils[strictness]
+          end
+        end
+
+        snapshot
+      end
+
+      sig { params(arg: T.untyped).returns(String) }
+      def to_json(*arg)
+        serialize.to_json(*arg)
+      end
     end
 
     class SnapshotPrinter < Spoom::Printer
