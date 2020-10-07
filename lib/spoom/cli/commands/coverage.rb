@@ -82,8 +82,6 @@ module Spoom
             end
             next unless snapshot
 
-            snapshot.commit_sha = sha
-            snapshot.commit_timestamp = date&.strftime('%s').to_i
             snapshot.print(indent_level: 2)
             puts "\n"
 
