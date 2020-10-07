@@ -15,6 +15,18 @@ module Spoom
         def setup
           @project = spoom_project("test_coverage")
           @project.sorbet_config(".")
+          @project.write("Gemfile.lock", <<~RB)
+            PATH
+              remote: .
+              specs:
+                test (1.0.0)
+                  sorbet (~> 0.5.5)
+
+            GEM
+              remote: https://rubygems.org/
+              specs:
+                sorbet (0.5.0000)
+          RB
           @project.write("lib/a.rb", <<~RB)
             # typed: false
 
@@ -148,6 +160,8 @@ module Spoom
           out&.gsub!(/commit [a-f0-9]+ - \d{4}-\d{2}-\d{2}/, "COMMIT")
           assert_equal(<<~OUT, out)
             Analyzing COMMIT (1 / 1)
+              Sorbet version: 0.5.0000
+
               Content:
                 files: 3
                 modules: 3
@@ -317,18 +331,6 @@ module Spoom
         def create_git_history
           @project.remove("lib")
           @project.git_init
-          @project.write("Gemfile.lock", <<~RB)
-            PATH
-              remote: .
-              specs:
-                test (1.0.0)
-                  sorbet (~> 0.5.5)
-
-            GEM
-              remote: https://rubygems.org/
-              specs:
-                sorbet (0.5.0000)
-          RB
           @project.write("a.rb", <<~RB)
             # typed: false
             class Foo
