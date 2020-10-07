@@ -23,7 +23,6 @@ module Spoom
     # This will create all nodes until the root of `path`.
     sig { params(path: String).returns(Node) }
     def add_path(path)
-      # TODO: return if path =~ /\/test\//
       parts = path.split("/")
       if path.empty? || parts.size == 1
         return @roots[path] ||= Node.new(parent: nil, name: path)
