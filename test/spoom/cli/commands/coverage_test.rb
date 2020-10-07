@@ -177,6 +177,8 @@ module Spoom
           out&.gsub!(/commit [a-f0-9]+ - \d{4}-\d{2}-\d{2}/, "COMMIT")
           assert_equal(<<~OUT, out)
             Analyzing COMMIT (1 / 3)
+              Sorbet version: 0.5.0000
+
               Content:
                 files: 2
                 modules: 1
@@ -195,6 +197,8 @@ module Spoom
                 typed: 6 (100%)
 
             Analyzing COMMIT (2 / 3)
+              Sorbet version: 0.5.1000
+
               Content:
                 files: 4
                 modules: 1
@@ -214,6 +218,8 @@ module Spoom
                 typed: 7 (100%)
 
             Analyzing COMMIT (3 / 3)
+              Sorbet version: 0.5.2000
+
               Content:
                 files: 6
                 modules: 1
@@ -244,6 +250,8 @@ module Spoom
           out&.gsub!(/commit [a-f0-9]+ - \d{4}-\d{2}-\d{2}/, "COMMIT")
           assert_equal(<<~OUT, out)
             Analyzing COMMIT (1 / 2)
+              Sorbet version: 0.5.0000
+
               Content:
                 files: 2
                 modules: 1
@@ -262,6 +270,8 @@ module Spoom
                 typed: 6 (100%)
 
             Analyzing COMMIT (2 / 2)
+              Sorbet version: 0.5.1000
+
               Content:
                 files: 4
                 modules: 1
@@ -307,6 +317,18 @@ module Spoom
         def create_git_history
           @project.remove("lib")
           @project.git_init
+          @project.write("Gemfile.lock", <<~RB)
+            PATH
+              remote: .
+              specs:
+                test (1.0.0)
+                  sorbet (~> 0.5.5)
+
+            GEM
+              remote: https://rubygems.org/
+              specs:
+                sorbet (0.5.0000)
+          RB
           @project.write("a.rb", <<~RB)
             # typed: false
             class Foo
@@ -325,6 +347,18 @@ module Spoom
             end
           RB
           @project.commit(date: Time.parse("2010-01-02 03:04:05"))
+          @project.write("Gemfile.lock", <<~RB)
+            PATH
+              remote: .
+              specs:
+                test (1.0.0)
+                  sorbet (~> 0.5.5)
+
+            GEM
+              remote: https://rubygems.org/
+              specs:
+                sorbet (0.5.1000)
+          RB
           @project.write("c.rb", <<~RB)
             # typed: false
             class Baz; end
@@ -334,6 +368,18 @@ module Spoom
             Baz.new
           RB
           @project.commit(date: Time.parse("2010-02-02 03:04:05"))
+          @project.write("Gemfile.lock", <<~RB)
+            PATH
+              remote: .
+              specs:
+                test (1.0.0)
+                  sorbet (~> 0.5.5)
+
+            GEM
+              remote: https://rubygems.org/
+              specs:
+                sorbet (0.5.2000)
+          RB
           @project.write("e.rb", "# typed: ignore")
           @project.write("f.rb", "# typed: __INTERNAL_STDLIB")
           @project.commit(date: Time.parse("2010-03-02 03:04:05"))

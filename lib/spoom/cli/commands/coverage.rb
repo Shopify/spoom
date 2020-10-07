@@ -77,9 +77,11 @@ module Spoom
               Bundler.with_clean_env do
                 next unless bundle_install(path, sha)
                 snapshot = Spoom::Coverage.snapshot(path: path)
+                snapshot.sorbet_version = Spoom::Sorbet.srb_version(path: path) if snapshot
               end
             else
               snapshot = Spoom::Coverage.snapshot(path: path)
+              snapshot.sorbet_version = Spoom::Sorbet.srb_version_from_gemfile_lock(path: path)
             end
             next unless snapshot
 
