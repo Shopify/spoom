@@ -209,7 +209,7 @@ client = Spoom::LSP::Client.new(
   "--enable-all-experimental-lsp-features",
   "--disable-watchman",
 )
-client.open(Spoom::Config::WORKSPACE_PATH)
+client.open(".")
 ```
 
 Find all the symbols matching a string:

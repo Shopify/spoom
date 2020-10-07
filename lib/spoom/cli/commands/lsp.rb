@@ -28,7 +28,7 @@ module Spoom
           run do |client|
             printer = symbol_printer
             Dir["**/*.rb"].each do |file|
-              res = client.document_symbols(file.to_uri)
+              res = client.document_symbols(to_uri(file))
               next if res.empty?
               puts "Symbols from `#{file}`:"
               printer.print_objects(res)
@@ -40,7 +40,7 @@ module Spoom
         # TODO: options, filter, limit, kind etc.. filter rbi
         def hover(file, line, col)
           run do |client|
-            res = client.hover(file.to_uri, line.to_i, col.to_i)
+            res = client.hover(to_uri(file), line.to_i, col.to_i)
             say "Hovering `#{file}:#{line}:#{col}`:"
             if res
               symbol_printer.print_object(res)
@@ -54,7 +54,7 @@ module Spoom
         # TODO: options, filter, limit, kind etc.. filter rbi
         def defs(file, line, col)
           run do |client|
-            res = client.definitions(file.to_uri, line.to_i, col.to_i)
+            res = client.definitions(to_uri(file), line.to_i, col.to_i)
             puts "Definitions for `#{file}:#{line}:#{col}`:"
             symbol_printer.print_list(res)
           end
@@ -74,7 +74,7 @@ module Spoom
         # TODO: options, filter, limit, kind etc.. filter rbi
         def symbols(file)
           run do |client|
-            res = client.document_symbols(file.to_uri)
+            res = client.document_symbols(to_uri(file))
             puts "Symbols from `#{file}`:"
             symbol_printer.print_objects(res)
           end
@@ -84,7 +84,7 @@ module Spoom
         # TODO: options, filter, limit, kind etc.. filter rbi
         def refs(file, line, col)
           run do |client|
-            res = client.references(file.to_uri, line.to_i, col.to_i)
+            res = client.references(to_uri(file), line.to_i, col.to_i)
             puts "References to `#{file}:#{line}:#{col}`:"
             symbol_printer.print_list(res)
           end
@@ -94,7 +94,7 @@ module Spoom
         # TODO: options, filter, limit, kind etc.. filter rbi
         def sigs(file, line, col)
           run do |client|
-            res = client.signatures(file.to_uri, line.to_i, col.to_i)
+            res = client.signatures(to_uri(file), line.to_i, col.to_i)
             puts "Signature for `#{file}:#{line}:#{col}`:"
             symbol_printer.print_list(res)
           end
@@ -104,7 +104,7 @@ module Spoom
         # TODO: options, filter, limit, kind etc.. filter rbi
         def types(file, line, col)
           run do |client|
-            res = client.type_definitions(file.to_uri, line.to_i, col.to_i)
+            res = client.type_definitions(to_uri(file), line.to_i, col.to_i)
             say "Type for `#{file}:#{line}:#{col}`:"
             symbol_printer.print_list(res)
           end
@@ -113,25 +113,31 @@ module Spoom
         no_commands do
           def lsp_client
             in_sorbet_project!
+            path = exec_path
             client = Spoom::LSP::Client.new(
               Spoom::Config::SORBET_PATH,
               "--lsp",
               "--enable-all-experimental-lsp-features",
               "--disable-watchman",
+              path: path
             )
-            client.open(Spoom::Config::WORKSPACE_PATH)
+            client.open(File.expand_path(path))
             client
           end
 
           def symbol_printer
-            Spoom::LSP::SymbolPrinter.new(indent_level: 2, colors: options[:color])
+            Spoom::LSP::SymbolPrinter.new(
+              indent_level: 2,
+              colors: options[:color],
+              prefix: "file://#{File.expand_path(exec_path)}"
+            )
           end
 
           def run(&block)
             client = lsp_client
             block.call(client)
           rescue Spoom::LSP::Error::Diagnostics => err
-            say_error("Sorbet returned typechecking errors for `#{err.uri.from_uri}`")
+            say_error("Sorbet returned typechecking errors for `#{symbol_printer.clean_uri(err.uri)}`")
             err.diagnostics.each do |d|
               say_error("#{d.message} (#{d.code})", "  #{d.range}")
             end
@@ -150,6 +156,10 @@ module Spoom
               # We kill the parent process and let the child be killed.
               exit(1)
             end
+          end
+
+          def to_uri(path)
+            "file://" + File.join(File.expand_path(exec_path), path)
           end
         end
       end

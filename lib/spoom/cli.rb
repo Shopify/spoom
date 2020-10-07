@@ -16,6 +16,7 @@ module Spoom
       include Spoom::Cli::CommandHelper
 
       class_option :color, desc: "Use colors", type: :boolean, default: true
+      class_option :path, desc: "Run spoom in a specific path", type: :string, default: ".", aliases: :p
       map T.unsafe(%w[--version -v] => :__print_version)
 
       desc "bump", "bump Sorbet sigils from `false` to `true` when no errors"
@@ -36,10 +37,12 @@ module Spoom
       desc "files", "list all the files typechecked by Sorbet"
       def files
         in_sorbet_project!
-        config = Spoom::Sorbet::Config.parse_file(Spoom::Config::SORBET_CONFIG)
-        files = Spoom::Sorbet.srb_files(config)
 
-        say("Files matching `#{Spoom::Config::SORBET_CONFIG}`:")
+        path = exec_path
+        config = Spoom::Sorbet::Config.parse_file(sorbet_config)
+        files = Spoom::Sorbet.srb_files(config, path: path)
+
+        say("Files matching `#{sorbet_config}`:")
         if files.empty?
           say(" NONE")
         else

@@ -18,16 +18,17 @@ module Spoom
         def tc
           in_sorbet_project!
 
+          path = exec_path
           limit = options[:limit]
           sort = options[:sort]
           code = options[:code]
           colors = options[:color]
 
           unless limit || code || sort
-            return Spoom::Sorbet.srb_tc(capture_err: false).last
+            return Spoom::Sorbet.srb_tc(path: path, capture_err: false).last
           end
 
-          output, status = Spoom::Sorbet.srb_tc(capture_err: true)
+          output, status = Spoom::Sorbet.srb_tc(path: path, capture_err: true)
           if status
             $stderr.print(output)
             return 0

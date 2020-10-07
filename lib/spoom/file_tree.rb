@@ -25,7 +25,7 @@ module Spoom
     def add_path(path)
       # TODO: return if path =~ /\/test\//
       parts = path.split("/")
-      if parts.size == 1
+      if path.empty? || parts.size == 1
         return @roots[path] ||= Node.new(parent: nil, name: path)
       end
       parent_path = T.must(parts[0...-1]).join("/")

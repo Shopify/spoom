@@ -96,6 +96,31 @@ module Spoom
           MSG
         end
 
+        def test_display_metrics_with_path_option
+          project = spoom_project("test_display_metrics_with_path_option")
+          out, _ = project.bundle_exec("spoom coverage snapshot -p #{@project.path}")
+          assert_equal(<<~MSG, out)
+            Content:
+              files: 3
+              modules: 3
+              classes: 5 (including singleton classes)
+              methods: 9
+
+            Sigils:
+              false: 1 (33%)
+              true: 2 (67%)
+
+            Methods:
+              with signature: 1 (11%)
+              without signature: 8 (89%)
+
+            Calls:
+              typed: 8 (89%)
+              untyped: 1 (11%)
+          MSG
+          project.destroy
+        end
+
         def test_timeline_outside_sorbet_dir
           @project.remove("sorbet/config")
           out, err, status = @project.bundle_exec("spoom coverage snapshot")
@@ -256,6 +281,16 @@ module Spoom
           assert(status)
           assert_equal("", err)
           assert(3, Dir.glob("#{@project.path}/spoom_data/*.json").size)
+        end
+
+        def test_timeline_with_path_option
+          create_git_history
+          project = spoom_project("test_display_metrics_with_path_option")
+          _, err, status = project.bundle_exec("spoom coverage timeline --save-dir spoom_data -p #{@project.path}")
+          assert(status)
+          assert_equal("", err)
+          assert(3, Dir.glob("#{@project.path}/spoom_data/*.json").size)
+          project.destroy
         end
 
         private
