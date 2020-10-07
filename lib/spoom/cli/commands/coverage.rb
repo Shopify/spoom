@@ -14,12 +14,24 @@ module Spoom
         default_task :snapshot
 
         desc "snapshot", "run srb tc and display metrics"
+        option :save, type: :boolean, desc: "Save snapshot data as json"
+        option :save_dir, type: :string, desc: "Save json data under a specific directory", default: "spoom_data"
         def snapshot
           in_sorbet_project!
 
           path = exec_path
           snapshot = Spoom::Coverage.snapshot(path: path)
           snapshot.print
+
+          save_dir = options[:save] ? options[:save_dir] : nil
+          return unless save_dir
+
+          FileUtils.mkdir_p(save_dir)
+          name = snapshot.commit_sha
+          name = Time.now.getutc.to_i unless name
+          file = "#{save_dir}/#{name}.json"
+          File.write(file, snapshot.serialize.to_json)
+          puts "\nSnapshot data saved under #{file}"
         end
 
         desc "timeline", "replay a project and collect metrics"
@@ -88,8 +100,8 @@ module Spoom
 
             next unless save_dir
             file = "#{save_dir}/#{sha}.json"
-            puts "  Snapshot data saved under #{file}\n\n"
             File.write(file, snapshot.serialize.to_json)
+            puts "  Snapshot data saved under #{file}\n\n"
           end
           Spoom::Git.checkout(sha_before, path: path)
         end

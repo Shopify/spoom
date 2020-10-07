@@ -82,6 +82,18 @@ Show metrics about the project contents and the typing coverage:
 $ spoom coverage
 ```
 
+Save coverage data under `spoom_data/`:
+
+```
+$ spoom coverage --save
+```
+
+Save coverage data under a specific directory:
+
+```
+$ spoom coverage --save --save-dir my_data/
+```
+
 Show typing coverage evolution based on the commits history:
 
 ```

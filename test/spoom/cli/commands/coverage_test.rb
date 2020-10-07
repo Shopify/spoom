@@ -82,6 +82,7 @@ module Spoom
               typed: 8 (89%)
               untyped: 1 (11%)
           MSG
+          assert_equal(0, Dir.glob("#{@project.path}/spoom_data/*.json").size)
         end
 
         def test_display_metrics_do_not_show_errors
@@ -112,6 +113,19 @@ module Spoom
               typed: 8 (67%)
               untyped: 4 (33%)
           MSG
+          assert_equal(0, Dir.glob("#{@project.path}/spoom_data/*.json").size)
+        end
+
+        def test_save_snapshot
+          _, _, status = @project.bundle_exec("spoom coverage snapshot --save")
+          assert(status)
+          assert_equal(1, Dir.glob("#{@project.path}/spoom_data/*.json").size)
+        end
+
+        def test_save_snapshot_with_custom_dir
+          _, _, status = @project.bundle_exec("spoom coverage snapshot --save --save-dir data")
+          assert(status)
+          assert_equal(1, Dir.glob("#{@project.path}/data/*.json").size)
         end
 
         def test_display_metrics_with_path_option
@@ -140,6 +154,7 @@ module Spoom
               untyped: 1 (11%)
           MSG
           project.destroy
+          assert_equal(0, Dir.glob("#{project.path}/spoom_data/*.json").size)
         end
 
         def test_timeline_outside_sorbet_dir
