@@ -16,6 +16,19 @@ module Spoom
           "or set SORBET_SILENCE_DEV_MESSAGE=1 in your shell environment.",
         ]
 
+        ERROR_LINE_MATCH_REGEX = %r{
+          ^         # match beginning of line
+          (\S[^:]*) # capture filename as something that starts with a non-space character
+                    # followed by anything that is not a colon character
+          :         # match the filename - line number seperator
+          (\d+)     # capture the line number
+          :\s       # match the line number - error message separator
+          (.*)      # capture the error message
+          \shttps://srb.help/ # match the error code url prefix
+          (\d+)     # capture the error code
+          $         # match end of line
+        }x.freeze
+
         sig { params(output: String).returns(T::Array[Error]) }
         def self.parse_string(output)
           parser = Spoom::Sorbet::Errors::Parser.new
@@ -37,9 +50,9 @@ module Spoom
 
             next if line == "\n"
 
-            if leading_spaces(line) == 0
+            if (error = match_error_line(line))
               close_error if @current_error
-              open_error(line)
+              open_error(error)
               next
             end
 
@@ -51,15 +64,19 @@ module Spoom
 
         private
 
-        sig { params(line: String).returns(T.nilable(Integer)) }
-        def leading_spaces(line)
-          line.index(/[^ ]/)
+        sig { params(line: String).returns(T.nilable(Error)) }
+        def match_error_line(line)
+          match = line.match(ERROR_LINE_MATCH_REGEX)
+          return unless match
+
+          file, line, message, code = match.captures
+          Error.new(file, line&.to_i, message, code&.to_i)
         end
 
-        sig { params(line: String).void }
-        def open_error(line)
+        sig { params(error: Error).void }
+        def open_error(error)
           raise "Error: Already parsing an error!" if @current_error
-          @current_error = Error.from_error_line(line)
+          @current_error = error
         end
 
         sig { void }
@@ -104,13 +121,6 @@ module Spoom
           @message = message
           @code = code
           @more = more
-        end
-
-        sig { params(line: String).returns(Error) }
-        def self.from_error_line(line)
-          file, line, rest = line.split(/: ?/, 3)
-          message, code = rest&.split(%r{ https://srb\.help/}, 2)
-          Error.new(file, line&.to_i, message, code&.to_i)
         end
 
         sig { params(other: T.untyped).returns(Integer) }
