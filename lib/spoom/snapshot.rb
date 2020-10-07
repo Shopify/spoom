@@ -24,12 +24,15 @@ module Spoom
         snapshot.sigils[strictness] = T.must(metrics["types.input.files.sigil.#{strictness}"])
       end
 
+      snapshot.sorbet_version = Spoom::Sorbet.srb_version_from_gemfile_lock(path: path)
+
       snapshot
     end
 
     class Snapshot < T::Struct
       extend T::Sig
 
+      prop :sorbet_version, T.nilable(String), default: nil
       prop :commit_sha, T.nilable(String), default: nil
       prop :commit_timestamp, T.nilable(Integer), default: nil
       prop :files, Integer, default: 0
@@ -59,6 +62,10 @@ module Spoom
         methods = snapshot.methods_with_sig + snapshot.methods_without_sig
         calls = snapshot.calls_typed + snapshot.calls_untyped
 
+        if snapshot.sorbet_version
+          printl("Sorbet version: #{snapshot.sorbet_version}")
+          printn
+        end
         printl("Content:")
         indent
         printl("files: #{snapshot.files}")

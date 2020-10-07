@@ -15,6 +15,18 @@ module Spoom
         def setup
           @project = spoom_project("test_coverage")
           @project.sorbet_config(".")
+          @project.write("Gemfile.lock", <<~RB)
+            PATH
+              remote: .
+              specs:
+                test (1.0.0)
+                  sorbet (~> 0.5.5)
+
+            GEM
+              remote: https://rubygems.org/
+              specs:
+                sorbet (0.5.0000)
+          RB
           @project.write("lib/a.rb", <<~RB)
             # typed: false
 
@@ -48,7 +60,10 @@ module Spoom
 
         def test_display_metrics
           out, _ = @project.bundle_exec("spoom coverage snapshot")
+          out = censor_sorbet_version(out) if out
           assert_equal(<<~MSG, out)
+            Sorbet version: X.X.XXXX
+
             Content:
               files: 3
               modules: 3
@@ -75,7 +90,10 @@ module Spoom
             A3.error.error.error
           RB
           out, _ = @project.bundle_exec("spoom coverage snapshot")
+          out = censor_sorbet_version(out) if out
           assert_equal(<<~MSG, out)
+            Sorbet version: X.X.XXXX
+
             Content:
               files: 4
               modules: 3
@@ -99,7 +117,10 @@ module Spoom
         def test_display_metrics_with_path_option
           project = spoom_project("test_display_metrics_with_path_option")
           out, _ = project.bundle_exec("spoom coverage snapshot -p #{@project.path}")
+          out = censor_sorbet_version(out) if out
           assert_equal(<<~MSG, out)
+            Sorbet version: X.X.XXXX
+
             Content:
               files: 3
               modules: 3
@@ -139,6 +160,8 @@ module Spoom
           out&.gsub!(/commit [a-f0-9]+ - \d{4}-\d{2}-\d{2}/, "COMMIT")
           assert_equal(<<~OUT, out)
             Analyzing COMMIT (1 / 1)
+              Sorbet version: 0.5.0000
+
               Content:
                 files: 3
                 modules: 3
@@ -168,6 +191,8 @@ module Spoom
           out&.gsub!(/commit [a-f0-9]+ - \d{4}-\d{2}-\d{2}/, "COMMIT")
           assert_equal(<<~OUT, out)
             Analyzing COMMIT (1 / 3)
+              Sorbet version: 0.5.0000
+
               Content:
                 files: 2
                 modules: 1
@@ -186,6 +211,8 @@ module Spoom
                 typed: 6 (100%)
 
             Analyzing COMMIT (2 / 3)
+              Sorbet version: 0.5.1000
+
               Content:
                 files: 4
                 modules: 1
@@ -205,6 +232,8 @@ module Spoom
                 typed: 7 (100%)
 
             Analyzing COMMIT (3 / 3)
+              Sorbet version: 0.5.2000
+
               Content:
                 files: 6
                 modules: 1
@@ -235,6 +264,8 @@ module Spoom
           out&.gsub!(/commit [a-f0-9]+ - \d{4}-\d{2}-\d{2}/, "COMMIT")
           assert_equal(<<~OUT, out)
             Analyzing COMMIT (1 / 2)
+              Sorbet version: 0.5.0000
+
               Content:
                 files: 2
                 modules: 1
@@ -253,6 +284,8 @@ module Spoom
                 typed: 6 (100%)
 
             Analyzing COMMIT (2 / 2)
+              Sorbet version: 0.5.1000
+
               Content:
                 files: 4
                 modules: 1
@@ -316,6 +349,18 @@ module Spoom
             end
           RB
           @project.commit(date: Time.parse("2010-01-02 03:04:05"))
+          @project.write("Gemfile.lock", <<~RB)
+            PATH
+              remote: .
+              specs:
+                test (1.0.0)
+                  sorbet (~> 0.5.5)
+
+            GEM
+              remote: https://rubygems.org/
+              specs:
+                sorbet (0.5.1000)
+          RB
           @project.write("c.rb", <<~RB)
             # typed: false
             class Baz; end
@@ -325,6 +370,18 @@ module Spoom
             Baz.new
           RB
           @project.commit(date: Time.parse("2010-02-02 03:04:05"))
+          @project.write("Gemfile.lock", <<~RB)
+            PATH
+              remote: .
+              specs:
+                test (1.0.0)
+                  sorbet (~> 0.5.5)
+
+            GEM
+              remote: https://rubygems.org/
+              specs:
+                sorbet (0.5.2000)
+          RB
           @project.write("e.rb", "# typed: ignore")
           @project.write("f.rb", "# typed: __INTERNAL_STDLIB")
           @project.commit(date: Time.parse("2010-03-02 03:04:05"))

@@ -17,7 +17,8 @@ module Spoom
         def snapshot
           in_sorbet_project!
 
-          snapshot = Spoom::Coverage.snapshot(path: exec_path)
+          path = exec_path
+          snapshot = Spoom::Coverage.snapshot(path: path)
           snapshot.print
         end
 
