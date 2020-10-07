@@ -55,6 +55,20 @@ module Spoom
       out.split(" ")[2]
     end
 
+    # Get `sorbet` version from the `Gemfile.lock` content
+    #
+    # Returns `nil` if `sorbet` gem cannot be found in the Gemfile.
+    sig { params(path: String).returns(T.nilable(String)) }
+    def self.srb_version_from_gemfile_lock(path: '.')
+      gemfile_path = "#{path}/Gemfile.lock"
+      return nil unless File.exist?(gemfile_path)
+      gemfile_lock = Bundler.read_file(gemfile_path)
+      parser = Bundler::LockfileParser.new(gemfile_lock)
+      sorbet = parser.specs.find { |spec| spec.name == "sorbet" }
+      return nil unless sorbet
+      sorbet.version.to_s
+    end
+
     sig { params(arg: String, path: String, capture_err: T::Boolean).returns(T.nilable(T::Hash[String, Integer])) }
     def self.srb_metrics(*arg, path: '.', capture_err: false)
       metrics_file = "metrics.tmp"
