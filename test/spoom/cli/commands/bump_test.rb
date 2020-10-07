@@ -94,6 +94,30 @@ module Spoom
           assert_equal("strong", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
           assert_equal("strong", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
         end
+
+        def test_bump_with_multiline_error
+          @project.write("file.rb", <<~RB)
+            # typed: true
+            require "test_helper"
+
+            class Test
+              def self.foo(*arg); end
+              def self.something; end
+              def self.something_else; end
+
+              foo "foo" do
+                q = something do
+                  q = something_else.new
+                end
+              end
+            end
+          RB
+
+          _, _, status = @project.bundle_exec("spoom bump --from true --to strict")
+          assert(status)
+
+          assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/file.rb"))
+        end
       end
     end
   end
