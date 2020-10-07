@@ -48,7 +48,10 @@ module Spoom
 
         def test_display_metrics
           out, _ = @project.bundle_exec("spoom coverage snapshot")
+          out = censor_sorbet_version(out) if out
           assert_equal(<<~MSG, out)
+            Sorbet version: X.X.XXXX
+
             Content:
               files: 3
               modules: 3
@@ -75,7 +78,10 @@ module Spoom
             A3.error.error.error
           RB
           out, _ = @project.bundle_exec("spoom coverage snapshot")
+          out = censor_sorbet_version(out) if out
           assert_equal(<<~MSG, out)
+            Sorbet version: X.X.XXXX
+
             Content:
               files: 4
               modules: 3
@@ -99,7 +105,10 @@ module Spoom
         def test_display_metrics_with_path_option
           project = spoom_project("test_display_metrics_with_path_option")
           out, _ = project.bundle_exec("spoom coverage snapshot -p #{@project.path}")
+          out = censor_sorbet_version(out) if out
           assert_equal(<<~MSG, out)
+            Sorbet version: X.X.XXXX
+
             Content:
               files: 3
               modules: 3
