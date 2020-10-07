@@ -27,7 +27,8 @@ module Spoom
       def test_srb_version_return_version_string
         @project.sorbet_config(".")
         version = Spoom::Sorbet.srb_version(path: @project.path)
-        assert_match(/\d\.\d\.\d{4}/, version)
+        version = censor_sorbet_version(version) if version
+        assert_equal("X.X.XXXX", version)
       end
 
       def test_srb_version_from_gemfile_lock_return_nil_if_no_gemfile_lock
