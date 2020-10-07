@@ -25,6 +25,7 @@ module Spoom
         option :from, type: :string
         option :to, type: :string, default: Time.now.strftime("%F")
         option :save_dir, type: :string
+        option :bundle_install, type: :boolean, desc: "Execute `bundle install` before collecting metrics"
         def timeline
           in_sorbet_project!
           path = exec_path
@@ -68,7 +69,18 @@ module Spoom
             puts "Analyzing commit #{sha} - #{date&.strftime('%F')} (#{i + 1} / #{ticks.size})"
 
             Spoom::Git.checkout(sha, path: path)
-            snapshot = Spoom::Coverage.snapshot(path: path)
+
+            snapshot = T.let(nil, T.nilable(Spoom::Coverage::Snapshot))
+            if options[:bundle_install]
+              Bundler.with_clean_env do
+                next unless bundle_install(path, sha)
+                snapshot = Spoom::Coverage.snapshot(path: path)
+              end
+            else
+              snapshot = Spoom::Coverage.snapshot(path: path)
+            end
+            next unless snapshot
+
             snapshot.commit_sha = sha
             snapshot.commit_timestamp = date&.strftime('%s').to_i
             snapshot.print(indent_level: 2)
@@ -89,6 +101,18 @@ module Spoom
           rescue ArgumentError
             say_error("Invalid date `#{string}` for option #{option} (expected format YYYY-MM-DD)")
             exit(1)
+          end
+
+          def bundle_install(path, sha)
+            opts = {}
+            opts[:chdir] = path
+            out, status = Open3.capture2e("bundle install", opts)
+            unless status.success?
+              say_error("Can't run `bundle install` for commit #{sha}. Skipping snapshot")
+              $stderr.puts(out)
+              return false
+            end
+            true
           end
         end
       end

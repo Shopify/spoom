@@ -100,6 +100,13 @@ Save the typing coverage evolution as JSON in a specific directory:
 $ spoom coverage timeline --save-dir data/
 ```
 
+Run `bundle install` for each commit of the timeline (may solve errors due to different Sorbet versions):
+
+```
+$ spoom coverage timeline --bundle-install
+```
+
+
 #### Change the sigil used in files
 
 Bump the strictness from all files currently at `typed: false` to `typed: true` where it does not create typechecking errors:
