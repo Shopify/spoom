@@ -235,6 +235,60 @@ module Spoom
         assert_equal(4, errors.size)
         assert_equal([7003, 7004, 4010, 2001], errors.sort.map(&:code))
       end
+
+      def test_complex_error_line_matching
+        errors = Spoom::Sorbet::Errors::Parser.parse_string(<<~ERR)
+          a:1: unexpected token "end" https://srb.help/2001
+              1 |end
+                  ^^^
+          lib/path with space/name_with_underscores/foo.rb:80567: unexpected token "end" https://srb.help/2001
+              80 |end
+                  ^^^
+
+          something\\something else\\another thing here:100: Method Foo#initialize redefined without matching argument count. Expected: 0, got: 2 https://srb.help/4010
+               100 |    class Foo < T::Struct
+               101 |    end
+              foo.rb:96: Previous definition
+                96 |    class Foo < T::Struct
+                97 |    end
+
+          path-with-dashes_and_underscores and some space/forward slashes\\and back slashes.foo.bar.ru.rake:28: Not enough arguments provided for method Foo#bar. Expected: 1..2, got: 1 https://srb.help/7004
+              28 |              bar "hello"
+                                ^^^^^^^^^^^
+              test.rb:11: Foo#bar defined here
+              11 |          def bar(title = "Error", name)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+          some/multiline|error/thing/going/on/here@12.13.45.rb:7: Changing the type of a variable in a loop is not permitted https://srb.help/7001
+              7 |      q = something_else.new
+                            ^^^^^^^^^^^^^^^^^^
+            Existing variable has type: NilClass
+            Attempting to change type to: T.untyped
+
+            Autocorrect: Use `-a` to autocorrect
+              test/models/platform/test.rb:4: Replace with T.let(class TheTest < ActiveSupport::TestCase
+            test "foo" do
+              q = something do
+                q = something_else.new
+              end
+            end
+          end, T.untyped)
+        ERR
+
+        assert_equal(5, errors.size)
+        assert_equal(
+          [
+            "a",
+            "lib/path with space/name_with_underscores/foo.rb",
+            "something\\something else\\another thing here",
+            "path-with-dashes_and_underscores and some space/forward slashes\\and back slashes.foo.bar.ru.rake",
+            "some/multiline|error/thing/going/on/here@12.13.45.rb",
+          ],
+          errors.map(&:file)
+        )
+        assert_equal([1, 80567, 100, 28, 7], errors.map(&:line))
+        assert_equal([2001, 2001, 4010, 7004, 7001], errors.map(&:code))
+      end
     end
   end
 end
