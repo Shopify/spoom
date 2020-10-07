@@ -25,7 +25,8 @@ module Spoom
         desc "timeline", "replay a project and collect metrics"
         option :from, type: :string
         option :to, type: :string, default: Time.now.strftime("%F")
-        option :save_dir, type: :string
+        option :save, type: :boolean, desc: "Save timeline data as json"
+        option :save_dir, type: :string, desc: "Save json data under a specific directory", default: "spoom_data"
         option :bundle_install, type: :boolean, desc: "Execute `bundle install` before collecting metrics"
         def timeline
           in_sorbet_project!
@@ -45,7 +46,7 @@ module Spoom
             exit(1)
           end
 
-          save_dir = options[:save_dir]
+          save_dir = options[:save] ? options[:save_dir] : nil
           FileUtils.mkdir_p(save_dir) if save_dir
 
           from = parse_date(options[:from], "--from")

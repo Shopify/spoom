@@ -94,10 +94,16 @@ Show typing coverage evolution based on the commits history between specific dat
 $ spoom coverage timeline --from YYYY-MM-DD --to YYYY-MM-DD
 ```
 
+Save the typing coverage evolution as JSON under `spoom_data/`:
+
+```
+$ spoom coverage timeline --save
+```
+
 Save the typing coverage evolution as JSON in a specific directory:
 
 ```
-$ spoom coverage timeline --save-dir data/
+$ spoom coverage timeline --save --save_dir my_data/
 ```
 
 Run `bundle install` for each commit of the timeline (may solve errors due to different Sorbet versions):
