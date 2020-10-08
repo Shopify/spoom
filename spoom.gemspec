@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.name          = "spoom"
   spec.version       = Spoom::VERSION
   spec.authors       = ["Alexandre Terrasa"]
-  spec.email         = ["alexandre.terrasa@shopify.com"]
+  spec.email         = ["ruby@shopify.com"]
 
   spec.summary       = "Useful tools for Sorbet enthusiasts."
   spec.homepage      = "https://github.com/Shopify/spoom"
