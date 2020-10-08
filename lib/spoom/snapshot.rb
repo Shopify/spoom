@@ -28,7 +28,7 @@ module Spoom
         snapshot.sigils[strictness] = T.must(metrics["types.input.files.sigil.#{strictness}"])
       end
 
-      snapshot.sorbet_version = Spoom::Sorbet.srb_version_from_gemfile_lock(path: path)
+      snapshot.sorbet_version = Spoom::Sorbet.version_from_gemfile_lock(path: path)
 
       snapshot
     end
