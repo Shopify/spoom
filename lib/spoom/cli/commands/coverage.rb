@@ -60,8 +60,8 @@ module Spoom
           save_dir = options[:save]
           FileUtils.mkdir_p(save_dir) if save_dir
 
-          from = parse_date(options[:from], "--from")
-          to = parse_date(options[:to], "--to")
+          from = parse_time(options[:from], "--from")
+          to = parse_time(options[:to], "--to")
 
           unless from
             intro_sha = Spoom::Git.sorbet_intro_commit(path: path)
@@ -106,7 +106,7 @@ module Spoom
         end
 
         no_commands do
-          def parse_date(string, option)
+          def parse_time(string, option)
             return nil unless string
             Time.parse(string)
           rescue ArgumentError
