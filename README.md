@@ -82,6 +82,18 @@ Show metrics about the project contents and the typing coverage:
 $ spoom coverage
 ```
 
+Save coverage data under `spoom_data/`:
+
+```
+$ spoom coverage --save
+```
+
+Save coverage data under a specific directory:
+
+```
+$ spoom coverage --save my_data/
+```
+
 Show typing coverage evolution based on the commits history:
 
 ```
@@ -94,10 +106,16 @@ Show typing coverage evolution based on the commits history between specific dat
 $ spoom coverage timeline --from YYYY-MM-DD --to YYYY-MM-DD
 ```
 
+Save the typing coverage evolution as JSON under `spoom_data/`:
+
+```
+$ spoom coverage timeline --save
+```
+
 Save the typing coverage evolution as JSON in a specific directory:
 
 ```
-$ spoom coverage timeline --save-dir data/
+$ spoom coverage timeline --save my_data/
 ```
 
 Run `bundle install` for each commit of the timeline (may solve errors due to different Sorbet versions):

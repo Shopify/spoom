@@ -82,6 +82,7 @@ module Spoom
               typed: 8 (89%)
               untyped: 1 (11%)
           MSG
+          assert_equal(0, Dir.glob("#{@project.path}/spoom_data/*.json").size)
         end
 
         def test_display_metrics_do_not_show_errors
@@ -112,6 +113,19 @@ module Spoom
               typed: 8 (67%)
               untyped: 4 (33%)
           MSG
+          assert_equal(0, Dir.glob("#{@project.path}/spoom_data/*.json").size)
+        end
+
+        def test_save_snapshot
+          _, _, status = @project.bundle_exec("spoom coverage snapshot --save")
+          assert(status)
+          assert_equal(1, Dir.glob("#{@project.path}/spoom_data/*.json").size)
+        end
+
+        def test_save_snapshot_with_custom_dir
+          _, _, status = @project.bundle_exec("spoom coverage snapshot --save data")
+          assert(status)
+          assert_equal(1, Dir.glob("#{@project.path}/data/*.json").size)
         end
 
         def test_display_metrics_with_path_option
@@ -140,6 +154,7 @@ module Spoom
               untyped: 1 (11%)
           MSG
           project.destroy
+          assert_equal(0, Dir.glob("#{project.path}/spoom_data/*.json").size)
         end
 
         def test_timeline_outside_sorbet_dir
@@ -182,6 +197,7 @@ module Spoom
 
           OUT
           assert_equal("", err)
+          assert_equal(0, Dir.glob("#{@project.path}/spoom_data/*.json").size)
         end
 
         def test_timeline_multiple_commits
@@ -255,6 +271,7 @@ module Spoom
 
           OUT
           assert_equal("", err)
+          assert_equal(0, Dir.glob("#{@project.path}/spoom_data/*.json").size)
         end
 
         def test_timeline_multiple_commits_between_dates
@@ -306,23 +323,25 @@ module Spoom
 
           OUT
           assert_equal("", err)
+          assert_equal(0, Dir.glob("#{@project.path}/spoom_data/*.json").size)
         end
 
         def test_timeline_multiple_commits_and_save_json
           create_git_history
-          _, err, status = @project.bundle_exec("spoom coverage timeline  --save-dir spoom_data")
+          assert(0, Dir.glob("#{@project.path}/spoom_data/*.json").size)
+          _, err, status = @project.bundle_exec("spoom coverage timeline --save data")
           assert(status)
           assert_equal("", err)
-          assert(3, Dir.glob("#{@project.path}/spoom_data/*.json").size)
+          assert_equal(3, Dir.glob("#{@project.path}/data/*.json").size)
         end
 
         def test_timeline_with_path_option
           create_git_history
           project = spoom_project("test_display_metrics_with_path_option")
-          _, err, status = project.bundle_exec("spoom coverage timeline --save-dir spoom_data -p #{@project.path}")
+          _, err, status = project.bundle_exec("spoom coverage timeline --save -p #{@project.path}")
           assert(status)
           assert_equal("", err)
-          assert(3, Dir.glob("#{@project.path}/spoom_data/*.json").size)
+          assert_equal(3, Dir.glob("#{project.path}/spoom_data/*.json").size)
           project.destroy
         end
 

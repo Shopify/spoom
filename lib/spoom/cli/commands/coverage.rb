@@ -11,21 +11,33 @@ module Spoom
       class Coverage < Thor
         include Spoom::Cli::CommandHelper
 
+        DATA_DIR = "spoom_data"
+
         default_task :snapshot
 
         desc "snapshot", "run srb tc and display metrics"
+        option :save, type: :string, desc: "Save snapshot data as json", lazy_default: DATA_DIR
         def snapshot
           in_sorbet_project!
 
           path = exec_path
           snapshot = Spoom::Coverage.snapshot(path: path)
           snapshot.print
+
+          save_dir = options[:save]
+          return unless save_dir
+          FileUtils.mkdir_p(save_dir)
+          name = snapshot.commit_sha
+          name = Time.now.getutc.to_i unless name
+          file = "#{save_dir}/#{name}.json"
+          File.write(file, snapshot.serialize.to_json)
+          puts "\nSnapshot data saved under #{file}"
         end
 
         desc "timeline", "replay a project and collect metrics"
         option :from, type: :string
         option :to, type: :string, default: Time.now.strftime("%F")
-        option :save_dir, type: :string
+        option :save, type: :string, desc: "Save snapshot data as json", lazy_default: DATA_DIR
         option :bundle_install, type: :boolean, desc: "Execute `bundle install` before collecting metrics"
         def timeline
           in_sorbet_project!
@@ -45,7 +57,7 @@ module Spoom
             exit(1)
           end
 
-          save_dir = options[:save_dir]
+          save_dir = options[:save]
           FileUtils.mkdir_p(save_dir) if save_dir
 
           from = parse_date(options[:from], "--from")
@@ -82,15 +94,13 @@ module Spoom
             end
             next unless snapshot
 
-            snapshot.commit_sha = sha
-            snapshot.commit_timestamp = date&.strftime('%s').to_i
             snapshot.print(indent_level: 2)
             puts "\n"
 
             next unless save_dir
             file = "#{save_dir}/#{sha}.json"
-            puts "  Snapshot data saved under #{file}\n\n"
             File.write(file, snapshot.serialize.to_json)
+            puts "  Snapshot data saved under #{file}\n\n"
           end
           Spoom::Git.checkout(sha_before, path: path)
         end

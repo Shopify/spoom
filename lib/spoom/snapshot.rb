@@ -11,6 +11,10 @@ module Spoom
       metrics = Spoom::Sorbet.srb_metrics(path: path, capture_err: true)
       return snapshot unless metrics
 
+      sha = Spoom::Git.last_commit(path: path)
+      snapshot.commit_sha = sha
+      snapshot.commit_timestamp = Spoom::Git.commit_timestamp(sha, path: path).to_i if sha
+
       snapshot.files = metrics.fetch("types.input.files", 0)
       snapshot.modules = metrics.fetch("types.input.modules.total", 0)
       snapshot.classes = metrics.fetch("types.input.classes.total", 0)
