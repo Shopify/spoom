@@ -91,7 +91,7 @@ $ spoom coverage --save
 Save coverage data under a specific directory:
 
 ```
-$ spoom coverage --save --save-dir my_data/
+$ spoom coverage --save my_data/
 ```
 
 Show typing coverage evolution based on the commits history:
@@ -115,7 +115,7 @@ $ spoom coverage timeline --save
 Save the typing coverage evolution as JSON in a specific directory:
 
 ```
-$ spoom coverage timeline --save --save_dir my_data/
+$ spoom coverage timeline --save my_data/
 ```
 
 Run `bundle install` for each commit of the timeline (may solve errors due to different Sorbet versions):

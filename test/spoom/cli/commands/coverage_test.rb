@@ -123,7 +123,7 @@ module Spoom
         end
 
         def test_save_snapshot_with_custom_dir
-          _, _, status = @project.bundle_exec("spoom coverage snapshot --save --save-dir data")
+          _, _, status = @project.bundle_exec("spoom coverage snapshot --save data")
           assert(status)
           assert_equal(1, Dir.glob("#{@project.path}/data/*.json").size)
         end
@@ -329,7 +329,7 @@ module Spoom
         def test_timeline_multiple_commits_and_save_json
           create_git_history
           assert(0, Dir.glob("#{@project.path}/spoom_data/*.json").size)
-          _, err, status = @project.bundle_exec("spoom coverage timeline --save --save-dir data")
+          _, err, status = @project.bundle_exec("spoom coverage timeline --save data")
           assert(status)
           assert_equal("", err)
           assert_equal(3, Dir.glob("#{@project.path}/data/*.json").size)
