@@ -63,7 +63,7 @@ module Spoom
     def self.commit_date(sha, path: ".")
       timestamp = commit_timestamp(sha, path: path)
       return nil unless timestamp
-      timestamp_to_date(timestamp.to_s)
+      epoch_to_time(timestamp.to_s)
     end
 
     # Get the last commit sha
@@ -76,7 +76,7 @@ module Spoom
 
     # Translate a git epoch timestamp into a Time
     sig { params(timestamp: String).returns(Time) }
-    def self.timestamp_to_date(timestamp)
+    def self.epoch_to_time(timestamp)
       Time.strptime(timestamp, "%s")
     end
 
