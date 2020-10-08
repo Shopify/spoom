@@ -89,9 +89,9 @@ module Spoom
     # Get the hash of the commit introducing the `sorbet/config` file
     sig { params(path: String).returns(T.nilable(String)) }
     def self.sorbet_intro_commit(path: ".")
-      res, _, status = Spoom::Git.log("--diff-filter=A --format='%h'  -- sorbet/config", path: path)
+      res, _, status = Spoom::Git.log("--diff-filter=A --format='%h' -1 -- sorbet/config", path: path)
       return nil unless status
-      res
+      res.strip
     end
   end
 end

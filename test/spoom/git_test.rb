@@ -101,7 +101,7 @@ module Spoom
         @project.write("sorbet/config")
         @project.commit
         sha = Spoom::Git.sorbet_intro_commit(path: @project.path)
-        assert(sha)
+        assert_match(/\A[a-z0-9]+\z/, sha)
       end
     end
   end
