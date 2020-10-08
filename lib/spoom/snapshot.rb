@@ -39,6 +39,7 @@ module Spoom
     class Snapshot < T::Struct
       extend T::Sig
 
+      prop :timestamp, Integer, default: Time.new.getutc.to_i
       prop :sorbet_version, T.nilable(String), default: nil
       prop :duration, Integer, default: 0
       prop :commit_sha, T.nilable(String), default: nil
@@ -69,6 +70,7 @@ module Spoom
       sig { params(obj: T::Hash[String, T.untyped]).returns(Snapshot) }
       def self.from_obj(obj)
         snapshot = Snapshot.new
+        snapshot.timestamp = obj.fetch("timestamp", 0)
         snapshot.sorbet_version = obj.fetch("sorbet_version", nil)
         snapshot.duration = obj.fetch("duration", 0)
         snapshot.commit_sha = obj.fetch("commit_sha", nil)
