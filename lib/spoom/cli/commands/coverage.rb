@@ -66,7 +66,7 @@ module Spoom
           unless from
             intro_sha = Spoom::Git.sorbet_intro_commit(path: path)
             intro_sha = T.must(intro_sha) # we know it's in there since in_sorbet_project!
-            from = Spoom::Git.commit_date(intro_sha, path: path)
+            from = Spoom::Git.commit_time(intro_sha, path: path)
           end
 
           timeline = Spoom::Timeline.new(from, to, path: path)
@@ -78,7 +78,7 @@ module Spoom
           end
 
           ticks.each_with_index do |sha, i|
-            date = Spoom::Git.commit_date(sha, path: path)
+            date = Spoom::Git.commit_time(sha, path: path)
             puts "Analyzing commit #{sha} - #{date&.strftime('%F')} (#{i + 1} / #{ticks.size})"
 
             Spoom::Git.checkout(sha, path: path)

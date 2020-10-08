@@ -60,7 +60,7 @@ module Spoom
 
     # Get the commit Time for a `sha`
     sig { params(sha: String, path: String).returns(T.nilable(Time)) }
-    def self.commit_date(sha, path: ".")
+    def self.commit_time(sha, path: ".")
       timestamp = commit_timestamp(sha, path: path)
       return nil unless timestamp
       epoch_to_time(timestamp.to_s)
