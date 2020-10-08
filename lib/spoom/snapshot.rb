@@ -23,6 +23,9 @@ module Spoom
       snapshot.calls_typed = metrics.fetch("types.input.sends.typed", 0)
       snapshot.calls_untyped = metrics.fetch("types.input.sends.total", 0) - snapshot.calls_typed
 
+      snapshot.duration += metrics.fetch("run.utilization.system_time.us", 0)
+      snapshot.duration += metrics.fetch("run.utilization.user_time.us", 0)
+
       Snapshot::STRICTNESSES.each do |strictness|
         next unless metrics.key?("types.input.files.sigil.#{strictness}")
         snapshot.sigils[strictness] = T.must(metrics["types.input.files.sigil.#{strictness}"])
@@ -37,6 +40,7 @@ module Spoom
       extend T::Sig
 
       prop :sorbet_version, T.nilable(String), default: nil
+      prop :duration, Integer, default: 0
       prop :commit_sha, T.nilable(String), default: nil
       prop :commit_timestamp, T.nilable(Integer), default: nil
       prop :files, Integer, default: 0
@@ -66,6 +70,7 @@ module Spoom
       def self.from_obj(obj)
         snapshot = Snapshot.new
         snapshot.sorbet_version = obj.fetch("sorbet_version", nil)
+        snapshot.duration = obj.fetch("duration", 0)
         snapshot.commit_sha = obj.fetch("commit_sha", nil)
         snapshot.commit_timestamp = obj.fetch("commit_timestamp", nil)
         snapshot.files = obj.fetch("files", 0)
