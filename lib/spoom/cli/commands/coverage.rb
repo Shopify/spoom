@@ -120,9 +120,7 @@ module Spoom
           snapshots = files.sort.map do |file|
             json = File.read(file)
             Spoom::Coverage::Snapshot.from_json(json)
-          end
-
-          snapshots.sort_by!(&:commit_timestamp)
+          end.filter(&:commit_timestamp).sort_by!(&:commit_timestamp)
 
           report = Spoom::Coverage.report(snapshots, path: exec_path)
           file = options[:file]
