@@ -1,6 +1,7 @@
 # typed: true
 # frozen_string_literal: true
 
+require_relative '../../report'
 require_relative '../../snapshot'
 require_relative '../../timeline'
 require_relative '../command_helper'
@@ -103,6 +104,33 @@ module Spoom
           Spoom::Git.checkout(sha_before, path: path)
         end
 
+        desc "report", "produce a typing coverage report"
+        option :data, type: :string, desc: "Snapshots JSON data", default: DATA_DIR
+        option :file, type: :string, default: "spoom_report.html", aliases: :f
+        def report
+          in_sorbet_project!
+
+          data_dir = options[:data]
+          files = Dir.glob("#{data_dir}/*.json")
+          if files.empty?
+            message_no_data(data_dir)
+            exit(1)
+          end
+
+          snapshots = files.sort.map do |file|
+            json = File.read(file)
+            Spoom::Coverage::Snapshot.from_json(json)
+          end
+
+          snapshots.sort_by!(&:commit_timestamp)
+
+          report = Spoom::Coverage.report(snapshots, path: exec_path)
+          file = options[:file]
+          File.write(file, report.html)
+          puts "Report generated under #{file}"
+          puts "\nUse #{colorize('spoom coverage open', :blue)} to open it."
+        end
+
         no_commands do
           def parse_time(string, option)
             return nil unless string
@@ -122,6 +150,16 @@ module Spoom
               return false
             end
             true
+          end
+
+          def message_no_data(file)
+            say_error("No snapshot files found in #{colorize(file, :blue)}")
+            $stderr.puts <<~OUT
+
+              If you already generated snapshot files under another directory use #{colorize('spoom coverage report PATH', :blue)}.
+
+              To generate snapshot files run #{colorize('spoom coverage timeline --save-dir spoom_data', :blue)}.
+            OUT
           end
         end
       end

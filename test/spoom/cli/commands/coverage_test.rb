@@ -346,6 +346,33 @@ module Spoom
           project.destroy
         end
 
+        def test_report_without_any_data
+          create_git_history
+          _, err, status = @project.bundle_exec("spoom coverage report --no-color")
+          refute(status)
+          assert_equal(<<~ERR, err)
+            Error: No snapshot files found in spoom_data
+
+            If you already generated snapshot files under another directory use spoom coverage report PATH.
+
+            To generate snapshot files run spoom coverage timeline --save-dir spoom_data.
+          ERR
+        end
+
+        def test_report_generate_html_file
+          create_git_history
+          @project.bundle_exec("spoom coverage timeline --save")
+          out, _, status = @project.bundle_exec("spoom coverage report --no-color")
+          out = T.must(out)
+          assert_equal(<<~OUT, out)
+            Report generated under spoom_report.html
+
+            Use spoom coverage open to open it.
+          OUT
+          assert(status)
+          assert(File.exist?("#{@project.path}/spoom_report.html"))
+        end
+
         private
 
         def create_git_history
