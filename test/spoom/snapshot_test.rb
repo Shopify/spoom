@@ -20,7 +20,7 @@ module Spoom
 
       def test_serialize_snapshot_data
         snapshot1 = Spoom::Coverage::Snapshot.new
-        snapshot1.sorbet_version = "sorbet_version"
+        snapshot1.version_static = "sorbet_version"
         snapshot1.commit_sha = "commit_sha"
         snapshot1.commit_timestamp = 1
         snapshot1.files = 2
@@ -37,7 +37,7 @@ module Spoom
         json2 = snapshot2.to_json
 
         assert_equal(json1, json2)
-        assert_equal("sorbet_version", snapshot2.sorbet_version)
+        assert_equal("sorbet_version", snapshot2.version_static)
         assert_equal(2, snapshot2.files)
         assert_equal(10, snapshot2.sigils["true"])
       end

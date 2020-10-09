@@ -20,12 +20,12 @@ module Spoom
               remote: .
               specs:
                 test (1.0.0)
-                  sorbet (~> 0.5.5)
+                  sorbet-static (~> 0.5.5)
 
             GEM
               remote: https://rubygems.org/
               specs:
-                sorbet (0.5.0000)
+                sorbet-static (0.5.0000)
           RB
           @project.write("lib/a.rb", <<~RB)
             # typed: false
@@ -62,7 +62,7 @@ module Spoom
           out, _ = @project.bundle_exec("spoom coverage snapshot")
           out = censor_sorbet_version(out) if out
           assert_equal(<<~MSG, out)
-            Sorbet version: X.X.XXXX
+            Sorbet static: X.X.XXXX
 
             Content:
               files: 3
@@ -93,7 +93,7 @@ module Spoom
           out, _ = @project.bundle_exec("spoom coverage snapshot")
           out = censor_sorbet_version(out) if out
           assert_equal(<<~MSG, out)
-            Sorbet version: X.X.XXXX
+            Sorbet static: X.X.XXXX
 
             Content:
               files: 4
@@ -133,7 +133,7 @@ module Spoom
           out, _ = project.bundle_exec("spoom coverage snapshot -p #{@project.path}")
           out = censor_sorbet_version(out) if out
           assert_equal(<<~MSG, out)
-            Sorbet version: X.X.XXXX
+            Sorbet static: X.X.XXXX
 
             Content:
               files: 3
@@ -175,7 +175,7 @@ module Spoom
           out&.gsub!(/commit [a-f0-9]+ - \d{4}-\d{2}-\d{2}/, "COMMIT")
           assert_equal(<<~OUT, out)
             Analyzing COMMIT (1 / 1)
-              Sorbet version: 0.5.0000
+              Sorbet static: 0.5.0000
 
               Content:
                 files: 3
@@ -207,7 +207,7 @@ module Spoom
           out&.gsub!(/commit [a-f0-9]+ - \d{4}-\d{2}-\d{2}/, "COMMIT")
           assert_equal(<<~OUT, out)
             Analyzing COMMIT (1 / 3)
-              Sorbet version: 0.5.0000
+              Sorbet static: 0.5.0000
 
               Content:
                 files: 2
@@ -227,7 +227,7 @@ module Spoom
                 typed: 6 (100%)
 
             Analyzing COMMIT (2 / 3)
-              Sorbet version: 0.5.1000
+              Sorbet static: 0.5.1000
 
               Content:
                 files: 4
@@ -248,7 +248,8 @@ module Spoom
                 typed: 7 (100%)
 
             Analyzing COMMIT (3 / 3)
-              Sorbet version: 0.5.2000
+              Sorbet static: 0.5.2000
+              Sorbet runtime: 0.5.3000
 
               Content:
                 files: 6
@@ -281,7 +282,7 @@ module Spoom
           out&.gsub!(/commit [a-f0-9]+ - \d{4}-\d{2}-\d{2}/, "COMMIT")
           assert_equal(<<~OUT, out)
             Analyzing COMMIT (1 / 2)
-              Sorbet version: 0.5.0000
+              Sorbet static: 0.5.0000
 
               Content:
                 files: 2
@@ -301,7 +302,7 @@ module Spoom
                 typed: 6 (100%)
 
             Analyzing COMMIT (2 / 2)
-              Sorbet version: 0.5.1000
+              Sorbet static: 0.5.1000
 
               Content:
                 files: 4
@@ -373,12 +374,12 @@ module Spoom
               remote: .
               specs:
                 test (1.0.0)
-                  sorbet (~> 0.5.5)
+                  sorbet-static (~> 0.5.5)
 
             GEM
               remote: https://rubygems.org/
               specs:
-                sorbet (0.5.1000)
+                sorbet-static (0.5.1000)
           RB
           @project.write("c.rb", <<~RB)
             # typed: false
@@ -394,12 +395,13 @@ module Spoom
               remote: .
               specs:
                 test (1.0.0)
-                  sorbet (~> 0.5.5)
+                  sorbet-static (~> 0.5.5)
 
             GEM
               remote: https://rubygems.org/
               specs:
-                sorbet (0.5.2000)
+                sorbet-static (0.5.2000)
+                sorbet-runtime (0.5.3000)
           RB
           @project.write("e.rb", "# typed: ignore")
           @project.write("f.rb", "# typed: __INTERNAL_STDLIB")
