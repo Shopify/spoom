@@ -131,6 +131,22 @@ module Spoom
           puts "\nUse #{colorize('spoom coverage open', :blue)} to open it."
         end
 
+        desc "open", "open the typing coverage report"
+        def open(file = "spoom_report.html")
+          unless File.exist?(file)
+            say_error("No report file to open #{colorize(file, :blue)}")
+            $stderr.puts <<~OUT
+
+              If you already generated a report under another name use #{colorize('spoom coverage open PATH', :blue)}.
+
+              To generate a report run #{colorize('spoom coverage report', :blue)}.
+            OUT
+            exit(1)
+          end
+
+          exec("open #{file}")
+        end
+
         no_commands do
           def parse_time(string, option)
             return nil unless string
