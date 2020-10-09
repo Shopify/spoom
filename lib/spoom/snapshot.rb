@@ -31,7 +31,8 @@ module Spoom
         snapshot.sigils[strictness] = T.must(metrics["types.input.files.sigil.#{strictness}"])
       end
 
-      snapshot.sorbet_version = Spoom::Sorbet.version_from_gemfile_lock(path: path)
+      snapshot.version_static = Spoom::Sorbet.version_from_gemfile_lock(gem: "sorbet-static", path: path)
+      snapshot.version_runtime = Spoom::Sorbet.version_from_gemfile_lock(gem: "sorbet-runtime", path: path)
 
       snapshot
     end
@@ -40,7 +41,8 @@ module Spoom
       extend T::Sig
 
       prop :timestamp, Integer, default: Time.new.getutc.to_i
-      prop :sorbet_version, T.nilable(String), default: nil
+      prop :version_static, T.nilable(String), default: nil
+      prop :version_runtime, T.nilable(String), default: nil
       prop :duration, Integer, default: 0
       prop :commit_sha, T.nilable(String), default: nil
       prop :commit_timestamp, T.nilable(Integer), default: nil
@@ -71,7 +73,8 @@ module Spoom
       def self.from_obj(obj)
         snapshot = Snapshot.new
         snapshot.timestamp = obj.fetch("timestamp", 0)
-        snapshot.sorbet_version = obj.fetch("sorbet_version", nil)
+        snapshot.version_static = obj.fetch("version_static", nil)
+        snapshot.version_runtime = obj.fetch("version_runtime", nil)
         snapshot.duration = obj.fetch("duration", 0)
         snapshot.commit_sha = obj.fetch("commit_sha", nil)
         snapshot.commit_timestamp = obj.fetch("commit_timestamp", nil)
@@ -108,8 +111,9 @@ module Spoom
         methods = snapshot.methods_with_sig + snapshot.methods_without_sig
         calls = snapshot.calls_typed + snapshot.calls_untyped
 
-        if snapshot.sorbet_version
-          printl("Sorbet version: #{snapshot.sorbet_version}")
+        if snapshot.version_static || snapshot.version_runtime
+          printl("Sorbet static: #{snapshot.version_static}") if snapshot.version_static
+          printl("Sorbet runtime: #{snapshot.version_runtime}") if snapshot.version_runtime
           printn
         end
         printl("Content:")
