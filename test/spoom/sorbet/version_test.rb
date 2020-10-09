@@ -31,18 +31,18 @@ module Spoom
         assert_equal("X.X.XXXX", version)
       end
 
-      def test_srb_version_from_gemfile_lock_return_nil_if_no_gemfile_lock
-        version = Spoom::Sorbet.srb_version_from_gemfile_lock(path: @project.path)
+      def test_version_from_gemfile_lock_return_nil_if_no_gemfile_lock
+        version = Spoom::Sorbet.version_from_gemfile_lock(path: @project.path)
         assert_nil(version)
       end
 
-      def test_srb_version_from_gemfile_lock_return_nil_if_gemfil_lock_does_not_contain_sorbet
+      def test_version_from_gemfile_lock_return_nil_if_gemfil_lock_does_not_contain_sorbet
         @project.write("Gemfile.lock", "")
-        version = Spoom::Sorbet.srb_version_from_gemfile_lock(path: @project.path)
+        version = Spoom::Sorbet.version_from_gemfile_lock(path: @project.path)
         assert_nil(version)
       end
 
-      def test_srb_version_from_gemfile_lock_return_sorbet_version
+      def test_version_from_gemfile_lock_return_sorbet_version
         @project.write("Gemfile.lock", <<~STR)
           PATH
             remote: .
@@ -54,10 +54,10 @@ module Spoom
           GEM
             remote: https://rubygems.org/
             specs:
-              sorbet (0.5.5916)
-                sorbet-static (= 0.5.5916)
-              sorbet-runtime (0.5.5916)
-              sorbet-static (0.5.5916-universal-darwin-14)
+              sorbet (0.5.5001)
+                sorbet-static (= 0.X.XXXX)
+              sorbet-runtime (0.5.5002)
+              sorbet-static (0.5.5003)
 
           PLATFORMS
             ruby
@@ -69,8 +69,9 @@ module Spoom
           BUNDLED WITH
              1.17.3
         STR
-        version = Spoom::Sorbet.srb_version_from_gemfile_lock(path: @project.path)
-        assert_equal("0.5.5916", version)
+        assert_equal("0.5.5001", Spoom::Sorbet.version_from_gemfile_lock(gem: "sorbet", path: @project.path))
+        assert_equal("0.5.5002", Spoom::Sorbet.version_from_gemfile_lock(gem: "sorbet-runtime", path: @project.path))
+        assert_equal("0.5.5003", Spoom::Sorbet.version_from_gemfile_lock(gem: "sorbet-static", path: @project.path))
       end
     end
   end
