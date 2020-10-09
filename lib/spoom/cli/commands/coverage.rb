@@ -27,10 +27,8 @@ module Spoom
           save_dir = options[:save]
           return unless save_dir
           FileUtils.mkdir_p(save_dir)
-          name = snapshot.commit_sha
-          name = Time.now.getutc.to_i unless name
-          file = "#{save_dir}/#{name}.json"
-          File.write(file, snapshot.serialize.to_json)
+          file = "#{save_dir}/#{snapshot.commit_sha || snapshot.timestamp}.json"
+          File.write(file, snapshot.to_json)
           puts "\nSnapshot data saved under #{file}"
         end
 
@@ -99,7 +97,7 @@ module Spoom
 
             next unless save_dir
             file = "#{save_dir}/#{sha}.json"
-            File.write(file, snapshot.serialize.to_json)
+            File.write(file, snapshot.to_json)
             puts "  Snapshot data saved under #{file}\n\n"
           end
           Spoom::Git.checkout(sha_before, path: path)

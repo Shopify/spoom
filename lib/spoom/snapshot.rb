@@ -23,6 +23,9 @@ module Spoom
       snapshot.calls_typed = metrics.fetch("types.input.sends.typed", 0)
       snapshot.calls_untyped = metrics.fetch("types.input.sends.total", 0) - snapshot.calls_typed
 
+      snapshot.duration += metrics.fetch("run.utilization.system_time.us", 0)
+      snapshot.duration += metrics.fetch("run.utilization.user_time.us", 0)
+
       Snapshot::STRICTNESSES.each do |strictness|
         next unless metrics.key?("types.input.files.sigil.#{strictness}")
         snapshot.sigils[strictness] = T.must(metrics["types.input.files.sigil.#{strictness}"])
@@ -36,7 +39,9 @@ module Spoom
     class Snapshot < T::Struct
       extend T::Sig
 
+      prop :timestamp, Integer, default: Time.new.getutc.to_i
       prop :sorbet_version, T.nilable(String), default: nil
+      prop :duration, Integer, default: 0
       prop :commit_sha, T.nilable(String), default: nil
       prop :commit_timestamp, T.nilable(Integer), default: nil
       prop :files, Integer, default: 0
@@ -55,6 +60,43 @@ module Spoom
       def print(out: $stdout, colors: true, indent_level: 0)
         printer = SnapshotPrinter.new(out: out, colors: colors, indent_level: indent_level)
         printer.print_snapshot(self)
+      end
+
+      sig { params(json: String).returns(Snapshot) }
+      def self.from_json(json)
+        from_obj(JSON.parse(json))
+      end
+
+      sig { params(obj: T::Hash[String, T.untyped]).returns(Snapshot) }
+      def self.from_obj(obj)
+        snapshot = Snapshot.new
+        snapshot.timestamp = obj.fetch("timestamp", 0)
+        snapshot.sorbet_version = obj.fetch("sorbet_version", nil)
+        snapshot.duration = obj.fetch("duration", 0)
+        snapshot.commit_sha = obj.fetch("commit_sha", nil)
+        snapshot.commit_timestamp = obj.fetch("commit_timestamp", nil)
+        snapshot.files = obj.fetch("files", 0)
+        snapshot.modules = obj.fetch("modules", 0)
+        snapshot.classes = obj.fetch("classes", 0)
+        snapshot.methods_with_sig = obj.fetch("methods_with_sig", 0)
+        snapshot.methods_without_sig = obj.fetch("methods_without_sig", 0)
+        snapshot.calls_typed = obj.fetch("calls_typed", 0)
+        snapshot.calls_untyped = obj.fetch("calls_untyped", 0)
+
+        sigils = obj.fetch("sigils", {})
+        if sigils
+          Snapshot::STRICTNESSES.each do |strictness|
+            next unless sigils.key?(strictness)
+            snapshot.sigils[strictness] = sigils[strictness]
+          end
+        end
+
+        snapshot
+      end
+
+      sig { params(arg: T.untyped).returns(String) }
+      def to_json(*arg)
+        serialize.to_json(*arg)
       end
     end
 
