@@ -83,7 +83,7 @@ module Spoom
         snapshot.files = obj.fetch("files", 0)
         snapshot.modules = obj.fetch("modules", 0)
         snapshot.classes = obj.fetch("classes", 0)
-        snapshot.singleton_classes = obj.fetch("singleton_lasses", 0)
+        snapshot.singleton_classes = obj.fetch("singleton_classes", 0)
         snapshot.methods_with_sig = obj.fetch("methods_with_sig", 0)
         snapshot.methods_without_sig = obj.fetch("methods_without_sig", 0)
         snapshot.calls_typed = obj.fetch("calls_typed", 0)
