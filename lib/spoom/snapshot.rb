@@ -18,6 +18,7 @@ module Spoom
       snapshot.files = metrics.fetch("types.input.files", 0)
       snapshot.modules = metrics.fetch("types.input.modules.total", 0)
       snapshot.classes = metrics.fetch("types.input.classes.total", 0)
+      snapshot.singleton_classes = metrics.fetch("types.input.singleton_classes.total", 0)
       snapshot.methods_with_sig = metrics.fetch("types.sig.count", 0)
       snapshot.methods_without_sig = metrics.fetch("types.input.methods.total", 0) - snapshot.methods_with_sig
       snapshot.calls_typed = metrics.fetch("types.input.sends.typed", 0)
@@ -49,6 +50,7 @@ module Spoom
       prop :files, Integer, default: 0
       prop :modules, Integer, default: 0
       prop :classes, Integer, default: 0
+      prop :singleton_classes, Integer, default: 0
       prop :methods_without_sig, Integer, default: 0
       prop :methods_with_sig, Integer, default: 0
       prop :calls_untyped, Integer, default: 0
@@ -81,6 +83,7 @@ module Spoom
         snapshot.files = obj.fetch("files", 0)
         snapshot.modules = obj.fetch("modules", 0)
         snapshot.classes = obj.fetch("classes", 0)
+        snapshot.singleton_classes = obj.fetch("singleton_lasses", 0)
         snapshot.methods_with_sig = obj.fetch("methods_with_sig", 0)
         snapshot.methods_without_sig = obj.fetch("methods_without_sig", 0)
         snapshot.calls_typed = obj.fetch("calls_typed", 0)
@@ -120,7 +123,7 @@ module Spoom
         indent
         printl("files: #{snapshot.files}")
         printl("modules: #{snapshot.modules}")
-        printl("classes: #{snapshot.classes} (including singleton classes)")
+        printl("classes: #{snapshot.classes - snapshot.singleton_classes}")
         printl("methods: #{methods}")
         dedent
         printn
