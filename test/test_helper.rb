@@ -2,9 +2,9 @@
 # frozen_string_literal: true
 
 $LOAD_PATH.unshift(File.expand_path("../../lib", __FILE__))
-require "spoom"
 
-require "test_project"
+require "spoom"
+require "spoom/test_helpers/project"
 
 module Spoom
   module TestHelper
@@ -12,9 +12,9 @@ module Spoom
 
     TEST_PROJECTS_PATH = "/tmp/spoom/tests"
 
-    sig { params(name: String).returns(TestProject) }
+    sig { params(name: String).returns(TestHelpers::Project) }
     def spoom_project(name)
-      project = TestProject.new("#{TEST_PROJECTS_PATH}/#{name}")
+      project = TestHelpers::Project.new("#{TEST_PROJECTS_PATH}/#{name}")
       project.gemfile(spoom_gemfile)
       project
     end
