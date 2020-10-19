@@ -142,48 +142,48 @@ module Spoom
             window.addEventListener("resize", redraw);
           JS
         end
-      end
 
-      class MapSigils < CircleMap
-        extend T::Sig
+        class Sigils < CircleMap
+          extend T::Sig
 
-        sig { params(id: String, sigils_tree: FileTree).void }
-        def initialize(id, sigils_tree)
-          @scores = T.let({}, T::Hash[FileTree::Node, Float])
-          @strictnesses = T.let({}, T::Hash[FileTree::Node, T.nilable(String)])
-          super(id, sigils_tree.roots.map { |r| tree_node_to_json(r) })
-        end
-
-        sig { params(node: FileTree::Node).returns(T::Hash[Symbol, T.untyped]) }
-        def tree_node_to_json(node)
-          if node.children.empty?
-            return { name: node.name, strictness: tree_node_strictness(node) }
+          sig { params(id: String, sigils_tree: FileTree).void }
+          def initialize(id, sigils_tree)
+            @scores = T.let({}, T::Hash[FileTree::Node, Float])
+            @strictnesses = T.let({}, T::Hash[FileTree::Node, T.nilable(String)])
+            super(id, sigils_tree.roots.map { |r| tree_node_to_json(r) })
           end
-          {
-            name: node.name,
-            children: node.children.values.map { |n| tree_node_to_json(n) },
-            score: tree_node_score(node),
-          }
-        end
 
-        sig { params(node: FileTree::Node).returns(T.nilable(String)) }
-        def tree_node_strictness(node)
-          @strictnesses[node] ||= node.strictness
-        end
-
-        sig { params(node: FileTree::Node).returns(Float) }
-        def tree_node_score(node)
-          unless @scores.key?(node)
-            if node.name =~ /\.rbi?$/
-              case tree_node_strictness(node)
-              when "true", "strict", "strong"
-                @scores[node] = 1.0
-              end
-            elsif !node.children.empty?
-              @scores[node] = node.children.values.sum { |n| tree_node_score(n) } / node.children.size.to_f
+          sig { params(node: FileTree::Node).returns(T::Hash[Symbol, T.untyped]) }
+          def tree_node_to_json(node)
+            if node.children.empty?
+              return { name: node.name, strictness: tree_node_strictness(node) }
             end
+            {
+              name: node.name,
+              children: node.children.values.map { |n| tree_node_to_json(n) },
+              score: tree_node_score(node),
+            }
           end
-          @scores[node] || 0.0
+
+          sig { params(node: FileTree::Node).returns(T.nilable(String)) }
+          def tree_node_strictness(node)
+            @strictnesses[node] ||= node.strictness
+          end
+
+          sig { params(node: FileTree::Node).returns(Float) }
+          def tree_node_score(node)
+            unless @scores.key?(node)
+              if node.name =~ /\.rbi?$/
+                case tree_node_strictness(node)
+                when "true", "strict", "strong"
+                  @scores[node] = 1.0
+                end
+              elsif !node.children.empty?
+                @scores[node] = node.children.values.sum { |n| tree_node_score(n) } / node.children.size.to_f
+              end
+            end
+            @scores[node] || 0.0
+          end
         end
       end
     end

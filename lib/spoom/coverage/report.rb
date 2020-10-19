@@ -130,19 +130,19 @@ module Spoom
           @snapshot = snapshot
         end
 
-        sig { returns(D3::PieSigils) }
+        sig { returns(D3::Pie::Sigils) }
         def pie_sigils
-          D3::PieSigils.new('pie_sigils', 'Sigils', snapshot)
+          D3::Pie::Sigils.new('pie_sigils', 'Sigils', snapshot)
         end
 
-        sig { returns(D3::PieCalls) }
+        sig { returns(D3::Pie::Calls) }
         def pie_calls
-          D3::PieCalls.new('pie_calls', 'Calls', snapshot)
+          D3::Pie::Calls.new('pie_calls', 'Calls', snapshot)
         end
 
-        sig { returns(D3::PieSigs) }
+        sig { returns(D3::Pie::Sigs) }
         def pie_sigs
-          D3::PieSigs.new('pie_sigs', 'Sigs', snapshot)
+          D3::Pie::Sigs.new('pie_sigs', 'Sigs', snapshot)
         end
       end
 
@@ -151,7 +151,7 @@ module Spoom
 
         sig { params(sigils_tree: FileTree, title: String).void }
         def initialize(sigils_tree:, title: "Strictness Map")
-          super(title: title, body: D3::MapSigils.new("map_sigils", sigils_tree).html)
+          super(title: title, body: D3::CircleMap::Sigils.new("map_sigils", sigils_tree).html)
         end
       end
 
@@ -168,7 +168,7 @@ module Spoom
 
           sig { params(snapshots: T::Array[Coverage::Snapshot], title: String).void }
           def initialize(snapshots:, title: "Sigils Timeline")
-            super(title: title, timeline: D3::TimelineSigils.new("timeline_sigils", snapshots))
+            super(title: title, timeline: D3::Timeline::Sigils.new("timeline_sigils", snapshots))
           end
         end
 
@@ -177,7 +177,7 @@ module Spoom
 
           sig { params(snapshots: T::Array[Coverage::Snapshot], title: String).void }
           def initialize(snapshots:, title: "Calls Timeline")
-            super(title: title, timeline: D3::TimelineCalls.new("timeline_calls", snapshots))
+            super(title: title, timeline: D3::Timeline::Calls.new("timeline_calls", snapshots))
           end
         end
 
@@ -186,7 +186,7 @@ module Spoom
 
           sig { params(snapshots: T::Array[Coverage::Snapshot], title: String).void }
           def initialize(snapshots:, title: "Signatures Timeline")
-            super(title: title, timeline: D3::TimelineSigs.new("timeline_sigs", snapshots))
+            super(title: title, timeline: D3::Timeline::Sigs.new("timeline_sigs", snapshots))
           end
         end
 
@@ -195,7 +195,7 @@ module Spoom
 
           sig { params(snapshots: T::Array[Coverage::Snapshot], title: String).void }
           def initialize(snapshots:, title: "Sorbet Versions Timeline")
-            super(title: title, timeline: D3::TimelineVersions.new("timeline_versions", snapshots))
+            super(title: title, timeline: D3::Timeline::Versions.new("timeline_versions", snapshots))
           end
         end
 
@@ -204,7 +204,7 @@ module Spoom
 
           sig { params(snapshots: T::Array[Coverage::Snapshot], title: String).void }
           def initialize(snapshots:, title: "Sorbet Typechecking Time")
-            super(title: title, timeline: D3::TimelineRuntimes.new("timeline_runtimes", snapshots))
+            super(title: title, timeline: D3::Timeline::Runtimes.new("timeline_runtimes", snapshots))
           end
         end
       end

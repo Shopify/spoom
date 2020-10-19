@@ -115,59 +115,59 @@ module Spoom
             window.addEventListener("resize", draw_#{id});
           JS
         end
-      end
 
-      class PieSigils < Pie
-        extend T::Sig
+        class Sigils < Pie
+          extend T::Sig
 
-        sig { params(id: String, title: String, snapshot: Snapshot).void }
-        def initialize(id, title, snapshot)
-          super(id, title, snapshot.sigils.select { |_k, v| v })
+          sig { params(id: String, title: String, snapshot: Snapshot).void }
+          def initialize(id, title, snapshot)
+            super(id, title, snapshot.sigils.select { |_k, v| v })
+          end
+
+          sig { override.returns(String) }
+          def tooltip
+            <<~JS
+              function tooltip_#{id}(d) {
+                tooltipPie(d, "typed: " + d.data.key, "files", sum_#{id});
+              }
+            JS
+          end
         end
 
-        sig { override.returns(String) }
-        def tooltip
-          <<~JS
-            function tooltip_#{id}(d) {
-              tooltipPie(d, "typed: " + d.data.key, "files", sum_#{id});
-            }
-          JS
-        end
-      end
+        class Calls < Pie
+          extend T::Sig
 
-      class PieCalls < Pie
-        extend T::Sig
+          sig { params(id: String, title: String, snapshot: Snapshot).void }
+          def initialize(id, title, snapshot)
+            super(id, title, { true: snapshot.calls_typed, false: snapshot.calls_untyped })
+          end
 
-        sig { params(id: String, title: String, snapshot: Snapshot).void }
-        def initialize(id, title, snapshot)
-          super(id, title, { true: snapshot.calls_typed, false: snapshot.calls_untyped })
-        end
-
-        sig { override.returns(String) }
-        def tooltip
-          <<~JS
-            function tooltip_#{id}(d) {
-              tooltipPie(d, d.data.key == "true" ? " checked" : " unchecked", "calls", sum_#{id})
-            }
-          JS
-        end
-      end
-
-      class PieSigs < Pie
-        extend T::Sig
-
-        sig { params(id: String, title: String, snapshot: Snapshot).void }
-        def initialize(id, title, snapshot)
-          super(id, title, { true: snapshot.methods_with_sig, false: snapshot.methods_without_sig })
+          sig { override.returns(String) }
+          def tooltip
+            <<~JS
+              function tooltip_#{id}(d) {
+                tooltipPie(d, d.data.key == "true" ? " checked" : " unchecked", "calls", sum_#{id})
+              }
+            JS
+          end
         end
 
-        sig { override.returns(String) }
-        def tooltip
-          <<~JS
-            function tooltip_#{id}(d) {
-              tooltipPie(d, (d.data.key == "true" ? " with" : " without") + " a signature", "calls", sum_#{id})
-            }
-          JS
+        class Sigs < Pie
+          extend T::Sig
+
+          sig { params(id: String, title: String, snapshot: Snapshot).void }
+          def initialize(id, title, snapshot)
+            super(id, title, { true: snapshot.methods_with_sig, false: snapshot.methods_without_sig })
+          end
+
+          sig { override.returns(String) }
+          def tooltip
+            <<~JS
+              function tooltip_#{id}(d) {
+                tooltipPie(d, (d.data.key == "true" ? " with" : " without") + " a signature", "calls", sum_#{id})
+              }
+            JS
+          end
         end
       end
     end
