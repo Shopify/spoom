@@ -229,5 +229,68 @@ module Spoom
         end
       end
     end
+
+    class Report < Page
+      extend T::Sig
+
+      sig { returns(String) }
+      attr_reader :project_name
+
+      sig { returns(T.nilable(String)) }
+      attr_reader :sorbet_intro_commit
+
+      sig { returns(T.nilable(Time)) }
+      attr_reader :sorbet_intro_date
+
+      sig { returns(T::Array[Snapshot]) }
+      attr_reader :snapshots
+
+      sig { returns(FileTree) }
+      attr_reader :sigils_tree
+
+      sig do
+        params(
+          project_name: String,
+          snapshots: T::Array[Snapshot],
+          sigils_tree: FileTree,
+          sorbet_intro_commit: T.nilable(String),
+          sorbet_intro_date: T.nilable(Time),
+        ).void
+      end
+      def initialize(project_name:, snapshots:, sigils_tree:, sorbet_intro_commit: nil, sorbet_intro_date: nil)
+        super(title: project_name)
+        @project_name = project_name
+        @snapshots = snapshots
+        @sigils_tree = sigils_tree
+        @sorbet_intro_commit = sorbet_intro_commit
+        @sorbet_intro_date = sorbet_intro_date
+      end
+
+      sig { override.returns(String) }
+      def header_html
+        last = T.must(snapshots.last)
+        <<~ERB
+          <h1 class="display-3">
+            #{project_name}
+            <span class="badge badge-pill badge-dark" style="font-size: 20%;">#{last.commit_sha}</span>
+          </h1>
+        ERB
+      end
+
+      sig { override.returns(T::Array[Cards::Card]) }
+      def cards
+        last = T.must(snapshots.last)
+        cards = []
+        cards << Cards::Snapshot.new(snapshot: last)
+        cards << Cards::Map.new(sigils_tree: sigils_tree)
+        cards << Cards::Timeline::Sigils.new(snapshots: snapshots)
+        cards << Cards::Timeline::Calls.new(snapshots: snapshots)
+        cards << Cards::Timeline::Sigs.new(snapshots: snapshots)
+        cards << Cards::Timeline::Versions.new(snapshots: snapshots)
+        cards << Cards::Timeline::Runtimes.new(snapshots: snapshots)
+        cards << Cards::SorbetIntro.new(sorbet_intro_commit: sorbet_intro_commit, sorbet_intro_date: sorbet_intro_date)
+        cards
+      end
+    end
   end
 end

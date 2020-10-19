@@ -1,8 +1,7 @@
 # typed: true
 # frozen_string_literal: true
 
-require_relative '../../report'
-require_relative '../../snapshot'
+require_relative '../../coverage'
 require_relative '../../timeline'
 require_relative '../command_helper'
 

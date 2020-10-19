@@ -3,41 +3,6 @@
 
 module Spoom
   module Coverage
-    extend T::Sig
-
-    sig { params(path: String).returns(Snapshot) }
-    def self.snapshot(path: '.')
-      snapshot = Snapshot.new
-      metrics = Spoom::Sorbet.srb_metrics(path: path, capture_err: true)
-      return snapshot unless metrics
-
-      sha = Spoom::Git.last_commit(path: path)
-      snapshot.commit_sha = sha
-      snapshot.commit_timestamp = Spoom::Git.commit_timestamp(sha, path: path).to_i if sha
-
-      snapshot.files = metrics.fetch("types.input.files", 0)
-      snapshot.modules = metrics.fetch("types.input.modules.total", 0)
-      snapshot.classes = metrics.fetch("types.input.classes.total", 0)
-      snapshot.singleton_classes = metrics.fetch("types.input.singleton_classes.total", 0)
-      snapshot.methods_with_sig = metrics.fetch("types.sig.count", 0)
-      snapshot.methods_without_sig = metrics.fetch("types.input.methods.total", 0) - snapshot.methods_with_sig
-      snapshot.calls_typed = metrics.fetch("types.input.sends.typed", 0)
-      snapshot.calls_untyped = metrics.fetch("types.input.sends.total", 0) - snapshot.calls_typed
-
-      snapshot.duration += metrics.fetch("run.utilization.system_time.us", 0)
-      snapshot.duration += metrics.fetch("run.utilization.user_time.us", 0)
-
-      Snapshot::STRICTNESSES.each do |strictness|
-        next unless metrics.key?("types.input.files.sigil.#{strictness}")
-        snapshot.sigils[strictness] = T.must(metrics["types.input.files.sigil.#{strictness}"])
-      end
-
-      snapshot.version_static = Spoom::Sorbet.version_from_gemfile_lock(gem: "sorbet-static", path: path)
-      snapshot.version_runtime = Spoom::Sorbet.version_from_gemfile_lock(gem: "sorbet-runtime", path: path)
-
-      snapshot
-    end
-
     class Snapshot < T::Struct
       extend T::Sig
 
