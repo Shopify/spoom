@@ -67,7 +67,7 @@ module Spoom
             Content:
               files: 3
               modules: 3
-              classes: 5 (including singleton classes)
+              classes: 1
               methods: 9
 
             Sigils:
@@ -98,7 +98,7 @@ module Spoom
             Content:
               files: 4
               modules: 3
-              classes: 5 (including singleton classes)
+              classes: 1
               methods: 10
 
             Sigils:
@@ -138,7 +138,7 @@ module Spoom
             Content:
               files: 3
               modules: 3
-              classes: 5 (including singleton classes)
+              classes: 1
               methods: 9
 
             Sigils:
@@ -180,7 +180,7 @@ module Spoom
               Content:
                 files: 3
                 modules: 3
-                classes: 5 (including singleton classes)
+                classes: 1
                 methods: 9
 
               Sigils:
@@ -212,7 +212,7 @@ module Spoom
               Content:
                 files: 2
                 modules: 1
-                classes: 3 (including singleton classes)
+                classes: 1
                 methods: 6
 
               Sigils:
@@ -232,7 +232,7 @@ module Spoom
               Content:
                 files: 4
                 modules: 1
-                classes: 5 (including singleton classes)
+                classes: 2
                 methods: 9
 
               Sigils:
@@ -254,7 +254,7 @@ module Spoom
               Content:
                 files: 6
                 modules: 1
-                classes: 5 (including singleton classes)
+                classes: 2
                 methods: 10
 
               Sigils:
@@ -287,7 +287,7 @@ module Spoom
               Content:
                 files: 2
                 modules: 1
-                classes: 3 (including singleton classes)
+                classes: 1
                 methods: 6
 
               Sigils:
@@ -307,7 +307,7 @@ module Spoom
               Content:
                 files: 4
                 modules: 1
-                classes: 5 (including singleton classes)
+                classes: 2
                 methods: 9
 
               Sigils:
