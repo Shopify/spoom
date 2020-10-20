@@ -1,9 +1,9 @@
 # typed: true
 # frozen_string_literal: true
 
-require_relative "../../file_tree"
-require_relative "../../sorbet/config"
-require_relative '../command_helper'
+require_relative "../file_tree"
+require_relative "../sorbet/config"
+require_relative 'command_helper'
 
 module Spoom
   module Cli

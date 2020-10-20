@@ -3,11 +3,11 @@
 
 require "thor"
 
-require_relative "cli/commands/bump"
-require_relative "cli/commands/config"
-require_relative "cli/commands/lsp"
-require_relative "cli/commands/coverage"
-require_relative "cli/commands/run"
+require_relative "cli/bump"
+require_relative "cli/config"
+require_relative "cli/lsp"
+require_relative "cli/coverage"
+require_relative "cli/run"
 
 module Spoom
   module Cli

@@ -3,8 +3,8 @@
 
 require 'shellwords'
 
-require_relative '../command_helper'
-require_relative "../../sorbet/lsp"
+require_relative 'command_helper'
+require_relative "../sorbet/lsp"
 
 module Spoom
   module Cli
