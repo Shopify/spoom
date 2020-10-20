@@ -124,6 +124,17 @@ Run `bundle install` for each commit of the timeline (may solve errors due to di
 $ spoom coverage timeline --bundle-install
 ```
 
+Generate a HTML typing coverage report:
+
+```
+$ spoom coverage report
+```
+
+Open the HTML typing coverage report:
+
+```
+$ spoom coverage open
+```
 
 #### Change the sigil used in files
 

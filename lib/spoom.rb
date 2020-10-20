@@ -7,7 +7,8 @@ module Spoom
   class Error < StandardError; end
 end
 
+require "spoom/config"
+
 require "spoom/sorbet"
 require "spoom/cli"
-require "spoom/config"
 require "spoom/version"

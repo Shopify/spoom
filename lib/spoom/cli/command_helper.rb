@@ -52,6 +52,19 @@ module Spoom
       def sorbet_config
         Pathname.new("#{exec_path}/#{Spoom::Config::SORBET_CONFIG}").cleanpath.to_s
       end
+
+      # Is the `--color` option true?
+      sig { returns(T::Boolean) }
+      def color?
+        T.unsafe(self).options[:color] # TODO: requires_ancestor
+      end
+
+      # Colorize a string if `color?`
+      sig { params(string: String, color: Symbol).returns(String) }
+      def colorize(string, color)
+        return string unless color?
+        string.colorize(color)
+      end
     end
   end
 end
