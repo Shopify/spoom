@@ -3,13 +3,12 @@
 
 require_relative "../file_tree"
 require_relative "../sorbet/config"
-require_relative 'command_helper'
 
 module Spoom
   module Cli
     module Commands
       class Config < Thor
-        include Spoom::Cli::CommandHelper
+        include Helper
 
         default_task :show
 

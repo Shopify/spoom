@@ -1,13 +1,11 @@
 # typed: true
 # frozen_string_literal: true
 
-require_relative 'command_helper'
-
 module Spoom
   module Cli
     module Commands
       class Run < Thor
-        include Spoom::Cli::CommandHelper
+        include Helper
 
         default_task :tc
 

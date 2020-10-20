@@ -3,13 +3,12 @@
 
 require_relative '../coverage'
 require_relative '../timeline'
-require_relative 'command_helper'
 
 module Spoom
   module Cli
     module Commands
       class Coverage < Thor
-        include Spoom::Cli::CommandHelper
+        include Helper
 
         DATA_DIR = "spoom_data"
 

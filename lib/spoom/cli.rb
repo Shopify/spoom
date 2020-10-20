@@ -3,6 +3,8 @@
 
 require "thor"
 
+require_relative 'cli/helper'
+
 require_relative "cli/bump"
 require_relative "cli/config"
 require_relative "cli/lsp"
@@ -13,7 +15,7 @@ module Spoom
   module Cli
     class Main < Thor
       extend T::Sig
-      include Spoom::Cli::CommandHelper
+      include Helper
 
       class_option :color, desc: "Use colors", type: :boolean, default: true
       class_option :path, desc: "Run spoom in a specific path", type: :string, default: ".", aliases: :p

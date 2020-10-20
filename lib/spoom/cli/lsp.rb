@@ -3,14 +3,13 @@
 
 require 'shellwords'
 
-require_relative 'command_helper'
 require_relative "../sorbet/lsp"
 
 module Spoom
   module Cli
     module Commands
       class LSP < Thor
-        include Spoom::Cli::CommandHelper
+        include Helper
 
         default_task :show
 
