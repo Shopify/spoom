@@ -1,8 +1,6 @@
 # typed: true
 # frozen_string_literal: true
 
-require "pathname"
-
 require "test_helper"
 
 module Spoom
