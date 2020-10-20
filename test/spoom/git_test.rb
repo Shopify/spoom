@@ -17,6 +17,12 @@ module Spoom
         @project.destroy
       end
 
+      def test_exec_with_unexisting_path
+        _, err, status = Spoom::Git.exec("git ls", path: "/path/not/found")
+        assert_equal("Error: `/path/not/found` is not a directory.", err)
+        refute(status)
+      end
+
       def test_last_commit_if_not_git_dir
         @project.remove(".git")
         assert(Spoom::Git.last_commit(path: @project.path).nil?)

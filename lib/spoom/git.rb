@@ -11,6 +11,7 @@ module Spoom
     # Execute a `command`
     sig { params(command: String, arg: String, path: String).returns([String, String, T::Boolean]) }
     def self.exec(command, *arg, path: '.')
+      return "", "Error: `#{path}` is not a directory.", false unless File.directory?(path)
       opts = {}
       opts[:chdir] = path
       _, o, e, s = Open3.popen3(*T.unsafe([command, *T.unsafe(arg), opts]))
