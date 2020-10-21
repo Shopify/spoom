@@ -6,7 +6,7 @@ require "stringio"
 
 module Spoom
   module Cli
-    module CommandHelper
+    module Helper
       extend T::Sig
       include Thor::Shell
 

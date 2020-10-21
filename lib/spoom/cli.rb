@@ -3,36 +3,38 @@
 
 require "thor"
 
-require_relative "cli/commands/bump"
-require_relative "cli/commands/config"
-require_relative "cli/commands/lsp"
-require_relative "cli/commands/coverage"
-require_relative "cli/commands/run"
+require_relative 'cli/helper'
+
+require_relative "cli/bump"
+require_relative "cli/config"
+require_relative "cli/lsp"
+require_relative "cli/coverage"
+require_relative "cli/run"
 
 module Spoom
   module Cli
     class Main < Thor
       extend T::Sig
-      include Spoom::Cli::CommandHelper
+      include Helper
 
       class_option :color, desc: "Use colors", type: :boolean, default: true
       class_option :path, desc: "Run spoom in a specific path", type: :string, default: ".", aliases: :p
       map T.unsafe(%w[--version -v] => :__print_version)
 
       desc "bump", "bump Sorbet sigils from `false` to `true` when no errors"
-      subcommand "bump", Spoom::Cli::Commands::Bump
+      subcommand "bump", Spoom::Cli::Bump
 
       desc "config", "manage Sorbet config"
-      subcommand "config", Spoom::Cli::Commands::Config
+      subcommand "config", Spoom::Cli::Config
 
       desc "coverage", "collect metrics related to Sorbet coverage"
-      subcommand "coverage", Spoom::Cli::Commands::Coverage
+      subcommand "coverage", Spoom::Cli::Coverage
 
       desc "lsp", "send LSP requests to Sorbet"
-      subcommand "lsp", Spoom::Cli::Commands::LSP
+      subcommand "lsp", Spoom::Cli::LSP
 
       desc "tc", "run Sorbet and parses its output"
-      subcommand "tc", Spoom::Cli::Commands::Run
+      subcommand "tc", Spoom::Cli::Run
 
       desc "files", "list all the files typechecked by Sorbet"
       def files
