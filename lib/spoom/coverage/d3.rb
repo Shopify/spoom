@@ -10,6 +10,12 @@ module Spoom
     module D3
       extend T::Sig
 
+      COLOR_IGNORE = "#999"
+      COLOR_FALSE = "#db4437"
+      COLOR_TRUE = "#0f9d58"
+      COLOR_STRICT = "#0a7340"
+      COLOR_STRONG = "#064828"
+
       sig { returns(String) }
       def self.header_style
         <<~CSS
@@ -50,23 +56,25 @@ module Spoom
         CSS
       end
 
-      sig { returns(String) }
-      def self.header_script
+      sig { params(palette: ColorPalette).returns(String) }
+      def self.header_script(palette)
         <<~JS
           var parseDate = d3.timeParse("%s");
 
           function strictnessColor(strictness) {
             switch(strictness) {
+              case "ignore":
+                return "#{palette.ignore}";
               case "false":
-                return "#db4437";
+                return "#{palette.false}";
               case "true":
-                return "#0f9d58";
+                return "#{palette.true}";
               case "strict":
-                return "#0a7340";
+                return "#{palette.strict}";
               case "strong":
-                return "#064828";
+                return "#{palette.strong}";
             }
-            return "#999";
+            return "#{palette.false}";
           }
 
           function toPercent(value, sum) {
@@ -88,6 +96,14 @@ module Spoom
           #{CircleMap.header_script}
           #{Timeline.header_script}
         JS
+      end
+
+      class ColorPalette < T::Struct
+        prop :ignore, String
+        prop :false, String
+        prop :true, String
+        prop :strict, String
+        prop :strong, String
       end
     end
   end
