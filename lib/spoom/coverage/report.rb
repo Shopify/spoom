@@ -46,10 +46,14 @@ module Spoom
       sig { returns(String) }
       attr_reader :title
 
-      sig { params(title: String, template: String).void }
-      def initialize(title:, template: TEMPLATE)
+      sig { returns(D3::ColorPalette) }
+      attr_reader :palette
+
+      sig { params(title: String, palette: D3::ColorPalette, template: String).void }
+      def initialize(title:, palette:, template: TEMPLATE)
         super(template: template)
         @title = title
+        @palette = palette
       end
 
       sig { returns(String) }
@@ -59,7 +63,7 @@ module Spoom
 
       sig { returns(String) }
       def header_script
-        D3.header_script
+        D3.header_script(palette)
       end
 
       sig { returns(String) }
@@ -251,14 +255,22 @@ module Spoom
       sig do
         params(
           project_name: String,
+          palette: D3::ColorPalette,
           snapshots: T::Array[Snapshot],
           sigils_tree: FileTree,
           sorbet_intro_commit: T.nilable(String),
           sorbet_intro_date: T.nilable(Time),
         ).void
       end
-      def initialize(project_name:, snapshots:, sigils_tree:, sorbet_intro_commit: nil, sorbet_intro_date: nil)
-        super(title: project_name)
+      def initialize(
+        project_name:,
+        palette:,
+        snapshots:,
+        sigils_tree:,
+        sorbet_intro_commit: nil,
+        sorbet_intro_date: nil
+      )
+        super(title: project_name, palette: palette)
         @project_name = project_name
         @snapshots = snapshots
         @sigils_tree = sigils_tree

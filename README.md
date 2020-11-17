@@ -124,10 +124,21 @@ Run `bundle install` for each commit of the timeline (may solve errors due to di
 $ spoom coverage timeline --bundle-install
 ```
 
-Generate a HTML typing coverage report:
+Generate an HTML typing coverage report:
 
 ```
 $ spoom coverage report
+```
+
+Change the colors used for strictnesses (useful for colorblind folks):
+
+```
+$ spoom coverage report \
+  --color-true "#648ffe" \
+  --color-false "#fe6002" \
+  --color-ignore "#feb000" \
+  --color-strict "#795ef0" \
+  --color-strong "#6444f1"
 ```
 
 Open the HTML typing coverage report:

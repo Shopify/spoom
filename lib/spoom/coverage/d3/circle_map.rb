@@ -69,7 +69,7 @@ module Spoom
 
             var dirColor = d3.scaleLinear()
               .domain([1, 0])
-              .range(["#0f9d58", "#db4437"])
+              .range([strictnessColor("true"), strictnessColor("false")])
               .interpolate(d3.interpolateRgb);
 
             function redraw() {

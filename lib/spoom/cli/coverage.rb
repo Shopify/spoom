@@ -104,6 +104,11 @@ module Spoom
       desc "report", "produce a typing coverage report"
       option :data, type: :string, desc: "Snapshots JSON data", default: DATA_DIR
       option :file, type: :string, default: "spoom_report.html", aliases: :f
+      option :color_ignore, type: :string, default: Spoom::Coverage::D3::COLOR_IGNORE
+      option :color_false, type: :string, default: Spoom::Coverage::D3::COLOR_FALSE
+      option :color_true, type: :string, default: Spoom::Coverage::D3::COLOR_TRUE
+      option :color_strict, type: :string, default: Spoom::Coverage::D3::COLOR_STRICT
+      option :color_strong, type: :string, default: Spoom::Coverage::D3::COLOR_STRONG
       def report
         in_sorbet_project!
 
@@ -119,7 +124,15 @@ module Spoom
           Spoom::Coverage::Snapshot.from_json(json)
         end.filter(&:commit_timestamp).sort_by!(&:commit_timestamp)
 
-        report = Spoom::Coverage.report(snapshots, path: exec_path)
+        palette = Spoom::Coverage::D3::ColorPalette.new(
+          ignore: options[:color_ignore],
+          false: options[:color_false],
+          true: options[:color_true],
+          strict: options[:color_strict],
+          strong: options[:color_strong]
+        )
+
+        report = Spoom::Coverage.report(snapshots, palette: palette, path: exec_path)
         file = options[:file]
         File.write(file, report.html)
         puts "Report generated under #{file}"
