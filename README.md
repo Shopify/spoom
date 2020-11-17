@@ -22,6 +22,28 @@ Or install it yourself as:
 
 `spoom` provides both a CLI and an API to interact with Sorbet.
 
+### Generate a typing coverage report
+
+Spoom can create a typing coverage report from Sorbet and Git data:
+
+![Coverage Report](docs/report.png)
+
+After installing the `spoom` gem, run the `timeline` command to collect the history data:
+
+```
+$ spoom coverage timeline --save
+```
+
+Then create the HTML page with `report`:
+
+```
+$ spoom coverage report
+```
+
+Your report will be generated under `spoom_report.html`.
+
+See all the [Typing Coverage](#typing-coverage) CLI commands for more details.
+
 ### Command Line Interface
 
 #### Sorbet configuration commands
