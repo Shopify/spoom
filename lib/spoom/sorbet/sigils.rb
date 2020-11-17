@@ -55,6 +55,7 @@ module Spoom
       # * returns nil if no sigil
       sig { params(path: T.any(String, Pathname)).returns(T.nilable(String)) }
       def self.file_strictness(path)
+        return nil unless File.exist?(path)
         content = File.read(path)
         strictness_in_content(content)
       end
