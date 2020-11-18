@@ -164,7 +164,7 @@ module Spoom
           def tooltip
             <<~JS
               function tooltip_#{id}(d) {
-                tooltipPie(d, (d.data.key == "true" ? " with" : " without") + " a signature", "calls", sum_#{id})
+                tooltipPie(d, (d.data.key == "true" ? " with" : " without") + " a signature", "methods", sum_#{id})
               }
             JS
           end
