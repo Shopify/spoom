@@ -95,12 +95,6 @@ module Spoom
         return name unless parent
         "#{parent.path}/#{name}"
       end
-
-      # Strictness of this file (or `nil` if no strictness or the node is a directory)
-      sig { returns(T.nilable(String)) }
-      def strictness
-        Spoom::Sorbet::Sigils.file_strictness(path)
-      end
     end
 
     # An internal class used to print a FileTree
@@ -132,7 +126,7 @@ module Spoom
         printt
         if node.children.empty?
           if @show_strictness
-            strictness = node.strictness
+            strictness = node_strictness(node)
             if @colors
               print_colored(node.name, strictness_color(strictness))
             elsif strictness
@@ -160,6 +154,11 @@ module Spoom
       end
 
       private
+
+      sig { params(node: FileTree::Node).returns(T.nilable(String)) }
+      def node_strictness(node)
+        Spoom::Sorbet::Sigils.file_strictness(node.path)
+      end
 
       sig { params(strictness: T.nilable(String)).returns(Symbol) }
       def strictness_color(strictness)

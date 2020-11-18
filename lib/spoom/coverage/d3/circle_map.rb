@@ -167,7 +167,7 @@ module Spoom
 
           sig { params(node: FileTree::Node).returns(T.nilable(String)) }
           def tree_node_strictness(node)
-            @strictnesses[node] ||= node.strictness
+            @strictnesses[node] ||= Spoom::Sorbet::Sigils.file_strictness(node.path)
           end
 
           sig { params(node: FileTree::Node).returns(Float) }
