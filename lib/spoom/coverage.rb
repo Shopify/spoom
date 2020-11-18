@@ -67,7 +67,7 @@ module Spoom
       files = Sorbet.srb_files(config, path: path)
       files.select! { |file| file =~ /\.rb$/ }
       files.reject! { |file| file =~ %r{/test/} }
-      FileTree.new(files)
+      FileTree.new(files, strip_prefix: path)
     end
   end
 end
