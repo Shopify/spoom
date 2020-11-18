@@ -62,8 +62,14 @@ module Spoom
       ).void
     end
     def print(out: $stdout, show_strictness: true, colors: true, indent_level: 0)
-      printer = TreePrinter.new(out: out, show_strictness: show_strictness, colors: colors, indent_level: indent_level)
-      printer.print_tree(self)
+      printer = TreePrinter.new(
+        tree: self,
+        out: out,
+        show_strictness: show_strictness,
+        colors: colors,
+        indent_level: indent_level
+      )
+      printer.print_tree
     end
 
     private
@@ -103,21 +109,26 @@ module Spoom
     class TreePrinter < Spoom::Printer
       extend T::Sig
 
+      sig { returns(FileTree) }
+      attr_reader :tree
+
       sig do
         params(
+          tree: FileTree,
           out: T.any(IO, StringIO),
           show_strictness: T::Boolean,
           colors: T::Boolean,
           indent_level: Integer
         ).void
       end
-      def initialize(out: $stdout, show_strictness: true, colors: true, indent_level: 0)
+      def initialize(tree:, out: $stdout, show_strictness: true, colors: true, indent_level: 0)
         super(out: out, colors: colors, indent_level: indent_level)
+        @tree = tree
         @show_strictness = show_strictness
       end
 
-      sig { params(tree: FileTree).void }
-      def print_tree(tree)
+      sig { void }
+      def print_tree
         print_nodes(tree.roots)
       end
 
