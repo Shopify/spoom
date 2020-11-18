@@ -48,7 +48,7 @@ module Spoom
         if files.empty?
           say(" NONE")
         else
-          tree = FileTree.new(files)
+          tree = FileTree.new(files, strip_prefix: path)
           tree.print(colors: options[:color], indent_level: 2)
         end
       end

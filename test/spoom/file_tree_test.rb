@@ -9,6 +9,8 @@ require "stringio"
 module Spoom
   module Sorbet
     class FileTreeTest < Minitest::Test
+      include Spoom::TestHelper
+
       def test_empty_file_tree_contains_no_path
         tree = Spoom::FileTree.new
         assert(tree.paths.empty?)
@@ -61,6 +63,55 @@ module Spoom
             c/
               d/
                 e.rb
+        EXP
+      end
+
+      def test_file_tree_printer_with_real_files
+        project = spoom_project("test_file_tree")
+        project.write("a/b/c/d/e1.rb", "# typed: true")
+        project.write("a/b/c/d/e2.rb", "# typed: false")
+        project.write("a/b/c.rb", "# typed: strict")
+        project.write("a/b.rb")
+        tree = Spoom::FileTree.new(project.files)
+        out = StringIO.new
+        tree.print(out: out, colors: false)
+        assert_equal(<<~EXP, out.string)
+          /
+            tmp/
+              spoom/
+                tests/
+                  test_file_tree/
+                    Gemfile
+                    a/
+                      b/
+                        c/
+                          d/
+                            e1.rb (true)
+                            e2.rb (false)
+                        c.rb (strict)
+                      b.rb
+        EXP
+      end
+
+      def test_file_tree_printer_strip_prefix
+        project = spoom_project("test_file_tree")
+        project.write("a/b/c/d/e1.rb", "# typed: true")
+        project.write("a/b/c/d/e2.rb", "# typed: false")
+        project.write("a/b/c.rb", "# typed: strict")
+        project.write("a/b.rb")
+        tree = Spoom::FileTree.new(project.files, strip_prefix: project.path)
+        out = StringIO.new
+        tree.print(out: out, colors: false)
+        assert_equal(<<~EXP, out.string)
+          Gemfile
+          a/
+            b/
+              c/
+                d/
+                  e1.rb (true)
+                  e2.rb (false)
+              c.rb (strict)
+            b.rb
         EXP
       end
     end
