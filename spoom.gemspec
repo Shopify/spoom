@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
   spec.executables   = %w{spoom}
   spec.require_paths = ["lib"]
 
-  spec.files         = Dir.glob("lib/**/*.rb") + %w(
+  spec.files         = Dir.glob(["lib/**/*.rb", "templates/**/*.erb"]) + %w(
     README.md
     Gemfile
     Rakefile
