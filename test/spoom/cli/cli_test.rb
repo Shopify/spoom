@@ -128,14 +128,9 @@ module Spoom
         out, _ = @project.bundle_exec("spoom files --no-color --path #{project.path}")
         assert_equal(<<~MSG, out)
           Files matching `/tmp/spoom/tests/test_files/sorbet/config`:
-            /
-              tmp/
-                spoom/
-                  tests/
-                    test_files/
-                      lib/
-                        file1.rb (true)
-                        file2.rb (true)
+            lib/
+              file1.rb (true)
+              file2.rb (true)
         MSG
       end
     end

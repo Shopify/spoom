@@ -134,6 +134,11 @@ module Spoom
         project.destroy
       end
 
+      def test_file_strictness_returns_nil_if_file_not_found
+        strictness = Sigils.file_strictness("/file/not/found.rb")
+        assert_nil(strictness)
+      end
+
       def test_file_strictness_with_valid_sigil
         project = spoom_project("test_sigils")
         project.write("file.rb", "# typed: true")

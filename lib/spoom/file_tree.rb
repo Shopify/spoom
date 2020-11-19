@@ -6,9 +6,13 @@ module Spoom
   class FileTree
     extend T::Sig
 
-    sig { params(paths: T::Enumerable[String]).void }
-    def initialize(paths = [])
+    sig { returns(T.nilable(String)) }
+    attr_reader :strip_prefix
+
+    sig { params(paths: T::Enumerable[String], strip_prefix: T.nilable(String)).void }
+    def initialize(paths = [], strip_prefix: nil)
       @roots = T.let({}, T::Hash[String, Node])
+      @strip_prefix = strip_prefix
       add_paths(paths)
     end
 
@@ -23,6 +27,8 @@ module Spoom
     # This will create all nodes until the root of `path`.
     sig { params(path: String).returns(Node) }
     def add_path(path)
+      prefix = @strip_prefix
+      path = path.delete_prefix("#{prefix}/") if prefix
       parts = path.split("/")
       if path.empty? || parts.size == 1
         return @roots[path] ||= Node.new(parent: nil, name: path)
@@ -62,8 +68,14 @@ module Spoom
       ).void
     end
     def print(out: $stdout, show_strictness: true, colors: true, indent_level: 0)
-      printer = TreePrinter.new(out: out, show_strictness: show_strictness, colors: colors, indent_level: indent_level)
-      printer.print_tree(self)
+      printer = TreePrinter.new(
+        tree: self,
+        out: out,
+        show_strictness: show_strictness,
+        colors: colors,
+        indent_level: indent_level
+      )
+      printer.print_tree
     end
 
     private
@@ -95,12 +107,6 @@ module Spoom
         return name unless parent
         "#{parent.path}/#{name}"
       end
-
-      # Strictness of this file (or `nil` if no strictness or the node is a directory)
-      sig { returns(T.nilable(String)) }
-      def strictness
-        Spoom::Sorbet::Sigils.file_strictness(path)
-      end
     end
 
     # An internal class used to print a FileTree
@@ -109,21 +115,26 @@ module Spoom
     class TreePrinter < Spoom::Printer
       extend T::Sig
 
+      sig { returns(FileTree) }
+      attr_reader :tree
+
       sig do
         params(
+          tree: FileTree,
           out: T.any(IO, StringIO),
           show_strictness: T::Boolean,
           colors: T::Boolean,
           indent_level: Integer
         ).void
       end
-      def initialize(out: $stdout, show_strictness: true, colors: true, indent_level: 0)
+      def initialize(tree:, out: $stdout, show_strictness: true, colors: true, indent_level: 0)
         super(out: out, colors: colors, indent_level: indent_level)
+        @tree = tree
         @show_strictness = show_strictness
       end
 
-      sig { params(tree: FileTree).void }
-      def print_tree(tree)
+      sig { void }
+      def print_tree
         print_nodes(tree.roots)
       end
 
@@ -132,7 +143,7 @@ module Spoom
         printt
         if node.children.empty?
           if @show_strictness
-            strictness = node.strictness
+            strictness = node_strictness(node)
             if @colors
               print_colored(node.name, strictness_color(strictness))
             elsif strictness
@@ -160,6 +171,14 @@ module Spoom
       end
 
       private
+
+      sig { params(node: FileTree::Node).returns(T.nilable(String)) }
+      def node_strictness(node)
+        path = node.path
+        prefix = tree.strip_prefix
+        path = "#{prefix}/#{path}" if prefix
+        Spoom::Sorbet::Sigils.file_strictness(path)
+      end
 
       sig { params(strictness: T.nilable(String)).returns(Symbol) }
       def strictness_color(strictness)

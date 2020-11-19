@@ -53,6 +53,12 @@ module Spoom
         FileUtils.rm_rf(absolute_path(rel_path))
       end
 
+      # List all files in this project
+      sig { returns(T::Array[String]) }
+      def files
+        Dir.glob("#{@path}/**/*").sort
+      end
+
       # Actions
 
       # Run `git init` in this project

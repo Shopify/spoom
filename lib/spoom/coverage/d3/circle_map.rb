@@ -150,6 +150,7 @@ module Spoom
           def initialize(id, sigils_tree)
             @scores = T.let({}, T::Hash[FileTree::Node, Float])
             @strictnesses = T.let({}, T::Hash[FileTree::Node, T.nilable(String)])
+            @sigils_tree = sigils_tree
             super(id, sigils_tree.roots.map { |r| tree_node_to_json(r) })
           end
 
@@ -167,7 +168,10 @@ module Spoom
 
           sig { params(node: FileTree::Node).returns(T.nilable(String)) }
           def tree_node_strictness(node)
-            @strictnesses[node] ||= node.strictness
+            prefix = @sigils_tree.strip_prefix
+            path = node.path
+            path = "#{prefix}/#{path}" if prefix
+            @strictnesses[node] ||= Spoom::Sorbet::Sigils.file_strictness(path)
           end
 
           sig { params(node: FileTree::Node).returns(Float) }
