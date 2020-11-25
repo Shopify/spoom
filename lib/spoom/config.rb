@@ -1,6 +1,8 @@
 # typed: true
 # frozen_string_literal: true
 
+require 'pathname'
+
 module Spoom
   module Config
     SORBET_CONFIG = "sorbet/config"
