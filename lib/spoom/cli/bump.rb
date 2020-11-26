@@ -34,6 +34,7 @@ module Spoom
           exit(1)
         end
 
+        directory = File.expand_path(directory)
         files_to_bump = Sorbet::Sigils.files_with_sigil_strictness(directory, from)
         Sorbet::Sigils.change_sigil_in_files(files_to_bump, to)
 
@@ -46,8 +47,10 @@ module Spoom
         errors = Sorbet::Errors::Parser.parse_string(output)
 
         files_with_errors = errors.map do |err|
-          path = err.file
-          File.join(directory, path) if path && File.file?(path)
+          path = File.expand_path(err.file)
+          next unless path.start_with?(directory)
+          next unless File.file?(path)
+          path
         end.compact.uniq
 
         Sorbet::Sigils.change_sigil_in_files(files_with_errors, from)

@@ -42,16 +42,16 @@ module Spoom
       end
 
       def test_bump_doesnt_change_sigils_outside_directory
-        project = spoom_project("test_bump2")
-        project.write("file1.rb", "# typed: false")
-        @project.write("file2.rb", "# typed: false")
+        @project.write("lib/a/file.rb", "# typed: false")
+        @project.write("lib/b/file.rb", "# typed: false")
+        @project.write("lib/c/file.rb", "# typed: true\n\nfoo.bar")
+        @project.bundle_exec("spoom bump lib/b")
 
-        @project.bundle_exec("spoom bump")
+        assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/lib/a/file.rb"))
+        assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/lib/b/file.rb"))
+        assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/lib/c/file.rb"))
 
-        assert_equal("false", Sorbet::Sigils.file_strictness("#{project.path}/file1.rb"))
-        assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
-
-        project.destroy
+        @project.destroy
       end
 
       def test_bump_nondefault_from_to_complete
