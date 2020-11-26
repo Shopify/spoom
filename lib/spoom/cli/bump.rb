@@ -35,12 +35,11 @@ module Spoom
         end
 
         files_to_bump = Sorbet::Sigils.files_with_sigil_strictness(directory, from)
-
         Sorbet::Sigils.change_sigil_in_files(files_to_bump, to)
 
         return if force
 
-        output, no_errors = Sorbet.srb_tc(path: File.expand_path(directory), capture_err: true)
+        output, no_errors = Sorbet.srb_tc(path: exec_path, capture_err: true)
 
         return if no_errors
 
