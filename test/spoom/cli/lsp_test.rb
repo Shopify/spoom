@@ -21,10 +21,10 @@ module Spoom
 
       def test_cant_open_without_config
         @project.remove("sorbet/config")
-        _, err = @project.bundle_exec("spoom lsp --no-color find Foo")
-        assert_equal(<<~MSG, err)
-          Error: not in a Sorbet project (no sorbet/config)
-        MSG
+        out, err, status = @project.bundle_exec("spoom lsp --no-color find Foo")
+        assert_empty(out)
+        assert_equal("Error: not in a Sorbet project (sorbet/config not found)", err.lines.first.chomp)
+        refute(status)
       end
 
       def test_cant_open_with_errors

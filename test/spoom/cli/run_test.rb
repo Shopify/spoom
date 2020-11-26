@@ -31,12 +31,12 @@ module Spoom
         @project.destroy
       end
 
-      def test_return_error_if_no_sorbet_config
+      def test_timeline_outside_sorbet_dir
         @project.remove("sorbet/config")
-        _, err = @project.bundle_exec("spoom tc")
-        assert_equal(<<~MSG, err)
-          Error: not in a Sorbet project (no sorbet/config)
-        MSG
+        out, err, status = @project.bundle_exec("spoom tc --no-color")
+        assert_empty(out)
+        assert_equal("Error: not in a Sorbet project (sorbet/config not found)", err.lines.first.chomp)
+        refute(status)
       end
 
       def test_display_no_errors_without_filter

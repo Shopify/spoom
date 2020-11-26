@@ -19,10 +19,9 @@ module Spoom
 
       def test_bump_outside_sorbet_dir
         @project.remove("sorbet/config")
-        out, err, status = @project.bundle_exec("spoom bump")
-
+        out, err, status = @project.bundle_exec("spoom bump --no-color")
         assert_empty(out)
-        assert_equal("Error: not in a Sorbet project (no sorbet/config)", err.strip)
+        assert_equal("Error: not in a Sorbet project (sorbet/config not found)", err.lines.first.chomp)
         refute(status)
       end
 

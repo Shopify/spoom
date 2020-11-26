@@ -82,6 +82,14 @@ module Spoom
         assert_equal(0, Dir.glob("#{@project.path}/spoom_data/*.json").size)
       end
 
+      def test_snapshot_outside_sorbet_dir
+        @project.remove("sorbet/config")
+        out, err, status = @project.bundle_exec("spoom coverage snapshot --no-color")
+        assert_empty(out)
+        assert_equal("Error: not in a Sorbet project (sorbet/config not found)", err.lines.first.chomp)
+        refute(status)
+      end
+
       def test_display_metrics_do_not_show_errors
         @project.write("lib/error.rb", <<~RB)
           # typed: true
@@ -156,12 +164,10 @@ module Spoom
 
       def test_timeline_outside_sorbet_dir
         @project.remove("sorbet/config")
-        out, err, status = @project.bundle_exec("spoom coverage snapshot")
+        out, err, status = @project.bundle_exec("spoom coverage timeline --no-color")
+        assert_empty(out)
+        assert_equal("Error: not in a Sorbet project (sorbet/config not found)", err.lines.first.chomp)
         refute(status)
-        assert_equal("", out)
-        assert_equal(<<~MSG, err)
-          Error: not in a Sorbet project (no sorbet/config)
-        MSG
       end
 
       def test_timeline_one_commit
@@ -341,6 +347,14 @@ module Spoom
         assert_equal("", err)
         assert_equal(3, Dir.glob("#{project.path}/spoom_data/*.json").size)
         project.destroy
+      end
+
+      def test_report_outside_sorbet_dir
+        @project.remove("sorbet/config")
+        out, err, status = @project.bundle_exec("spoom coverage report --no-color")
+        assert_empty(out)
+        assert_equal("Error: not in a Sorbet project (sorbet/config not found)", err.lines.first.chomp)
+        refute(status)
       end
 
       def test_report_without_any_data

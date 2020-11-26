@@ -37,7 +37,11 @@ module Spoom
       sig { void }
       def in_sorbet_project!
         unless in_sorbet_project?
-          say_error("not in a Sorbet project (no sorbet/config)")
+          say_error(
+            "not in a Sorbet project (#{colorize(sorbet_config, :yellow)} not found)\n\n" \
+            "When running spoom from another path than the project's root, " \
+            "use #{colorize('--path PATH', :blue)} to specify the path to the root."
+          )
           Kernel.exit(1)
         end
       end
