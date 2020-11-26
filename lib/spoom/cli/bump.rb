@@ -51,9 +51,6 @@ module Spoom
 
         Sorbet::Sigils.change_sigil_in_files(files_with_errors, from)
       end
-
-      no_commands do
-      end
     end
   end
 end
