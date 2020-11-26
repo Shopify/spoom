@@ -17,6 +17,15 @@ module Spoom
         @project.destroy
       end
 
+      def test_bump_outside_sorbet_dir
+        @project.remove("sorbet/config")
+        out, err, status = @project.bundle_exec("spoom bump")
+
+        assert_empty(out)
+        assert_equal("Error: not in a Sorbet project (no sorbet/config)", err.strip)
+        refute(status)
+      end
+
       def test_bump_files_one_error_no_bump_one_no_error_bump
         @project.write("file1.rb", <<~RB)
           # typed: false

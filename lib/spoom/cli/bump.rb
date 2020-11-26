@@ -18,6 +18,8 @@ module Spoom
       option :force, desc: "change strictness without type checking", type: :boolean, default: false, aliases: :f
       sig { params(directory: String).void }
       def bump(directory = ".")
+        in_sorbet_project!
+
         from = options[:from]
         to = options[:to]
         force = options[:force]
