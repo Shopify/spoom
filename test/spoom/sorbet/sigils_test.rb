@@ -74,6 +74,16 @@ module Spoom
         assert_equal("no", strictness)
       end
 
+      def test_file_with_non_utf8_encoding
+        content = <<~STR
+          # typed: true
+          "#{[0x89].pack('c*')}"
+        STR
+
+        strictness = Sigils.strictness_in_content(content.dup.force_encoding("ISO-8859-1"))
+        assert_equal("true", strictness)
+      end
+
       def test_update_sigil_to_use_valid_strictness
         content = <<~STR
           # typed: ignore

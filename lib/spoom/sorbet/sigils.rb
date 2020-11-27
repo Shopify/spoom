@@ -56,14 +56,14 @@ module Spoom
       sig { params(path: T.any(String, Pathname)).returns(T.nilable(String)) }
       def self.file_strictness(path)
         return nil unless File.exist?(path)
-        content = File.read(path)
+        content = File.read(path, encoding: 'UTF-8')
         strictness_in_content(content)
       end
 
       # changes the sigil in the file at the passed path to the specified new strictness
       sig { params(path: T.any(String, Pathname), new_strictness: String).returns(T::Boolean) }
       def self.change_sigil_in_file(path, new_strictness)
-        content = File.read(path)
+        content = File.read(path, encoding: 'UTF-8')
         new_content = update_sigil(content, new_strictness)
 
         File.write(path, new_content)
