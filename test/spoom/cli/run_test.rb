@@ -41,22 +41,24 @@ module Spoom
 
       def test_display_no_errors_without_filter
         @project.sorbet_config("file.rb")
-        _, err = @project.bundle_exec("spoom tc")
+        _, err, status = @project.bundle_exec("spoom tc")
         assert_equal(<<~MSG, err)
           No errors! Great job.
         MSG
+        assert(status)
       end
 
       def test_display_no_errors_with_sort
         @project.sorbet_config("file.rb")
-        _, err = @project.bundle_exec("spoom tc --no-color -s")
+        _, err, status = @project.bundle_exec("spoom tc --no-color -s")
         assert_equal(<<~MSG, err)
           No errors! Great job.
         MSG
+        assert(status)
       end
 
       def test_display_errors_with_sort_default
-        _, err = @project.bundle_exec("spoom tc --no-color -s")
+        _, err, status = @project.bundle_exec("spoom tc --no-color -s")
         assert_equal(<<~MSG, err)
           5002 - errors/errors.rb:5: Unable to resolve constant `Bar`
           5002 - errors/errors.rb:5: Unable to resolve constant `C`
@@ -67,10 +69,11 @@ module Spoom
           7004 - errors/errors.rb:11: Too many arguments provided for method `Foo#foo`. Expected: `1`, got: `2`
           Errors: 7
         MSG
+        refute(status)
       end
 
       def test_display_errors_with_sort_code
-        _, err = @project.bundle_exec("spoom tc --no-color -s code")
+        _, err, status = @project.bundle_exec("spoom tc --no-color -s code")
         assert_equal(<<~MSG, err)
           5002 - errors/errors.rb:5: Unable to resolve constant `Bar`
           5002 - errors/errors.rb:5: Unable to resolve constant `C`
@@ -81,48 +84,54 @@ module Spoom
           7004 - errors/errors.rb:11: Too many arguments provided for method `Foo#foo`. Expected: `1`, got: `2`
           Errors: 7
         MSG
+        refute(status)
       end
 
       def test_display_errors_with_limit
-        _, err = @project.bundle_exec("spoom tc --no-color -l 1")
+        _, err, status = @project.bundle_exec("spoom tc --no-color -l 1")
         assert_equal(<<~MSG, err)
           5002 - errors/errors.rb:5: Unable to resolve constant `Bar`
           Errors: 1 shown, 7 total
         MSG
+        refute(status)
       end
 
       def test_display_errors_with_code
-        _, err = @project.bundle_exec("spoom tc --no-color -c 7004")
+        _, err, status = @project.bundle_exec("spoom tc --no-color -c 7004")
         assert_equal(<<~MSG, err)
           7004 - errors/errors.rb:10: Wrong number of arguments for constructor. Expected: `0`, got: `1`
           7004 - errors/errors.rb:11: Too many arguments provided for method `Foo#foo`. Expected: `1`, got: `2`
           Errors: 2 shown, 7 total
         MSG
+        refute(status)
       end
 
       def test_display_errors_with_limit_and_code
-        _, err = @project.bundle_exec("spoom tc --no-color -c 7004 -l 1")
+        _, err, status = @project.bundle_exec("spoom tc --no-color -c 7004 -l 1")
         assert_equal(<<~MSG, err)
           7004 - errors/errors.rb:10: Wrong number of arguments for constructor. Expected: `0`, got: `1`
           Errors: 1 shown, 7 total
         MSG
+        refute(status)
       end
 
       def test_display_errors_with_sort_and_limit
-        _, err = @project.bundle_exec("spoom tc --no-color -s code -l 1")
+        _, err, status = @project.bundle_exec("spoom tc --no-color -s code -l 1")
         assert_equal(<<~MSG, err)
           5002 - errors/errors.rb:5: Unable to resolve constant `Bar`
           Errors: 1 shown, 7 total
         MSG
+        refute(status)
       end
 
       def test_display_errors_with_path_option
         project = spoom_project("test_display_errors_with_path_option")
-        _, err = project.bundle_exec("spoom tc --no-color -s code -l 1 -p #{@project.path}")
+        _, err, status = project.bundle_exec("spoom tc --no-color -s code -l 1 -p #{@project.path}")
         assert_equal(<<~MSG, err)
           5002 - errors/errors.rb:5: Unable to resolve constant `Bar`
           Errors: 1 shown, 7 total
         MSG
+        refute(status)
         project.destroy
       end
     end
