@@ -22,13 +22,13 @@ module Spoom
         colors = options[:color]
 
         unless limit || code || sort
-          return Spoom::Sorbet.srb_tc(path: path, capture_err: false).last
+          exit(Spoom::Sorbet.srb_tc(path: path, capture_err: false).last)
         end
 
         output, status = Spoom::Sorbet.srb_tc(path: path, capture_err: true)
         if status
           $stderr.print(output)
-          return 0
+          exit(0)
         end
 
         errors = Spoom::Sorbet::Errors::Parser.parse_string(output)
@@ -50,7 +50,7 @@ module Spoom
           $stderr.puts "Errors: #{errors.size} shown, #{errors_count} total"
         end
 
-        1
+        exit(1)
       end
 
       no_commands do
