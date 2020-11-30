@@ -13,8 +13,8 @@ module Spoom
 
       default_task :snapshot
 
-      desc "snapshot", "run srb tc and display metrics"
-      option :save, type: :string, desc: "Save snapshot data as json", lazy_default: DATA_DIR
+      desc "snapshot", "Run srb tc and display metrics"
+      option :save, type: :string, lazy_default: DATA_DIR, desc: "Save snapshot data as json"
       def snapshot
         in_sorbet_project!
 
@@ -30,10 +30,10 @@ module Spoom
         puts "\nSnapshot data saved under #{file}"
       end
 
-      desc "timeline", "replay a project and collect metrics"
-      option :from, type: :string
-      option :to, type: :string, default: Time.now.strftime("%F")
-      option :save, type: :string, desc: "Save snapshot data as json", lazy_default: DATA_DIR
+      desc "timeline", "Replay a project and collect metrics"
+      option :from, type: :string, desc: "From commit date"
+      option :to, type: :string, default: Time.now.strftime("%F"), desc: "To commit date"
+      option :save, type: :string, lazy_default: DATA_DIR, desc: "Save snapshot data as json"
       option :bundle_install, type: :boolean, desc: "Execute `bundle install` before collecting metrics"
       def timeline
         in_sorbet_project!
@@ -101,14 +101,20 @@ module Spoom
         Spoom::Git.checkout(sha_before, path: path)
       end
 
-      desc "report", "produce a typing coverage report"
-      option :data, type: :string, desc: "Snapshots JSON data", default: DATA_DIR
-      option :file, type: :string, default: "spoom_report.html", aliases: :f
-      option :color_ignore, type: :string, default: Spoom::Coverage::D3::COLOR_IGNORE
-      option :color_false, type: :string, default: Spoom::Coverage::D3::COLOR_FALSE
-      option :color_true, type: :string, default: Spoom::Coverage::D3::COLOR_TRUE
-      option :color_strict, type: :string, default: Spoom::Coverage::D3::COLOR_STRICT
-      option :color_strong, type: :string, default: Spoom::Coverage::D3::COLOR_STRONG
+      desc "report", "Produce a typing coverage report"
+      option :data, type: :string, default: DATA_DIR, desc: "Snapshots JSON data"
+      option :file, type: :string, default: "spoom_report.html", aliases: :f,
+        desc: "Save report to file"
+      option :color_ignore, type: :string, default: Spoom::Coverage::D3::COLOR_IGNORE,
+        desc: "Color used for typed: ignore"
+      option :color_false, type: :string, default: Spoom::Coverage::D3::COLOR_FALSE,
+        desc: "Color used for typed: false"
+      option :color_true, type: :string, default: Spoom::Coverage::D3::COLOR_TRUE,
+        desc: "Color used for typed: true"
+      option :color_strict, type: :string, default: Spoom::Coverage::D3::COLOR_STRICT,
+        desc: "Color used for typed: strict"
+      option :color_strong, type: :string, default: Spoom::Coverage::D3::COLOR_STRONG,
+        desc: "Color used for typed: strong"
       def report
         in_sorbet_project!
 
@@ -139,7 +145,7 @@ module Spoom
         puts "\nUse #{colorize('spoom coverage open', :blue)} to open it."
       end
 
-      desc "open", "open the typing coverage report"
+      desc "open", "Open the typing coverage report"
       def open(file = "spoom_report.html")
         unless File.exist?(file)
           say_error("No report file to open #{colorize(file, :blue)}")

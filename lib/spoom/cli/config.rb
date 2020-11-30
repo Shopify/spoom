@@ -11,7 +11,7 @@ module Spoom
 
       default_task :show
 
-      desc "show", "show Sorbet config"
+      desc "show", "Show Sorbet config"
       def show
         in_sorbet_project!
         config = Spoom::Sorbet::Config.parse_file(sorbet_config)

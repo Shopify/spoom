@@ -12,7 +12,7 @@ module Spoom
 
       default_task :show
 
-      desc "interactive", "interactive LSP mode"
+      desc "interactive", "Interactive LSP mode"
       def show
         in_sorbet_project!
         lsp = lsp_client
@@ -20,7 +20,7 @@ module Spoom
         puts lsp
       end
 
-      desc "list", "list all known symbols"
+      desc "list", "List all known symbols"
       # TODO: options, filter, limit, kind etc.. filter rbi
       def list
         run do |client|
@@ -34,7 +34,7 @@ module Spoom
         end
       end
 
-      desc "hover", "request hover informations"
+      desc "hover", "Request hover informations"
       # TODO: options, filter, limit, kind etc.. filter rbi
       def hover(file, line, col)
         run do |client|
@@ -48,7 +48,7 @@ module Spoom
         end
       end
 
-      desc "defs", "list definitions of a symbol"
+      desc "defs", "List definitions of a symbol"
       # TODO: options, filter, limit, kind etc.. filter rbi
       def defs(file, line, col)
         run do |client|
@@ -58,7 +58,7 @@ module Spoom
         end
       end
 
-      desc "find", "find symbols matching a query"
+      desc "find", "Find symbols matching a query"
       # TODO: options, filter, limit, kind etc.. filter rbi
       def find(query)
         run do |client|
@@ -68,7 +68,7 @@ module Spoom
         end
       end
 
-      desc "symbols", "list symbols from a file"
+      desc "symbols", "List symbols from a file"
       # TODO: options, filter, limit, kind etc.. filter rbi
       def symbols(file)
         run do |client|
@@ -78,7 +78,7 @@ module Spoom
         end
       end
 
-      desc "refs", "list references to a symbol"
+      desc "refs", "List references to a symbol"
       # TODO: options, filter, limit, kind etc.. filter rbi
       def refs(file, line, col)
         run do |client|
@@ -88,7 +88,7 @@ module Spoom
         end
       end
 
-      desc "sigs", "list signatures for a symbol"
+      desc "sigs", "List signatures for a symbol"
       # TODO: options, filter, limit, kind etc.. filter rbi
       def sigs(file, line, col)
         run do |client|
@@ -98,7 +98,7 @@ module Spoom
         end
       end
 
-      desc "types", "display type of a symbol"
+      desc "types", "Display type of a symbol"
       # TODO: options, filter, limit, kind etc.. filter rbi
       def types(file, line, col)
         run do |client|
