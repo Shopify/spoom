@@ -18,6 +18,8 @@ module Spoom
       option :force, desc: "change strictness without type checking", type: :boolean, default: false, aliases: :f
       sig { params(directory: String).void }
       def bump(directory = ".")
+        in_sorbet_project!
+
         from = options[:from]
         to = options[:to]
         force = options[:force]
@@ -32,27 +34,26 @@ module Spoom
           exit(1)
         end
 
+        directory = File.expand_path(directory)
         files_to_bump = Sorbet::Sigils.files_with_sigil_strictness(directory, from)
-
         Sorbet::Sigils.change_sigil_in_files(files_to_bump, to)
 
-        return [] if force
+        return if force
 
-        output, no_errors = Sorbet.srb_tc(path: File.expand_path(directory), capture_err: true)
+        output, no_errors = Sorbet.srb_tc(path: exec_path, capture_err: true)
 
-        return [] if no_errors
+        return if no_errors
 
         errors = Sorbet::Errors::Parser.parse_string(output)
 
         files_with_errors = errors.map do |err|
-          path = err.file
-          File.join(directory, path) if path && File.file?(path)
+          path = File.expand_path(err.file)
+          next unless path.start_with?(directory)
+          next unless File.file?(path)
+          path
         end.compact.uniq
 
         Sorbet::Sigils.change_sigil_in_files(files_with_errors, from)
-      end
-
-      no_commands do
       end
     end
   end

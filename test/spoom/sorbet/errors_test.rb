@@ -16,6 +16,46 @@ module Spoom
         assert_empty(errors)
       end
 
+      def test_parses_no_config
+        errors = Spoom::Sorbet::Errors::Parser.parse_string(<<~ERR)
+          No sorbet/ directory found. Maybe you want to run 'srb init'?
+
+          A type checker for Ruby
+
+          Usage:
+            srb                                 Same as "srb t"
+            srb (init | initialize)             Initializes the `sorbet` directory
+            srb rbi [options]                   Manage the `sorbet` directory
+            srb (t | tc | typecheck) [options]  Typechecks the code
+
+          Options:
+            -h, --help     View help for this subcommand.
+            --version      Show version.
+
+          For full help:
+            https://sorbet.org
+        ERR
+        assert_empty(errors)
+      end
+
+      def test_parses_no_file
+        errors = Spoom::Sorbet::Errors::Parser.parse_string(<<~ERR)
+          You must pass either `-e` or at least one folder or ruby file.
+
+          Typechecker for Ruby
+          Usage:
+            sorbet [OPTION...] <path 1> <path 2> ...
+
+            -e, string     Parse an inline ruby string (default: "")
+            -q, --quiet    Silence all non-critical errors
+            -v, --verbose  Verbosity level [0-3]
+            -h,            Show short help
+                --help     Show long help
+                --version  Show version
+        ERR
+        assert_empty(errors)
+      end
+
       def test_parses_a_token_error
         errors = Spoom::Sorbet::Errors::Parser.parse_string(<<~ERR)
           lib/test/file.rb:80: unexpected token "end" https://srb.help/2001
