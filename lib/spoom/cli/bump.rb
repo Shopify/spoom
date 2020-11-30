@@ -12,10 +12,13 @@ module Spoom
 
       default_task :bump
 
-      desc "bump DIRECTORY", "change Sorbet sigils from one strictness to another when no errors"
-      option :from, type: :string, default: Spoom::Sorbet::Sigils::STRICTNESS_FALSE
-      option :to, type: :string, default: Spoom::Sorbet::Sigils::STRICTNESS_TRUE
-      option :force, desc: "change strictness without type checking", type: :boolean, default: false, aliases: :f
+      desc "bump DIRECTORY", "Change Sorbet sigils from one strictness to another when no errors"
+      option :from, type: :string, default: Spoom::Sorbet::Sigils::STRICTNESS_FALSE,
+        desc: "Change only files from this strictness"
+      option :to, type: :string, default: Spoom::Sorbet::Sigils::STRICTNESS_TRUE,
+        desc: "Change files to this strictness"
+      option :force, type: :boolean, default: false, aliases: :f,
+        desc: "Change strictness without type checking"
       sig { params(directory: String).void }
       def bump(directory = ".")
         in_sorbet_project!

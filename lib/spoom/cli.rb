@@ -17,26 +17,27 @@ module Spoom
       extend T::Sig
       include Helper
 
-      class_option :color, desc: "Use colors", type: :boolean, default: true
-      class_option :path, desc: "Run spoom in a specific path", type: :string, default: ".", aliases: :p
+      class_option :color, type: :boolean, default: true, desc: "Use colors"
+      class_option :path, type: :string, default: ".", aliases: :p, desc: "Run spoom in a specific path"
+
       map T.unsafe(%w[--version -v] => :__print_version)
 
-      desc "bump", "bump Sorbet sigils from `false` to `true` when no errors"
+      desc "bump", "Bump Sorbet sigils from `false` to `true` when no errors"
       subcommand "bump", Spoom::Cli::Bump
 
-      desc "config", "manage Sorbet config"
+      desc "config", "Manage Sorbet config"
       subcommand "config", Spoom::Cli::Config
 
-      desc "coverage", "collect metrics related to Sorbet coverage"
+      desc "coverage", "Collect metrics related to Sorbet coverage"
       subcommand "coverage", Spoom::Cli::Coverage
 
-      desc "lsp", "send LSP requests to Sorbet"
+      desc "lsp", "Send LSP requests to Sorbet"
       subcommand "lsp", Spoom::Cli::LSP
 
-      desc "tc", "run Sorbet and parses its output"
+      desc "tc", "Run Sorbet and parses its output"
       subcommand "tc", Spoom::Cli::Run
 
-      desc "files", "list all the files typechecked by Sorbet"
+      desc "files", "List all the files typechecked by Sorbet"
       def files
         in_sorbet_project!
 
@@ -53,7 +54,7 @@ module Spoom
         end
       end
 
-      desc "--version", "show version"
+      desc "--version", "Show version"
       def __print_version
         puts "Spoom v#{Spoom::VERSION}"
       end

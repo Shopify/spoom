@@ -32,14 +32,14 @@ module Spoom
         out, _ = @project.bundle_exec("spoom --help")
         assert_equal(<<~OUT, out)
           Commands:
-            spoom --version       # show version
-            spoom bump            # bump Sorbet sigils from `false` to `true` when no e...
-            spoom config          # manage Sorbet config
-            spoom coverage        # collect metrics related to Sorbet coverage
-            spoom files           # list all the files typechecked by Sorbet
+            spoom --version       # Show version
+            spoom bump            # Bump Sorbet sigils from `false` to `true` when no e...
+            spoom config          # Manage Sorbet config
+            spoom coverage        # Collect metrics related to Sorbet coverage
+            spoom files           # List all the files typechecked by Sorbet
             spoom help [COMMAND]  # Describe available commands or one specific command
-            spoom lsp             # send LSP requests to Sorbet
-            spoom tc              # run Sorbet and parses its output
+            spoom lsp             # Send LSP requests to Sorbet
+            spoom tc              # Run Sorbet and parses its output
 
           Options:
                 [--color], [--no-color]  # Use colors

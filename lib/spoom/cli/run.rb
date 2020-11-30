@@ -8,10 +8,10 @@ module Spoom
 
       default_task :tc
 
-      desc "tc", "run srb tc"
-      option :limit, type: :numeric, aliases: :l
-      option :code, type: :numeric, aliases: :c
-      option :sort, type: :string, aliases: :s
+      desc "tc", "Run `srb tc`"
+      option :limit, type: :numeric, aliases: :l, desc: "Limit displayed errors"
+      option :code, type: :numeric, aliases: :c, desc: "Filter displayed errors by code"
+      option :sort, type: :string, aliases: :s, desc: "Sort errors by code"
       def tc
         in_sorbet_project!
 
