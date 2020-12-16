@@ -169,14 +169,13 @@ module Spoom
         project = spoom_project("test_sigils")
         project.write("file1.rb", "# typed: false")
         project.write("file2.rb", "# typed: ignore")
+        files = ["#{project.path}/file1.rb", "#{project.path}/file2.rb"]
 
-        changed_files = Sigils.change_sigil_in_files(["#{project.path}/file1.rb", "#{project.path}/file2.rb"], "true")
-        assert_equal(["#{project.path}/file1.rb", "#{project.path}/file2.rb"], changed_files)
+        changed_files = Sigils.change_sigil_in_files(files, "true")
+        assert_equal(files, changed_files)
+        assert_equal("true", Sigils.file_strictness("#{project.path}/file1.rb"))
+        assert_equal("true", Sigils.file_strictness("#{project.path}/file2.rb"))
 
-        strictness1 = Sigils.file_strictness("#{project.path}/file1.rb")
-        strictness2 = Sigils.file_strictness("#{project.path}/file2.rb")
-        assert_equal("true", strictness1)
-        assert_equal("true", strictness2)
         project.destroy
       end
     end
