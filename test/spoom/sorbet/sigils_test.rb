@@ -134,6 +134,26 @@ module Spoom
         project.destroy
       end
 
+      def test_files_with_sigil_strictness_with_iso_content
+        project = spoom_project("test_sigils")
+
+        string_utf = <<~RB
+          # typed: true
+
+          puts "À coûté 10€"
+        RB
+
+        string_iso = string_utf.encode("ISO-8859-15")
+        project.write("file1.rb", string_iso)
+        project.write("file2.rb", string_iso)
+        expected_files = ["#{project.path}/file1.rb", "#{project.path}/file2.rb"]
+
+        files = Sigils.files_with_sigil_strictness(project.path, "true").sort
+        assert_equal(expected_files, files)
+
+        project.destroy
+      end
+
       def test_file_strictness_returns_nil_if_file_not_found
         strictness = Sigils.file_strictness("/file/not/found.rb")
         assert_nil(strictness)
@@ -155,6 +175,21 @@ module Spoom
         project.destroy
       end
 
+      def test_file_strictness_with_iso_content
+        project = spoom_project("test_sigils")
+
+        string = <<~RB
+          # typed: true
+
+          puts "À coûté 10€"
+        RB
+
+        project.write("file.rb", string.encode("ISO-8859-15"))
+        strictness = Sigils.file_strictness("#{project.path}/file.rb")
+        assert_equal("true", strictness)
+        project.destroy
+      end
+
       def test_change_sigil_in_file_false_to_true
         project = spoom_project("test_sigils")
         project.write("file.rb", "# typed: false")
@@ -162,6 +197,21 @@ module Spoom
         assert(updated)
         strictness = Sigils.file_strictness("#{project.path}/file.rb")
         assert_equal("true", strictness)
+        project.destroy
+      end
+
+      def test_change_sigil_in_file_with_iso_content
+        project = spoom_project("test_sigils")
+
+        string = <<~RB
+          # typed: true
+
+          puts "À coûté 10€"
+        RB
+
+        project.write("file.rb", string.encode("ISO-8859-15"))
+        Sigils.change_sigil_in_file("#{project.path}/file.rb", "strict")
+        assert_equal("strict", Sigils.file_strictness("#{project.path}/file.rb"))
         project.destroy
       end
 
@@ -176,6 +226,27 @@ module Spoom
         assert_equal("true", Sigils.file_strictness("#{project.path}/file1.rb"))
         assert_equal("true", Sigils.file_strictness("#{project.path}/file2.rb"))
 
+        project.destroy
+      end
+
+      def test_change_sigil_in_files_with_iso_content
+        project = spoom_project("test_sigils")
+
+        string_utf = <<~RB
+          # typed: true
+
+          puts "À coûté 10€"
+        RB
+
+        string_iso = string_utf.encode("ISO-8859-15")
+        project.write("file1.rb", string_iso)
+        project.write("file2.rb", string_iso)
+        files = ["#{project.path}/file1.rb", "#{project.path}/file2.rb"]
+
+        changed_files = Sigils.change_sigil_in_files(files, "true")
+        assert_equal(files, changed_files)
+        assert_equal("true", Sigils.file_strictness("#{project.path}/file1.rb"))
+        assert_equal("true", Sigils.file_strictness("#{project.path}/file2.rb"))
         project.destroy
       end
     end

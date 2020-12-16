@@ -125,6 +125,21 @@ module Spoom
 
         assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/file.rb"))
       end
+
+      def test_bump_preserve_file_encoding
+        string = <<~RB
+          # typed: false
+          puts "À coûté 10€"
+        RB
+
+        @project.write("file.rb", string.encode("ISO-8859-15"))
+        _, _, status = @project.bundle_exec("spoom bump")
+        assert(status)
+
+        strictness = Sorbet::Sigils.file_strictness("#{@project.path}/file.rb")
+        assert_equal("true", strictness)
+        assert_match("ISO-8859", %x{file "#{@project.path}/file.rb"})
+      end
     end
   end
 end
