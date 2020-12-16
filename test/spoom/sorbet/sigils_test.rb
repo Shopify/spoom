@@ -144,6 +144,7 @@ module Spoom
         project.write("file.rb", "# typed: true")
         strictness = Sigils.file_strictness("#{project.path}/file.rb")
         assert_equal("true", strictness)
+        project.destroy
       end
 
       def test_file_strictness_with_invalid_sigil
@@ -151,6 +152,7 @@ module Spoom
         project.write("file.rb", "# typed: asdf")
         strictness = Sigils.file_strictness("#{project.path}/file.rb")
         assert_equal("asdf", strictness)
+        project.destroy
       end
 
       def test_change_sigil_in_file_false_to_true
@@ -160,6 +162,7 @@ module Spoom
         assert(updated)
         strictness = Sigils.file_strictness("#{project.path}/file.rb")
         assert_equal("true", strictness)
+        project.destroy
       end
 
       def test_change_sigil_in_files_false_to_true
@@ -174,6 +177,7 @@ module Spoom
         strictness2 = Sigils.file_strictness("#{project.path}/file2.rb")
         assert_equal("true", strictness1)
         assert_equal("true", strictness2)
+        project.destroy
       end
     end
   end
