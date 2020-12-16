@@ -87,7 +87,7 @@ module Spoom
           extension: String
         ).returns(T::Array[String])
       end
-      def self.files_with_sigil_strictness(directory, strictness, extension = ".rb")
+      def self.files_with_sigil_strictness(directory, strictness, extension: ".rb")
         paths = Dir.glob("#{File.expand_path(directory)}/**/*#{extension}").sort.uniq
         paths.filter do |path|
           file_strictness(path) == strictness
