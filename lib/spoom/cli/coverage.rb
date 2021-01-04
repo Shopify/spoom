@@ -15,11 +15,12 @@ module Spoom
 
       desc "snapshot", "Run srb tc and display metrics"
       option :save, type: :string, lazy_default: DATA_DIR, desc: "Save snapshot data as json"
+      option :include_rbi, type: :boolean, default: false, desc: "Include RBI files in metrics"
       def snapshot
         in_sorbet_project!
 
         path = exec_path
-        snapshot = Spoom::Coverage.snapshot(path: path)
+        snapshot = Spoom::Coverage.snapshot(path: path, rbi: options[:include_rbi])
         snapshot.print
 
         save_dir = options[:save]
