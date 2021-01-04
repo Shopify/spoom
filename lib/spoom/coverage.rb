@@ -59,11 +59,14 @@ module Spoom
       )
     end
 
+    sig { params(path: String).returns(Sorbet::Config) }
+    def self.sorbet_config(path: ".")
+      Sorbet::Config.parse_file("#{path}/#{Spoom::Config::SORBET_CONFIG}")
+    end
+
     sig { params(path: String).returns(FileTree) }
     def self.sigils_tree(path: ".")
-      config_file = "#{path}/#{Spoom::Config::SORBET_CONFIG}"
-      return FileTree.new unless File.exist?(config_file)
-      config = Sorbet::Config.parse_file(config_file)
+      config = sorbet_config(path: path)
       files = Sorbet.srb_files(config, path: path)
       files.select! { |file| file =~ /\.rb$/ }
       files.reject! { |file| file =~ %r{/test/} }
