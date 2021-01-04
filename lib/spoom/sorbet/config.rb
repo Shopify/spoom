@@ -36,6 +36,27 @@ module Spoom
         @allowed_extensions = T.let([], T::Array[String])
       end
 
+      # Returns self as a string of options that can be passed to Sorbet
+      #
+      # Example:
+      # ~~~rb
+      # config = Sorbet::Config.new
+      # config.paths << "/foo"
+      # config.paths << "/bar"
+      # config.ignore << "/baz"
+      # config.allowed_extensions << ".rb"
+      #
+      # puts config.options_string # "/foo /bar --ignore /baz --allowed-extension .rb"
+      # ~~~
+      sig { returns(String) }
+      def options_string
+        opts = []
+        opts.concat(paths)
+        opts.concat(ignore.map { |p| "--ignore #{p}" })
+        opts.concat(allowed_extensions.map { |ext| "--allowed-extension #{ext}" })
+        opts.join(" ")
+      end
+
       class << self
         extend T::Sig
 
