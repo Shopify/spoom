@@ -49,16 +49,6 @@ module Spoom
           A3.new.foo
           B1.foo
         RB
-        @project.write("lib/d.rbi", <<~RB)
-          # typed: true
-          module D1; end
-          module D2; end
-
-          class D3
-            sig { void }
-            def foo; end
-          end
-        RB
       end
 
       def teardown
@@ -131,8 +121,18 @@ module Spoom
         assert_equal(0, Dir.glob("#{@project.path}/spoom_data/*.json").size)
       end
 
-      def test_display_metrics_includes_rbi_metrics
-        out, _ = @project.bundle_exec("spoom coverage snapshot --include-rbi")
+      def test_display_metrics_can_exclude_rbi_metrics
+        @project.write("lib/d.rbi", <<~RB)
+          # typed: true
+          module D1; end
+          module D2; end
+
+          class D3
+            sig { void }
+            def foo; end
+          end
+        RB
+        out, _ = @project.bundle_exec("spoom coverage snapshot")
         out = censor_sorbet_version(out) if out
         assert_equal(<<~MSG, out)
           Sorbet static: X.X.XXXX
@@ -150,6 +150,29 @@ module Spoom
           Methods:
             with signature: 2 (14%)
             without signature: 12 (86%)
+
+          Calls:
+            typed: 8 (89%)
+            untyped: 1 (11%)
+        MSG
+        out, _ = @project.bundle_exec("spoom coverage snapshot --no-rbi")
+        out = censor_sorbet_version(out) if out
+        assert_equal(<<~MSG, out)
+          Sorbet static: X.X.XXXX
+
+          Content:
+            files: 3
+            modules: 3
+            classes: 1
+            methods: 9
+
+          Sigils:
+            false: 1 (33%)
+            true: 2 (67%)
+
+          Methods:
+            with signature: 1 (11%)
+            without signature: 8 (89%)
 
           Calls:
             typed: 8 (89%)

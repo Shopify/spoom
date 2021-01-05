@@ -45,26 +45,26 @@ module Spoom
       def test_snapshot_project
         project = self.project
         snapshot = Spoom::Coverage.snapshot(path: project.path)
-        assert_equal(3, snapshot.files)
-        assert_equal({ "false" => 1, "true" => 2 }, snapshot.sigils)
-        assert_equal(3, snapshot.modules)
-        assert_equal(5, snapshot.classes)
-        assert_equal(1, snapshot.methods_with_sig)
-        assert_equal(8, snapshot.methods_without_sig)
-        assert_equal(8, snapshot.calls_typed)
-        assert_equal(1, snapshot.calls_untyped)
-        project.destroy
-      end
-
-      def test_snapshot_project_with_rbis
-        project = self.project
-        snapshot = Spoom::Coverage.snapshot(path: project.path, rbi: true)
         assert_equal(4, snapshot.files)
         assert_equal({ "false" => 1, "true" => 3 }, snapshot.sigils)
         assert_equal(5, snapshot.modules)
         assert_equal(9, snapshot.classes)
         assert_equal(1, snapshot.methods_with_sig)
         assert_equal(13, snapshot.methods_without_sig)
+        assert_equal(8, snapshot.calls_typed)
+        assert_equal(1, snapshot.calls_untyped)
+        project.destroy
+      end
+
+      def test_snapshot_project_without_rbi
+        project = self.project
+        snapshot = Spoom::Coverage.snapshot(path: project.path, rbi: false)
+        assert_equal(3, snapshot.files)
+        assert_equal({ "false" => 1, "true" => 2 }, snapshot.sigils)
+        assert_equal(3, snapshot.modules)
+        assert_equal(5, snapshot.classes)
+        assert_equal(1, snapshot.methods_with_sig)
+        assert_equal(8, snapshot.methods_without_sig)
         assert_equal(8, snapshot.calls_typed)
         assert_equal(1, snapshot.calls_untyped)
         project.destroy

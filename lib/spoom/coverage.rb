@@ -12,7 +12,7 @@ module Spoom
     extend T::Sig
 
     sig { params(path: String, rbi: T::Boolean).returns(Snapshot) }
-    def self.snapshot(path: '.', rbi: false)
+    def self.snapshot(path: '.', rbi: true)
       config = sorbet_config(path: path)
       config.allowed_extensions.push(".rb", ".rbi") if config.allowed_extensions.empty?
 
