@@ -19,6 +19,7 @@ module Spoom
       option :code, type: :numeric, aliases: :c, desc: "Filter displayed errors by code"
       option :sort, type: :string, aliases: :s, desc: "Sort errors", enum: SORT_ENUM, lazy_default: SORT_LOC
       option :format, type: :string, aliases: :f, desc: "Format line output"
+      option :uniq, type: :boolean, aliases: :u, desc: "Remove duplicated lines"
       option :count, type: :boolean, default: true, desc: "Show errors count"
       def tc
         in_sorbet_project!
@@ -27,10 +28,11 @@ module Spoom
         limit = options[:limit]
         sort = options[:sort]
         code = options[:code]
+        uniq = options[:uniq]
         format = options[:format]
         count = options[:count]
 
-        unless limit || code || sort || format || count
+        unless limit || code || sort || format || count || uniq
           exit(Spoom::Sorbet.srb_tc(path: path, capture_err: false).last)
         end
 
@@ -55,8 +57,11 @@ module Spoom
         errors = errors.select { |e| e.code == code } if code
         errors = T.must(errors.slice(0, limit)) if limit
 
-        errors.each do |error|
-          $stderr.puts format_error(error, format || DEFAULT_FORMAT)
+        lines = errors.map { |e| format_error(e, format || DEFAULT_FORMAT) }
+        lines = lines.uniq if uniq
+
+        lines.each do |line|
+          $stderr.puts line
         end
 
         if count

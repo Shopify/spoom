@@ -163,6 +163,14 @@ module Spoom
         refute(status)
       end
 
+      def test_display_errors_with_format_and_uniq
+        _, err, status = @project.bundle_exec("spoom tc --no-color -s code -f '%F' --no-count -u")
+        assert_equal(<<~MSG, err)
+          errors/errors.rb
+        MSG
+        refute(status)
+      end
+
       def test_display_errors_with_code
         _, err, status = @project.bundle_exec("spoom tc --no-color -c 7004")
         assert_equal(<<~MSG, err)
