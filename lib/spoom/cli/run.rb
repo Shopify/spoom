@@ -8,10 +8,14 @@ module Spoom
 
       default_task :tc
 
+      SORT_CODE = "code"
+      SORT_LOC = "loc"
+      SORT_ENUM = [SORT_CODE, SORT_LOC]
+
       desc "tc", "Run `srb tc`"
       option :limit, type: :numeric, aliases: :l, desc: "Limit displayed errors"
       option :code, type: :numeric, aliases: :c, desc: "Filter displayed errors by code"
-      option :sort, type: :string, aliases: :s, desc: "Sort errors by code"
+      option :sort, type: :string, aliases: :s, desc: "Sort errors", enum: SORT_ENUM, lazy_default: SORT_LOC
       def tc
         in_sorbet_project!
 
@@ -34,7 +38,15 @@ module Spoom
         errors = Spoom::Sorbet::Errors::Parser.parse_string(output)
         errors_count = errors.size
 
-        errors = sort == "code" ? Spoom::Sorbet::Errors.sort_errors_by_code(errors) : errors.sort
+        errors = case sort
+        when SORT_CODE
+          Spoom::Sorbet::Errors.sort_errors_by_code(errors)
+        when SORT_LOC
+          errors.sort
+        else
+          errors # preserve natural sort
+        end
+
         errors = errors.select { |e| e.code == code } if code
         errors = T.must(errors.slice(0, limit)) if limit
 
