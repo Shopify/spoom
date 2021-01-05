@@ -4,6 +4,8 @@
 module Spoom
   module Sorbet
     module Errors
+      extend T::Sig
+
       # Parse errors from Sorbet output
       class Parser
         extend T::Sig
@@ -123,6 +125,7 @@ module Spoom
           @more = more
         end
 
+        # By default errors are sorted by location
         sig { params(other: T.untyped).returns(Integer) }
         def <=>(other)
           return 0 unless other.is_a?(Error)
@@ -133,6 +136,11 @@ module Spoom
         def to_s
           "#{file}:#{line}: #{message} (#{code})"
         end
+      end
+
+      sig { params(errors: T::Array[Error]).returns(T::Array[Error]) }
+      def self.sort_errors_by_code(errors)
+        errors.sort_by { |e| [e.code, e.file, e.line, e.message] }
       end
     end
   end

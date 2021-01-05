@@ -34,7 +34,7 @@ module Spoom
         errors = Spoom::Sorbet::Errors::Parser.parse_string(output)
         errors_count = errors.size
 
-        errors = sort == "code" ? errors.sort_by { |e| [e.code, e.file, e.line, e.message] } : errors.sort
+        errors = sort == "code" ? Spoom::Sorbet::Errors.sort_errors_by_code(errors) : errors.sort
         errors = errors.select { |e| e.code == code } if code
         errors = T.must(errors.slice(0, limit)) if limit
 
