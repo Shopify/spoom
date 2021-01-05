@@ -18,14 +18,34 @@ module Spoom
     class << self
       extend T::Sig
 
-      sig { params(arg: String, path: String, capture_err: T::Boolean).returns([String, T::Boolean]) }
-      def srb(*arg, path: '.', capture_err: false)
-        T.unsafe(Spoom).exec("bundle", "exec", "srb", *arg, path: path, capture_err: capture_err)
+      sig do
+        params(
+          arg: String,
+          path: String,
+          capture_err: T::Boolean,
+          sorbet_bin: T.nilable(String)
+        ).returns([String, T::Boolean])
+      end
+      def srb(*arg, path: '.', capture_err: false, sorbet_bin: nil)
+        if sorbet_bin
+          arg.prepend(sorbet_bin)
+        else
+          arg.prepend("bundle", "exec", "srb")
+        end
+        T.unsafe(Spoom).exec(*arg, path: path, capture_err: capture_err)
       end
 
-      sig { params(arg: String, path: String, capture_err: T::Boolean).returns([String, T::Boolean]) }
-      def srb_tc(*arg, path: '.', capture_err: false)
-        srb(*T.unsafe(["tc", *arg]), path: path, capture_err: capture_err)
+      sig do
+        params(
+          arg: String,
+          path: String,
+          capture_err: T::Boolean,
+          sorbet_bin: T.nilable(String)
+        ).returns([String, T::Boolean])
+      end
+      def srb_tc(*arg, path: '.', capture_err: false, sorbet_bin: nil)
+        arg.prepend("tc") unless sorbet_bin
+        T.unsafe(self).srb(*arg, path: path, capture_err: capture_err, sorbet_bin: sorbet_bin)
       end
 
       # List all files typechecked by Sorbet from its `config`
@@ -38,18 +58,45 @@ module Spoom
         end.sort
       end
 
-      sig { params(arg: String, path: String, capture_err: T::Boolean).returns(T.nilable(String)) }
-      def srb_version(*arg, path: '.', capture_err: false)
-        out, res = srb(*T.unsafe(["--version", *arg]), path: path, capture_err: capture_err)
+      sig do
+        params(
+          arg: String,
+          path: String,
+          capture_err: T::Boolean,
+          sorbet_bin: T.nilable(String)
+        ).returns(T.nilable(String))
+      end
+      def srb_version(*arg, path: '.', capture_err: false, sorbet_bin: nil)
+        out, res = T.unsafe(self).srb_tc(
+          "--version",
+          *arg,
+          path: path,
+          capture_err: capture_err,
+          sorbet_bin: sorbet_bin
+        )
         return nil unless res
         out.split(" ")[2]
       end
 
-      sig { params(arg: String, path: String, capture_err: T::Boolean).returns(T.nilable(T::Hash[String, Integer])) }
-      def srb_metrics(*arg, path: '.', capture_err: false)
+      sig do
+        params(
+          arg: String,
+          path: String,
+          capture_err: T::Boolean,
+          sorbet_bin: T.nilable(String)
+        ).returns(T.nilable(T::Hash[String, Integer]))
+      end
+      def srb_metrics(*arg, path: '.', capture_err: false, sorbet_bin: nil)
         metrics_file = "metrics.tmp"
         metrics_path = "#{path}/#{metrics_file}"
-        srb_tc(*T.unsafe(["--metrics-file=#{metrics_file}", *arg]), path: path, capture_err: capture_err)
+        T.unsafe(self).srb_tc(
+          "--metrics-file",
+          metrics_file,
+          *arg,
+          path: path,
+          capture_err: capture_err,
+          sorbet_bin: sorbet_bin
+        )
         if File.exist?(metrics_path)
           metrics = Spoom::Sorbet::MetricsParser.parse_file(metrics_path)
           File.delete(metrics_path)
