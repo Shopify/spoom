@@ -36,6 +36,15 @@ module Spoom
         @allowed_extensions = T.let([], T::Array[String])
       end
 
+      sig { returns(Config) }
+      def copy
+        new_config = Sorbet::Config.new
+        new_config.paths.concat(@paths)
+        new_config.ignore.concat(@ignore)
+        new_config.allowed_extensions.concat(@allowed_extensions)
+        new_config
+      end
+
       # Returns self as a string of options that can be passed to Sorbet
       #
       # Example:
