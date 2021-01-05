@@ -68,7 +68,7 @@ module Spoom
 
     sig { params(path: String).returns(Sorbet::Config) }
     def self.sorbet_config(path: ".")
-      Sorbet::Config.parse_file("#{path}/#{Spoom::Config::SORBET_CONFIG}")
+      Sorbet::Config.parse_file("#{path}/#{Spoom::Sorbet::CONFIG_PATH}")
     end
 
     sig { params(path: String).returns(FileTree) }

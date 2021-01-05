@@ -13,6 +13,10 @@ module Spoom
   module Sorbet
     extend T::Sig
 
+    CONFIG_PATH = "sorbet/config"
+    GEM_PATH = Gem::Specification.find_by_name("sorbet-static").full_gem_path
+    BIN_PATH = (Pathname.new(GEM_PATH) / "libexec" / "sorbet").to_s
+
     sig { params(arg: String, path: String, capture_err: T::Boolean).returns([String, T::Boolean]) }
     def self.srb(*arg, path: '.', capture_err: false)
       opts = {}

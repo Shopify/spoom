@@ -113,7 +113,7 @@ module Spoom
           in_sorbet_project!
           path = exec_path
           client = Spoom::LSP::Client.new(
-            Spoom::Config::SORBET_PATH,
+            Spoom::Sorbet::BIN_PATH,
             "--lsp",
             "--enable-all-experimental-lsp-features",
             "--disable-watchman",

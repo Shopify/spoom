@@ -55,7 +55,7 @@ module Spoom
 
       sig { returns(String) }
       def sorbet_config
-        Pathname.new("#{exec_path}/#{Spoom::Config::SORBET_CONFIG}").cleanpath.to_s
+        Pathname.new("#{exec_path}/#{Spoom::Sorbet::CONFIG_PATH}").cleanpath.to_s
       end
 
       # Is the `--color` option true?
