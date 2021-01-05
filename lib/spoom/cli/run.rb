@@ -19,6 +19,7 @@ module Spoom
       option :code, type: :numeric, aliases: :c, desc: "Filter displayed errors by code"
       option :sort, type: :string, aliases: :s, desc: "Sort errors", enum: SORT_ENUM, lazy_default: SORT_LOC
       option :format, type: :string, aliases: :f, desc: "Format line output"
+      option :count, type: :boolean, default: true, desc: "Show errors count"
       def tc
         in_sorbet_project!
 
@@ -27,8 +28,9 @@ module Spoom
         sort = options[:sort]
         code = options[:code]
         format = options[:format]
+        count = options[:count]
 
-        unless limit || code || sort || format
+        unless limit || code || sort || format || count
           exit(Spoom::Sorbet.srb_tc(path: path, capture_err: false).last)
         end
 
@@ -57,10 +59,12 @@ module Spoom
           $stderr.puts format_error(error, format || DEFAULT_FORMAT)
         end
 
-        if errors_count == errors.size
-          $stderr.puts "Errors: #{errors_count}"
-        else
-          $stderr.puts "Errors: #{errors.size} shown, #{errors_count} total"
+        if count
+          if errors_count == errors.size
+            $stderr.puts "Errors: #{errors_count}"
+          else
+            $stderr.puts "Errors: #{errors.size} shown, #{errors_count} total"
+          end
         end
 
         exit(1)
