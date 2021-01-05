@@ -12,10 +12,13 @@ module Spoom
       SORT_LOC = "loc"
       SORT_ENUM = [SORT_CODE, SORT_LOC]
 
+      DEFAULT_FORMAT = "%C - %F:%L: %M"
+
       desc "tc", "Run `srb tc`"
       option :limit, type: :numeric, aliases: :l, desc: "Limit displayed errors"
       option :code, type: :numeric, aliases: :c, desc: "Filter displayed errors by code"
       option :sort, type: :string, aliases: :s, desc: "Sort errors", enum: SORT_ENUM, lazy_default: SORT_LOC
+      option :format, type: :string, aliases: :f, desc: "Format line output"
       def tc
         in_sorbet_project!
 
@@ -23,9 +26,9 @@ module Spoom
         limit = options[:limit]
         sort = options[:sort]
         code = options[:code]
-        colors = options[:color]
+        format = options[:format]
 
-        unless limit || code || sort
+        unless limit || code || sort || format
           exit(Spoom::Sorbet.srb_tc(path: path, capture_err: false).last)
         end
 
@@ -50,10 +53,8 @@ module Spoom
         errors = errors.select { |e| e.code == code } if code
         errors = T.must(errors.slice(0, limit)) if limit
 
-        errors.each do |e|
-          code = colorize_code(e.code, colors)
-          message = colorize_message(e.message, colors)
-          $stderr.puts "#{code} - #{e.file}:#{e.line}: #{message}"
+        errors.each do |error|
+          $stderr.puts format_error(error, format || DEFAULT_FORMAT)
         end
 
         if errors_count == errors.size
@@ -66,13 +67,17 @@ module Spoom
       end
 
       no_commands do
-        def colorize_code(code, colors = true)
-          return code.to_s unless colors
-          code.to_s.light_black
+        def format_error(error, format)
+          line = format
+          line = line.gsub(/%C/, colorize(error.code.to_s, :yellow))
+          line = line.gsub(/%F/, error.file)
+          line = line.gsub(/%L/, error.line.to_s)
+          line = line.gsub(/%M/, colorize_message(error.message))
+          line
         end
 
-        def colorize_message(message, colors = true)
-          return message unless colors
+        def colorize_message(message)
+          return message unless color?
 
           cyan = T.let(false, T::Boolean)
           word = StringIO.new
