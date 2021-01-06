@@ -271,9 +271,15 @@ module Spoom
           a.rb:105: Method foo does not exist on String https://srb.help/7003
                105 |        printer.print "foo".light_black
                                           ^^^^^^^^^^^^^^^^^
+
+          a.rb:105: Method foo does not exist on String https://srb.help/1001
+          a.rb:105: Method foo does not exist on String https://srb.help/1000
         ERR
-        assert_equal(4, errors.size)
-        assert_equal([7003, 7004, 4010, 2001], errors.sort.map(&:code))
+        assert_equal(6, errors.size)
+        assert_equal([1000, 1001, 7003, 7004, 4010, 2001], errors.sort.map(&:code))
+
+        errors = Spoom::Sorbet::Errors.sort_errors_by_code(errors)
+        assert_equal([1000, 1001, 2001, 4010, 7003, 7004], errors.map(&:code))
       end
 
       def test_complex_error_line_matching

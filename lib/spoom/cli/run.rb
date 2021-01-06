@@ -8,10 +8,19 @@ module Spoom
 
       default_task :tc
 
+      SORT_CODE = "code"
+      SORT_LOC = "loc"
+      SORT_ENUM = [SORT_CODE, SORT_LOC]
+
+      DEFAULT_FORMAT = "%C - %F:%L: %M"
+
       desc "tc", "Run `srb tc`"
       option :limit, type: :numeric, aliases: :l, desc: "Limit displayed errors"
       option :code, type: :numeric, aliases: :c, desc: "Filter displayed errors by code"
-      option :sort, type: :string, aliases: :s, desc: "Sort errors by code"
+      option :sort, type: :string, aliases: :s, desc: "Sort errors", enum: SORT_ENUM, lazy_default: SORT_LOC
+      option :format, type: :string, aliases: :f, desc: "Format line output"
+      option :uniq, type: :boolean, aliases: :u, desc: "Remove duplicated lines"
+      option :count, type: :boolean, default: true, desc: "Show errors count"
       def tc
         in_sorbet_project!
 
@@ -19,9 +28,11 @@ module Spoom
         limit = options[:limit]
         sort = options[:sort]
         code = options[:code]
-        colors = options[:color]
+        uniq = options[:uniq]
+        format = options[:format]
+        count = options[:count]
 
-        unless limit || code || sort
+        unless limit || code || sort || format || count || uniq
           exit(Spoom::Sorbet.srb_tc(path: path, capture_err: false).last)
         end
 
@@ -34,33 +45,48 @@ module Spoom
         errors = Spoom::Sorbet::Errors::Parser.parse_string(output)
         errors_count = errors.size
 
-        errors = sort == "code" ? errors.sort_by { |e| [e.code, e.file, e.line, e.message] } : errors.sort
+        errors = case sort
+        when SORT_CODE
+          Spoom::Sorbet::Errors.sort_errors_by_code(errors)
+        when SORT_LOC
+          errors.sort
+        else
+          errors # preserve natural sort
+        end
+
         errors = errors.select { |e| e.code == code } if code
         errors = T.must(errors.slice(0, limit)) if limit
 
-        errors.each do |e|
-          code = colorize_code(e.code, colors)
-          message = colorize_message(e.message, colors)
-          $stderr.puts "#{code} - #{e.file}:#{e.line}: #{message}"
+        lines = errors.map { |e| format_error(e, format || DEFAULT_FORMAT) }
+        lines = lines.uniq if uniq
+
+        lines.each do |line|
+          $stderr.puts line
         end
 
-        if errors_count == errors.size
-          $stderr.puts "Errors: #{errors_count}"
-        else
-          $stderr.puts "Errors: #{errors.size} shown, #{errors_count} total"
+        if count
+          if errors_count == errors.size
+            $stderr.puts "Errors: #{errors_count}"
+          else
+            $stderr.puts "Errors: #{errors.size} shown, #{errors_count} total"
+          end
         end
 
         exit(1)
       end
 
       no_commands do
-        def colorize_code(code, colors = true)
-          return code.to_s unless colors
-          code.to_s.light_black
+        def format_error(error, format)
+          line = format
+          line = line.gsub(/%C/, colorize(error.code.to_s, :yellow))
+          line = line.gsub(/%F/, error.file)
+          line = line.gsub(/%L/, error.line.to_s)
+          line = line.gsub(/%M/, colorize_message(error.message))
+          line
         end
 
-        def colorize_message(message, colors = true)
-          return message unless colors
+        def colorize_message(message)
+          return message unless color?
 
           cyan = T.let(false, T::Boolean)
           word = StringIO.new

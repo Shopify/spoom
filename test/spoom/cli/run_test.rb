@@ -57,8 +57,31 @@ module Spoom
         assert(status)
       end
 
+      def test_display_errors_with_bad_sort
+        _, err, status = @project.bundle_exec("spoom tc --no-color -s bad")
+        assert_equal(<<~MSG, err)
+          Expected '--sort' to be one of code, loc; got bad
+        MSG
+        refute(status)
+      end
+
       def test_display_errors_with_sort_default
         _, err, status = @project.bundle_exec("spoom tc --no-color -s")
+        assert_equal(<<~MSG, err)
+          5002 - errors/errors.rb:5: Unable to resolve constant `Bar`
+          5002 - errors/errors.rb:5: Unable to resolve constant `C`
+          7003 - errors/errors.rb:5: Method `params` does not exist on `T.class_of(Foo)`
+          7003 - errors/errors.rb:5: Method `sig` does not exist on `T.class_of(Foo)`
+          7004 - errors/errors.rb:10: Wrong number of arguments for constructor. Expected: `0`, got: `1`
+          7003 - errors/errors.rb:11: Method `c` does not exist on `T.class_of(<root>)`
+          7004 - errors/errors.rb:11: Too many arguments provided for method `Foo#foo`. Expected: `1`, got: `2`
+          Errors: 7
+        MSG
+        refute(status)
+      end
+
+      def test_display_errors_with_sort_loc
+        _, err, status = @project.bundle_exec("spoom tc --no-color -s loc")
         assert_equal(<<~MSG, err)
           5002 - errors/errors.rb:5: Unable to resolve constant `Bar`
           5002 - errors/errors.rb:5: Unable to resolve constant `C`
@@ -87,11 +110,63 @@ module Spoom
         refute(status)
       end
 
+      def test_display_errors_with_sort_code_but_no_count
+        _, err, status = @project.bundle_exec("spoom tc --no-color -s code --no-count")
+        assert_equal(<<~MSG, err)
+          5002 - errors/errors.rb:5: Unable to resolve constant `Bar`
+          5002 - errors/errors.rb:5: Unable to resolve constant `C`
+          7003 - errors/errors.rb:5: Method `params` does not exist on `T.class_of(Foo)`
+          7003 - errors/errors.rb:5: Method `sig` does not exist on `T.class_of(Foo)`
+          7003 - errors/errors.rb:11: Method `c` does not exist on `T.class_of(<root>)`
+          7004 - errors/errors.rb:10: Wrong number of arguments for constructor. Expected: `0`, got: `1`
+          7004 - errors/errors.rb:11: Too many arguments provided for method `Foo#foo`. Expected: `1`, got: `2`
+        MSG
+        refute(status)
+      end
+
       def test_display_errors_with_limit
-        _, err, status = @project.bundle_exec("spoom tc --no-color -l 1")
+        _, err, status = @project.bundle_exec("spoom tc --no-color -s code -l 1")
         assert_equal(<<~MSG, err)
           5002 - errors/errors.rb:5: Unable to resolve constant `Bar`
           Errors: 1 shown, 7 total
+        MSG
+        refute(status)
+      end
+
+      def test_display_errors_with_format
+        _, err, status = @project.bundle_exec("spoom tc --no-color -s code -f '%F:%L %M %C'")
+        assert_equal(<<~MSG, err)
+          errors/errors.rb:5 Unable to resolve constant `Bar` 5002
+          errors/errors.rb:5 Unable to resolve constant `C` 5002
+          errors/errors.rb:5 Method `params` does not exist on `T.class_of(Foo)` 7003
+          errors/errors.rb:5 Method `sig` does not exist on `T.class_of(Foo)` 7003
+          errors/errors.rb:11 Method `c` does not exist on `T.class_of(<root>)` 7003
+          errors/errors.rb:10 Wrong number of arguments for constructor. Expected: `0`, got: `1` 7004
+          errors/errors.rb:11 Too many arguments provided for method `Foo#foo`. Expected: `1`, got: `2` 7004
+          Errors: 7
+        MSG
+        refute(status)
+      end
+
+      def test_display_errors_with_format_partial
+        _, err, status = @project.bundle_exec("spoom tc --no-color -s code -f '%F'")
+        assert_equal(<<~MSG, err)
+          errors/errors.rb
+          errors/errors.rb
+          errors/errors.rb
+          errors/errors.rb
+          errors/errors.rb
+          errors/errors.rb
+          errors/errors.rb
+          Errors: 7
+        MSG
+        refute(status)
+      end
+
+      def test_display_errors_with_format_and_uniq
+        _, err, status = @project.bundle_exec("spoom tc --no-color -s code -f '%F' --no-count -u")
+        assert_equal(<<~MSG, err)
+          errors/errors.rb
         MSG
         refute(status)
       end
@@ -115,11 +190,10 @@ module Spoom
         refute(status)
       end
 
-      def test_display_errors_with_sort_and_limit
-        _, err, status = @project.bundle_exec("spoom tc --no-color -s code -l 1")
+      def test_display_errors_with_limit_and_code_but_no_count
+        _, err, status = @project.bundle_exec("spoom tc --no-color -c 7004 -l 1 --no-count")
         assert_equal(<<~MSG, err)
-          5002 - errors/errors.rb:5: Unable to resolve constant `Bar`
-          Errors: 1 shown, 7 total
+          7004 - errors/errors.rb:10: Wrong number of arguments for constructor. Expected: `0`, got: `1`
         MSG
         refute(status)
       end

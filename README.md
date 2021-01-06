@@ -69,7 +69,7 @@ $ spoom files
 List all typechecking errors sorted by location:
 
 ```
-$ spoom tc -s
+$ spoom tc -s loc
 ```
 
 List all typechecking errors sorted by error code first:
@@ -94,6 +94,31 @@ These options can be combined:
 
 ```
 $ spoom tc -s -c 7004 -l 10
+```
+
+Remove duplicated error lines:
+
+```
+$ spoom tc -u
+```
+
+Format each error line:
+
+```
+$ spoom tc -f '%C - %F:%L: %M'
+```
+
+Where:
+
+* `%C` is the error code
+* `%F` is the file the error is from
+* `%L` is the line the error is from
+* `%M` is the error message
+
+Hide the `Errors: X` at the end of the list:
+
+```
+$ spoom tc --no-count
 ```
 
 #### Typing coverage
