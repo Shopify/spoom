@@ -41,6 +41,79 @@ module Spoom
         assert_equal(2, snapshot2.files)
         assert_equal(10, snapshot2.sigils["true"])
       end
+
+      def test_snapshot_project
+        project = self.project
+        snapshot = Spoom::Coverage.snapshot(path: project.path)
+        assert_equal(4, snapshot.files)
+        assert_equal({ "false" => 1, "true" => 3 }, snapshot.sigils)
+        assert_equal(5, snapshot.modules)
+        assert_equal(9, snapshot.classes)
+        assert_equal(1, snapshot.methods_with_sig)
+        assert_equal(13, snapshot.methods_without_sig)
+        assert_equal(8, snapshot.calls_typed)
+        assert_equal(1, snapshot.calls_untyped)
+        project.destroy
+      end
+
+      def test_snapshot_project_without_rbi
+        project = self.project
+        snapshot = Spoom::Coverage.snapshot(path: project.path, rbi: false)
+        assert_equal(3, snapshot.files)
+        assert_equal({ "false" => 1, "true" => 2 }, snapshot.sigils)
+        assert_equal(3, snapshot.modules)
+        assert_equal(5, snapshot.classes)
+        assert_equal(1, snapshot.methods_with_sig)
+        assert_equal(8, snapshot.methods_without_sig)
+        assert_equal(8, snapshot.calls_typed)
+        assert_equal(1, snapshot.calls_untyped)
+        project.destroy
+      end
+
+      def project
+        project = spoom_project("test_snapshot")
+        project.sorbet_config(<<~CONFIG)
+          .
+          --allowed-extension .rb
+          --allowed-extension .rbi
+        CONFIG
+        project.write("lib/a.rb", <<~RB)
+          # typed: false
+
+          module A1; end
+          module A2; end
+
+          class A3
+            def foo; end
+          end
+        RB
+        project.write("lib/b.rb", <<~RB)
+          # typed: true
+
+          module B1
+            extend T::Sig
+
+            sig { void }
+            def self.foo; end
+          end
+        RB
+        project.write("lib/c.rb", <<~RB)
+          # typed: true
+          A3.new.foo
+          B1.foo
+        RB
+        project.write("lib/d.rbi", <<~RB)
+          # typed: true
+
+          module D1; end
+          module D2; end
+
+          class D3
+            def foo; end
+          end
+        RB
+        project
+      end
     end
   end
 end

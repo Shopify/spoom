@@ -149,6 +149,21 @@ module Spoom
         assert_equal(['.idea/'], config.ignore)
         assert_equal(['.rake', '.ru'], config.allowed_extensions)
       end
+
+      def test_options_string_empty
+        config = Spoom::Sorbet::Config.parse_string("")
+        assert_equal("", config.options_string)
+      end
+
+      def test_options_string_with_options
+        config = Spoom::Sorbet::Config.parse_string(<<~CONFIG)
+          .
+          --ignore=.git/
+          --ignore=vendor/
+          --allowed-extension=.rb
+        CONFIG
+        assert_equal(". --ignore .git/ --ignore vendor/ --allowed-extension .rb", config.options_string)
+      end
     end
   end
 end

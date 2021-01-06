@@ -11,10 +11,17 @@ module Spoom
   module Coverage
     extend T::Sig
 
-    sig { params(path: String).returns(Snapshot) }
-    def self.snapshot(path: '.')
+    sig { params(path: String, rbi: T::Boolean).returns(Snapshot) }
+    def self.snapshot(path: '.', rbi: true)
+      config = sorbet_config(path: path)
+      config.allowed_extensions.push(".rb", ".rbi") if config.allowed_extensions.empty?
+
+      new_config = config.copy
+      new_config.allowed_extensions.reject! { |ext| !rbi && ext == ".rbi" }
+
+      metrics = Spoom::Sorbet.srb_metrics("--no-config", new_config.options_string, path: path, capture_err: true)
+
       snapshot = Snapshot.new
-      metrics = Spoom::Sorbet.srb_metrics(path: path, capture_err: true)
       return snapshot unless metrics
 
       sha = Spoom::Git.last_commit(path: path)
@@ -59,11 +66,14 @@ module Spoom
       )
     end
 
+    sig { params(path: String).returns(Sorbet::Config) }
+    def self.sorbet_config(path: ".")
+      Sorbet::Config.parse_file("#{path}/#{Spoom::Config::SORBET_CONFIG}")
+    end
+
     sig { params(path: String).returns(FileTree) }
     def self.sigils_tree(path: ".")
-      config_file = "#{path}/#{Spoom::Config::SORBET_CONFIG}"
-      return FileTree.new unless File.exist?(config_file)
-      config = Sorbet::Config.parse_file(config_file)
+      config = sorbet_config(path: path)
       files = Sorbet.srb_files(config, path: path)
       files.select! { |file| file =~ /\.rb$/ }
       files.reject! { |file| file =~ %r{/test/} }
