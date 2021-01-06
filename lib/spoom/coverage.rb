@@ -11,15 +11,21 @@ module Spoom
   module Coverage
     extend T::Sig
 
-    sig { params(path: String, rbi: T::Boolean).returns(Snapshot) }
-    def self.snapshot(path: '.', rbi: true)
+    sig { params(path: String, rbi: T::Boolean, sorbet_bin: T.nilable(String)).returns(Snapshot) }
+    def self.snapshot(path: '.', rbi: true, sorbet_bin: nil)
       config = sorbet_config(path: path)
       config.allowed_extensions.push(".rb", ".rbi") if config.allowed_extensions.empty?
 
       new_config = config.copy
       new_config.allowed_extensions.reject! { |ext| !rbi && ext == ".rbi" }
 
-      metrics = Spoom::Sorbet.srb_metrics("--no-config", new_config.options_string, path: path, capture_err: true)
+      metrics = Spoom::Sorbet.srb_metrics(
+        "--no-config",
+        new_config.options_string,
+        path: path,
+        capture_err: true,
+        sorbet_bin: sorbet_bin
+      )
 
       snapshot = Snapshot.new
       return snapshot unless metrics

@@ -16,11 +16,13 @@ module Spoom
       desc "snapshot", "Run srb tc and display metrics"
       option :save, type: :string, lazy_default: DATA_DIR, desc: "Save snapshot data as json"
       option :rbi, type: :boolean, default: true, desc: "Exclude RBI files from metrics"
+      option :sorbet, type: :string, desc: "Path to custom Sorbet bin"
       def snapshot
         in_sorbet_project!
-
         path = exec_path
-        snapshot = Spoom::Coverage.snapshot(path: path, rbi: options[:rbi])
+        sorbet = options[:sorbet]
+
+        snapshot = Spoom::Coverage.snapshot(path: path, rbi: options[:rbi], sorbet_bin: sorbet)
         snapshot.print
 
         save_dir = options[:save]
@@ -36,9 +38,11 @@ module Spoom
       option :to, type: :string, default: Time.now.strftime("%F"), desc: "To commit date"
       option :save, type: :string, lazy_default: DATA_DIR, desc: "Save snapshot data as json"
       option :bundle_install, type: :boolean, desc: "Execute `bundle install` before collecting metrics"
+      option :sorbet, type: :string, desc: "Path to custom Sorbet bin"
       def timeline
         in_sorbet_project!
         path = exec_path
+        sorbet = options[:sorbet]
 
         sha_before = Spoom::Git.last_commit(path: path)
         unless sha_before
@@ -84,10 +88,10 @@ module Spoom
           if options[:bundle_install]
             Bundler.with_clean_env do
               next unless bundle_install(path, sha)
-              snapshot = Spoom::Coverage.snapshot(path: path)
+              snapshot = Spoom::Coverage.snapshot(path: path, sorbet_bin: sorbet)
             end
           else
-            snapshot = Spoom::Coverage.snapshot(path: path)
+            snapshot = Spoom::Coverage.snapshot(path: path, sorbet_bin: sorbet)
           end
           next unless snapshot
 
