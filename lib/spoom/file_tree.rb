@@ -80,7 +80,7 @@ module Spoom
 
     private
 
-    sig { params(node: FileTree::Node, collected_nodes: T::Array[Node]).returns(T::Array[String]) }
+    sig { params(node: FileTree::Node, collected_nodes: T::Array[Node]).returns(T::Array[Node]) }
     def collect_nodes(node, collected_nodes = [])
       collected_nodes << node
       node.children.values.each { |child| collect_nodes(child, collected_nodes) }
