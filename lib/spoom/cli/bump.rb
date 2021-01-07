@@ -19,6 +19,7 @@ module Spoom
         desc: "Change files to this strictness"
       option :force, type: :boolean, default: false, aliases: :f,
         desc: "Change strictness without type checking"
+      option :sorbet, type: :string, desc: "Path to custom Sorbet bin"
       sig { params(directory: String).void }
       def bump(directory = ".")
         in_sorbet_project!
@@ -43,7 +44,7 @@ module Spoom
 
         return if force
 
-        output, no_errors = Sorbet.srb_tc(path: exec_path, capture_err: true)
+        output, no_errors = Sorbet.srb_tc(path: exec_path, capture_err: true, sorbet_bin: options[:sorbet])
 
         return if no_errors
 

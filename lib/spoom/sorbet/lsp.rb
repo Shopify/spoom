@@ -11,13 +11,9 @@ require_relative 'lsp/errors'
 module Spoom
   module LSP
     class Client
-      def initialize(sorbet_cmd, *sorbet_args, path: ".")
+      def initialize(sorbet_bin, *sorbet_args, path: ".")
         @id = 0
-        Bundler.with_clean_env do
-          opts = {}
-          opts[:chdir] = path
-          @in, @out, @err, @status = Open3.popen3([sorbet_cmd, *sorbet_args].join(" "), opts)
-        end
+        @in, @out, @err, @status = T.unsafe(Open3).popen3(sorbet_bin, *sorbet_args, chdir: path)
       end
 
       def next_id

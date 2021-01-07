@@ -21,7 +21,8 @@ module Spoom
       option :format, type: :string, aliases: :f, desc: "Format line output"
       option :uniq, type: :boolean, aliases: :u, desc: "Remove duplicated lines"
       option :count, type: :boolean, default: true, desc: "Show errors count"
-      def tc
+      option :sorbet, type: :string, desc: "Path to custom Sorbet bin"
+      def tc(*arg)
         in_sorbet_project!
 
         path = exec_path
@@ -31,12 +32,15 @@ module Spoom
         uniq = options[:uniq]
         format = options[:format]
         count = options[:count]
+        sorbet = options[:sorbet]
 
-        unless limit || code || sort || format || count || uniq
-          exit(Spoom::Sorbet.srb_tc(path: path, capture_err: false).last)
+        unless limit || code || sort
+          output, status = T.unsafe(Spoom::Sorbet).srb_tc(*arg, path: path, capture_err: false, sorbet_bin: sorbet)
+          $stderr.print(output)
+          exit(status)
         end
 
-        output, status = Spoom::Sorbet.srb_tc(path: path, capture_err: true)
+        output, status = T.unsafe(Spoom::Sorbet).srb_tc(*arg, path: path, capture_err: true, sorbet_bin: sorbet)
         if status
           $stderr.print(output)
           exit(0)
