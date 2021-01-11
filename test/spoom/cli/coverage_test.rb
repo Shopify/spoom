@@ -391,7 +391,7 @@ module Spoom
 
       def test_timeline_multiple_commits_and_save_json
         create_git_history
-        assert(0, Dir.glob("#{@project.path}/spoom_data/*.json").size)
+        assert_equal(0, Dir.glob("#{@project.path}/spoom_data/*.json").size)
         _, err, status = @project.bundle_exec("spoom coverage timeline --save data")
         assert(status)
         assert_equal("", err)
