@@ -37,3 +37,5 @@ jobs:
       run: bin/test
     - name: Run style
       run: bin/style
+    - name: Check sigils
+      run: bundle exec exe/spoom bump --from true --to strict --dry
