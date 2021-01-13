@@ -96,7 +96,7 @@ module Spoom
             $stderr.puts(" + #{file_path}")
           end
           if dry
-            $stderr.puts("\nRun `spoom bump --from #{from} --to #{true}` to bump them")
+            $stderr.puts("\nRun `spoom bump --from #{from} --to #{to}` to bump them")
           end
         end
 
