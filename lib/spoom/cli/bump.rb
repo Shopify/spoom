@@ -63,7 +63,7 @@ module Spoom
         if force
           print_changes(files_to_bump, from: from, to: to, dry: dry, path: exec_path)
           undo_changes(files_to_bump, from) if dry
-          exit(0)
+          exit(files_to_bump.empty?)
         end
 
         output, no_errors = Sorbet.srb_tc(path: exec_path, capture_err: true, sorbet_bin: options[:sorbet])
@@ -71,7 +71,7 @@ module Spoom
         if no_errors
           print_changes(files_to_bump, from: from, to: to, dry: dry, path: exec_path)
           undo_changes(files_to_bump, from) if dry
-          exit(0)
+          exit(files_to_bump.empty?)
         end
 
         errors = Sorbet::Errors::Parser.parse_string(output)
@@ -88,6 +88,7 @@ module Spoom
         files_changed = files_to_bump - files_with_errors
         print_changes(files_changed, from: from, to: to, dry: dry, path: exec_path)
         undo_changes(files_to_bump, from) if dry
+        exit(files_changed.empty?)
       end
 
       no_commands do

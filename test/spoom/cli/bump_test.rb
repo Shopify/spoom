@@ -48,7 +48,7 @@ module Spoom
           Bumped 1 file from false to true:
            + file1.rb
         ERR
-        assert(status)
+        refute(status)
 
         assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
@@ -65,7 +65,7 @@ module Spoom
           Bumped 1 file from false to true:
            + lib/b/file.rb
         ERR
-        assert(status)
+        refute(status)
 
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/lib/a/file.rb"))
         assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/lib/b/file.rb"))
@@ -90,7 +90,7 @@ module Spoom
           Bumped 1 file from true to strict:
            + file2.rb
         ERR
-        assert(status)
+        refute(status)
 
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("strict", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
@@ -112,7 +112,7 @@ module Spoom
           Bumped 1 file from ignore to strong:
            + file1.rb
         ERR
-        assert(status)
+        refute(status)
 
         assert_equal("strong", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("ignore", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
@@ -135,7 +135,7 @@ module Spoom
            + file1.rb
            + file2.rb
         ERR
-        assert(status)
+        refute(status)
 
         assert_equal("strong", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("strong", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
@@ -182,7 +182,7 @@ module Spoom
           Bumped 1 file from false to true:
            + file.rb
         ERR
-        assert(status)
+        refute(status)
 
         strictness = Sorbet::Sigils.file_strictness("#{@project.path}/file.rb")
         assert_equal("true", strictness)
@@ -207,7 +207,7 @@ module Spoom
 
           Run `spoom bump --from false --to true` to bump them
         ERR
-        assert(status)
+        refute(status)
 
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
@@ -232,7 +232,7 @@ module Spoom
 
           Run `spoom bump --from false --to true` to bump them
         ERR
-        assert(status)
+        refute(status)
 
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
@@ -288,7 +288,7 @@ module Spoom
            + file3.rb
            + file5.rb
         ERR
-        assert(status)
+        refute(status)
       end
     end
   end
