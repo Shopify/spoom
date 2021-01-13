@@ -267,6 +267,29 @@ module Spoom
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
       end
+
+      def test_bump_only_specified_files
+        @project.write("file1.rb", "# typed: false")
+        @project.write("file2.rb", "# typed: false")
+        @project.write("file3.rb", "# typed: false")
+        @project.write("file4.rb", "# typed: false")
+        @project.write("file5.rb", "# typed: false")
+        @project.write("files.lst", <<~FILES)
+          file1.rb
+          file3.rb
+          file5.rb
+        FILES
+
+        out, err, status = @project.bundle_exec("spoom bump -o files.lst")
+        assert_empty(out)
+        assert_equal(<<~ERR, err)
+          Bumped 3 files from false to true:
+           + file1.rb
+           + file3.rb
+           + file5.rb
+        ERR
+        assert(status)
+      end
     end
   end
 end

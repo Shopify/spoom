@@ -22,6 +22,8 @@ module Spoom
       option :sorbet, type: :string, desc: "Path to custom Sorbet bin"
       option :dry, type: :boolean, default: false, aliases: :d,
         desc: "Only display what would happen, do not actually change sigils"
+      option :only, type: :string, default: nil, aliases: :o,
+        desc: "Only change specified list (one file by line)"
       sig { params(directory: String).void }
       def bump(directory = ".")
         in_sorbet_project!
@@ -30,6 +32,7 @@ module Spoom
         to = options[:to]
         force = options[:force]
         dry = options[:dry]
+        only = options[:only]
         exec_path = File.expand_path(self.exec_path)
 
         unless Sorbet::Sigils.valid_strictness?(from)
@@ -44,6 +47,11 @@ module Spoom
 
         directory = File.expand_path(directory)
         files_to_bump = Sorbet::Sigils.files_with_sigil_strictness(directory, from)
+
+        if only
+          list = File.read(only).lines.map { |file| File.expand_path(file.strip) }
+          files_to_bump.select! { |file| list.include?(File.expand_path(file)) }
+        end
 
         if files_to_bump.empty?
           $stderr.puts("No file to bump from #{from} to #{to}")
