@@ -25,6 +25,13 @@ module Spoom
         refute(status)
       end
 
+      def test_bump_no_file
+        out, err, status = @project.bundle_exec("spoom bump --no-color")
+        assert_empty(out)
+        assert_equal("No file to bump from false to true", err.strip)
+        assert(status)
+      end
+
       def test_bump_files_one_error_no_bump_one_no_error_bump
         @project.write("file1.rb", <<~RB)
           # typed: false
@@ -35,7 +42,13 @@ module Spoom
           T.reveal_type(1)
         RB
 
-        @project.bundle_exec("spoom bump")
+        out, err, status = @project.bundle_exec("spoom bump")
+        assert_empty(out)
+        assert_equal(<<~ERR, err)
+          Bumped 1 file from false to true:
+           + file1.rb
+        ERR
+        refute(status)
 
         assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
@@ -45,7 +58,14 @@ module Spoom
         @project.write("lib/a/file.rb", "# typed: false")
         @project.write("lib/b/file.rb", "# typed: false")
         @project.write("lib/c/file.rb", "# typed: true\n\nfoo.bar")
-        @project.bundle_exec("spoom bump lib/b")
+
+        out, err, status = @project.bundle_exec("spoom bump lib/b")
+        assert_empty(out)
+        assert_equal(<<~ERR, err)
+          Bumped 1 file from false to true:
+           + lib/b/file.rb
+        ERR
+        refute(status)
 
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/lib/a/file.rb"))
         assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/lib/b/file.rb"))
@@ -64,7 +84,13 @@ module Spoom
           class B; end
         RB
 
-        @project.bundle_exec("spoom bump --from true --to strict")
+        out, err, status = @project.bundle_exec("spoom bump --from true --to strict")
+        assert_empty(out)
+        assert_equal(<<~ERR, err)
+          Bumped 1 file from true to strict:
+           + file2.rb
+        ERR
+        refute(status)
 
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("strict", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
@@ -80,7 +106,13 @@ module Spoom
           T.reveal_type(1)
         RB
 
-        @project.bundle_exec("spoom bump --from ignore --to strong")
+        out, err, status = @project.bundle_exec("spoom bump --from ignore --to strong")
+        assert_empty(out)
+        assert_equal(<<~ERR, err)
+          Bumped 1 file from ignore to strong:
+           + file1.rb
+        ERR
+        refute(status)
 
         assert_equal("strong", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("ignore", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
@@ -96,7 +128,14 @@ module Spoom
           T.reveal_type(1)
         RB
 
-        @project.bundle_exec("spoom bump --force --from ignore --to strong")
+        out, err, status = @project.bundle_exec("spoom bump --force --from ignore --to strong")
+        assert_empty(out)
+        assert_equal(<<~ERR, err)
+          Bumped 2 files from ignore to strong:
+           + file1.rb
+           + file2.rb
+        ERR
+        refute(status)
 
         assert_equal("strong", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("strong", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
@@ -120,7 +159,11 @@ module Spoom
           end
         RB
 
-        _, _, status = @project.bundle_exec("spoom bump --from true --to strict")
+        out, err, status = @project.bundle_exec("spoom bump --from true --to strict")
+        assert_empty(out)
+        assert_equal(<<~ERR, err)
+          No file to bump from true to strict
+        ERR
         assert(status)
 
         assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/file.rb"))
@@ -133,12 +176,119 @@ module Spoom
         RB
 
         @project.write("file.rb", string.encode("ISO-8859-15"))
-        _, _, status = @project.bundle_exec("spoom bump")
-        assert(status)
+        out, err, status = @project.bundle_exec("spoom bump")
+        assert_empty(out)
+        assert_equal(<<~ERR, err)
+          Bumped 1 file from false to true:
+           + file.rb
+        ERR
+        refute(status)
 
         strictness = Sorbet::Sigils.file_strictness("#{@project.path}/file.rb")
         assert_equal("true", strictness)
         assert_match("ISO-8859", %x{file "#{@project.path}/file.rb"})
+      end
+
+      def test_bump_dry_does_nothing
+        @project.write("file1.rb", <<~RB)
+          # typed: false
+          class A; end
+        RB
+        @project.write("file2.rb", <<~RB)
+          # typed: false
+          T.reveal_type(1)
+        RB
+
+        out, err, status = @project.bundle_exec("spoom bump --dry")
+        assert_empty(out)
+        assert_equal(<<~ERR, err)
+          Can bump 1 file from false to true:
+           + file1.rb
+
+          Run `spoom bump --from false --to true` to bump them
+        ERR
+        refute(status)
+
+        assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
+        assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
+      end
+
+      def test_bump_dry_does_nothing_even_with_force
+        @project.write("file1.rb", <<~RB)
+          # typed: false
+          class A; end
+        RB
+        @project.write("file2.rb", <<~RB)
+          # typed: false
+          T.reveal_type(1)
+        RB
+
+        out, err, status = @project.bundle_exec("spoom bump --dry -f")
+        assert_empty(out)
+        assert_equal(<<~ERR, err)
+          Can bump 2 files from false to true:
+           + file1.rb
+           + file2.rb
+
+          Run `spoom bump --from false --to true` to bump them
+        ERR
+        refute(status)
+
+        assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
+        assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
+      end
+
+      def test_bump_dry_does_nothing_with_no_file
+        out, err, status = @project.bundle_exec("spoom bump --dry")
+        assert_empty(out)
+        assert_equal(<<~ERR, err)
+          No file to bump from false to true
+        ERR
+        assert(status)
+      end
+
+      def test_bump_dry_does_nothing_with_no_bumpable_file
+        @project.write("file1.rb", <<~RB)
+          # typed: false
+          T.reveal_type(1)
+        RB
+        @project.write("file2.rb", <<~RB)
+          # typed: false
+          T.reveal_type(1)
+        RB
+
+        out, err, status = @project.bundle_exec("spoom bump --dry")
+        assert_empty(out)
+        assert_equal(<<~ERR, err)
+          No file to bump from false to true
+        ERR
+        assert(status)
+
+        assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
+        assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
+      end
+
+      def test_bump_only_specified_files
+        @project.write("file1.rb", "# typed: false")
+        @project.write("file2.rb", "# typed: false")
+        @project.write("file3.rb", "# typed: false")
+        @project.write("file4.rb", "# typed: false")
+        @project.write("file5.rb", "# typed: false")
+        @project.write("files.lst", <<~FILES)
+          file1.rb
+          file3.rb
+          file5.rb
+        FILES
+
+        out, err, status = @project.bundle_exec("spoom bump -o files.lst")
+        assert_empty(out)
+        assert_equal(<<~ERR, err)
+          Bumped 3 files from false to true:
+           + file1.rb
+           + file3.rb
+           + file5.rb
+        ERR
+        refute(status)
       end
     end
   end

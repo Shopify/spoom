@@ -208,6 +208,24 @@ Bump the strictness from all files currently at `typed: false` to `typed: true` 
 $ spoom bump --from false --to true -f
 ```
 
+Bump the strictness from a list of files (one file by line):
+
+```
+$ spoom bump --from false --to true -o list.txt
+```
+
+Check if files can be bumped without applying any change:
+
+```
+$ spoom bump --from false --to true --dry
+```
+
+Bump files using a custom instance of Sorbet:
+
+```
+$ spoom bump --from false --to true --sorbet /path/to/sorbet/bin
+```
+
 #### Interact with Sorbet LSP mode
 
 **Experimental**

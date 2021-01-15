@@ -31,6 +31,8 @@ jobs:
       run: bin/setup
     - name: Run typechecking
       run: bin/typecheck
+    - name: Check sigils
+      run: bundle exec exe/spoom bump --from true --to strict --dry
     - name: Run tests
       run: bin/test
     - name: Run style
