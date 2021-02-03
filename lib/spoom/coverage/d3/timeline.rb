@@ -36,8 +36,26 @@ module Spoom
               pointer-events: none;
             }
 
+            .area {
+              fill-opacity: 0.5;
+            }
+
+            .line {
+              stroke-width: 2;
+              fill: transparent;
+            }
+
+            .dot {
+              r: 2;
+              fill: #888;
+            }
+
             .inverted .grid line {
               stroke: #777;
+            }
+
+            .inverted .area {
+              fill-opacity: 0.9;
             }
 
             .inverted .axis text {
@@ -46,6 +64,10 @@ module Spoom
 
             .inverted .axis line {
               stroke: #fff;
+            }
+
+            .inverted .dot {
+              fill: #fff;
             }
           CSS
         end
@@ -170,7 +192,6 @@ module Spoom
                 .y1((d) => yScale_#{id}(#{y}))
                 .curve(d3.#{curve}))
               .attr("fill", "#{color}")
-              .attr("fill-opacity", 0.5)
           HTML
         end
 
@@ -185,8 +206,6 @@ module Spoom
                  .y((d) => yScale_#{id}(#{y}))
                  .curve(d3.#{curve}))
                .attr("stroke", "#{color}")
-               .attr("stroke-width", 3)
-               .attr("fill", "transparent")
           HTML
         end
 
@@ -198,10 +217,8 @@ module Spoom
               .enter()
                 .append("circle")
                 .attr("class", "dot")
-                .attr("r", 3)
                 .attr("cx", (d) => xScale_#{id}(parseDate(d.timestamp)))
                 .attr("cy", (d, i) => yScale_#{id}(#{y}))
-                .attr("fill", "#aaa")
                 .on("mouseover", (d) => tooltip.style("opacity", 1))
                 .on("mousemove", tooltip_#{id})
                 .on("mouseleave", (d) => tooltip.style("opacity", 0));
@@ -381,18 +398,15 @@ module Spoom
               layer.append("path")
                 .attr("class", "area")
                 .attr("d", area_#{id})
-                .attr("fill", (d) => strictnessColor(d.key))
-                .attr("fill-opacity", 0.9)
+                .attr("fill", (d) => #{color})
 
               svg_#{id}.selectAll("circle")
                 .data(points_#{id})
                 .enter()
                   .append("circle")
                   .attr("class", "dot")
-                  .attr("r", 2)
                   .attr("cx", (d) => xScale_#{id}(parseDate(#{y})))
                   .attr("cy", (d, i) => yScale_#{id}(d[1]))
-                  .attr("fill", "#fff")
                   .on("mouseover", (d) => tooltip.style("opacity", 1))
                   .on("mousemove", tooltip_#{id})
                   .on("mouseleave", (d) => tooltip.style("opacity", 0));
