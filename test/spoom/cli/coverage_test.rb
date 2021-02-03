@@ -49,6 +49,16 @@ module Spoom
           A3.new.foo
           B1.foo
         RB
+        @project.write("lib/d.rbi", <<~RB)
+          # typed: true
+          module D1; end
+          module D2; end
+
+          class D3
+            sig { void }
+            def foo; end
+          end
+        RB
       end
 
       def teardown
@@ -62,18 +72,18 @@ module Spoom
           Sorbet static: X.X.XXXX
 
           Content:
-            files: 3
-            modules: 3
-            classes: 1
-            methods: 9
+            files: 4
+            modules: 5
+            classes: 2
+            methods: 14
 
           Sigils:
-            false: 1 (33%)
-            true: 2 (67%)
+            false: 1 (25%)
+            true: 3 (75%)
 
           Methods:
-            with signature: 1 (11%)
-            without signature: 8 (89%)
+            with signature: 2 (14%)
+            without signature: 12 (86%)
 
           Calls:
             typed: 8 (89%)
@@ -101,18 +111,18 @@ module Spoom
           Sorbet static: X.X.XXXX
 
           Content:
-            files: 4
-            modules: 3
-            classes: 1
-            methods: 10
+            files: 5
+            modules: 5
+            classes: 2
+            methods: 15
 
           Sigils:
-            false: 1 (25%)
-            true: 3 (75%)
+            false: 1 (20%)
+            true: 4 (80%)
 
           Methods:
-            with signature: 1 (10%)
-            without signature: 9 (90%)
+            with signature: 2 (13%)
+            without signature: 13 (87%)
 
           Calls:
             typed: 8 (67%)
@@ -122,39 +132,6 @@ module Spoom
       end
 
       def test_display_metrics_can_exclude_rbi_metrics
-        @project.write("lib/d.rbi", <<~RB)
-          # typed: true
-          module D1; end
-          module D2; end
-
-          class D3
-            sig { void }
-            def foo; end
-          end
-        RB
-        out, _ = @project.bundle_exec("spoom coverage snapshot")
-        out = censor_sorbet_version(out) if out
-        assert_equal(<<~MSG, out)
-          Sorbet static: X.X.XXXX
-
-          Content:
-            files: 4
-            modules: 5
-            classes: 2
-            methods: 14
-
-          Sigils:
-            false: 1 (25%)
-            true: 3 (75%)
-
-          Methods:
-            with signature: 2 (14%)
-            without signature: 12 (86%)
-
-          Calls:
-            typed: 8 (89%)
-            untyped: 1 (11%)
-        MSG
         out, _ = @project.bundle_exec("spoom coverage snapshot --no-rbi")
         out = censor_sorbet_version(out) if out
         assert_equal(<<~MSG, out)
@@ -200,18 +177,18 @@ module Spoom
           Sorbet static: X.X.XXXX
 
           Content:
-            files: 3
-            modules: 3
-            classes: 1
-            methods: 9
+            files: 4
+            modules: 5
+            classes: 2
+            methods: 14
 
           Sigils:
-            false: 1 (33%)
-            true: 2 (67%)
+            false: 1 (25%)
+            true: 3 (75%)
 
           Methods:
-            with signature: 1 (11%)
-            without signature: 8 (89%)
+            with signature: 2 (14%)
+            without signature: 12 (86%)
 
           Calls:
             typed: 8 (89%)
@@ -240,18 +217,18 @@ module Spoom
             Sorbet static: 0.5.0000
 
             Content:
-              files: 3
-              modules: 3
-              classes: 1
-              methods: 9
+              files: 4
+              modules: 5
+              classes: 2
+              methods: 14
 
             Sigils:
-              false: 1 (33%)
-              true: 2 (67%)
+              false: 1 (25%)
+              true: 3 (75%)
 
             Methods:
-              with signature: 1 (11%)
-              without signature: 8 (89%)
+              with signature: 2 (14%)
+              without signature: 12 (86%)
 
             Calls:
               typed: 8 (89%)
