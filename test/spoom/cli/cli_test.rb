@@ -70,15 +70,14 @@ module Spoom
         @project.sorbet_config(".")
         out, _ = @project.bundle_exec("spoom files --no-color")
         assert_equal(<<~MSG, out)
-          Files matching `sorbet/config`:
-            lib/
-              c.rb (true)
-              d.rb (strict)
-              e.rb (strong)
-              f.rb (__STDLIB_INTERNAL)
-            test/
-              a.rb (ignore)
-              b.rb (false)
+          lib/
+            c.rb (true)
+            d.rb (strict)
+            e.rb (strong)
+            f.rb (__STDLIB_INTERNAL)
+          test/
+            a.rb (ignore)
+            b.rb (false)
         MSG
       end
 
@@ -95,12 +94,11 @@ module Spoom
         CFG
         out, _ = @project.bundle_exec("spoom files --no-color")
         assert_equal(<<~MSG, out)
-          Files matching `sorbet/config`:
-            lib/
-              c.rb (true)
-              d.rb (strict)
-              e.rb (strong)
-              f.rb (__STDLIB_INTERNAL)
+          lib/
+            c.rb (true)
+            d.rb (strict)
+            e.rb (strong)
+            f.rb (__STDLIB_INTERNAL)
         MSG
       end
 
@@ -119,13 +117,12 @@ module Spoom
         CFG
         out, _ = @project.bundle_exec("spoom files --no-color")
         assert_equal(<<~MSG, out)
-          Files matching `sorbet/config`:
-            lib/
-              d.ru (strict)
-              e.rb (strong)
-              f.rb (__STDLIB_INTERNAL)
-            test/
-              a.rake (ignore)
+          lib/
+            d.ru (strict)
+            e.rb (strong)
+            f.rb (__STDLIB_INTERNAL)
+          test/
+            a.rake (ignore)
         MSG
       end
 
@@ -137,10 +134,9 @@ module Spoom
 
         out, _ = @project.bundle_exec("spoom files --no-color --path #{project.path}")
         assert_equal(<<~MSG, out)
-          Files matching `/tmp/spoom/tests/test_files/sorbet/config`:
-            lib/
-              file1.rb (true)
-              file2.rb (true)
+          lib/
+            file1.rb (true)
+            file2.rb (true)
         MSG
       end
     end

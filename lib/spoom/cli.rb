@@ -50,9 +50,8 @@ module Spoom
           exit(1)
         end
 
-        say("Files matching `#{sorbet_config}`:")
         tree = FileTree.new(files, strip_prefix: path)
-        tree.print(colors: options[:color], indent_level: 2)
+        tree.print(colors: options[:color], indent_level: 0)
       end
 
       desc "--version", "Show version"
