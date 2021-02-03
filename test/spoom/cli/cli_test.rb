@@ -158,6 +158,27 @@ module Spoom
           test/b.rb
         MSG
       end
+
+      def test_display_files_no_rbi
+        @project.write("test/a.rbi", "# typed: ignore")
+        @project.write("test/b.rbi", "# typed: false")
+        @project.write("lib/c.rb", "# typed: true")
+        @project.write("lib/d.rb", "# typed: strict")
+        @project.write("lib/e.rbi", "# typed: strong")
+        @project.write("lib/f.rbi", "# typed: __STDLIB_INTERNAL")
+        @project.sorbet_config(".")
+        out, _ = @project.bundle_exec("spoom files --no-color --no-rbi")
+        assert_equal(<<~MSG, out)
+          lib/
+            c.rb (true)
+            d.rb (strict)
+        MSG
+        out, _ = @project.bundle_exec("spoom files --no-color --no-tree --no-rbi")
+        assert_equal(<<~MSG, out)
+          lib/c.rb
+          lib/d.rb
+        MSG
+      end
     end
   end
 end
