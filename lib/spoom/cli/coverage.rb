@@ -15,7 +15,7 @@ module Spoom
 
       desc "snapshot", "Run srb tc and display metrics"
       option :save, type: :string, lazy_default: DATA_DIR, desc: "Save snapshot data as json"
-      option :rbi, type: :boolean, default: true, desc: "Exclude RBI files from metrics"
+      option :rbi, type: :boolean, default: true, desc: "Include RBI files in metrics"
       option :sorbet, type: :string, desc: "Path to custom Sorbet bin"
       def snapshot
         in_sorbet_project!
