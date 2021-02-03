@@ -72,7 +72,7 @@ module Spoom
           Sorbet static: X.X.XXXX
 
           Content:
-            files: 4
+            files: 4 (including 1 RBIs)
             modules: 5
             classes: 2
             methods: 14
@@ -111,7 +111,7 @@ module Spoom
           Sorbet static: X.X.XXXX
 
           Content:
-            files: 5
+            files: 5 (including 1 RBIs)
             modules: 5
             classes: 2
             methods: 15
@@ -138,7 +138,7 @@ module Spoom
           Sorbet static: X.X.XXXX
 
           Content:
-            files: 3
+            files: 3 (including 0 RBIs)
             modules: 3
             classes: 1
             methods: 9
@@ -177,7 +177,7 @@ module Spoom
           Sorbet static: X.X.XXXX
 
           Content:
-            files: 4
+            files: 4 (including 1 RBIs)
             modules: 5
             classes: 2
             methods: 14
@@ -217,7 +217,7 @@ module Spoom
             Sorbet static: 0.5.0000
 
             Content:
-              files: 4
+              files: 4 (including 1 RBIs)
               modules: 5
               classes: 2
               methods: 14
@@ -249,7 +249,7 @@ module Spoom
             Sorbet static: 0.5.0000
 
             Content:
-              files: 2
+              files: 2 (including 0 RBIs)
               modules: 1
               classes: 1
               methods: 6
@@ -269,7 +269,7 @@ module Spoom
             Sorbet static: 0.5.1000
 
             Content:
-              files: 4
+              files: 4 (including 0 RBIs)
               modules: 1
               classes: 2
               methods: 9
@@ -291,7 +291,7 @@ module Spoom
             Sorbet runtime: 0.5.3000
 
             Content:
-              files: 6
+              files: 6 (including 0 RBIs)
               modules: 1
               classes: 2
               methods: 10
@@ -324,7 +324,7 @@ module Spoom
             Sorbet static: 0.5.0000
 
             Content:
-              files: 2
+              files: 2 (including 0 RBIs)
               modules: 1
               classes: 1
               methods: 6
@@ -344,7 +344,7 @@ module Spoom
             Sorbet static: 0.5.1000
 
             Content:
-              files: 4
+              files: 4 (including 0 RBIs)
               modules: 1
               classes: 2
               methods: 9

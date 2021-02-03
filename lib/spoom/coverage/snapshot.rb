@@ -13,6 +13,7 @@ module Spoom
       prop :commit_sha, T.nilable(String), default: nil
       prop :commit_timestamp, T.nilable(Integer), default: nil
       prop :files, Integer, default: 0
+      prop :rbi_files, Integer, default: 0
       prop :modules, Integer, default: 0
       prop :classes, Integer, default: 0
       prop :singleton_classes, Integer, default: 0
@@ -46,6 +47,7 @@ module Spoom
         snapshot.commit_sha = obj.fetch("commit_sha", nil)
         snapshot.commit_timestamp = obj.fetch("commit_timestamp", nil)
         snapshot.files = obj.fetch("files", 0)
+        snapshot.rbi_files = obj.fetch("rbi_files", 0)
         snapshot.modules = obj.fetch("modules", 0)
         snapshot.classes = obj.fetch("classes", 0)
         snapshot.singleton_classes = obj.fetch("singleton_classes", 0)
@@ -86,7 +88,7 @@ module Spoom
         end
         printl("Content:")
         indent
-        printl("files: #{snapshot.files}")
+        printl("files: #{snapshot.files} (including #{snapshot.rbi_files} RBIs)")
         printl("modules: #{snapshot.modules}")
         printl("classes: #{snapshot.classes - snapshot.singleton_classes}")
         printl("methods: #{methods}")
