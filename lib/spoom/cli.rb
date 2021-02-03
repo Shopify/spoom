@@ -38,6 +38,7 @@ module Spoom
       subcommand "tc", Spoom::Cli::Run
 
       desc "files", "List all the files typechecked by Sorbet"
+      option :tree, type: :boolean, default: true, desc: "Display list as an indented tree"
       def files
         in_sorbet_project!
 
@@ -50,8 +51,12 @@ module Spoom
           exit(1)
         end
 
-        tree = FileTree.new(files, strip_prefix: path)
-        tree.print(colors: options[:color], indent_level: 0)
+        if options[:tree]
+          tree = FileTree.new(files, strip_prefix: path)
+          tree.print(colors: options[:color], indent_level: 0)
+        else
+          puts files
+        end
       end
 
       desc "--version", "Show version"

@@ -139,6 +139,25 @@ module Spoom
             file2.rb (true)
         MSG
       end
+
+      def test_display_files_no_tree
+        @project.write("test/a.rb", "# typed: ignore")
+        @project.write("test/b.rb", "# typed: false")
+        @project.write("lib/c.rb", "# typed: true")
+        @project.write("lib/d.rb", "# typed: strict")
+        @project.write("lib/e.rb", "# typed: strong")
+        @project.write("lib/f.rb", "# typed: __STDLIB_INTERNAL")
+        @project.sorbet_config(".")
+        out, _ = @project.bundle_exec("spoom files --no-color --no-tree")
+        assert_equal(<<~MSG, out)
+          lib/c.rb
+          lib/d.rb
+          lib/e.rb
+          lib/f.rb
+          test/a.rb
+          test/b.rb
+        MSG
+      end
     end
   end
 end
