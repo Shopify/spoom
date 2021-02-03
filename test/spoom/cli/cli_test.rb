@@ -50,6 +50,16 @@ module Spoom
         OUT
       end
 
+      def test_display_files_returns_1_if_no_file
+        @project.sorbet_config(".")
+        out, err, status = @project.bundle_exec("spoom files --no-color")
+        assert_equal(<<~MSG, err)
+          Error: No file matching `sorbet/config`
+        MSG
+        assert_empty(out)
+        refute(status)
+      end
+
       def test_display_files_from_config
         @project.write("test/a.rb", "# typed: ignore")
         @project.write("test/b.rb", "# typed: false")

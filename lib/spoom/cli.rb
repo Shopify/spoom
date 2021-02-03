@@ -45,13 +45,14 @@ module Spoom
         config = Spoom::Sorbet::Config.parse_file(sorbet_config)
         files = Spoom::Sorbet.srb_files(config, path: path)
 
-        say("Files matching `#{sorbet_config}`:")
         if files.empty?
-          say(" NONE")
-        else
-          tree = FileTree.new(files, strip_prefix: path)
-          tree.print(colors: options[:color], indent_level: 2)
+          say_error("No file matching `#{sorbet_config}`")
+          exit(1)
         end
+
+        say("Files matching `#{sorbet_config}`:")
+        tree = FileTree.new(files, strip_prefix: path)
+        tree.print(colors: options[:color], indent_level: 2)
       end
 
       desc "--version", "Show version"
