@@ -38,6 +38,8 @@ module Spoom
       subcommand "tc", Spoom::Cli::Run
 
       desc "files", "List all the files typechecked by Sorbet"
+      option :tree, type: :boolean, default: true, desc: "Display list as an indented tree"
+      option :rbi, type: :boolean, default: true, desc: "Show RBI files"
       def files
         in_sorbet_project!
 
@@ -45,12 +47,20 @@ module Spoom
         config = Spoom::Sorbet::Config.parse_file(sorbet_config)
         files = Spoom::Sorbet.srb_files(config, path: path)
 
-        say("Files matching `#{sorbet_config}`:")
+        unless options[:rbi]
+          files = files.reject { |file| file.end_with?(".rbi") }
+        end
+
         if files.empty?
-          say(" NONE")
-        else
+          say_error("No file matching `#{sorbet_config}`")
+          exit(1)
+        end
+
+        if options[:tree]
           tree = FileTree.new(files, strip_prefix: path)
-          tree.print(colors: options[:color], indent_level: 2)
+          tree.print(colors: options[:color], indent_level: 0)
+        else
+          puts files
         end
       end
 

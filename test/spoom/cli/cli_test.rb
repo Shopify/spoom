@@ -50,6 +50,16 @@ module Spoom
         OUT
       end
 
+      def test_display_files_returns_1_if_no_file
+        @project.sorbet_config(".")
+        out, err, status = @project.bundle_exec("spoom files --no-color")
+        assert_equal(<<~MSG, err)
+          Error: No file matching `sorbet/config`
+        MSG
+        assert_empty(out)
+        refute(status)
+      end
+
       def test_display_files_from_config
         @project.write("test/a.rb", "# typed: ignore")
         @project.write("test/b.rb", "# typed: false")
@@ -60,15 +70,14 @@ module Spoom
         @project.sorbet_config(".")
         out, _ = @project.bundle_exec("spoom files --no-color")
         assert_equal(<<~MSG, out)
-          Files matching `sorbet/config`:
-            lib/
-              c.rb (true)
-              d.rb (strict)
-              e.rb (strong)
-              f.rb (__STDLIB_INTERNAL)
-            test/
-              a.rb (ignore)
-              b.rb (false)
+          lib/
+            c.rb (true)
+            d.rb (strict)
+            e.rb (strong)
+            f.rb (__STDLIB_INTERNAL)
+          test/
+            a.rb (ignore)
+            b.rb (false)
         MSG
       end
 
@@ -85,12 +94,11 @@ module Spoom
         CFG
         out, _ = @project.bundle_exec("spoom files --no-color")
         assert_equal(<<~MSG, out)
-          Files matching `sorbet/config`:
-            lib/
-              c.rb (true)
-              d.rb (strict)
-              e.rb (strong)
-              f.rb (__STDLIB_INTERNAL)
+          lib/
+            c.rb (true)
+            d.rb (strict)
+            e.rb (strong)
+            f.rb (__STDLIB_INTERNAL)
         MSG
       end
 
@@ -109,13 +117,12 @@ module Spoom
         CFG
         out, _ = @project.bundle_exec("spoom files --no-color")
         assert_equal(<<~MSG, out)
-          Files matching `sorbet/config`:
-            lib/
-              d.ru (strict)
-              e.rb (strong)
-              f.rb (__STDLIB_INTERNAL)
-            test/
-              a.rake (ignore)
+          lib/
+            d.ru (strict)
+            e.rb (strong)
+            f.rb (__STDLIB_INTERNAL)
+          test/
+            a.rake (ignore)
         MSG
       end
 
@@ -127,10 +134,49 @@ module Spoom
 
         out, _ = @project.bundle_exec("spoom files --no-color --path #{project.path}")
         assert_equal(<<~MSG, out)
-          Files matching `/tmp/spoom/tests/test_files/sorbet/config`:
-            lib/
-              file1.rb (true)
-              file2.rb (true)
+          lib/
+            file1.rb (true)
+            file2.rb (true)
+        MSG
+      end
+
+      def test_display_files_no_tree
+        @project.write("test/a.rb", "# typed: ignore")
+        @project.write("test/b.rb", "# typed: false")
+        @project.write("lib/c.rb", "# typed: true")
+        @project.write("lib/d.rb", "# typed: strict")
+        @project.write("lib/e.rb", "# typed: strong")
+        @project.write("lib/f.rb", "# typed: __STDLIB_INTERNAL")
+        @project.sorbet_config(".")
+        out, _ = @project.bundle_exec("spoom files --no-color --no-tree")
+        assert_equal(<<~MSG, out)
+          lib/c.rb
+          lib/d.rb
+          lib/e.rb
+          lib/f.rb
+          test/a.rb
+          test/b.rb
+        MSG
+      end
+
+      def test_display_files_no_rbi
+        @project.write("test/a.rbi", "# typed: ignore")
+        @project.write("test/b.rbi", "# typed: false")
+        @project.write("lib/c.rb", "# typed: true")
+        @project.write("lib/d.rb", "# typed: strict")
+        @project.write("lib/e.rbi", "# typed: strong")
+        @project.write("lib/f.rbi", "# typed: __STDLIB_INTERNAL")
+        @project.sorbet_config(".")
+        out, _ = @project.bundle_exec("spoom files --no-color --no-rbi")
+        assert_equal(<<~MSG, out)
+          lib/
+            c.rb (true)
+            d.rb (strict)
+        MSG
+        out, _ = @project.bundle_exec("spoom files --no-color --no-tree --no-rbi")
+        assert_equal(<<~MSG, out)
+          lib/c.rb
+          lib/d.rb
         MSG
       end
     end
