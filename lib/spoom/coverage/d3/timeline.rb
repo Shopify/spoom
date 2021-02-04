@@ -494,6 +494,129 @@ module Spoom
             JS
           end
         end
+
+        class RBIs < Stacked
+          extend T::Sig
+
+          sig { params(id: String, snapshots: T::Array[Snapshot]).void }
+          def initialize(id, snapshots)
+            keys = ['rbis', 'files']
+            data = snapshots.map do |snapshot|
+              {
+                timestamp: snapshot.commit_timestamp,
+                commit: snapshot.commit_sha,
+                total: snapshot.files,
+                values: { files: snapshot.files - snapshot.rbi_files, rbis: snapshot.rbi_files },
+              }
+            end
+            super(id, data, keys)
+          end
+
+          sig { override.returns(String) }
+          def tooltip
+            <<~JS
+              function tooltip_#{id}(d) {
+                moveTooltip(d)
+                  .html("commit <b>" + d.data.commit + "</b><br>"
+                    + d3.timeFormat("%y/%m/%d")(parseDate(d.data.timestamp)) + "<br><br>"
+                    + "Files: <b>" + d.data.values.files + "</b><br>"
+                    + "RBIs: <b>" + d.data.values.rbis + "</b><br><br>"
+                    + "Total: <b>" + d.data.total + "</b>")
+              }
+            JS
+          end
+
+          sig { override.returns(String) }
+          def script
+            <<~JS
+              #{tooltip}
+
+              var data_#{id} = #{@data.to_json};
+              var keys_#{id} = #{T.unsafe(@keys).to_json};
+
+              var stack_#{id} = d3.stack()
+                .keys(keys_#{id})
+                .value((d, key) => d.values[key]);
+
+              var layers_#{id} = stack_#{id}(data_#{id});
+
+              var points_#{id} = []
+              layers_#{id}.forEach(function(d) {
+                d.forEach(function(p) {
+                  p.key = d.key
+                  points_#{id}.push(p);
+                });
+              })
+
+              function draw_#{id}() {
+                var width_#{id} = document.getElementById("#{id}").clientWidth;
+                var height_#{id} = 200;
+
+                d3.select("##{id}").selectAll("*").remove()
+
+                var svg_#{id} = d3.select("##{id}")
+                  .attr("width", width_#{id})
+                  .attr("height", height_#{id});
+
+                #{plot}
+              }
+
+              draw_#{id}();
+              window.addEventListener("resize", draw_#{id});
+            JS
+          end
+
+          sig { override.params(y: String, color: String, curve: String).returns(String) }
+          def line(y:, color: 'strictnessColor(d.key)', curve: 'curveCatmullRom.alpha(1)')
+            <<~JS
+              var area_#{id} = d3.area()
+                .x((d) => xScale_#{id}(parseDate(#{y})))
+                .y0((d) => yScale_#{id}(d[0]))
+                .y1((d) => yScale_#{id}(d[1]))
+                .curve(d3.#{curve});
+
+              var layer = svg_#{id}.selectAll(".layer")
+                .data(layers_#{id})
+                .enter().append("g")
+                  .attr("class", "layer")
+
+              layer.append("path")
+                .attr("class", "area")
+                .attr("d", area_#{id})
+                .attr("fill", (d) => #{color})
+
+              layer.append("path")
+                .attr("class", "line")
+                .attr("d", d3.line()
+                  .x((d) => xScale_#{id}(parseDate(#{y})))
+                  .y((d, i) => yScale_#{id}(d[1]))
+                  .curve(d3.#{curve}))
+                .attr("stroke", (d) => #{color})
+
+              svg_#{id}.selectAll("circle")
+                .data(points_#{id})
+                .enter()
+                  .append("circle")
+                  .attr("class", "dot")
+                  .attr("cx", (d) => xScale_#{id}(parseDate(#{y})))
+                  .attr("cy", (d, i) => yScale_#{id}(d[1]))
+                  .on("mouseover", (d) => tooltip.style("opacity", 1))
+                  .on("mousemove", tooltip_#{id})
+                  .on("mouseleave", (d) => tooltip.style("opacity", 0));
+            JS
+          end
+
+          sig { override.returns(String) }
+          def plot
+            <<~JS
+              #{x_scale}
+              #{y_scale(min: '0', max: "d3.max(data_#{id}, (d) => d.total + 10)", ticks: 'tickValues([0, 25, 50, 75, 100])')}
+              #{line(y: 'd.data.timestamp', color: "d.key == 'rbis' ? '#8673ff' : '#007bff'")}
+              #{x_ticks}
+              #{y_ticks(ticks: 'tickValues([25, 50, 75])', format: 'd', padding: 20)}
+            JS
+          end
+        end
       end
     end
   end
