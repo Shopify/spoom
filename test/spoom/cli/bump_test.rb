@@ -238,6 +238,25 @@ module Spoom
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
       end
 
+      def test_bump_dry_suggest_custom_command
+        @project.write("file1.rb", <<~RB)
+          # typed: false
+          class A; end
+        RB
+
+        out, err, status = @project.bundle_exec("spoom bump --dry -f --suggest-bump-command 'bundle exec spoom bump'")
+        assert_empty(out)
+        assert_equal(<<~ERR, err)
+          Can bump 1 file from false to true:
+           + file1.rb
+
+          Run `bundle exec spoom bump --from false --to true` to bump them
+        ERR
+        refute(status)
+
+        assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
+      end
+
       def test_bump_dry_does_nothing_with_no_file
         out, err, status = @project.bundle_exec("spoom bump --dry")
         assert_empty(out)
