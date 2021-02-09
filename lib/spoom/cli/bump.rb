@@ -48,6 +48,8 @@ module Spoom
           exit(1)
         end
 
+        $stderr.puts("Checking files...")
+
         directory = File.expand_path(directory)
         files_to_bump = Sorbet::Sigils.files_with_sigil_strictness(directory, from)
 
@@ -55,6 +57,8 @@ module Spoom
           list = File.read(only).lines.map { |file| File.expand_path(file.strip) }
           files_to_bump.select! { |file| list.include?(File.expand_path(file)) }
         end
+
+        $stderr.puts("\n")
 
         if files_to_bump.empty?
           $stderr.puts("No file to bump from #{from} to #{to}")
