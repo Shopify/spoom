@@ -1,6 +1,7 @@
 # typed: true
 # frozen_string_literal: true
 
+require "colorize"
 require "sorbet-runtime"
 
 module Spoom
