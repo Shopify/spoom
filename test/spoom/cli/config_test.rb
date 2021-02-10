@@ -19,7 +19,7 @@ module Spoom
       def test_return_error_if_no_sorbet_config
         out, err, status = @project.bundle_exec("spoom config --no-color")
         assert_empty(out)
-        assert_equal("Error: not in a Sorbet project (sorbet/config not found)", err.lines.first.chomp)
+        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", err.lines.first.chomp)
         refute(status)
       end
 

@@ -86,7 +86,7 @@ module Spoom
         @project.remove("sorbet/config")
         out, err, status = @project.bundle_exec("spoom coverage snapshot --no-color")
         assert_empty(out)
-        assert_equal("Error: not in a Sorbet project (sorbet/config not found)", err.lines.first.chomp)
+        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", err.lines.first.chomp)
         refute(status)
       end
 
@@ -225,7 +225,7 @@ module Spoom
         @project.remove("sorbet/config")
         out, err, status = @project.bundle_exec("spoom coverage timeline --no-color")
         assert_empty(out)
-        assert_equal("Error: not in a Sorbet project (sorbet/config not found)", err.lines.first.chomp)
+        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", err.lines.first.chomp)
         refute(status)
       end
 
@@ -412,7 +412,7 @@ module Spoom
         @project.remove("sorbet/config")
         out, err, status = @project.bundle_exec("spoom coverage report --no-color")
         assert_empty(out)
-        assert_equal("Error: not in a Sorbet project (sorbet/config not found)", err.lines.first.chomp)
+        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", err.lines.first.chomp)
         refute(status)
       end
 
@@ -421,7 +421,7 @@ module Spoom
         _, err, status = @project.bundle_exec("spoom coverage report --no-color")
         refute(status)
         assert_equal(<<~ERR, err)
-          Error: No snapshot files found in spoom_data
+          Error: No snapshot files found in `spoom_data`
 
           If you already generated snapshot files under another directory use spoom coverage report PATH.
 

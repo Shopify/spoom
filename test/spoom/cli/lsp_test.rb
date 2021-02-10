@@ -23,7 +23,7 @@ module Spoom
         @project.remove("sorbet/config")
         out, err, status = @project.bundle_exec("spoom lsp --no-color find Foo")
         assert_empty(out)
-        assert_equal("Error: not in a Sorbet project (sorbet/config not found)", err.lines.first.chomp)
+        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", err.lines.first.chomp)
         refute(status)
       end
 
@@ -149,7 +149,7 @@ module Spoom
           ht = HoverTest.new
           ht.foo(42)
         RB
-        out, _ = @project.bundle_exec("spoom lsp hover lib/hover.rb 12 4")
+        out, _ = @project.bundle_exec("spoom lsp --no-color hover lib/hover.rb 12 4")
         assert_equal(<<~MSG, out)
           Hovering `lib/hover.rb:12:4`:
           sig {params(a: Integer).returns(String)}

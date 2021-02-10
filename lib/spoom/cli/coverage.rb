@@ -74,7 +74,7 @@ module Spoom
         ticks = timeline.ticks
 
         if ticks.empty?
-          say_error("No commits to replay, try different --from and --to options")
+          say_error("No commits to replay, try different `--from` and `--to` options")
           exit(1)
         end
 
@@ -153,7 +153,7 @@ module Spoom
       desc "open", "Open the typing coverage report"
       def open(file = "spoom_report.html")
         unless File.exist?(file)
-          say_error("No report file to open #{blue(file)}")
+          say_error("No report file to open `#{file}`")
           $stderr.puts <<~OUT
 
             If you already generated a report under another name use #{blue('spoom coverage open PATH')}.
@@ -171,7 +171,7 @@ module Spoom
           return nil unless string
           Time.parse(string)
         rescue ArgumentError
-          say_error("Invalid date `#{string}` for option #{option} (expected format YYYY-MM-DD)")
+          say_error("Invalid date `#{string}` for option `#{option}` (expected format `YYYY-MM-DD`)")
           exit(1)
         end
 
@@ -180,7 +180,7 @@ module Spoom
           opts[:chdir] = path
           out, status = Open3.capture2e("bundle install", opts)
           unless status.success?
-            say_error("Can't run `bundle install` for commit #{sha}. Skipping snapshot")
+            say_error("Can't run `bundle install` for commit `#{sha}`. Skipping snapshot")
             $stderr.puts(out)
             return false
           end
@@ -188,7 +188,7 @@ module Spoom
         end
 
         def message_no_data(file)
-          say_error("No snapshot files found in #{blue(file)}")
+          say_error("No snapshot files found in `#{file}`")
           $stderr.puts <<~OUT
 
             If you already generated snapshot files under another directory use #{blue('spoom coverage report PATH')}.

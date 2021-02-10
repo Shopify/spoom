@@ -17,7 +17,7 @@ module Spoom
       sig { params(message: String, status: String).void }
       def say_error(message, status = "Error")
         buffer = StringIO.new
-        buffer << "#{red(status)}: #{message}"
+        buffer << "#{red(status)}: #{highlight(message)}"
         buffer << "\n" unless message.end_with?("\n")
 
         $stderr.print(buffer.string)
@@ -37,9 +37,9 @@ module Spoom
       def in_sorbet_project!
         unless in_sorbet_project?
           say_error(
-            "not in a Sorbet project (#{yellow(sorbet_config_file)} not found)\n\n" \
+            "not in a Sorbet project (`#{sorbet_config_file}` not found)\n\n" \
             "When running spoom from another path than the project's root, " \
-            "use #{blue('--path PATH')} to specify the path to the root."
+            "use `--path PATH` to specify the path to the root."
           )
           Kernel.exit(1)
         end
@@ -63,10 +63,36 @@ module Spoom
 
       # Colors
 
+      # Color used to highlight expressions in backticks
+      HIGHLIGHT_COLOR = :blue
+
       # Is the `--color` option true?
       sig { returns(T::Boolean) }
       def color?
         T.unsafe(self).options[:color] # TODO: requires_ancestor
+      end
+
+      sig { params(string: String).returns(String) }
+      def highlight(string)
+        return string unless color?
+
+        res = StringIO.new
+        word = StringIO.new
+        in_ticks = T.let(false, T::Boolean)
+        string.chars.each do |c|
+          if c == '`' && !in_ticks
+            in_ticks = true
+          elsif c == '`' && in_ticks
+            in_ticks = false
+            res << colorize(word.string, HIGHLIGHT_COLOR)
+            word = StringIO.new
+          elsif in_ticks
+            word << c
+          else
+            res << c
+          end
+        end
+        res.string
       end
 
       # Colorize a string if `color?`

@@ -39,12 +39,12 @@ module Spoom
         exec_path = File.expand_path(self.exec_path)
 
         unless Sorbet::Sigils.valid_strictness?(from)
-          say_error("Invalid strictness #{from} for option --from")
+          say_error("Invalid strictness `#{from}` for option `--from`")
           exit(1)
         end
 
         unless Sorbet::Sigils.valid_strictness?(to)
-          say_error("Invalid strictness #{to} for option --to")
+          say_error("Invalid strictness `#{to}` for option `--to`")
           exit(1)
         end
 
