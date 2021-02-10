@@ -15,25 +15,33 @@ on:
 
 jobs:
   test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        ruby: [2.6, 2.7]
+        experimental: [false]
+        include:
+          - ruby: 3.0
+            os: [ubuntu-latest]
+            experimental: true
 
-    runs-on: ubuntu-latest
-
+    continue-on-error: ${{ matrix.experimental }}
+    name: ${{ matrix.os }} ${{ matrix.ruby }}
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Ruby
-    # To automatically get bug fixes and new Ruby versions for ruby/setup-ruby,
-    # change this to (see https://github.com/ruby/setup-ruby#versioning):
-    # uses: ruby/setup-ruby@v1
-      uses: ruby/setup-ruby@v1
+    - uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.6
+        ruby-version: ${{ matrix.ruby }}
+    - run: ruby -v
     - name: Install dependencies
       run: bin/setup
     - name: Run typechecking
       run: bin/typecheck
     - name: Check sigils
       run: bundle exec exe/spoom bump --from true --to strict --dry
-    - name: Run tests
-      run: bin/test
+    - run: bin/test
+      continue-on-error: ${{ matrix.experimental }}
     - name: Run style
       run: bin/style
