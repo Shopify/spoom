@@ -68,6 +68,7 @@ module Spoom
       end
       def srb_version(*arg, path: '.', capture_err: false, sorbet_bin: nil)
         out, res = T.unsafe(self).srb_tc(
+          "--no-config",
           "--version",
           *arg,
           path: path,
