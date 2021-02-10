@@ -28,7 +28,11 @@ module Spoom
       def test_bump_no_file
         out, err, status = @project.bundle_exec("spoom bump --no-color")
         assert_empty(out)
-        assert_equal("No file to bump from false to true", err.strip)
+        assert_equal(<<~ERR, err)
+          Checking files...
+
+          No file to bump from false to true
+        ERR
         assert(status)
       end
 
@@ -45,6 +49,8 @@ module Spoom
         out, err, status = @project.bundle_exec("spoom bump")
         assert_empty(out)
         assert_equal(<<~ERR, err)
+          Checking files...
+
           Bumped 1 file from false to true:
            + file1.rb
         ERR
@@ -62,6 +68,8 @@ module Spoom
         out, err, status = @project.bundle_exec("spoom bump lib/b")
         assert_empty(out)
         assert_equal(<<~ERR, err)
+          Checking files...
+
           Bumped 1 file from false to true:
            + lib/b/file.rb
         ERR
@@ -87,6 +95,8 @@ module Spoom
         out, err, status = @project.bundle_exec("spoom bump --from true --to strict")
         assert_empty(out)
         assert_equal(<<~ERR, err)
+          Checking files...
+
           Bumped 1 file from true to strict:
            + file2.rb
         ERR
@@ -109,6 +119,8 @@ module Spoom
         out, err, status = @project.bundle_exec("spoom bump --from ignore --to strong")
         assert_empty(out)
         assert_equal(<<~ERR, err)
+          Checking files...
+
           Bumped 1 file from ignore to strong:
            + file1.rb
         ERR
@@ -131,6 +143,8 @@ module Spoom
         out, err, status = @project.bundle_exec("spoom bump --force --from ignore --to strong")
         assert_empty(out)
         assert_equal(<<~ERR, err)
+          Checking files...
+
           Bumped 2 files from ignore to strong:
            + file1.rb
            + file2.rb
@@ -162,6 +176,8 @@ module Spoom
         out, err, status = @project.bundle_exec("spoom bump --from true --to strict")
         assert_empty(out)
         assert_equal(<<~ERR, err)
+          Checking files...
+
           No file to bump from true to strict
         ERR
         assert(status)
@@ -179,6 +195,8 @@ module Spoom
         out, err, status = @project.bundle_exec("spoom bump")
         assert_empty(out)
         assert_equal(<<~ERR, err)
+          Checking files...
+
           Bumped 1 file from false to true:
            + file.rb
         ERR
@@ -202,6 +220,8 @@ module Spoom
         out, err, status = @project.bundle_exec("spoom bump --dry")
         assert_empty(out)
         assert_equal(<<~ERR, err)
+          Checking files...
+
           Can bump 1 file from false to true:
            + file1.rb
 
@@ -226,6 +246,8 @@ module Spoom
         out, err, status = @project.bundle_exec("spoom bump --dry -f")
         assert_empty(out)
         assert_equal(<<~ERR, err)
+          Checking files...
+
           Can bump 2 files from false to true:
            + file1.rb
            + file2.rb
@@ -238,10 +260,33 @@ module Spoom
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
       end
 
+      def test_bump_dry_suggest_custom_command
+        @project.write("file1.rb", <<~RB)
+          # typed: false
+          class A; end
+        RB
+
+        out, err, status = @project.bundle_exec("spoom bump --dry -f --suggest-bump-command 'bump.sh'")
+        assert_empty(out)
+        assert_equal(<<~ERR, err)
+          Checking files...
+
+          Can bump 1 file from false to true:
+           + file1.rb
+
+          Run `bump.sh` to bump them
+        ERR
+        refute(status)
+
+        assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
+      end
+
       def test_bump_dry_does_nothing_with_no_file
         out, err, status = @project.bundle_exec("spoom bump --dry")
         assert_empty(out)
         assert_equal(<<~ERR, err)
+          Checking files...
+
           No file to bump from false to true
         ERR
         assert(status)
@@ -260,6 +305,8 @@ module Spoom
         out, err, status = @project.bundle_exec("spoom bump --dry")
         assert_empty(out)
         assert_equal(<<~ERR, err)
+          Checking files...
+
           No file to bump from false to true
         ERR
         assert(status)
@@ -283,6 +330,8 @@ module Spoom
         out, err, status = @project.bundle_exec("spoom bump -o files.lst")
         assert_empty(out)
         assert_equal(<<~ERR, err)
+          Checking files...
+
           Bumped 3 files from false to true:
            + file1.rb
            + file3.rb

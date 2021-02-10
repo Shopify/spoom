@@ -24,6 +24,8 @@ module Spoom
         desc: "Only display what would happen, do not actually change sigils"
       option :only, type: :string, default: nil, aliases: :o,
         desc: "Only change specified list (one file by line)"
+      option :suggest_bump_command, type: :string,
+        desc: "Command to suggest if files can be bumped"
       sig { params(directory: String).void }
       def bump(directory = ".")
         in_sorbet_project!
@@ -33,6 +35,7 @@ module Spoom
         force = options[:force]
         dry = options[:dry]
         only = options[:only]
+        cmd = options[:suggest_bump_command]
         exec_path = File.expand_path(self.exec_path)
 
         unless Sorbet::Sigils.valid_strictness?(from)
@@ -45,6 +48,8 @@ module Spoom
           exit(1)
         end
 
+        $stderr.puts("Checking files...")
+
         directory = File.expand_path(directory)
         files_to_bump = Sorbet::Sigils.files_with_sigil_strictness(directory, from)
 
@@ -52,6 +57,8 @@ module Spoom
           list = File.read(only).lines.map { |file| File.expand_path(file.strip) }
           files_to_bump.select! { |file| list.include?(File.expand_path(file)) }
         end
+
+        $stderr.puts("\n")
 
         if files_to_bump.empty?
           $stderr.puts("No file to bump from #{from} to #{to}")
@@ -61,7 +68,7 @@ module Spoom
         Sorbet::Sigils.change_sigil_in_files(files_to_bump, to)
 
         if force
-          print_changes(files_to_bump, from: from, to: to, dry: dry, path: exec_path)
+          print_changes(files_to_bump, command: cmd, from: from, to: to, dry: dry, path: exec_path)
           undo_changes(files_to_bump, from) if dry
           exit(files_to_bump.empty?)
         end
@@ -69,7 +76,7 @@ module Spoom
         output, no_errors = Sorbet.srb_tc(path: exec_path, capture_err: true, sorbet_bin: options[:sorbet])
 
         if no_errors
-          print_changes(files_to_bump, from: from, to: to, dry: dry, path: exec_path)
+          print_changes(files_to_bump, command: cmd, from: from, to: to, dry: dry, path: exec_path)
           undo_changes(files_to_bump, from) if dry
           exit(files_to_bump.empty?)
         end
@@ -86,13 +93,13 @@ module Spoom
         undo_changes(files_with_errors, from)
 
         files_changed = files_to_bump - files_with_errors
-        print_changes(files_changed, from: from, to: to, dry: dry, path: exec_path)
+        print_changes(files_changed, command: cmd, from: from, to: to, dry: dry, path: exec_path)
         undo_changes(files_to_bump, from) if dry
         exit(files_changed.empty?)
       end
 
       no_commands do
-        def print_changes(files, from: "false", to: "true", dry: false, path: File.expand_path("."))
+        def print_changes(files, command:, from: "false", to: "true", dry: false, path: File.expand_path("."))
           if files.empty?
             $stderr.puts("No file to bump from #{from} to #{to}")
             return
@@ -104,7 +111,9 @@ module Spoom
             file_path = Pathname.new(file).relative_path_from(path)
             $stderr.puts(" + #{file_path}")
           end
-          if dry
+          if dry && command
+            $stderr.puts("\nRun `#{command}` to bump them")
+          elsif dry
             $stderr.puts("\nRun `spoom bump --from #{from} --to #{to}` to bump them")
           end
         end
