@@ -24,7 +24,7 @@ module Spoom
         desc: "Only display what would happen, do not actually change sigils"
       option :only, type: :string, default: nil, aliases: :o,
         desc: "Only change specified list (one file by line)"
-      option :suggest_bump_command, type: :string, default: "spoom bump",
+      option :suggest_bump_command, type: :string,
         desc: "Command to suggest if files can be bumped"
       sig { params(directory: String).void }
       def bump(directory = ".")
@@ -111,8 +111,10 @@ module Spoom
             file_path = Pathname.new(file).relative_path_from(path)
             $stderr.puts(" + #{file_path}")
           end
-          if dry
-            $stderr.puts("\nRun `#{command} --from #{from} --to #{to}` to bump them")
+          if dry && command
+            $stderr.puts("\nRun `#{command}` to bump them")
+          elsif dry
+            $stderr.puts("\nRun `spoom bump --from #{from} --to #{to}` to bump them")
           end
         end
 

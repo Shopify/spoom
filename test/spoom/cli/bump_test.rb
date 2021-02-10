@@ -266,7 +266,7 @@ module Spoom
           class A; end
         RB
 
-        out, err, status = @project.bundle_exec("spoom bump --dry -f --suggest-bump-command 'bundle exec spoom bump'")
+        out, err, status = @project.bundle_exec("spoom bump --dry -f --suggest-bump-command 'bump.sh'")
         assert_empty(out)
         assert_equal(<<~ERR, err)
           Checking files...
@@ -274,7 +274,7 @@ module Spoom
           Can bump 1 file from false to true:
            + file1.rb
 
-          Run `bundle exec spoom bump --from false --to true` to bump them
+          Run `bump.sh` to bump them
         ERR
         refute(status)
 
