@@ -14,9 +14,9 @@ module Spoom
       desc "show", "Show Sorbet config"
       def show
         in_sorbet_project!
-        config = Spoom::Sorbet::Config.parse_file(sorbet_config)
+        config = sorbet_config
 
-        say("Found Sorbet config at `#{sorbet_config}`.")
+        say("Found Sorbet config at `#{sorbet_config_file}`.")
 
         say("\nPaths typechecked:")
         if config.paths.empty?

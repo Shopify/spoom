@@ -44,7 +44,7 @@ module Spoom
         in_sorbet_project!
 
         path = exec_path
-        config = Spoom::Sorbet::Config.parse_file(sorbet_config)
+        config = sorbet_config
         files = Spoom::Sorbet.srb_files(config, path: path)
 
         unless options[:rbi]
@@ -52,7 +52,7 @@ module Spoom
         end
 
         if files.empty?
-          say_error("No file matching `#{sorbet_config}`")
+          say_error("No file matching `#{sorbet_config_file}`")
           exit(1)
         end
 
