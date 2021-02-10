@@ -19,8 +19,14 @@ module Spoom
       end
 
       def test_run_srb_from_bundler
-        @project.gemfile("gem 'sorbet'")
+        @project.gemfile(<<~GEM)
+          source 'https://rubygems.org'
+          gem 'sorbet'
+        GEM
         Bundler.with_clean_env do
+          _, _, status = @project.bundle_install
+          assert(status)
+
           out, status = Spoom::Sorbet.srb(path: @project.path, capture_err: true)
           assert_equal(<<~OUT, out)
             No errors! Great job.
@@ -30,10 +36,12 @@ module Spoom
       end
 
       def test_run_srb_from_bundler_not_found
-        @project.gemfile("")
+        @project.gemfile("source 'https://rubygems.org'")
         Bundler.with_clean_env do
-          out, status = Spoom::Sorbet.srb(path: @project.path, capture_err: true)
-          assert_match(/Gem::Exception: can't find executable srb for gem sorbet./, out)
+          _, _, status = @project.bundle_install
+          assert(status)
+
+          _, _, status = Spoom::Sorbet.srb(path: @project.path, capture_err: true)
           refute(status)
         end
       end
