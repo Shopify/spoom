@@ -29,7 +29,7 @@ module Spoom
       # Is `spoom` ran inside a project with a `sorbet/config` file?
       sig { returns(T::Boolean) }
       def in_sorbet_project?
-        File.file?(sorbet_config)
+        File.file?(sorbet_config_file)
       end
 
       # Enforce that `spoom` is ran inside a project with a `sorbet/config` file
@@ -39,7 +39,7 @@ module Spoom
       def in_sorbet_project!
         unless in_sorbet_project?
           say_error(
-            "not in a Sorbet project (#{colorize(sorbet_config, :yellow)} not found)\n\n" \
+            "not in a Sorbet project (#{colorize(sorbet_config_file, :yellow)} not found)\n\n" \
             "When running spoom from another path than the project's root, " \
             "use #{colorize('--path PATH', :blue)} to specify the path to the root."
           )
@@ -54,8 +54,13 @@ module Spoom
       end
 
       sig { returns(String) }
-      def sorbet_config
+      def sorbet_config_file
         Pathname.new("#{exec_path}/#{Spoom::Sorbet::CONFIG_PATH}").cleanpath.to_s
+      end
+
+      sig { returns(Sorbet::Config) }
+      def sorbet_config
+        Sorbet::Config.parse_file(sorbet_config_file)
       end
 
       # Is the `--color` option true?
