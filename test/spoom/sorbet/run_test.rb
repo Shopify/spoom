@@ -21,6 +21,9 @@ module Spoom
       def test_run_srb_from_bundler
         @project.gemfile("gem 'sorbet'")
         Bundler.with_clean_env do
+          _, _, status = @project.bundle_install
+          assert(status)
+
           out, status = Spoom::Sorbet.srb(path: @project.path, capture_err: true)
           assert_equal(<<~OUT, out)
             No errors! Great job.

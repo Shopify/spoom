@@ -76,6 +76,15 @@ module Spoom
         Spoom::Git.exec("GIT_COMMITTER_DATE=\"#{date}\" git commit -m '#{message}' --date '#{date}'", path: path)
       end
 
+      # Run `bundle install` in this project
+      sig { returns([T.nilable(String), T.nilable(String), T::Boolean]) }
+      def bundle_install
+        opts = {}
+        opts[:chdir] = path
+        out, err, status = Open3.capture3("bundle", "install", opts)
+        [out, err, status.success?]
+      end
+
       # Run a command with `bundle exec` in this project
       sig { params(cmd: String, args: String).returns([T.nilable(String), T.nilable(String), T::Boolean]) }
       def bundle_exec(cmd, *args)
