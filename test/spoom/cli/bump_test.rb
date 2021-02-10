@@ -339,6 +339,34 @@ module Spoom
         ERR
         refute(status)
       end
+
+      def test_bump_files_according_to_config
+        @project.sorbet_config(<<~CONFIG)
+          .
+          --ignore=vendor/
+        CONFIG
+        @project.write("file1.rb", <<~RB)
+          # typed: false
+          class A; end
+        RB
+        @project.write("vendor/file2.rb", <<~RB)
+          # typed: false
+          class A; end
+        RB
+
+        out, err, status = @project.bundle_exec("spoom bump")
+        assert_empty(out)
+        assert_equal(<<~ERR, err)
+          Checking files...
+
+          Bumped 1 file from false to true:
+           + file1.rb
+        ERR
+        refute(status)
+
+        assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
+        assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/vendor/file2.rb"))
+      end
     end
   end
 end
