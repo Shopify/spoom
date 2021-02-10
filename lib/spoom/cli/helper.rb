@@ -16,10 +16,8 @@ module Spoom
       # The message is prefixed by a status (default: `Error`).
       sig { params(message: String, status: String).void }
       def say_error(message, status = "Error")
-        status = set_color(status, :red)
-
         buffer = StringIO.new
-        buffer << "#{status}: #{message}"
+        buffer << "#{red(status)}: #{message}"
         buffer << "\n" unless message.end_with?("\n")
 
         $stderr.print(buffer.string)
@@ -39,9 +37,9 @@ module Spoom
       def in_sorbet_project!
         unless in_sorbet_project?
           say_error(
-            "not in a Sorbet project (#{colorize(sorbet_config_file, :yellow)} not found)\n\n" \
+            "not in a Sorbet project (#{yellow(sorbet_config_file)} not found)\n\n" \
             "When running spoom from another path than the project's root, " \
-            "use #{colorize('--path PATH', :blue)} to specify the path to the root."
+            "use #{blue('--path PATH')} to specify the path to the root."
           )
           Kernel.exit(1)
         end

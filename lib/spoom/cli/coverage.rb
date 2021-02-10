@@ -147,18 +147,18 @@ module Spoom
         file = options[:file]
         File.write(file, report.html)
         puts "Report generated under #{file}"
-        puts "\nUse #{colorize('spoom coverage open', :blue)} to open it."
+        puts "\nUse #{blue('spoom coverage open')} to open it."
       end
 
       desc "open", "Open the typing coverage report"
       def open(file = "spoom_report.html")
         unless File.exist?(file)
-          say_error("No report file to open #{colorize(file, :blue)}")
+          say_error("No report file to open #{blue(file)}")
           $stderr.puts <<~OUT
 
-            If you already generated a report under another name use #{colorize('spoom coverage open PATH', :blue)}.
+            If you already generated a report under another name use #{blue('spoom coverage open PATH')}.
 
-            To generate a report run #{colorize('spoom coverage report', :blue)}.
+            To generate a report run #{blue('spoom coverage report')}.
           OUT
           exit(1)
         end
@@ -188,12 +188,12 @@ module Spoom
         end
 
         def message_no_data(file)
-          say_error("No snapshot files found in #{colorize(file, :blue)}")
+          say_error("No snapshot files found in #{blue(file)}")
           $stderr.puts <<~OUT
 
-            If you already generated snapshot files under another directory use #{colorize('spoom coverage report PATH', :blue)}.
+            If you already generated snapshot files under another directory use #{blue('spoom coverage report PATH')}.
 
-            To generate snapshot files run #{colorize('spoom coverage timeline --save-dir spoom_data', :blue)}.
+            To generate snapshot files run #{blue('spoom coverage timeline --save-dir spoom_data')}.
           OUT
         end
       end
