@@ -232,9 +232,9 @@ module Spoom
       def test_timeline_one_commit
         @project.git_init
         @project.commit
-        out, err, status = @project.bundle_exec("spoom coverage timeline")
+        out, err, status = @project.bundle_exec("spoom coverage timeline --no-color")
         assert(status)
-        out&.gsub!(/commit [a-f0-9]+ - \d{4}-\d{2}-\d{2}/, "COMMIT")
+        out&.gsub!(/commit `[a-f0-9]+` - \d{4}-\d{2}-\d{2}/, "COMMIT")
         assert_equal(<<~OUT, out)
           Analyzing COMMIT (1 / 1)
             Sorbet static: 0.5.0000
@@ -264,9 +264,9 @@ module Spoom
 
       def test_timeline_multiple_commits
         create_git_history
-        out, err, status = @project.bundle_exec("spoom coverage timeline")
+        out, err, status = @project.bundle_exec("spoom coverage timeline --no-color")
         assert(status)
-        out&.gsub!(/commit [a-f0-9]+ - \d{4}-\d{2}-\d{2}/, "COMMIT")
+        out&.gsub!(/commit `[a-f0-9]+` - \d{4}-\d{2}-\d{2}/, "COMMIT")
         assert_equal(<<~OUT, out)
           Analyzing COMMIT (1 / 3)
             Sorbet static: 0.5.0000
@@ -339,9 +339,9 @@ module Spoom
 
       def test_timeline_multiple_commits_between_dates
         create_git_history
-        out, err, status = @project.bundle_exec("spoom coverage timeline --from 2010-01-02 --to 2010-02-02")
+        out, err, status = @project.bundle_exec("spoom coverage timeline --from 2010-01-02 --to 2010-02-02 --no-color")
         assert(status)
-        out&.gsub!(/commit [a-f0-9]+ - \d{4}-\d{2}-\d{2}/, "COMMIT")
+        out&.gsub!(/commit `[a-f0-9]+` - \d{4}-\d{2}-\d{2}/, "COMMIT")
         assert_equal(<<~OUT, out)
           Analyzing COMMIT (1 / 2)
             Sorbet static: 0.5.0000
@@ -435,9 +435,9 @@ module Spoom
         out, _, status = @project.bundle_exec("spoom coverage report --no-color")
         out = T.must(out)
         assert_equal(<<~OUT, out)
-          Report generated under spoom_report.html
+          Report generated under `spoom_report.html`
 
-          Use spoom coverage open to open it.
+          Use `spoom coverage open` to open it.
         OUT
         assert(status)
         assert(File.exist?("#{@project.path}/spoom_report.html"))

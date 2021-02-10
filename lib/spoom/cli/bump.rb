@@ -48,7 +48,7 @@ module Spoom
           exit(1)
         end
 
-        $stderr.puts("Checking files...")
+        say("Checking files...")
 
         directory = File.expand_path(directory)
         files_to_bump = Sorbet::Sigils.files_with_sigil_strictness(directory, from)
@@ -61,10 +61,10 @@ module Spoom
           files_to_bump.select! { |file| list.include?(File.expand_path(file)) }
         end
 
-        $stderr.puts("\n")
+        say("\n")
 
         if files_to_bump.empty?
-          $stderr.puts("No file to bump from #{from} to #{to}")
+          say("No file to bump from `#{from}` to `#{to}`")
           exit(0)
         end
 
@@ -104,20 +104,22 @@ module Spoom
       no_commands do
         def print_changes(files, command:, from: "false", to: "true", dry: false, path: File.expand_path("."))
           if files.empty?
-            $stderr.puts("No file to bump from #{from} to #{to}")
+            say("No file to bump from `#{from}` to `#{to}`")
             return
           end
-          $stderr.write(dry ? "Can bump" : "Bumped")
-          $stderr.write(" #{files.size} file#{'s' if files.size > 1}")
-          $stderr.puts(" from #{from} to #{to}:")
+          message = StringIO.new
+          message << (dry ? "Can bump" : "Bumped")
+          message << " `#{files.size}` file#{'s' if files.size > 1}"
+          message << " from `#{from}` to `#{to}`:"
+          say(message.string)
           files.each do |file|
             file_path = Pathname.new(file).relative_path_from(path)
-            $stderr.puts(" + #{file_path}")
+            say(" + #{file_path}")
           end
           if dry && command
-            $stderr.puts("\nRun `#{command}` to bump them")
+            say("\nRun `#{command}` to bump them")
           elsif dry
-            $stderr.puts("\nRun `spoom bump --from #{from} --to #{to}` to bump them")
+            say("\nRun `spoom bump --from #{from} --to #{to}` to bump them")
           end
         end
 

@@ -25,7 +25,7 @@ module Spoom
 
       def test_display_empty_config
         @project.sorbet_config("")
-        out, _ = @project.bundle_exec("spoom config")
+        out, _ = @project.bundle_exec("spoom config --no-color")
         assert_equal(<<~MSG, out)
           Found Sorbet config at `sorbet/config`.
 
@@ -43,7 +43,7 @@ module Spoom
 
       def test_display_simple_config
         @project.sorbet_config(".")
-        out, _ = @project.bundle_exec("spoom config")
+        out, _ = @project.bundle_exec("spoom config --no-color")
         assert_equal(<<~MSG, out)
           Found Sorbet config at `sorbet/config`.
 
@@ -66,7 +66,7 @@ module Spoom
           --dir
           tasks
         CFG
-        out, _ = @project.bundle_exec("spoom config")
+        out, _ = @project.bundle_exec("spoom config --no-color")
         assert_equal(<<~MSG, out)
           Found Sorbet config at `sorbet/config`.
 
@@ -91,7 +91,7 @@ module Spoom
           --ignore
           test
         CFG
-        out, _ = @project.bundle_exec("spoom config")
+        out, _ = @project.bundle_exec("spoom config --no-color")
         assert_equal(<<~MSG, out)
           Found Sorbet config at `sorbet/config`.
 
@@ -119,7 +119,7 @@ module Spoom
           --allowed-extension=.rake
           --allowed-extension=.ru
         CFG
-        out, _ = @project.bundle_exec("spoom config")
+        out, _ = @project.bundle_exec("spoom config --no-color")
         assert_equal(<<~MSG, out)
           Found Sorbet config at `sorbet/config`.
 
@@ -141,7 +141,7 @@ module Spoom
       def test_config_with_path_option
         @project.sorbet_config(".")
         project = spoom_project("test_config_with_path_option")
-        out, _ = project.bundle_exec("spoom config -p #{@project.path}")
+        out, _ = project.bundle_exec("spoom config -p #{@project.path} --no-color")
         assert_equal(<<~MSG, out)
           Found Sorbet config at `/tmp/spoom/tests/test_config/sorbet/config`.
 

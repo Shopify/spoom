@@ -11,14 +11,32 @@ module Spoom
       extend T::Sig
       include Thor::Shell
 
+      # Print `message` on `$stdout`
+      sig { params(message: String).void }
+      def say(message)
+        buffer = StringIO.new
+        buffer << highlight(message)
+        buffer << "\n" unless message.end_with?("\n")
+
+        $stdout.print(buffer.string)
+        $stdout.flush
+      end
+
       # Print `message` on `$stderr`
       #
       # The message is prefixed by a status (default: `Error`).
-      sig { params(message: String, status: String).void }
-      def say_error(message, status = "Error")
+      sig do
+        params(
+          message: String,
+          status: T.nilable(String),
+          nl: T::Boolean
+        ).void
+      end
+      def say_error(message, status: "Error", nl: true)
         buffer = StringIO.new
-        buffer << "#{red(status)}: #{highlight(message)}"
-        buffer << "\n" unless message.end_with?("\n")
+        buffer << "#{red(status)}: " if status
+        buffer << highlight(message)
+        buffer << "\n" if nl && !message.end_with?("\n")
 
         $stderr.print(buffer.string)
         $stderr.flush

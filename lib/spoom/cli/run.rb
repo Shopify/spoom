@@ -36,13 +36,13 @@ module Spoom
 
         unless limit || code || sort
           output, status = T.unsafe(Spoom::Sorbet).srb_tc(*arg, path: path, capture_err: false, sorbet_bin: sorbet)
-          $stderr.print(output)
+          say_error(output, status: nil, nl: false)
           exit(status)
         end
 
         output, status = T.unsafe(Spoom::Sorbet).srb_tc(*arg, path: path, capture_err: true, sorbet_bin: sorbet)
         if status
-          $stderr.print(output)
+          say_error(output, status: nil, nl: false)
           exit(0)
         end
 
@@ -65,14 +65,14 @@ module Spoom
         lines = lines.uniq if uniq
 
         lines.each do |line|
-          $stderr.puts line
+          say_error(line, status: nil)
         end
 
         if count
           if errors_count == errors.size
-            $stderr.puts "Errors: #{errors_count}"
+            say_error("Errors: #{errors_count}", status: nil)
           else
-            $stderr.puts "Errors: #{errors.size} shown, #{errors_count} total"
+            say_error("Errors: #{errors.size} shown, #{errors_count} total", status: nil)
           end
         end
 
