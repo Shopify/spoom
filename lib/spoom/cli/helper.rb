@@ -63,6 +63,8 @@ module Spoom
         Sorbet::Config.parse_file(sorbet_config_file)
       end
 
+      # Colors
+
       # Is the `--color` option true?
       sig { returns(T::Boolean) }
       def color?
@@ -74,6 +76,31 @@ module Spoom
       def colorize(string, color)
         return string unless color?
         string.colorize(color)
+      end
+
+      sig { params(string: String).returns(String) }
+      def blue(string)
+        colorize(string, :blue)
+      end
+
+      sig { params(string: String).returns(String) }
+      def gray(string)
+        colorize(string, :light_black)
+      end
+
+      sig { params(string: String).returns(String) }
+      def green(string)
+        colorize(string, :green)
+      end
+
+      sig { params(string: String).returns(String) }
+      def red(string)
+        colorize(string, :red)
+      end
+
+      sig { params(string: String).returns(String) }
+      def yellow(string)
+        colorize(string, :yellow)
       end
     end
   end
