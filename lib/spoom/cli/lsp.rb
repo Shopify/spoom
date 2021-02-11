@@ -28,7 +28,7 @@ module Spoom
           Dir["**/*.rb"].each do |file|
             res = client.document_symbols(to_uri(file))
             next if res.empty?
-            puts "Symbols from `#{file}`:"
+            say("Symbols from `#{file}`:")
             printer.print_objects(res)
           end
         end
@@ -39,11 +39,11 @@ module Spoom
       def hover(file, line, col)
         run do |client|
           res = client.hover(to_uri(file), line.to_i, col.to_i)
-          say "Hovering `#{file}:#{line}:#{col}`:"
+          say("Hovering `#{file}:#{line}:#{col}`:")
           if res
             symbol_printer.print_object(res)
           else
-            puts "<no data>"
+            say("<no data>")
           end
         end
       end
@@ -53,7 +53,7 @@ module Spoom
       def defs(file, line, col)
         run do |client|
           res = client.definitions(to_uri(file), line.to_i, col.to_i)
-          puts "Definitions for `#{file}:#{line}:#{col}`:"
+          say("Definitions for `#{file}:#{line}:#{col}`:")
           symbol_printer.print_list(res)
         end
       end
@@ -63,7 +63,7 @@ module Spoom
       def find(query)
         run do |client|
           res = client.symbols(query).reject { |symbol| symbol.location.uri.start_with?("https") }
-          puts "Symbols matching `#{query}`:"
+          say("Symbols matching `#{query}`:")
           symbol_printer.print_objects(res)
         end
       end
@@ -73,7 +73,7 @@ module Spoom
       def symbols(file)
         run do |client|
           res = client.document_symbols(to_uri(file))
-          puts "Symbols from `#{file}`:"
+          say("Symbols from `#{file}`:")
           symbol_printer.print_objects(res)
         end
       end
@@ -83,7 +83,7 @@ module Spoom
       def refs(file, line, col)
         run do |client|
           res = client.references(to_uri(file), line.to_i, col.to_i)
-          puts "References to `#{file}:#{line}:#{col}`:"
+          say("References to `#{file}:#{line}:#{col}`:")
           symbol_printer.print_list(res)
         end
       end
@@ -93,7 +93,7 @@ module Spoom
       def sigs(file, line, col)
         run do |client|
           res = client.signatures(to_uri(file), line.to_i, col.to_i)
-          puts "Signature for `#{file}:#{line}:#{col}`:"
+          say("Signature for `#{file}:#{line}:#{col}`:")
           symbol_printer.print_list(res)
         end
       end
@@ -103,7 +103,7 @@ module Spoom
       def types(file, line, col)
         run do |client|
           res = client.type_definitions(to_uri(file), line.to_i, col.to_i)
-          say "Type for `#{file}:#{line}:#{col}`:"
+          say("Type for `#{file}:#{line}:#{col}`:")
           symbol_printer.print_list(res)
         end
       end
@@ -137,7 +137,7 @@ module Spoom
         rescue Spoom::LSP::Error::Diagnostics => err
           say_error("Sorbet returned typechecking errors for `#{symbol_printer.clean_uri(err.uri)}`")
           err.diagnostics.each do |d|
-            say_error("#{d.message} (#{d.code})", "  #{d.range}")
+            say_error("#{d.message} (#{d.code})", status: "  #{d.range}")
           end
           exit(1)
         rescue Spoom::LSP::Error::BadHeaders => err

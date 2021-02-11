@@ -11,16 +11,32 @@ module Spoom
       extend T::Sig
       include Thor::Shell
 
+      # Print `message` on `$stdout`
+      sig { params(message: String).void }
+      def say(message)
+        buffer = StringIO.new
+        buffer << highlight(message)
+        buffer << "\n" unless message.end_with?("\n")
+
+        $stdout.print(buffer.string)
+        $stdout.flush
+      end
+
       # Print `message` on `$stderr`
       #
       # The message is prefixed by a status (default: `Error`).
-      sig { params(message: String, status: String).void }
-      def say_error(message, status = "Error")
-        status = set_color(status, :red)
-
+      sig do
+        params(
+          message: String,
+          status: T.nilable(String),
+          nl: T::Boolean
+        ).void
+      end
+      def say_error(message, status: "Error", nl: true)
         buffer = StringIO.new
-        buffer << "#{status}: #{message}"
-        buffer << "\n" unless message.end_with?("\n")
+        buffer << "#{red(status)}: " if status
+        buffer << highlight(message)
+        buffer << "\n" if nl && !message.end_with?("\n")
 
         $stderr.print(buffer.string)
         $stderr.flush
@@ -39,9 +55,9 @@ module Spoom
       def in_sorbet_project!
         unless in_sorbet_project?
           say_error(
-            "not in a Sorbet project (#{colorize(sorbet_config_file, :yellow)} not found)\n\n" \
+            "not in a Sorbet project (`#{sorbet_config_file}` not found)\n\n" \
             "When running spoom from another path than the project's root, " \
-            "use #{colorize('--path PATH', :blue)} to specify the path to the root."
+            "use `--path PATH` to specify the path to the root."
           )
           Kernel.exit(1)
         end
@@ -63,10 +79,38 @@ module Spoom
         Sorbet::Config.parse_file(sorbet_config_file)
       end
 
+      # Colors
+
+      # Color used to highlight expressions in backticks
+      HIGHLIGHT_COLOR = :blue
+
       # Is the `--color` option true?
       sig { returns(T::Boolean) }
       def color?
         T.unsafe(self).options[:color] # TODO: requires_ancestor
+      end
+
+      sig { params(string: String).returns(String) }
+      def highlight(string)
+        return string unless color?
+
+        res = StringIO.new
+        word = StringIO.new
+        in_ticks = T.let(false, T::Boolean)
+        string.chars.each do |c|
+          if c == '`' && !in_ticks
+            in_ticks = true
+          elsif c == '`' && in_ticks
+            in_ticks = false
+            res << colorize(word.string, HIGHLIGHT_COLOR)
+            word = StringIO.new
+          elsif in_ticks
+            word << c
+          else
+            res << c
+          end
+        end
+        res.string
       end
 
       # Colorize a string if `color?`
@@ -74,6 +118,31 @@ module Spoom
       def colorize(string, color)
         return string unless color?
         string.colorize(color)
+      end
+
+      sig { params(string: String).returns(String) }
+      def blue(string)
+        colorize(string, :blue)
+      end
+
+      sig { params(string: String).returns(String) }
+      def gray(string)
+        colorize(string, :light_black)
+      end
+
+      sig { params(string: String).returns(String) }
+      def green(string)
+        colorize(string, :green)
+      end
+
+      sig { params(string: String).returns(String) }
+      def red(string)
+        colorize(string, :red)
+      end
+
+      sig { params(string: String).returns(String) }
+      def yellow(string)
+        colorize(string, :yellow)
       end
     end
   end

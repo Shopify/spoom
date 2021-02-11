@@ -30,7 +30,7 @@ module Spoom
         FileUtils.mkdir_p(save_dir)
         file = "#{save_dir}/#{snapshot.commit_sha || snapshot.timestamp}.json"
         File.write(file, snapshot.to_json)
-        puts "\nSnapshot data saved under #{file}"
+        say("\nSnapshot data saved under `#{file}`")
       end
 
       desc "timeline", "Replay a project and collect metrics"
@@ -47,14 +47,18 @@ module Spoom
         sha_before = Spoom::Git.last_commit(path: path)
         unless sha_before
           say_error("Not in a git repository")
-          $stderr.puts "\nSpoom needs to checkout into your previous commits to build the timeline."
+          say_error("\nSpoom needs to checkout into your previous commits to build the timeline.", status: nil)
           exit(1)
         end
 
         unless Spoom::Git.workdir_clean?(path: path)
           say_error("Uncommited changes")
-          $stderr.puts "\nSpoom needs to checkout into your previous commits to build the timeline."
-          $stderr.puts "\nPlease git commit or git stash your changes then try again."
+          say_error(<<~ERR, status: nil)
+
+            Spoom needs to checkout into your previous commits to build the timeline."
+
+            Please `git commit` or `git stash` your changes then try again
+          ERR
           exit(1)
         end
 
@@ -74,13 +78,13 @@ module Spoom
         ticks = timeline.ticks
 
         if ticks.empty?
-          say_error("No commits to replay, try different --from and --to options")
+          say_error("No commits to replay, try different `--from` and `--to` options")
           exit(1)
         end
 
         ticks.each_with_index do |sha, i|
           date = Spoom::Git.commit_time(sha, path: path)
-          puts "Analyzing commit #{sha} - #{date&.strftime('%F')} (#{i + 1} / #{ticks.size})"
+          say("Analyzing commit `#{sha}` - #{date&.strftime('%F')} (#{i + 1} / #{ticks.size})")
 
           Spoom::Git.checkout(sha, path: path)
 
@@ -96,12 +100,12 @@ module Spoom
           next unless snapshot
 
           snapshot.print(indent_level: 2)
-          puts "\n"
+          say("\n")
 
           next unless save_dir
           file = "#{save_dir}/#{sha}.json"
           File.write(file, snapshot.to_json)
-          puts "  Snapshot data saved under #{file}\n\n"
+          say("  Snapshot data saved under `#{file}`\n\n")
         end
         Spoom::Git.checkout(sha_before, path: path)
       end
@@ -146,20 +150,20 @@ module Spoom
         report = Spoom::Coverage.report(snapshots, palette: palette, path: exec_path)
         file = options[:file]
         File.write(file, report.html)
-        puts "Report generated under #{file}"
-        puts "\nUse #{colorize('spoom coverage open', :blue)} to open it."
+        say("Report generated under `#{file}`")
+        say("\nUse `spoom coverage open` to open it.")
       end
 
       desc "open", "Open the typing coverage report"
       def open(file = "spoom_report.html")
         unless File.exist?(file)
-          say_error("No report file to open #{colorize(file, :blue)}")
-          $stderr.puts <<~OUT
+          say_error("No report file to open `#{file}`")
+          say_error(<<~ERR, status: nil)
 
-            If you already generated a report under another name use #{colorize('spoom coverage open PATH', :blue)}.
+            If you already generated a report under another name use #{blue('spoom coverage open PATH')}.
 
-            To generate a report run #{colorize('spoom coverage report', :blue)}.
-          OUT
+            To generate a report run #{blue('spoom coverage report')}.
+          ERR
           exit(1)
         end
 
@@ -171,7 +175,7 @@ module Spoom
           return nil unless string
           Time.parse(string)
         rescue ArgumentError
-          say_error("Invalid date `#{string}` for option #{option} (expected format YYYY-MM-DD)")
+          say_error("Invalid date `#{string}` for option `#{option}` (expected format `YYYY-MM-DD`)")
           exit(1)
         end
 
@@ -180,21 +184,21 @@ module Spoom
           opts[:chdir] = path
           out, status = Open3.capture2e("bundle install", opts)
           unless status.success?
-            say_error("Can't run `bundle install` for commit #{sha}. Skipping snapshot")
-            $stderr.puts(out)
+            say_error("Can't run `bundle install` for commit `#{sha}`. Skipping snapshot")
+            say_error(out, status: nil)
             return false
           end
           true
         end
 
         def message_no_data(file)
-          say_error("No snapshot files found in #{colorize(file, :blue)}")
-          $stderr.puts <<~OUT
+          say_error("No snapshot files found in `#{file}`")
+          say_error(<<~ERR, status: nil)
 
-            If you already generated snapshot files under another directory use #{colorize('spoom coverage report PATH', :blue)}.
+            If you already generated snapshot files under another directory use #{blue('spoom coverage report PATH')}.
 
-            To generate snapshot files run #{colorize('spoom coverage timeline --save-dir spoom_data', :blue)}.
-          OUT
+            To generate snapshot files run #{blue('spoom coverage timeline --save-dir spoom_data')}.
+          ERR
         end
       end
     end
