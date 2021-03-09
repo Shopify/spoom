@@ -17,7 +17,7 @@ module Spoom
       desc "tc", "Run `srb tc`"
       option :limit, type: :numeric, aliases: :l, desc: "Limit displayed errors"
       option :code, type: :numeric, aliases: :c, desc: "Filter displayed errors by code"
-      option :sort, type: :string, aliases: :s, desc: "Sort errors", enum: SORT_ENUM, lazy_default: SORT_LOC
+      option :sort, type: :string, aliases: :s, desc: "Sort errors", enum: SORT_ENUM, default: SORT_LOC
       option :format, type: :string, aliases: :f, desc: "Format line output"
       option :uniq, type: :boolean, aliases: :u, desc: "Remove duplicated lines"
       option :count, type: :boolean, default: true, desc: "Show errors count"
