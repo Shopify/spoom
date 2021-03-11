@@ -76,7 +76,12 @@ module Spoom
           exit(files_to_bump.empty?)
         end
 
-        output, no_errors = Sorbet.srb_tc(path: exec_path, capture_err: true, sorbet_bin: options[:sorbet])
+        output, no_errors = Sorbet.srb_tc(
+          "--no-error-sections",
+          path: exec_path,
+          capture_err: true,
+          sorbet_bin: options[:sorbet]
+        )
 
         if no_errors
           print_changes(files_to_bump, command: cmd, from: from, to: to, dry: dry, path: exec_path)
