@@ -33,7 +33,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency("minitest", "~> 5.0")
 
   spec.add_dependency("sorbet-runtime")
-  spec.add_dependency("sorbet", ">= 0.5.6347")
+  spec.add_dependency("sorbet", "~> 0.5.5")
   spec.add_dependency("thor", ">= 0.19.2")
   spec.add_dependency("colorize")
 
