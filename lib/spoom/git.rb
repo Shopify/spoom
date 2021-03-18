@@ -14,11 +14,12 @@ module Spoom
       return "", "Error: `#{path}` is not a directory.", false unless File.directory?(path)
       opts = {}
       opts[:chdir] = path
-      _, o, e, s = Open3.popen3(*T.unsafe([command, *T.unsafe(arg), opts]))
+      i, o, e, s = Open3.popen3(*T.unsafe([command, *T.unsafe(arg), opts]))
       out = o.read.to_s
       o.close
       err = e.read.to_s
       e.close
+      i.close
       [out, err, T.cast(s.value, Process::Status).success?]
     end
 

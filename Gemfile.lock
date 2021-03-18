@@ -3,7 +3,7 @@ PATH
   specs:
     spoom (1.0.9)
       colorize
-      sorbet (~> 0.5.5)
+      sorbet (>= 0.5.6347)
       sorbet-runtime
       thor (>= 0.19.2)
 
@@ -45,11 +45,11 @@ GEM
     rubocop-sorbet (0.4.0)
       rubocop
     ruby-progressbar (1.10.1)
-    sorbet (0.5.6196)
-      sorbet-static (= 0.5.6196)
-    sorbet-runtime (0.5.6196)
-    sorbet-static (0.5.6196-universal-darwin-14)
-    thor (1.0.1)
+    sorbet (0.5.6349)
+      sorbet-static (= 0.5.6349)
+    sorbet-runtime (0.5.6349)
+    sorbet-static (0.5.6349-universal-darwin-14)
+    thor (1.1.0)
     unicode-display_width (1.7.0)
 
 PLATFORMS
