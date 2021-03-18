@@ -367,6 +367,48 @@ module Spoom
         assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/vendor/file2.rb"))
       end
+
+      def test_count_errors_without_dry
+        @project.write("file1.rb", <<~RB)
+          # typed: false
+          class Foo
+            def foo
+            end
+          end
+
+          Foo.new.foos
+        RB
+
+        out, err, status = @project.bundle_exec("spoom bump --no-color --count-errors")
+        assert_empty(out)
+        assert_equal(<<~OUT, err)
+          Error: `--count-errors` can only be used with `--dry`
+        OUT
+        refute(status)
+      end
+
+      def test_bump_count_errors
+        @project.write("file1.rb", <<~RB)
+          # typed: false
+          class Foo
+            def foo
+            end
+          end
+
+          Foo.new.foos
+        RB
+
+        out, err, status = @project.bundle_exec("spoom bump --no-color --count-errors --dry")
+        assert_empty(err)
+        assert_equal(<<~OUT, out)
+          Checking files...
+
+          Found 1 type checking error
+          No file to bump from `false` to `true`
+        OUT
+        assert(status)
+        assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
+      end
     end
   end
 end

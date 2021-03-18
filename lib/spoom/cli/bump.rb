@@ -26,6 +26,8 @@ module Spoom
         desc: "Only change specified list (one file by line)"
       option :suggest_bump_command, type: :string,
         desc: "Command to suggest if files can be bumped"
+      option :count_errors, type: :boolean, default: false,
+        desc: "Count the number of errors if all files were bumped"
       sig { params(directory: String).void }
       def bump(directory = ".")
         in_sorbet_project!
@@ -45,6 +47,11 @@ module Spoom
 
         unless Sorbet::Sigils.valid_strictness?(to)
           say_error("Invalid strictness `#{to}` for option `--to`")
+          exit(1)
+        end
+
+        if options[:count_errors] && !dry
+          say_error("`--count-errors` can only be used with `--dry`")
           exit(1)
         end
 
@@ -99,6 +106,8 @@ module Spoom
         end.compact.uniq
 
         undo_changes(files_with_errors, from)
+
+        say("Found #{errors.length} type checking error#{'s' if errors.length > 1}") if options[:count_errors]
 
         files_changed = files_to_bump - files_with_errors
         print_changes(files_changed, command: cmd, from: from, to: to, dry: dry, path: exec_path)
