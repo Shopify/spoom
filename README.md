@@ -226,6 +226,12 @@ Bump files using a custom instance of Sorbet:
 $ spoom bump --from false --to true --sorbet /path/to/sorbet/bin
 ```
 
+Count the number of type-checking errors if all files were bumped to true:
+
+```
+$ spoom bump --count-errors --dry
+```
+
 #### Interact with Sorbet LSP mode
 
 **Experimental**
