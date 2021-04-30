@@ -81,8 +81,15 @@ module Spoom
     def self.sigils_tree(path: ".")
       config = sorbet_config(path: path)
       files = Sorbet.srb_files(config, path: path)
-      files.select! { |file| file =~ /\.rb$/ }
+
+      extensions = config.allowed_extensions
+      extensions = [".rb"] if extensions.empty?
+      extensions -= [".rbi"]
+
+      pattern = /\.(#{Regexp.union(extensions.map { |ext| ext[1..-1] })})$/
+      files.select! { |file| file =~ pattern }
       files.reject! { |file| file =~ %r{/test/} }
+
       FileTree.new(files, strip_prefix: path)
     end
   end
