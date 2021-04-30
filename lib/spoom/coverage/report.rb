@@ -194,6 +194,15 @@ module Spoom
           end
         end
 
+        class RBIs < Timeline
+          extend T::Sig
+
+          sig { params(snapshots: T::Array[Coverage::Snapshot], title: String).void }
+          def initialize(snapshots:, title: "RBIs Timeline")
+            super(title: title, timeline: D3::Timeline::RBIs.new("timeline_rbis", snapshots))
+          end
+        end
+
         class Versions < Timeline
           extend T::Sig
 
@@ -298,6 +307,7 @@ module Spoom
         cards << Cards::Timeline::Sigils.new(snapshots: snapshots)
         cards << Cards::Timeline::Calls.new(snapshots: snapshots)
         cards << Cards::Timeline::Sigs.new(snapshots: snapshots)
+        cards << Cards::Timeline::RBIs.new(snapshots: snapshots)
         cards << Cards::Timeline::Versions.new(snapshots: snapshots)
         cards << Cards::Timeline::Runtimes.new(snapshots: snapshots)
         cards << Cards::SorbetIntro.new(sorbet_intro_commit: sorbet_intro_commit, sorbet_intro_date: sorbet_intro_date)

@@ -24,6 +24,7 @@ module Spoom
         snapshot1.commit_sha = "commit_sha"
         snapshot1.commit_timestamp = 1
         snapshot1.files = 2
+        snapshot1.rbi_files = 1
         snapshot1.modules = 3
         snapshot1.classes = 4
         snapshot1.methods_with_sig = 5
@@ -39,6 +40,7 @@ module Spoom
         assert_equal(json1, json2)
         assert_equal("sorbet_version", snapshot2.version_static)
         assert_equal(2, snapshot2.files)
+        assert_equal(1, snapshot2.rbi_files)
         assert_equal(10, snapshot2.sigils["true"])
       end
 
@@ -46,6 +48,7 @@ module Spoom
         project = self.project
         snapshot = Spoom::Coverage.snapshot(path: project.path)
         assert_equal(4, snapshot.files)
+        assert_equal(1, snapshot.rbi_files)
         assert_equal({ "false" => 1, "true" => 3 }, snapshot.sigils)
         assert_equal(5, snapshot.modules)
         assert_equal(9, snapshot.classes)
@@ -60,6 +63,7 @@ module Spoom
         project = self.project
         snapshot = Spoom::Coverage.snapshot(path: project.path, rbi: false)
         assert_equal(3, snapshot.files)
+        assert_equal(0, snapshot.rbi_files)
         assert_equal({ "false" => 1, "true" => 2 }, snapshot.sigils)
         assert_equal(3, snapshot.modules)
         assert_equal(5, snapshot.classes)
