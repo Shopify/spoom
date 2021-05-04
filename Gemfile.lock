@@ -45,10 +45,10 @@ GEM
     rubocop-sorbet (0.4.0)
       rubocop
     ruby-progressbar (1.10.1)
-    sorbet (0.5.6349)
-      sorbet-static (= 0.5.6349)
-    sorbet-runtime (0.5.6349)
-    sorbet-static (0.5.6349-universal-darwin-14)
+    sorbet (0.5.6398)
+      sorbet-static (= 0.5.6398)
+    sorbet-runtime (0.5.6398)
+    sorbet-static (0.5.6398-universal-darwin-14)
     thor (1.1.0)
     unicode-display_width (1.7.0)
 
