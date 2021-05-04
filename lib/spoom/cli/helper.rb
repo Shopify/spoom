@@ -9,7 +9,10 @@ module Spoom
   module Cli
     module Helper
       extend T::Sig
+      extend T::Helpers
       include Thor::Shell
+
+      requires_ancestor Thor
 
       # Print `message` on `$stdout`
       sig { params(message: String).void }
@@ -66,7 +69,7 @@ module Spoom
       # Return the path specified through `--path`
       sig { returns(String) }
       def exec_path
-        T.unsafe(self).options[:path] # TODO: requires_ancestor
+        options[:path]
       end
 
       sig { returns(String) }
@@ -87,7 +90,7 @@ module Spoom
       # Is the `--color` option true?
       sig { returns(T::Boolean) }
       def color?
-        T.unsafe(self).options[:color] # TODO: requires_ancestor
+        options[:color]
       end
 
       sig { params(string: String).returns(String) }
