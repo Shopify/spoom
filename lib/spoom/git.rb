@@ -93,7 +93,9 @@ module Spoom
     def self.sorbet_intro_commit(path: ".")
       res, _, status = Spoom::Git.log("--diff-filter=A --format='%h' -1 -- sorbet/config", path: path)
       return nil unless status
-      res.strip
+      res.strip!
+      return nil if res.empty?
+      res
     end
   end
 end
