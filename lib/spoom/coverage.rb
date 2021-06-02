@@ -21,6 +21,9 @@ module Spoom
 
       metrics = Spoom::Sorbet.srb_metrics(
         "--no-config",
+        "--no-error-sections",
+        "--no-error-count",
+        "--isolate-error-code=0",
         new_config.options_string,
         path: path,
         capture_err: true,
