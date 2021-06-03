@@ -86,6 +86,17 @@ module Spoom
         assert_empty(config.allowed_extensions)
       end
 
+      def test_parses_a_config_string_with_no_stdlib
+        config = Spoom::Sorbet::Config.parse_string(<<~CONFIG)
+          a
+          b
+          --no-stdlib
+          c
+        CONFIG
+        assert_equal(['a', 'b', 'c'], config.paths)
+        assert(config.no_stdlib)
+      end
+
       def test_parses_a_config_string_with_mixed_options
         config = Spoom::Sorbet::Config.parse_string(<<~CONFIG)
           a
@@ -124,10 +135,12 @@ module Spoom
           --allowed-extension=.rbi
           --allowed-extension=.rake
           --allowed-extension=.ru
+          --no-stdlib
         CONFIG
         assert_equal(['.'], config.paths)
         assert_equal(['.git/', '.idea/', 'vendor/'], config.ignore)
         assert_equal(['.rb', '.rbi', '.rake', '.ru'], config.allowed_extensions)
+        assert(config.no_stdlib)
       end
 
       def test_parses_a_config_file_with_errors
@@ -161,8 +174,9 @@ module Spoom
           --ignore=.git/
           --ignore=vendor/
           --allowed-extension=.rb
+          --no-stdlib
         CONFIG
-        assert_equal(". --ignore .git/ --ignore vendor/ --allowed-extension .rb", config.options_string)
+        assert_equal(". --ignore .git/ --ignore vendor/ --allowed-extension .rb --no-stdlib", config.options_string)
       end
     end
   end

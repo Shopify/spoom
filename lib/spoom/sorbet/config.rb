@@ -29,11 +29,15 @@ module Spoom
       sig { returns(T::Array[String]) }
       attr_reader :paths, :ignore, :allowed_extensions
 
+      sig { returns(T::Boolean) }
+      attr_accessor :no_stdlib
+
       sig { void }
       def initialize
         @paths = T.let([], T::Array[String])
         @ignore = T.let([], T::Array[String])
         @allowed_extensions = T.let([], T::Array[String])
+        @no_stdlib = T.let(false, T::Boolean)
       end
 
       sig { returns(Config) }
@@ -42,6 +46,7 @@ module Spoom
         new_config.paths.concat(@paths)
         new_config.ignore.concat(@ignore)
         new_config.allowed_extensions.concat(@allowed_extensions)
+        new_config.no_stdlib = @no_stdlib
         new_config
       end
 
@@ -63,6 +68,7 @@ module Spoom
         opts.concat(paths)
         opts.concat(ignore.map { |p| "--ignore #{p}" })
         opts.concat(allowed_extensions.map { |ext| "--allowed-extension #{ext}" })
+        opts << "--no-stdlib" if @no_stdlib
         opts.join(" ")
       end
 
@@ -105,6 +111,9 @@ module Spoom
               next
             when /^--dir=/
               config.paths << parse_option(line)
+              next
+            when /^--no-stdlib$/
+              config.no_stdlib = true
               next
             when /^--.*=/
               next
