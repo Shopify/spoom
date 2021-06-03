@@ -109,6 +109,20 @@ module Spoom
         sha = Spoom::Git.sorbet_intro_commit(path: @project.path)
         assert_match(/\A[a-z0-9]+\z/, sha)
       end
+
+      def test_sorbet_removal_not_found
+        sha = Spoom::Git.sorbet_removal_commit(path: @project.path)
+        assert_nil(sha)
+      end
+
+      def test_sorbet_removal_found
+        @project.write("sorbet/config")
+        @project.commit
+        @project.remove("sorbet/config")
+        @project.commit
+        sha = Spoom::Git.sorbet_removal_commit(path: @project.path)
+        assert_match(/\A[a-z0-9]+\z/, sha)
+      end
     end
   end
 end
