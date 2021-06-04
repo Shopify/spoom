@@ -225,7 +225,7 @@ module Spoom
           Can bump `1` file from `false` to `true`:
            + file1.rb
 
-          Run `spoom bump --from false --to true` to bump them
+          Run `spoom bump --from false --to true` locally then `commit the changes` and `push them`
         OUT
         refute(status)
 
@@ -252,7 +252,7 @@ module Spoom
            + file1.rb
            + file2.rb
 
-          Run `spoom bump --from false --to true` to bump them
+          Run `spoom bump --from false --to true` locally then `commit the changes` and `push them`
         OUT
         refute(status)
 
