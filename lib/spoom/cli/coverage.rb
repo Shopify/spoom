@@ -44,8 +44,9 @@ module Spoom
         path = exec_path
         sorbet = options[:sorbet]
 
-        sha_before = Spoom::Git.last_commit(path: path)
-        unless sha_before
+        ref_before = Spoom::Git.current_branch
+        ref_before = Spoom::Git.last_commit(path: path) unless ref_before
+        unless ref_before
           say_error("Not in a git repository")
           say_error("\nSpoom needs to checkout into your previous commits to build the timeline.", status: nil)
           exit(1)
@@ -107,7 +108,7 @@ module Spoom
           File.write(file, snapshot.to_json)
           say("  Snapshot data saved under `#{file}`\n\n")
         end
-        Spoom::Git.checkout(sha_before, path: path)
+        Spoom::Git.checkout(ref_before, path: path)
       end
 
       desc "report", "Produce a typing coverage report"
