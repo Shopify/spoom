@@ -154,6 +154,50 @@ module Spoom
         project.destroy
       end
 
+      def test_files_with_sigil_strictness_all_to_strong
+        project = spoom_project("test_sigils")
+        project.write("ignore.rb", "# typed: ignore")
+        project.write("false.rb", "# typed: false")
+        project.write("true.rb", "# typed: true")
+        project.write("strict.rb", "# typed: strict")
+        project.write("strong.rb", "# typed: strong")
+        project.write("internal.rb", "# typed: __STDLIB_INTERNAL")
+
+        files = Sigils.files_with_sigil_strictness(project.path, "false", desired: "strong", all: true).sort
+
+        expected_files = [
+          "#{project.path}/false.rb",
+          "#{project.path}/ignore.rb",
+          "#{project.path}/strict.rb",
+          "#{project.path}/true.rb",
+        ]
+        assert_equal(expected_files, files)
+
+        project.destroy
+      end
+
+      def test_files_with_sigil_strictness_below_strict_above_ignore_to_strict
+        project = spoom_project("test_sigils")
+        project.write("ignore.rb", "# typed: ignore")
+        project.write("false.rb", "# typed: false")
+        project.write("true.rb", "# typed: true")
+        project.write("strict.rb", "# typed: strict")
+        project.write("strong.rb", "# typed: strong")
+        project.write("internal.rb", "# typed: __STDLIB_INTERNAL")
+
+        files = Sigils.files_with_sigil_strictness(
+          project.path, "false", desired: "strict", below: "strict", above: "ignore"
+        ).sort
+
+        expected_files = [
+          "#{project.path}/false.rb",
+          "#{project.path}/true.rb",
+        ]
+        assert_equal(expected_files, files)
+
+        project.destroy
+      end
+
       def test_file_strictness_returns_nil_if_file_not_found
         strictness = Sigils.file_strictness("/file/not/found.rb")
         assert_nil(strictness)

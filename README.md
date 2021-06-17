@@ -208,6 +208,18 @@ Bump the strictness from all files currently at `typed: false` to `typed: true` 
 $ spoom bump --from false --to true -f
 ```
 
+Bump the strictness from all files currently below `typed: strict` to `typed: strict` where it does not create typechecking errors:
+
+```
+$ spoom bump --to strict --all
+```
+
+Bump the strictness from all files currently below `typed: strong` and above `typed: ignore` to `typed: strong` where it does not create typechecking errors:
+
+```
+$ spoom bump --to strong --below strong --above ignore
+```
+
 Bump the strictness from a list of files (one file by line):
 
 ```
