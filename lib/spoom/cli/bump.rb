@@ -28,6 +28,12 @@ module Spoom
         desc: "Command to suggest if files can be bumped"
       option :count_errors, type: :boolean, default: false,
         desc: "Count the number of errors if all files were bumped"
+      option :all, type: :boolean, default: false,
+        desc: "Bump all files to this strictness"
+      option :below, type: :string, default: nil,
+        desc: "Change only files below this strictness"
+      option :above, type: :string, default: nil,
+        desc: "Change only files above this strictness"
       sig { params(directory: String).void }
       def bump(directory = ".")
         in_sorbet_project!
@@ -37,6 +43,9 @@ module Spoom
         force = options[:force]
         dry = options[:dry]
         only = options[:only]
+        all = options[:all]
+        below = options[:below]
+        above = options[:above]
         cmd = options[:suggest_bump_command]
         exec_path = File.expand_path(self.exec_path)
 
@@ -50,6 +59,16 @@ module Spoom
           exit(1)
         end
 
+        if below && !Sorbet::Sigils.valid_strictness?(below)
+          say_error("Invalid strictness `#{below}` for option `--below`")
+          exit(1)
+        end
+
+        if above && !Sorbet::Sigils.valid_strictness?(above)
+          say_error("Invalid strictness `#{above}` for option `--above`")
+          exit(1)
+        end
+
         if options[:count_errors] && !dry
           say_error("`--count-errors` can only be used with `--dry`")
           exit(1)
@@ -58,7 +77,14 @@ module Spoom
         say("Checking files...")
 
         directory = File.expand_path(directory)
-        files_to_bump = Sorbet::Sigils.files_with_sigil_strictness(directory, from)
+        files_to_bump = Sorbet::Sigils.files_with_sigil_strictness(
+          directory,
+          from,
+          desired: to,
+          below: below,
+          above: above,
+          all: all
+        )
 
         files_from_config = config_files(path: exec_path)
         files_to_bump.select! { |file| files_from_config.include?(file) }

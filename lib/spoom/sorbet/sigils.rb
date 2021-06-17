@@ -84,13 +84,50 @@ module Spoom
         params(
           directory: T.any(String, Pathname),
           strictness: String,
-          extension: String
+          extension: String,
+          desired: String,
+          all: T::Boolean,
+          below: T.nilable(String),
+          above: T.nilable(String)
         ).returns(T::Array[String])
       end
-      def self.files_with_sigil_strictness(directory, strictness, extension: ".rb")
+      def self.files_with_sigil_strictness(directory, strictness, extension: ".rb",
+        desired: "true", all: false, below: nil, above: nil)
         paths = Dir.glob("#{File.expand_path(directory)}/**/*#{extension}").sort.uniq
-        paths.filter do |path|
-          file_strictness(path) == strictness
+
+        if all || below || above
+          strictness_range = sigils_range(desired: desired, below: below, above: above, all: all)
+
+          paths.filter do |path|
+            strictness_range.any?(file_strictness(path))
+          end
+        else
+          paths.filter do |path|
+            file_strictness(path) == strictness
+          end
+        end
+      end
+
+      sig do
+        params(
+          desired: String,
+          below: T.nilable(String),
+          above: T.nilable(String),
+          all: T::Boolean
+        ).returns(T::Array[String])
+      end
+      def self.sigils_range(desired:, below: nil, above: nil, all: false)
+        if all
+          VALID_STRICTNESS.take_while { |value| value != desired }
+        elsif below && above
+          above_index = VALID_STRICTNESS.index(above)
+          below_index = VALID_STRICTNESS.index(below)
+          range = T.must(VALID_STRICTNESS[above_index..below_index])
+          range - [desired, STRICTNESS_IGNORE]
+        elsif below
+          VALID_STRICTNESS.take_while { |value| value != below } - [desired, STRICTNESS_IGNORE]
+        else
+          VALID_STRICTNESS.reverse.take_while { |value| value != above } - [desired, STRICTNESS_IGNORE]
         end
       end
     end
