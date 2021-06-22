@@ -102,6 +102,7 @@ module Spoom
           path = File.expand_path(err.file)
           next unless path.start_with?(directory)
           next unless File.file?(path)
+          next unless files_to_bump.include?(path)
           path
         end.compact.uniq
 

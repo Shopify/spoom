@@ -315,6 +315,36 @@ module Spoom
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
       end
 
+      def test_bump_dry_does_not_revert_files_not_bumped
+        @project.write("file1.rb", <<~RB)
+          # typed: false
+          class A
+            def foo(a, b); end
+          end
+        RB
+        @project.write("file2.rbi", <<~RB)
+          # typed: true
+          class A
+            def foo(a, b, c); end
+          end
+        RB
+
+        out, err, status = @project.bundle_exec("spoom bump --no-color --from false --to true --dry")
+        assert_empty(err)
+        assert_equal(<<~OUT, out)
+          Checking files...
+
+          Can bump `1` file from `false` to `true`:
+           + file1.rb
+
+          Run `spoom bump --from false --to true` to bump them
+        OUT
+        refute(status)
+
+        assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
+        assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rbi"))
+      end
+
       def test_bump_only_specified_files
         @project.write("file1.rb", "# typed: false")
         @project.write("file2.rb", "# typed: false")
