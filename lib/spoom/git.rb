@@ -50,6 +50,13 @@ module Spoom
       exec("git show #{arg.join(' ')}", path: path)
     end
 
+    sig { params(path: String).returns(T.nilable(String)) }
+    def self.current_branch(path: ".")
+      out, _, status = exec("git branch --show-current", path: path)
+      return nil unless status
+      out.strip
+    end
+
     # Utils
 
     # Get the commit epoch timestamp for a `sha`

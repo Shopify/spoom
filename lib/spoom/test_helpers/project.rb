@@ -100,6 +100,16 @@ module Spoom
         FileUtils.rm_rf(path)
       end
 
+      sig { params(name: String).void }
+      def create_and_checkout_branch(name)
+        Spoom::Git.exec("git checkout -b #{name}", path: path)
+      end
+
+      sig { returns(T.nilable(String)) }
+      def current_branch
+        Spoom::Git.current_branch(path: path)
+      end
+
       private
 
       # Create an absolute path from `self.path` and `rel_path`
