@@ -18,7 +18,7 @@ module Spoom
 
       def test_srb_version_return_nil_if_srb_not_installed
         @project.gemfile("")
-        Bundler.with_clean_env do
+        Bundler.with_unbundled_env do
           version = Spoom::Sorbet.srb_version(path: @project.path, capture_err: true)
           assert_nil(version)
         end
