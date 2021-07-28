@@ -121,6 +121,10 @@ module Spoom
               state = :skip
             when /^-.*=?/
               next
+            when /^#/
+              next
+            when /^$/
+              next
             else
               case state
               when :ignore

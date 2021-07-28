@@ -124,6 +124,37 @@ module Spoom
         assert_empty(config.allowed_extensions)
       end
 
+      def test_parses_a_config_string_with_mixed_options_comments_and_empty_lines
+        config = Spoom::Sorbet::Config.parse_string(<<~CONFIG)
+          a
+          --other=b
+          # This is a comment.
+          --file
+          c
+
+          --d
+          e
+          --dir=f
+          -g
+          --dir
+
+          h
+          --file=i
+          --ignore
+          # Comment in between.
+          j
+          --ignore=k
+          l
+          m
+          -n
+          --o
+          p
+        CONFIG
+        assert_equal(['a', 'c', 'f', 'h', 'i', 'l', 'm'], config.paths)
+        assert_equal(['j', 'k'], config.ignore)
+        assert_empty(config.allowed_extensions)
+      end
+
       def test_parses_a_real_config_string
         config = Spoom::Sorbet::Config.parse_string(<<~CONFIG)
           .
