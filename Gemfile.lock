@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    spoom (1.1.1)
+    spoom (1.1.2)
       colorize
       sorbet (>= 0.5.6347)
       sorbet-runtime
@@ -45,17 +45,17 @@ GEM
     rubocop-sorbet (0.4.0)
       rubocop
     ruby-progressbar (1.10.1)
-    sorbet (0.5.6398)
-      sorbet-static (= 0.5.6398)
-    sorbet-runtime (0.5.6398)
-    sorbet-static (0.5.6398-universal-darwin-14)
-    sorbet-static (0.5.6398-universal-darwin-15)
-    sorbet-static (0.5.6398-universal-darwin-16)
-    sorbet-static (0.5.6398-universal-darwin-17)
-    sorbet-static (0.5.6398-universal-darwin-18)
-    sorbet-static (0.5.6398-universal-darwin-19)
-    sorbet-static (0.5.6398-universal-darwin-20)
-    sorbet-static (0.5.6398-x86_64-linux)
+    sorbet (0.5.6530)
+      sorbet-static (= 0.5.6530)
+    sorbet-runtime (0.5.6530)
+    sorbet-static (0.5.6530-universal-darwin-14)
+    sorbet-static (0.5.6530-universal-darwin-15)
+    sorbet-static (0.5.6530-universal-darwin-16)
+    sorbet-static (0.5.6530-universal-darwin-17)
+    sorbet-static (0.5.6530-universal-darwin-18)
+    sorbet-static (0.5.6530-universal-darwin-19)
+    sorbet-static (0.5.6530-universal-darwin-20)
+    sorbet-static (0.5.6530-x86_64-linux)
     thor (1.1.0)
     unicode-display_width (1.7.0)
 
