@@ -91,7 +91,7 @@ module Spoom
 
           snapshot = T.let(nil, T.nilable(Spoom::Coverage::Snapshot))
           if options[:bundle_install]
-            Bundler.with_clean_env do
+            Bundler.with_unbundled_env do
               next unless bundle_install(path, sha)
               snapshot = Spoom::Coverage.snapshot(path: path, sorbet_bin: sorbet)
             end

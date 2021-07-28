@@ -23,7 +23,7 @@ module Spoom
           source 'https://rubygems.org'
           gem 'sorbet'
         GEM
-        Bundler.with_clean_env do
+        Bundler.with_unbundled_env do
           _, _, status = @project.bundle_install
           assert(status)
 
@@ -37,7 +37,7 @@ module Spoom
 
       def test_run_srb_from_bundler_not_found
         @project.gemfile("source 'https://rubygems.org'")
-        Bundler.with_clean_env do
+        Bundler.with_unbundled_env do
           _, _, status = @project.bundle_install
           assert(status)
 
@@ -47,7 +47,7 @@ module Spoom
       end
 
       def test_run_sorbet_from_path
-        Bundler.with_clean_env do
+        Bundler.with_unbundled_env do
           out, status = Spoom::Sorbet.srb(
             "-h",
             path: @project.path,
@@ -72,7 +72,7 @@ module Spoom
       end
 
       def test_run_sorbet_tc_from_path
-        Bundler.with_clean_env do
+        Bundler.with_unbundled_env do
           out, status = Spoom::Sorbet.srb_tc(
             path: @project.path,
             capture_err: true,

@@ -49,6 +49,13 @@ GEM
       sorbet-static (= 0.5.6398)
     sorbet-runtime (0.5.6398)
     sorbet-static (0.5.6398-universal-darwin-14)
+    sorbet-static (0.5.6398-universal-darwin-15)
+    sorbet-static (0.5.6398-universal-darwin-16)
+    sorbet-static (0.5.6398-universal-darwin-17)
+    sorbet-static (0.5.6398-universal-darwin-18)
+    sorbet-static (0.5.6398-universal-darwin-19)
+    sorbet-static (0.5.6398-universal-darwin-20)
+    sorbet-static (0.5.6398-x86_64-linux)
     thor (1.1.0)
     unicode-display_width (1.7.0)
 
@@ -56,7 +63,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bundler (~> 1.17)
+  bundler (>= 2.2.10)
   minitest (~> 5.0)
   pry-byebug
   rake (~> 13.0.1)
@@ -65,4 +72,4 @@ DEPENDENCIES
   spoom!
 
 BUNDLED WITH
-   1.17.3
+   2.2.24

@@ -28,7 +28,7 @@ Gem::Specification.new do |spec|
 
   spec.metadata['allowed_push_host'] = "https://rubygems.org"
 
-  spec.add_development_dependency("bundler", "~> 1.17")
+  spec.add_development_dependency("bundler", ">= 2.2.10")
   spec.add_development_dependency("rake", "~> 13.0.1")
   spec.add_development_dependency("minitest", "~> 5.0")
 
