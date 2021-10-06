@@ -20,7 +20,7 @@ module Spoom
       err = e.read.to_s
       e.close
       i.close
-      [out, err, T.cast(s.value, Process::Status).success?]
+      [T.cast(out, String), T.cast(err, String), T.must(T.cast(s.value, Process::Status).success?)]
     end
 
     # Git commands

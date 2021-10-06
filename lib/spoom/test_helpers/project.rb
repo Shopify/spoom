@@ -82,7 +82,7 @@ module Spoom
         opts = {}
         opts[:chdir] = path
         out, err, status = Open3.capture3("bundle", "install", opts)
-        [out, err, status.success?]
+        [out, err, T.must(status.success?)]
       end
 
       # Run a command with `bundle exec` in this project
@@ -91,7 +91,7 @@ module Spoom
         opts = {}
         opts[:chdir] = path
         out, err, status = Open3.capture3(["bundle", "exec", cmd, *args].join(' '), opts)
-        [out, err, status.success?]
+        [out, err, T.must(status.success?)]
       end
 
       # Delete this project and its content
