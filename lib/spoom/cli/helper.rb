@@ -12,7 +12,7 @@ module Spoom
       extend T::Helpers
       include Thor::Shell
 
-      requires_ancestor Thor
+      requires_ancestor { Thor }
 
       # Print `message` on `$stdout`
       sig { params(message: String).void }
