@@ -10,7 +10,6 @@ module Spoom
     module Helper
       extend T::Sig
       extend T::Helpers
-      include Thor::Shell
 
       requires_ancestor { Thor }
 
