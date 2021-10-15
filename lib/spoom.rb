@@ -26,6 +26,7 @@ module Spoom
   end
 end
 
+require "spoom/colors"
 require "spoom/sorbet"
 require "spoom/cli"
 require "spoom/version"
