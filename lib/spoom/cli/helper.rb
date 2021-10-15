@@ -11,6 +11,8 @@ module Spoom
       extend T::Sig
       extend T::Helpers
 
+      include Colorize
+
       requires_ancestor { Thor }
 
       # Print `message` on `$stdout`
@@ -84,7 +86,7 @@ module Spoom
       # Colors
 
       # Color used to highlight expressions in backticks
-      HIGHLIGHT_COLOR = :blue
+      HIGHLIGHT_COLOR = T.let(Spoom::Color::BLUE, Spoom::Color)
 
       # Is the `--color` option true?
       sig { returns(T::Boolean) }
@@ -116,35 +118,35 @@ module Spoom
       end
 
       # Colorize a string if `color?`
-      sig { params(string: String, color: Symbol).returns(String) }
-      def colorize(string, color)
+      sig { params(string: String, color: Color).returns(String) }
+      def colorize(string, *color)
         return string unless color?
-        string.colorize(color)
+        T.unsafe(self).set_color(string, *color)
       end
 
       sig { params(string: String).returns(String) }
       def blue(string)
-        colorize(string, :blue)
+        colorize(string, Color::BLUE)
       end
 
       sig { params(string: String).returns(String) }
       def gray(string)
-        colorize(string, :light_black)
+        colorize(string, Color::LIGHT_BLACK)
       end
 
       sig { params(string: String).returns(String) }
       def green(string)
-        colorize(string, :green)
+        colorize(string, Color::GREEN)
       end
 
       sig { params(string: String).returns(String) }
       def red(string)
-        colorize(string, :red)
+        colorize(string, Color::RED)
       end
 
       sig { params(string: String).returns(String) }
       def yellow(string)
-        colorize(string, :yellow)
+        colorize(string, Color::YELLOW)
       end
     end
   end

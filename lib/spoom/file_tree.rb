@@ -156,7 +156,7 @@ module Spoom
           end
           print("\n")
         else
-          print_colored(node.name, :blue)
+          print_colored(node.name, Color::BLUE)
           print("/")
           printn
           indent
@@ -180,15 +180,15 @@ module Spoom
         Spoom::Sorbet::Sigils.file_strictness(path)
       end
 
-      sig { params(strictness: T.nilable(String)).returns(Symbol) }
+      sig { params(strictness: T.nilable(String)).returns(Color) }
       def strictness_color(strictness)
         case strictness
         when "false"
-          :red
+          Color::RED
         when "true", "strict", "strong"
-          :green
+          Color::GREEN
         else
-          :uncolored
+          Color::CLEAR
         end
       end
     end

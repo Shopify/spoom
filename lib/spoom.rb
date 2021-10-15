@@ -1,7 +1,6 @@
 # typed: true
 # frozen_string_literal: true
 
-require "colorize"
 require "sorbet-runtime"
 
 module Spoom
@@ -27,6 +26,7 @@ module Spoom
   end
 end
 
+require "spoom/colors"
 require "spoom/sorbet"
 require "spoom/cli"
 require "spoom/version"

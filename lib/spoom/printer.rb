@@ -8,6 +8,8 @@ module Spoom
     extend T::Sig
     extend T::Helpers
 
+    include Colorize
+
     abstract!
 
     sig { returns(T.any(IO, StringIO)) }
@@ -42,11 +44,10 @@ module Spoom
     # Print `string` colored with `color` into `out`
     #
     # Does not use colors unless `@colors`.
-    sig { params(string: T.nilable(String), color: Symbol, colors: Symbol).void }
-    def print_colored(string, color, *colors)
+    sig { params(string: T.nilable(String), color: Color).void }
+    def print_colored(string, *color)
       return unless string
-      string = colorize(string, color)
-      colors.each { |c| string = colorize(string, c) }
+      string = T.unsafe(self).colorize(string, *color)
       @out.print(string)
     end
 
@@ -72,9 +73,10 @@ module Spoom
     end
 
     # Colorize `string` with color if `@colors`
-    sig { params(string: String, color: Symbol).returns(String) }
-    def colorize(string, color)
-      @colors ? string.colorize(color) : string
+    sig { params(string: String, color: Spoom::Color).returns(String) }
+    def colorize(string, *color)
+      return string unless @colors
+      T.unsafe(self).set_color(string, *color)
     end
   end
 end

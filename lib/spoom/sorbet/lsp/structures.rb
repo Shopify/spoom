@@ -56,7 +56,7 @@ module Spoom
 
       sig { override.params(printer: SymbolPrinter).void }
       def accept_printer(printer)
-        printer.print_colored("#{line}:#{char}", :light_black)
+        printer.print_colored("#{line}:#{char}", Color::LIGHT_BLACK)
       end
 
       def to_s
@@ -81,7 +81,7 @@ module Spoom
       sig { override.params(printer: SymbolPrinter).void }
       def accept_printer(printer)
         printer.print_object(start)
-        printer.print_colored("-", :light_black)
+        printer.print_colored("-", Color::LIGHT_BLACK)
         printer.print_object(self.end)
       end
 
@@ -106,7 +106,7 @@ module Spoom
 
       sig { override.params(printer: SymbolPrinter).void }
       def accept_printer(printer)
-        printer.print_colored("#{printer.clean_uri(uri)}:", :light_black)
+        printer.print_colored("#{printer.clean_uri(uri)}:", Color::LIGHT_BLACK)
         printer.print_object(range)
       end
 
@@ -203,14 +203,14 @@ module Spoom
         printer.printt
         printer.print(kind_string)
         printer.print(' ')
-        printer.print_colored(name, :blue, :bold)
-        printer.print_colored(' (', :light_black)
+        printer.print_colored(name, Color::BLUE, Color::BOLD)
+        printer.print_colored(' (', Color::LIGHT_BLACK)
         if range
           printer.print_object(range)
         elsif location
           printer.print_object(location)
         end
-        printer.print_colored(')', :light_black)
+        printer.print_colored(')', Color::LIGHT_BLACK)
         printer.printn
         unless children.empty?
           printer.indent
