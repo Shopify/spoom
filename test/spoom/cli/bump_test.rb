@@ -438,6 +438,45 @@ module Spoom
         assert(status)
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
       end
+
+      def test_bump_with_sorbet_segfault
+        @project.gemfile(<<~GEMFILE)
+          source "https://rubygems.org"
+
+          gem "sorbet-static", "= 0.5.9267"
+          gem "spoom", path: "#{Spoom::SPOOM_PATH}"
+        GEMFILE
+        @project.write("cant_be_bump1.rb", <<~RB)
+          # typed: false
+          foo
+        RB
+        @project.write("cant_be_bump2.rb", <<~RB)
+          # typed: false
+          bar
+        RB
+        @project.write("will_segfault.rb", <<~RB)
+          # typed: false
+          [{1 => 2}] + [{}]
+        RB
+        Bundler.with_unbundled_env do
+          _, _, status = @project.bundle_install
+          assert(status)
+
+          _, err, status = @project.bundle_exec("spoom bump --no-color")
+          assert_equal(<<~OUT, err)
+            !!! Sorbet exited with code 139 - SEGFAULT !!!
+
+            This is most likely related to a bug in Sorbet.
+            It means one of the file bumped to `typed: true` made Sorbet crash.
+            Run `spoom bump -f` locally followed by `bundle exec srb tc` to investigate the problem.
+          OUT
+          refute(status)
+
+          assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/cant_be_bump1.rb"))
+          assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/cant_be_bump2.rb"))
+          assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/will_segfault.rb"))
+        end
+      end
     end
   end
 end

@@ -35,12 +35,27 @@ module Spoom
         sorbet = options[:sorbet]
 
         unless limit || code || sort
-          output, status, _ = T.unsafe(Spoom::Sorbet).srb_tc(*arg, path: path, capture_err: false, sorbet_bin: sorbet)
+          output, status, exit_code = T.unsafe(Spoom::Sorbet).srb_tc(
+            *arg,
+            path: path,
+            capture_err: false,
+            sorbet_bin: sorbet
+          )
+
+          check_sorbet_segfault(exit_code)
           say_error(output, status: nil, nl: false)
           exit(status)
         end
 
-        output, status, _ = T.unsafe(Spoom::Sorbet).srb_tc(*arg, path: path, capture_err: true, sorbet_bin: sorbet)
+        output, status, exit_code = T.unsafe(Spoom::Sorbet).srb_tc(
+          *arg,
+          path: path,
+          capture_err: true,
+          sorbet_bin: sorbet
+        )
+
+        check_sorbet_segfault(exit_code)
+
         if status
           say_error(output, status: nil, nl: false)
           exit(0)

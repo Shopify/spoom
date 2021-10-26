@@ -207,6 +207,31 @@ module Spoom
         refute(status)
         project.destroy
       end
+
+      def test_display_sorbet_segfault
+        @project.gemfile(<<~GEMFILE)
+          source "https://rubygems.org"
+
+          gem "sorbet-static", "= 0.5.9267"
+          gem "spoom", path: "#{Spoom::SPOOM_PATH}"
+        GEMFILE
+        @project.write("will_segfault.rb", <<~RB)
+          # typed: true
+          [{1 => 2}] + [{}]
+        RB
+        Bundler.with_unbundled_env do
+          _, _, status = @project.bundle_install
+          assert(status)
+
+          _, err, status = @project.bundle_exec("spoom tc --no-color")
+          assert_equal(<<~OUT, err)
+            !!! Sorbet exited with code 139 - SEGFAULT !!!
+
+            This is most likely related to a bug in Sorbet.
+          OUT
+          refute(status)
+        end
+      end
     end
   end
 end

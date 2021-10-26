@@ -15,6 +15,8 @@ module Spoom
     GEM_PATH = Gem::Specification.find_by_name("sorbet-static").full_gem_path
     BIN_PATH = (Pathname.new(GEM_PATH) / "libexec" / "sorbet").to_s
 
+    SEGFAULT_CODE = 139
+
     class << self
       extend T::Sig
 
