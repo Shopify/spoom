@@ -9,7 +9,7 @@ module Spoom
       include Spoom::TestHelper
 
       def setup
-        @project = spoom_project("test_version")
+        @project = spoom_project
       end
 
       def teardown
@@ -25,7 +25,6 @@ module Spoom
       end
 
       def test_srb_version_return_version_string
-        @project.sorbet_config(".")
         version = Spoom::Sorbet.srb_version(path: @project.path)
         version = censor_sorbet_version(version) if version
         assert_equal("X.X.XXXX", version)

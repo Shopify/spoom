@@ -117,7 +117,7 @@ module Spoom
       end
 
       def test_files_with_sigil_strictness_nested_directory
-        project = spoom_project("test_sigils")
+        project = spoom_project
         project.write("false.rb", "# typed: false")
         project.write("true.rb", "# typed: true")
         project.write("nested/false.rb", "# typed: false")
@@ -135,7 +135,7 @@ module Spoom
       end
 
       def test_files_with_sigil_strictness_with_iso_content
-        project = spoom_project("test_sigils")
+        project = spoom_project
 
         string_utf = <<~RB
           # typed: true
@@ -165,7 +165,7 @@ module Spoom
       end
 
       def test_file_strictness_with_valid_sigil
-        project = spoom_project("test_sigils")
+        project = spoom_project
         project.write("file.rb", "# typed: true")
         strictness = Sigils.file_strictness("#{project.path}/file.rb")
         assert_equal("true", strictness)
@@ -173,7 +173,7 @@ module Spoom
       end
 
       def test_file_strictness_with_invalid_sigil
-        project = spoom_project("test_sigils")
+        project = spoom_project
         project.write("file.rb", "# typed: asdf")
         strictness = Sigils.file_strictness("#{project.path}/file.rb")
         assert_equal("asdf", strictness)
@@ -181,7 +181,7 @@ module Spoom
       end
 
       def test_file_strictness_with_iso_content
-        project = spoom_project("test_sigils")
+        project = spoom_project
 
         string = <<~RB
           # typed: true
@@ -196,7 +196,7 @@ module Spoom
       end
 
       def test_change_sigil_in_file_false_to_true
-        project = spoom_project("test_sigils")
+        project = spoom_project
         project.write("file.rb", "# typed: false")
         updated = Sigils.change_sigil_in_file("#{project.path}/file.rb", "true")
         assert(updated)
@@ -206,7 +206,7 @@ module Spoom
       end
 
       def test_change_sigil_in_file_with_iso_content
-        project = spoom_project("test_sigils")
+        project = spoom_project
 
         string = <<~RB
           # typed: true
@@ -221,7 +221,7 @@ module Spoom
       end
 
       def test_change_sigil_in_files_false_to_true
-        project = spoom_project("test_sigils")
+        project = spoom_project
         project.write("file1.rb", "# typed: false")
         project.write("file2.rb", "# typed: ignore")
         files = ["#{project.path}/file1.rb", "#{project.path}/file2.rb"]
@@ -235,7 +235,7 @@ module Spoom
       end
 
       def test_change_sigil_in_files_with_iso_content
-        project = spoom_project("test_sigils")
+        project = spoom_project
 
         string_utf = <<~RB
           # typed: true

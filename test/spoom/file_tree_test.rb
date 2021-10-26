@@ -67,7 +67,7 @@ module Spoom
       end
 
       def test_file_tree_printer_with_real_files
-        project = spoom_project("test_file_tree")
+        project = spoom_project
         project.write("a/b/c/d/e1.rb", "# typed: true")
         project.write("a/b/c/d/e2.rb", "# typed: false")
         project.write("a/b/c.rb", "# typed: strict")
@@ -80,7 +80,7 @@ module Spoom
             tmp/
               spoom/
                 tests/
-                  test_file_tree/
+                  test_file_tree_printer_with_real_files/
                     Gemfile
                     a/
                       b/
@@ -90,11 +90,13 @@ module Spoom
                             e2.rb (false)
                         c.rb (strict)
                       b.rb
+                    sorbet/
+                      config
         EXP
       end
 
       def test_file_tree_printer_strip_prefix
-        project = spoom_project("test_file_tree")
+        project = spoom_project
         project.write("a/b/c/d/e1.rb", "# typed: true")
         project.write("a/b/c/d/e2.rb", "# typed: false")
         project.write("a/b/c.rb", "# typed: strict")
@@ -112,6 +114,8 @@ module Spoom
                   e2.rb (false)
               c.rb (strict)
             b.rb
+          sorbet/
+            config
         EXP
       end
     end

@@ -9,7 +9,7 @@ module Spoom
       include Spoom::TestHelper
 
       def setup
-        @project = spoom_project("test_config")
+        @project = spoom_project
       end
 
       def teardown
@@ -17,6 +17,7 @@ module Spoom
       end
 
       def test_return_error_if_no_sorbet_config
+        @project.remove("sorbet/config")
         out, err, status = @project.bundle_exec("spoom config --no-color")
         assert_empty(out)
         assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", err.lines.first.chomp)
@@ -42,7 +43,6 @@ module Spoom
       end
 
       def test_display_simple_config
-        @project.sorbet_config(".")
         out, _ = @project.bundle_exec("spoom config --no-color")
         assert_equal(<<~MSG, out)
           Found Sorbet config at `sorbet/config`.
@@ -139,11 +139,10 @@ module Spoom
       end
 
       def test_config_with_path_option
-        @project.sorbet_config(".")
         project = spoom_project("test_config_with_path_option")
         out, _ = project.bundle_exec("spoom config -p #{@project.path} --no-color")
         assert_equal(<<~MSG, out)
-          Found Sorbet config at `/tmp/spoom/tests/test_config/sorbet/config`.
+          Found Sorbet config at `/tmp/spoom/tests/test_config_with_path_option/sorbet/config`.
 
           Paths typechecked:
            * .

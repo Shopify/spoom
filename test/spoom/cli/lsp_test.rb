@@ -9,8 +9,7 @@ module Spoom
       include Spoom::TestHelper
 
       def setup
-        @project = spoom_project("test_lsp")
-        @project.sorbet_config(".")
+        @project = spoom_project
       end
 
       def teardown
@@ -289,7 +288,7 @@ module Spoom
 
           class Test; end
         RB
-        project = spoom_project("test_lsp_with_path_option")
+        project = spoom_project("test_lsp_with_path_option_2")
         out, _ = project.bundle_exec("spoom lsp -p #{@project.path} --no-color find Test")
         assert_equal(<<~MSG, out)
           Symbols matching `Test`:

@@ -9,7 +9,7 @@ module Spoom
       include Spoom::TestHelper
 
       def setup
-        @project = spoom_project("test_git")
+        @project = spoom_project
         @project.git_init
       end
 
