@@ -9,13 +9,16 @@ require "spoom/test_helpers/project"
 module Spoom
   module TestHelper
     extend T::Sig
+    extend T::Helpers
+
+    requires_ancestor { Minitest::Test }
 
     TEST_PROJECTS_PATH = "/tmp/spoom/tests"
 
-    sig { params(name: String).returns(TestHelpers::Project) }
-    def spoom_project(name)
-      project = TestHelpers::Project.new("#{TEST_PROJECTS_PATH}/#{name}")
-      project.gemfile(spoom_gemfile)
+    sig { params(name: T.nilable(String)).returns(TestHelpers::Project) }
+    def spoom_project(name = nil)
+      project = TestHelpers::Project.new("#{TEST_PROJECTS_PATH}/#{name || self.name}")
+      project.sorbet_config(".")
       project
     end
 

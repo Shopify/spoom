@@ -9,8 +9,7 @@ module Spoom
       include Spoom::TestHelper
 
       def setup
-        @project = spoom_project("test_lsp")
-        @project.sorbet_config(".")
+        @project = spoom_project
         @project.write("file.rb", "# typed: true")
         @project.write("errors/errors.rb", <<~RB)
           # typed: true
@@ -199,7 +198,7 @@ module Spoom
       end
 
       def test_display_errors_with_path_option
-        project = spoom_project("test_display_errors_with_path_option")
+        project = spoom_project("test_display_errors_with_path_option_2")
         _, err, status = project.bundle_exec("spoom tc --no-color -s code -l 1 -p #{@project.path}")
         assert_equal(<<~MSG, err)
           5002 - errors/errors.rb:5: Unable to resolve constant `Bar`
