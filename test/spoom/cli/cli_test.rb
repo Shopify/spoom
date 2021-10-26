@@ -9,7 +9,7 @@ module Spoom
       include Spoom::TestHelper
 
       def setup
-        @project = spoom_project("test_cli")
+        @project = spoom_project
       end
 
       def teardown
@@ -51,7 +51,6 @@ module Spoom
       end
 
       def test_display_files_returns_1_if_no_file
-        @project.sorbet_config(".")
         out, err, status = @project.bundle_exec("spoom files --no-color")
         assert_equal(<<~MSG, err)
           Error: No file matching `sorbet/config`
@@ -67,7 +66,6 @@ module Spoom
         @project.write("lib/d.rb", "# typed: strict")
         @project.write("lib/e.rb", "# typed: strong")
         @project.write("lib/f.rb", "# typed: __STDLIB_INTERNAL")
-        @project.sorbet_config(".")
         out, _ = @project.bundle_exec("spoom files --no-color")
         assert_equal(<<~MSG, out)
           lib/
@@ -128,7 +126,6 @@ module Spoom
 
       def test_display_files_with_path_option
         project = spoom_project("test_files")
-        project.sorbet_config(".")
         project.write("lib/file1.rb", "# typed: true")
         project.write("lib/file2.rb", "# typed: true")
 
@@ -147,7 +144,6 @@ module Spoom
         @project.write("lib/d.rb", "# typed: strict")
         @project.write("lib/e.rb", "# typed: strong")
         @project.write("lib/f.rb", "# typed: __STDLIB_INTERNAL")
-        @project.sorbet_config(".")
         out, _ = @project.bundle_exec("spoom files --no-color --no-tree")
         assert_equal(<<~MSG, out)
           lib/c.rb
@@ -166,7 +162,6 @@ module Spoom
         @project.write("lib/d.rb", "# typed: strict")
         @project.write("lib/e.rbi", "# typed: strong")
         @project.write("lib/f.rbi", "# typed: __STDLIB_INTERNAL")
-        @project.sorbet_config(".")
         out, _ = @project.bundle_exec("spoom files --no-color --no-rbi")
         assert_equal(<<~MSG, out)
           lib/

@@ -75,7 +75,7 @@ module Spoom
       end
 
       def project
-        project = spoom_project("test_snapshot")
+        project = spoom_project
         project.sorbet_config(<<~CONFIG)
           .
           --allowed-extension .rb

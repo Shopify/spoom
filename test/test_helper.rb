@@ -9,29 +9,17 @@ require "spoom/test_helpers/project"
 module Spoom
   module TestHelper
     extend T::Sig
+    extend T::Helpers
+
+    requires_ancestor { Minitest::Test }
 
     TEST_PROJECTS_PATH = "/tmp/spoom/tests"
 
-    sig { params(name: String).returns(TestHelpers::Project) }
-    def spoom_project(name)
-      project = TestHelpers::Project.new("#{TEST_PROJECTS_PATH}/#{name}")
-      project.gemfile(spoom_gemfile)
+    sig { params(name: T.nilable(String)).returns(TestHelpers::Project) }
+    def spoom_project(name = nil)
+      project = TestHelpers::Project.new("#{TEST_PROJECTS_PATH}/#{name || self.name}")
+      project.sorbet_config(".")
       project
-    end
-
-    sig { returns(String) }
-    def spoom_gemfile
-      <<~GEM
-        gem("spoom", path: "#{spoom_path}")
-      GEM
-    end
-
-    sig { returns(String) }
-    def spoom_path
-      path = File.dirname(__FILE__)   # spoom/test/spoom/
-      path = File.dirname(path)       # spoom/test/
-      path = File.dirname(path)       # spoom/
-      File.expand_path(path)
     end
 
     # Replace all sorbet-like version "0.5.5888" in `test` by "X.X.XXXX"

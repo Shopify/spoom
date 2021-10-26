@@ -9,9 +9,8 @@ module Spoom
       include Spoom::TestHelper
 
       def setup
-        @project = spoom_project("test_git")
+        @project = spoom_project
         @project.git_init
-        @project.write("sorbet/config", "")
         @project.commit("commit 1", date: Time.parse("2010-01-02 03:04:05"))
         @project.write("file2", "")
         @project.commit("commit 2", date: Time.parse("2010-04-01 03:04:05"))

@@ -9,8 +9,7 @@ module Spoom
       include Spoom::TestHelper
 
       def setup
-        @project = spoom_project("test_bump")
-        @project.sorbet_config(".")
+        @project = spoom_project
       end
 
       def teardown

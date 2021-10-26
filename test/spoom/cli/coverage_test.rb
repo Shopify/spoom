@@ -10,8 +10,7 @@ module Spoom
       include Spoom::TestHelper
 
       def setup
-        @project = spoom_project("test_coverage")
-        @project.sorbet_config(".")
+        @project = spoom_project
         @project.write("Gemfile.lock", <<~RB)
           PATH
             remote: .
@@ -170,7 +169,7 @@ module Spoom
       end
 
       def test_display_metrics_with_path_option
-        project = spoom_project("test_display_metrics_with_path_option")
+        project = spoom_project("test_display_metrics_with_path_option_2")
         out, _ = project.bundle_exec("spoom coverage snapshot -p #{@project.path}")
         out = censor_sorbet_version(out) if out
         assert_equal(<<~MSG, out)
@@ -377,7 +376,7 @@ module Spoom
 
       def test_timeline_with_path_option
         create_git_history
-        project = spoom_project("test_display_metrics_with_path_option")
+        project = spoom_project("test_timeline_with_path_option_2")
         _, err, status = project.bundle_exec("spoom coverage timeline --save -p #{@project.path}")
         assert(status)
         assert_equal("", err)
