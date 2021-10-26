@@ -17,12 +17,14 @@ module Spoom
       arg: String,
       path: String,
       capture_err: T::Boolean
-    ).returns([String, T::Boolean])
+    ).returns([String, T::Boolean, Integer])
   end
   def self.exec(cmd, *arg, path: '.', capture_err: false)
     method = capture_err ? "popen2e" : "popen2"
-    Open3.send(method, [cmd, *arg].join(" "), chdir: path) do |_, o, t|
-      [o.read, T.cast(t.value, Process::Status).success?]
+    Open3.send(method, [cmd, *arg].join(" "), chdir: path) do |_, stdout, thread|
+      out = stdout.read
+      status = T.cast(thread.value, Process::Status)
+      [out, status.success?, status.exitstatus]
     end
   end
 end
