@@ -83,14 +83,22 @@ module Spoom
           exit(files_to_bump.empty?)
         end
 
-        output, no_errors = Sorbet.srb_tc(
+        output, status, exit_code = Sorbet.srb_tc(
           "--no-error-sections",
           path: exec_path,
           capture_err: true,
           sorbet_bin: options[:sorbet]
         )
 
-        if no_errors
+        check_sorbet_segfault(exit_code) do
+          say_error(<<~ERR, status: nil)
+            It means one of the file bumped to `typed: #{to}` made Sorbet crash.
+            Run `spoom bump -f` locally followed by `bundle exec srb tc` to investigate the problem.
+          ERR
+          undo_changes(files_to_bump, from)
+        end
+
+        if status
           print_changes(files_to_bump, command: cmd, from: from, to: to, dry: dry, path: exec_path)
           undo_changes(files_to_bump, from) if dry
           exit(files_to_bump.empty?)

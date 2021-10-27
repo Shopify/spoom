@@ -15,6 +15,8 @@ module Spoom
     GEM_PATH = Gem::Specification.find_by_name("sorbet-static").full_gem_path
     BIN_PATH = (Pathname.new(GEM_PATH) / "libexec" / "sorbet").to_s
 
+    SEGFAULT_CODE = 139
+
     class << self
       extend T::Sig
 
@@ -24,7 +26,7 @@ module Spoom
           path: String,
           capture_err: T::Boolean,
           sorbet_bin: T.nilable(String)
-        ).returns([String, T::Boolean])
+        ).returns([String, T::Boolean, Integer])
       end
       def srb(*arg, path: '.', capture_err: false, sorbet_bin: nil)
         if sorbet_bin
@@ -41,7 +43,7 @@ module Spoom
           path: String,
           capture_err: T::Boolean,
           sorbet_bin: T.nilable(String)
-        ).returns([String, T::Boolean])
+        ).returns([String, T::Boolean, Integer])
       end
       def srb_tc(*arg, path: '.', capture_err: false, sorbet_bin: nil)
         arg.prepend("tc") unless sorbet_bin

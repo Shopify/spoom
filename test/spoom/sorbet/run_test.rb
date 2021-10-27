@@ -26,11 +26,12 @@ module Spoom
           _, _, status = @project.bundle_install
           assert(status)
 
-          out, status = Spoom::Sorbet.srb(path: @project.path, capture_err: true)
+          out, status, exit_code = Spoom::Sorbet.srb(path: @project.path, capture_err: true)
           assert_equal(<<~OUT, out)
             No errors! Great job.
           OUT
           assert(status)
+          assert_equal(exit_code, 0)
         end
       end
 
@@ -40,14 +41,15 @@ module Spoom
           _, _, status = @project.bundle_install
           assert(status)
 
-          _, _, status = Spoom::Sorbet.srb(path: @project.path, capture_err: true)
+          _, status, exit_code = Spoom::Sorbet.srb(path: @project.path, capture_err: true)
           refute(status)
+          assert_equal(exit_code, 1)
         end
       end
 
       def test_run_sorbet_from_path
         Bundler.with_unbundled_env do
-          out, status = Spoom::Sorbet.srb(
+          out, status, exit_code = Spoom::Sorbet.srb(
             "-h",
             path: @project.path,
             capture_err: true,
@@ -67,12 +69,13 @@ module Spoom
 
           OUT
           assert(status)
+          assert_equal(exit_code, 0)
         end
       end
 
       def test_run_sorbet_tc_from_path
         Bundler.with_unbundled_env do
-          out, status = Spoom::Sorbet.srb_tc(
+          out, status, exit_code = Spoom::Sorbet.srb_tc(
             path: @project.path,
             capture_err: true,
             sorbet_bin: Spoom::Sorbet::BIN_PATH
@@ -81,6 +84,7 @@ module Spoom
             No errors! Great job.
           OUT
           assert(status)
+          assert_equal(exit_code, 0)
         end
       end
     end
