@@ -496,7 +496,11 @@ end
 
 YARD::CLI::YardoptsCommand::DEFAULT_YARDOPTS_FILE = T.let(T.unsafe(nil), String)
 YARD::CONFIG_DIR = T.let(T.unsafe(nil), String)
-module YARD::CodeObjects; end
+
+module YARD::CodeObjects
+  extend ::YARD::CodeObjects::NamespaceMapper
+end
+
 YARD::CodeObjects::BUILTIN_ALL = T.let(T.unsafe(nil), Array)
 YARD::CodeObjects::BUILTIN_CLASSES = T.let(T.unsafe(nil), Array)
 YARD::CodeObjects::BUILTIN_EXCEPTIONS = T.let(T.unsafe(nil), Array)
