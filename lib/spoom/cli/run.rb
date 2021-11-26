@@ -114,7 +114,7 @@ module Spoom
               cyan = !cyan
               next
             end
-            word << (cyan ? c.cyan : c.red)
+            word << (cyan ? cyan(c) : red(c))
           end
           word.string
         end

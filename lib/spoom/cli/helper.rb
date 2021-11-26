@@ -144,6 +144,11 @@ module Spoom
       end
 
       sig { params(string: String).returns(String) }
+      def cyan(string)
+        colorize(string, Color::CYAN)
+      end
+
+      sig { params(string: String).returns(String) }
       def gray(string)
         colorize(string, Color::LIGHT_BLACK)
       end
