@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require_relative "../../printer"
+require "set"
 
 module Spoom
   module LSP
