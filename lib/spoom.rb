@@ -3,6 +3,7 @@
 
 require "sorbet-runtime"
 require "set"
+require "pathname"
 
 module Spoom
   extend T::Sig
