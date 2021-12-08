@@ -184,6 +184,41 @@ module Spoom
         assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/file.rb"))
       end
 
+      def test_bump_with_custom_error_url_base
+        @project.sorbet_config(<<~CONFIG)
+          .
+          --error-url-base="https://docs.org#"
+        CONFIG
+
+        @project.write("file.rb", <<~RB)
+          # typed: true
+          require "test_helper"
+
+          class Test
+            def self.foo(*arg); end
+            def self.something; end
+            def self.something_else; end
+
+            foo "foo" do
+              q = something do
+                q = something_else.new
+              end
+            end
+          end
+        RB
+
+        out, err, status = @project.bundle_exec("spoom bump --no-color --from true --to strict")
+        assert_empty(err)
+        assert_equal(<<~OUT, out)
+          Checking files...
+
+          No file to bump from `true` to `strict`
+        OUT
+        assert(status)
+
+        assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/file.rb"))
+      end
+
       def test_bump_preserve_file_encoding
         string = <<~RB
           # typed: false
