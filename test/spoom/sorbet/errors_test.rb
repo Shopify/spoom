@@ -248,6 +248,30 @@ module Spoom
         assert_equal([7003, 7001, 7002], errors.map(&:code))
       end
 
+      def test_parses_errors_with_custom_error_url_base
+        errors = Spoom::Sorbet::Errors::Parser.parse_string(<<~ERR, error_url_base: "https://custom-url#")
+          a.rb:80: unexpected token "end" https://custom-url#2001
+              80 |end
+                  ^^^
+
+          b.rb:28: Not enough arguments provided for method Foo#bar. Expected: 1..2, got: 1 https://custom-url#7004
+              28 |              bar "hello"
+                                ^^^^^^^^^^^
+
+          c.rb:100: Method Foo#initialize redefined without matching argument count. Expected: 0, got: 2 https://custom-url#4010
+               100 |    class Foo < T::Struct
+               101 |    end
+
+          d.rb:105: Method foo does not exist on String https://custom-url#7003
+               105 |        printer.print "foo".light_black
+                                          ^^^^^^^^^^^^^^^^^
+        ERR
+        assert_equal(4, errors.size)
+        assert_equal(["a.rb", "b.rb", "c.rb", "d.rb"], errors.map(&:file))
+        assert_equal([80, 28, 100, 105], errors.map(&:line))
+        assert_equal([2001, 7004, 4010, 7003], errors.map(&:code))
+      end
+
       def test_sort_errors
         errors = Spoom::Sorbet::Errors::Parser.parse_string(<<~ERR)
           z.rb:80: unexpected token "end" https://srb.help/2001
