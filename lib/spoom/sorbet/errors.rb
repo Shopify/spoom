@@ -6,6 +6,8 @@ module Spoom
     module Errors
       extend T::Sig
 
+      DEFAULT_ERROR_URL_BASE = "https://srb.help/"
+
       # Parse errors from Sorbet output
       class Parser
         extend T::Sig
@@ -18,28 +20,16 @@ module Spoom
           "or set SORBET_SILENCE_DEV_MESSAGE=1 in your shell environment.",
         ]
 
-        ERROR_LINE_MATCH_REGEX = %r{
-          ^         # match beginning of line
-          (\S[^:]*) # capture filename as something that starts with a non-space character
-                    # followed by anything that is not a colon character
-          :         # match the filename - line number seperator
-          (\d+)     # capture the line number
-          :\s       # match the line number - error message separator
-          (.*)      # capture the error message
-          \shttps://srb.help/ # match the error code url prefix
-          (\d+)     # capture the error code
-          $         # match end of line
-        }x.freeze
-
-        sig { params(output: String).returns(T::Array[Error]) }
-        def self.parse_string(output)
-          parser = Spoom::Sorbet::Errors::Parser.new
+        sig { params(output: String, error_url_base: String).returns(T::Array[Error]) }
+        def self.parse_string(output, error_url_base: DEFAULT_ERROR_URL_BASE)
+          parser = Spoom::Sorbet::Errors::Parser.new(error_url_base: error_url_base)
           parser.parse(output)
         end
 
-        sig { void }
-        def initialize
+        sig { params(error_url_base: String).void }
+        def initialize(error_url_base: DEFAULT_ERROR_URL_BASE)
           @errors = []
+          @error_line_match_regex = error_line_match_regexp(error_url_base)
           @current_error = nil
         end
 
@@ -66,9 +56,26 @@ module Spoom
 
         private
 
+        sig { params(error_url_base: String).returns(Regexp) }
+        def error_line_match_regexp(error_url_base)
+          url = Regexp.escape(error_url_base)
+          %r{
+            ^         # match beginning of line
+            (\S[^:]*) # capture filename as something that starts with a non-space character
+                      # followed by anything that is not a colon character
+            :         # match the filename - line number seperator
+            (\d+)     # capture the line number
+            :\s       # match the line number - error message separator
+            (.*)      # capture the error message
+            \s#{url}  # match the error code url prefix
+            (\d+)     # capture the error code
+            $         # match end of line
+          }x
+        end
+
         sig { params(line: String).returns(T.nilable(Error)) }
         def match_error_line(line)
-          match = line.match(ERROR_LINE_MATCH_REGEX)
+          match = line.match(@error_line_match_regex)
           return unless match
 
           file, line, message, code = match.captures
