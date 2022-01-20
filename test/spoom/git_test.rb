@@ -89,7 +89,7 @@ module Spoom
       def test_git_rev_parse
         @project.write("file")
         @project.commit
-        assert_match(/^[a-f0-9]+$/, Spoom::Git.rev_parse("master", path: @project.path).first.strip)
+        assert_match(/^[a-f0-9]+$/, Spoom::Git.rev_parse("main", path: @project.path).first.strip)
       end
 
       def test_git_show

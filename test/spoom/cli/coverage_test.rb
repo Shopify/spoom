@@ -421,7 +421,7 @@ module Spoom
 
       def test_finish_on_original_branch
         create_git_history
-        assert_equal("master", @project.current_branch)
+        assert_equal("main", @project.current_branch)
         @project.create_and_checkout_branch("fake-branch")
         assert_equal("fake-branch", @project.current_branch)
         @project.bundle_exec("spoom coverage timeline --save")

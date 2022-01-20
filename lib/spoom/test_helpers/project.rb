@@ -62,9 +62,9 @@ module Spoom
       # Actions
 
       # Run `git init` in this project
-      sig { void }
-      def git_init
-        Spoom::Git.exec("git init -q", path: path)
+      sig { params(branch: String).void }
+      def git_init(branch: "main")
+        Spoom::Git.exec("git init -q -b #{branch}", path: path)
         Spoom::Git.exec("git config user.name 'spoom-tests'", path: path)
         Spoom::Git.exec("git config user.email 'spoom@shopify.com'", path: path)
       end
