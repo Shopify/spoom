@@ -1,4 +1,4 @@
-# typed: true
+# typed: strict
 # frozen_string_literal: true
 
 module Spoom
@@ -10,12 +10,17 @@ module Spoom
     #
     # The language server protocol always uses `"2.0"` as the `jsonrpc` version.
     class Message
+      extend T::Sig
+
+      sig { returns(String) }
       attr_reader :jsonrpc
 
+      sig { void }
       def initialize
-        @jsonrpc = '2.0'
+        @jsonrpc = T.let("2.0", String)
       end
 
+      sig { returns(T::Hash[T.untyped, T.untyped]) }
       def as_json
         instance_variables.each_with_object({}) do |var, obj|
           val = instance_variable_get(var)
@@ -23,8 +28,9 @@ module Spoom
         end
       end
 
+      sig { params(args: T.untyped).returns(String) }
       def to_json(*args)
-        as_json.to_json(*args)
+        T.unsafe(as_json).to_json(*args)
       end
     end
 
@@ -32,8 +38,18 @@ module Spoom
     #
     # Every processed request must send a response back to the sender of the request.
     class Request < Message
-      attr_reader :id, :method, :params
+      extend T::Sig
 
+      sig { returns(Integer) }
+      attr_reader :id
+
+      sig { returns(String) }
+      attr_reader :method
+
+      sig { returns(T::Hash[T.untyped, T.untyped]) }
+      attr_reader :params
+
+      sig { params(id: Integer, method: String, params: T::Hash[T.untyped, T.untyped]).void }
       def initialize(id, method, params)
         super()
         @id = id
@@ -46,8 +62,15 @@ module Spoom
     #
     # A processed notification message must not send a response back. They work like events.
     class Notification < Message
-      attr_reader :method, :params
+      extend T::Sig
 
+      sig { returns(String) }
+      attr_reader :method
+
+      sig { returns(T::Hash[T.untyped, T.untyped]) }
+      attr_reader :params
+
+      sig { params(method: String, params: T::Hash[T.untyped, T.untyped]).void }
       def initialize(method, params)
         super()
         @method = method

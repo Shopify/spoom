@@ -1,4 +1,4 @@
-# typed: true
+# typed: strict
 # frozen_string_literal: true
 
 require_relative "../../printer"
@@ -23,6 +23,7 @@ module Spoom
       const :contents, String
       const :range, T.nilable(Range)
 
+      sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Hover) }
       def self.from_json(json)
         Hover.new(
           contents: json['contents']['value'],
@@ -36,6 +37,7 @@ module Spoom
         printer.print_object(range) if range
       end
 
+      sig { returns(String) }
       def to_s
         "#{contents} (#{range})."
       end
@@ -48,6 +50,7 @@ module Spoom
       const :line, Integer
       const :char, Integer
 
+      sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Position) }
       def self.from_json(json)
         Position.new(
           line: json['line'].to_i,
@@ -60,6 +63,7 @@ module Spoom
         printer.print_colored("#{line}:#{char}", Color::LIGHT_BLACK)
       end
 
+      sig { returns(String) }
       def to_s
         "#{line}:#{char}"
       end
@@ -72,6 +76,7 @@ module Spoom
       const :start, Position
       const :end, Position
 
+      sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Range) }
       def self.from_json(json)
         Range.new(
           start: Position.from_json(json['start']),
@@ -86,6 +91,7 @@ module Spoom
         printer.print_object(self.end)
       end
 
+      sig { returns(String) }
       def to_s
         "#{start}-#{self.end}"
       end
@@ -98,6 +104,7 @@ module Spoom
       const :uri, String
       const :range, LSP::Range
 
+      sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Location) }
       def self.from_json(json)
         Location.new(
           uri: json['uri'],
@@ -111,6 +118,7 @@ module Spoom
         printer.print_object(range)
       end
 
+      sig { returns(String) }
       def to_s
         "#{uri}:#{range}"
       end
@@ -124,6 +132,7 @@ module Spoom
       const :doc, Object # TODO
       const :params, T::Array[T.untyped] # TODO
 
+      sig { params(json: T::Hash[T.untyped, T.untyped]).returns(SignatureHelp) }
       def self.from_json(json)
         SignatureHelp.new(
           label: json['label'],
@@ -140,6 +149,7 @@ module Spoom
         printer.print(")")
       end
 
+      sig { returns(String) }
       def to_s
         "#{label}(#{params})."
       end
@@ -154,6 +164,7 @@ module Spoom
       const :message, String
       const :informations, Object
 
+      sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Diagnostic) }
       def self.from_json(json)
         Diagnostic.new(
           range: Range.from_json(json['range']),
@@ -168,6 +179,7 @@ module Spoom
         printer.print(to_s)
       end
 
+      sig { returns(String) }
       def to_s
         "Error: #{message} (#{code})."
       end
@@ -184,6 +196,7 @@ module Spoom
       const :range, T.nilable(Range)
       const :children, T::Array[DocumentSymbol]
 
+      sig { params(json: T::Hash[T.untyped, T.untyped]).returns(DocumentSymbol) }
       def self.from_json(json)
         DocumentSymbol.new(
           name: json['name'],
@@ -221,16 +234,17 @@ module Spoom
         # TODO: also display details?
       end
 
+      sig { returns(String) }
       def to_s
         "#{name} (#{range})"
       end
 
+      sig { returns(String) }
       def kind_string
-        return "<unknown:#{kind}>" unless SYMBOL_KINDS.key?(kind)
-        SYMBOL_KINDS[kind]
+        SYMBOL_KINDS[kind] || "<unknown:#{kind}>"
       end
 
-      SYMBOL_KINDS = {
+      SYMBOL_KINDS = T.let({
         1 => "file",
         2 => "module",
         3 => "namespace",
@@ -257,13 +271,17 @@ module Spoom
         24 => "event",
         25 => "operator",
         26 => "type_parameter",
-      }
+      }, T::Hash[Integer, String])
     end
 
     class SymbolPrinter < Printer
       extend T::Sig
 
-      attr_accessor :seen, :prefix
+      sig { returns(T::Set[Integer]) }
+      attr_accessor :seen
+
+      sig { returns(T.nilable(String)) }
+      attr_accessor :prefix
 
       sig do
         params(
@@ -275,7 +293,7 @@ module Spoom
       end
       def initialize(out: $stdout, colors: true, indent_level: 0, prefix: nil)
         super(out: out, colors: colors, indent_level: indent_level)
-        @seen = Set.new
+        @seen = T.let(Set.new, T::Set[Integer])
         @out = out
         @colors = colors
         @indent_level = indent_level
@@ -295,6 +313,7 @@ module Spoom
 
       sig { params(uri: String).returns(String) }
       def clean_uri(uri)
+        prefix = self.prefix
         return uri unless prefix
         uri.delete_prefix(prefix)
       end
