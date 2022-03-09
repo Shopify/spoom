@@ -31,7 +31,7 @@ module Spoom
             No errors! Great job.
           OUT
           assert(status)
-          assert_equal(exit_code, 0)
+          assert_equal(0, exit_code)
         end
       end
 
@@ -43,7 +43,7 @@ module Spoom
 
           _, status, exit_code = Spoom::Sorbet.srb(path: @project.path, capture_err: true)
           refute(status)
-          assert_equal(exit_code, 1)
+          assert_equal(1, exit_code)
         end
       end
 
@@ -69,7 +69,7 @@ module Spoom
 
           OUT
           assert(status)
-          assert_equal(exit_code, 0)
+          assert_equal(0, exit_code)
         end
       end
 
@@ -84,7 +84,7 @@ module Spoom
             No errors! Great job.
           OUT
           assert(status)
-          assert_equal(exit_code, 0)
+          assert_equal(0, exit_code)
         end
       end
     end
