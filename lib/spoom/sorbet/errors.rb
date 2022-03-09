@@ -1,4 +1,4 @@
-# typed: true
+# typed: strict
 # frozen_string_literal: true
 
 module Spoom
@@ -12,13 +12,13 @@ module Spoom
       class Parser
         extend T::Sig
 
-        HEADER = [
+        HEADER = T.let([
           "👋 Hey there! Heads up that this is not a release build of sorbet.",
           "Release builds are faster and more well-supported by the Sorbet team.",
           "Check out the README to learn how to build Sorbet in release mode.",
           "To forcibly silence this error, either pass --silence-dev-message,",
           "or set SORBET_SILENCE_DEV_MESSAGE=1 in your shell environment.",
-        ]
+        ], T::Array[String])
 
         sig { params(output: String, error_url_base: String).returns(T::Array[Error]) }
         def self.parse_string(output, error_url_base: DEFAULT_ERROR_URL_BASE)
@@ -28,9 +28,9 @@ module Spoom
 
         sig { params(error_url_base: String).void }
         def initialize(error_url_base: DEFAULT_ERROR_URL_BASE)
-          @errors = []
-          @error_line_match_regex = error_line_match_regexp(error_url_base)
-          @current_error = nil
+          @errors = T.let([], T::Array[Error])
+          @error_line_match_regex = T.let(error_line_match_regexp(error_url_base), Regexp)
+          @current_error = T.let(nil, T.nilable(Error))
         end
 
         sig { params(output: String).returns(T::Array[Error]) }
