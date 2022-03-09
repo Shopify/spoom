@@ -1,4 +1,4 @@
-# typed: true
+# typed: strict
 # frozen_string_literal: true
 
 require "spoom/sorbet/config"
@@ -12,8 +12,8 @@ require "open3"
 module Spoom
   module Sorbet
     CONFIG_PATH = "sorbet/config"
-    GEM_PATH = Gem::Specification.find_by_name("sorbet-static").full_gem_path
-    BIN_PATH = (Pathname.new(GEM_PATH) / "libexec" / "sorbet").to_s
+    GEM_PATH = T.let(Gem::Specification.find_by_name("sorbet-static").full_gem_path, String)
+    BIN_PATH = T.let((Pathname.new(GEM_PATH) / "libexec" / "sorbet").to_s, String)
 
     SEGFAULT_CODE = 139
 
