@@ -27,7 +27,7 @@ module Spoom
           assert(result.status)
 
           result = Spoom::Sorbet.srb(path: @project.path, capture_err: true)
-          assert_equal(<<~OUT, result.out)
+          assert_equal(<<~OUT, result.err)
             No errors! Great job.
           OUT
           assert(result.status)
@@ -55,7 +55,7 @@ module Spoom
             capture_err: true,
             sorbet_bin: Spoom::Sorbet::BIN_PATH
           )
-          assert_equal(<<~OUT, result.out)
+          assert_equal(<<~OUT, result.err)
             Typechecker for Ruby
             Usage:
               sorbet [OPTION...] <path 1> <path 2> ...
@@ -80,7 +80,7 @@ module Spoom
             capture_err: true,
             sorbet_bin: Spoom::Sorbet::BIN_PATH
           )
-          assert_equal(<<~OUT, result.out)
+          assert_equal(<<~OUT, result.err)
             No errors! Great job.
           OUT
           assert(result.status)

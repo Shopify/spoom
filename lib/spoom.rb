@@ -13,7 +13,7 @@ module Spoom
 
   class ExecResult < T::Struct
     const :out, String
-    const :err, String, default: ""
+    const :err, String
     const :status, T::Boolean
     const :exit_code, Integer
   end
@@ -27,10 +27,22 @@ module Spoom
     ).returns(ExecResult)
   end
   def self.exec(cmd, *arg, path: '.', capture_err: false)
-    method = capture_err ? "popen2e" : "popen2"
-    Open3.send(method, [cmd, *arg].join(" "), chdir: path) do |_, stdout, thread|
-      status = T.cast(thread.value, Process::Status)
-      ExecResult.new(out: stdout.read, status: T.must(status.success?), exit_code: T.must(status.exitstatus))
+    if capture_err
+      stdout, stderr, status = T.unsafe(Open3).capture3([cmd, *arg].join(" "), chdir: path)
+      ExecResult.new(
+        out: stdout,
+        err: stderr,
+        status: status.success?,
+        exit_code: status.exitstatus
+      )
+    else
+      stdout, status = T.unsafe(Open3).capture2([cmd, *arg].join(" "), chdir: path)
+      ExecResult.new(
+        out: stdout,
+        err: "",
+        status: status.success?,
+        exit_code: status.exitstatus
+      )
     end
   end
 end

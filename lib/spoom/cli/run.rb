@@ -43,7 +43,7 @@ module Spoom
           )
 
           check_sorbet_segfault(result.code)
-          say_error(result.out, status: nil, nl: false)
+          say_error(result.err, status: nil, nl: false)
           exit(result.status)
         end
 
@@ -57,11 +57,11 @@ module Spoom
         check_sorbet_segfault(result.exit_code)
 
         if result.status
-          say_error(result.out, status: nil, nl: false)
+          say_error(result.err, status: nil, nl: false)
           exit(0)
         end
 
-        errors = Spoom::Sorbet::Errors::Parser.parse_string(result.out)
+        errors = Spoom::Sorbet::Errors::Parser.parse_string(result.err)
         errors_count = errors.size
 
         errors = case sort

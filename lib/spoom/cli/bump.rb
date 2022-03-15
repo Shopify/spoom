@@ -106,7 +106,7 @@ module Spoom
           exit(files_to_bump.empty?)
         end
 
-        errors = Sorbet::Errors::Parser.parse_string(result.out, error_url_base: error_url_base)
+        errors = Sorbet::Errors::Parser.parse_string(result.err, error_url_base: error_url_base)
 
         files_with_errors = errors.map do |err|
           path = File.expand_path(err.file)
