@@ -37,7 +37,7 @@ module Spoom
     sig { params(dates: T::Array[Time]).returns(T::Array[String]) }
     def commits_for_dates(dates)
       dates.map do |t|
-        out, _, _ = Spoom::Git.log(
+        result = Spoom::Git.log(
           "--since='#{t}'",
           "--until='#{t.to_date.next_month}'",
           "--format='format:%h'",
@@ -45,8 +45,8 @@ module Spoom
           "-1",
           path: @path,
         )
-        next if out.empty?
-        out
+        next if result.out.empty?
+        result.out
       end.compact.uniq
     end
   end
