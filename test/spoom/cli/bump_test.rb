@@ -18,21 +18,21 @@ module Spoom
 
       def test_bump_outside_sorbet_dir
         @project.remove("sorbet/config")
-        out, err, status = @project.bundle_exec("spoom bump --no-color")
-        assert_empty(out)
-        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", err.lines.first.chomp)
-        refute(status)
+        result = @project.bundle_exec("spoom bump --no-color")
+        assert_empty(result.out)
+        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", result.err.lines.first.chomp)
+        refute(result.status)
       end
 
       def test_bump_no_file
-        out, err, status = @project.bundle_exec("spoom bump --no-color")
-        assert_empty(err)
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom bump --no-color")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
           Checking files...
 
           No file to bump from `false` to `true`
         OUT
-        assert(status)
+        assert(result.status)
       end
 
       def test_bump_files_one_error_no_bump_one_no_error_bump
@@ -45,15 +45,15 @@ module Spoom
           T.reveal_type(1)
         RB
 
-        out, err, status = @project.bundle_exec("spoom bump --no-color")
-        assert_empty(err)
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom bump --no-color")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
           Checking files...
 
           Bumped `1` file from `false` to `true`:
            + file1.rb
         OUT
-        refute(status)
+        refute(result.status)
 
         assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
@@ -64,15 +64,15 @@ module Spoom
         @project.write("lib/b/file.rb", "# typed: false")
         @project.write("lib/c/file.rb", "# typed: true\n\nfoo.bar")
 
-        out, err, status = @project.bundle_exec("spoom bump --no-color lib/b")
-        assert_empty(err)
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom bump --no-color lib/b")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
           Checking files...
 
           Bumped `1` file from `false` to `true`:
            + lib/b/file.rb
         OUT
-        refute(status)
+        refute(result.status)
 
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/lib/a/file.rb"))
         assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/lib/b/file.rb"))
@@ -91,15 +91,15 @@ module Spoom
           class B; end
         RB
 
-        out, err, status = @project.bundle_exec("spoom bump --no-color --from true --to strict")
-        assert_empty(err)
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom bump --no-color --from true --to strict")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
           Checking files...
 
           Bumped `1` file from `true` to `strict`:
            + file2.rb
         OUT
-        refute(status)
+        refute(result.status)
 
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("strict", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
@@ -115,15 +115,15 @@ module Spoom
           T.reveal_type(1)
         RB
 
-        out, err, status = @project.bundle_exec("spoom bump --no-color --from ignore --to strong")
-        assert_empty(err)
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom bump --no-color --from ignore --to strong")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
           Checking files...
 
           Bumped `1` file from `ignore` to `strong`:
            + file1.rb
         OUT
-        refute(status)
+        refute(result.status)
 
         assert_equal("strong", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("ignore", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
@@ -139,16 +139,16 @@ module Spoom
           T.reveal_type(1)
         RB
 
-        out, err, status = @project.bundle_exec("spoom bump --no-color --force --from ignore --to strong")
-        assert_empty(err)
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom bump --no-color --force --from ignore --to strong")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
           Checking files...
 
           Bumped `2` files from `ignore` to `strong`:
            + file1.rb
            + file2.rb
         OUT
-        refute(status)
+        refute(result.status)
 
         assert_equal("strong", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("strong", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
@@ -172,14 +172,14 @@ module Spoom
           end
         RB
 
-        out, err, status = @project.bundle_exec("spoom bump --no-color --from true --to strict")
-        assert_empty(err)
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom bump --no-color --from true --to strict")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
           Checking files...
 
           No file to bump from `true` to `strict`
         OUT
-        assert(status)
+        assert(result.status)
 
         assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/file.rb"))
       end
@@ -207,14 +207,14 @@ module Spoom
           end
         RB
 
-        out, err, status = @project.bundle_exec("spoom bump --no-color --from true --to strict")
-        assert_empty(err)
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom bump --no-color --from true --to strict")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
           Checking files...
 
           No file to bump from `true` to `strict`
         OUT
-        assert(status)
+        assert(result.status)
 
         assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/file.rb"))
       end
@@ -226,15 +226,15 @@ module Spoom
         RB
 
         @project.write("file.rb", string.encode("ISO-8859-15"))
-        out, err, status = @project.bundle_exec("spoom bump --no-color")
-        assert_empty(err)
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom bump --no-color")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
           Checking files...
 
           Bumped `1` file from `false` to `true`:
            + file.rb
         OUT
-        refute(status)
+        refute(result.status)
 
         strictness = Sorbet::Sigils.file_strictness("#{@project.path}/file.rb")
         assert_equal("true", strictness)
@@ -251,9 +251,9 @@ module Spoom
           T.reveal_type(1)
         RB
 
-        out, err, status = @project.bundle_exec("spoom bump --no-color --dry")
-        assert_empty(err)
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom bump --no-color --dry")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
           Checking files...
 
           Can bump `1` file from `false` to `true`:
@@ -261,7 +261,7 @@ module Spoom
 
           Run `spoom bump --from false --to true` locally then `commit the changes` and `push them`
         OUT
-        refute(status)
+        refute(result.status)
 
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
@@ -277,9 +277,9 @@ module Spoom
           T.reveal_type(1)
         RB
 
-        out, err, status = @project.bundle_exec("spoom bump --no-color --dry -f")
-        assert_empty(err)
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom bump --no-color --dry -f")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
           Checking files...
 
           Can bump `2` files from `false` to `true`:
@@ -288,7 +288,7 @@ module Spoom
 
           Run `spoom bump --from false --to true` locally then `commit the changes` and `push them`
         OUT
-        refute(status)
+        refute(result.status)
 
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
@@ -300,9 +300,9 @@ module Spoom
           class A; end
         RB
 
-        out, err, status = @project.bundle_exec("spoom bump --no-color --dry -f --suggest-bump-command 'bump.sh'")
-        assert_empty(err)
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom bump --no-color --dry -f --suggest-bump-command 'bump.sh'")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
           Checking files...
 
           Can bump `1` file from `false` to `true`:
@@ -310,20 +310,20 @@ module Spoom
 
           Run `bump.sh` to bump them
         OUT
-        refute(status)
+        refute(result.status)
 
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
       end
 
       def test_bump_dry_does_nothing_with_no_file
-        out, err, status = @project.bundle_exec("spoom bump --no-color --dry")
-        assert_empty(err)
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom bump --no-color --dry")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
           Checking files...
 
           No file to bump from `false` to `true`
         OUT
-        assert(status)
+        assert(result.status)
       end
 
       def test_bump_dry_does_nothing_with_no_bumpable_file
@@ -336,14 +336,14 @@ module Spoom
           T.reveal_type(1)
         RB
 
-        out, err, status = @project.bundle_exec("spoom bump --no-color --dry")
-        assert_empty(err)
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom bump --no-color --dry")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
           Checking files...
 
           No file to bump from `false` to `true`
         OUT
-        assert(status)
+        assert(result.status)
 
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rb"))
@@ -363,9 +363,9 @@ module Spoom
           end
         RB
 
-        out, err, status = @project.bundle_exec("spoom bump --no-color --from false --to true --dry")
-        assert_empty(err)
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom bump --no-color --from false --to true --dry")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
           Checking files...
 
           Can bump `1` file from `false` to `true`:
@@ -373,7 +373,7 @@ module Spoom
 
           Run `spoom bump --from false --to true` locally then `commit the changes` and `push them`
         OUT
-        refute(status)
+        refute(result.status)
 
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/file2.rbi"))
@@ -391,9 +391,9 @@ module Spoom
           file5.rb
         FILES
 
-        out, err, status = @project.bundle_exec("spoom bump --no-color -o files.lst")
-        assert_empty(err)
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom bump --no-color -o files.lst")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
           Checking files...
 
           Bumped `3` files from `false` to `true`:
@@ -401,7 +401,7 @@ module Spoom
            + file3.rb
            + file5.rb
         OUT
-        refute(status)
+        refute(result.status)
       end
 
       def test_bump_files_according_to_config
@@ -418,15 +418,15 @@ module Spoom
           class A; end
         RB
 
-        out, err, status = @project.bundle_exec("spoom bump --no-color")
-        assert_empty(err)
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom bump --no-color")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
           Checking files...
 
           Bumped `1` file from `false` to `true`:
            + file1.rb
         OUT
-        refute(status)
+        refute(result.status)
 
         assert_equal("true", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/vendor/file2.rb"))
@@ -443,12 +443,12 @@ module Spoom
           Foo.new.foos
         RB
 
-        out, err, status = @project.bundle_exec("spoom bump --no-color --count-errors")
-        assert_empty(out)
-        assert_equal(<<~OUT, err)
+        result = @project.bundle_exec("spoom bump --no-color --count-errors")
+        assert_empty(result.out)
+        assert_equal(<<~OUT, result.err)
           Error: `--count-errors` can only be used with `--dry`
         OUT
-        refute(status)
+        refute(result.status)
       end
 
       def test_bump_count_errors
@@ -462,15 +462,15 @@ module Spoom
           Foo.new.foos
         RB
 
-        out, err, status = @project.bundle_exec("spoom bump --no-color --count-errors --dry")
-        assert_empty(err)
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom bump --no-color --count-errors --dry")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
           Checking files...
 
           Found 1 type checking error
           No file to bump from `false` to `true`
         OUT
-        assert(status)
+        assert(result.status)
         assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/file1.rb"))
       end
 
@@ -494,18 +494,18 @@ module Spoom
           [{1 => 2}] + [{}]
         RB
         Bundler.with_unbundled_env do
-          _, _, status = @project.bundle_install
-          assert(status)
+          result = @project.bundle_install
+          assert(result.status)
 
-          _, err, status = @project.bundle_exec("spoom bump --no-color")
-          assert_equal(<<~OUT, err)
+          result = @project.bundle_exec("spoom bump --no-color")
+          assert_equal(<<~OUT, result.err)
             !!! Sorbet exited with code 139 - SEGFAULT !!!
 
             This is most likely related to a bug in Sorbet.
             It means one of the file bumped to `typed: true` made Sorbet crash.
             Run `spoom bump -f` locally followed by `bundle exec srb tc` to investigate the problem.
           OUT
-          refute(status)
+          refute(result.status)
 
           assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/cant_be_bump1.rb"))
           assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/cant_be_bump2.rb"))

@@ -77,21 +77,31 @@ module Spoom
       end
 
       # Run `bundle install` in this project
-      sig { returns([T.nilable(String), T.nilable(String), T::Boolean]) }
+      sig { returns(ExecResult) }
       def bundle_install
         opts = {}
         opts[:chdir] = path
         out, err, status = Open3.capture3("bundle", "install", opts)
-        [out, err, T.must(status.success?)]
+        ExecResult.new(
+          out: out,
+          err: err,
+          status: T.must(status.success?),
+          exit_code: T.must(status.exitstatus)
+        )
       end
 
       # Run a command with `bundle exec` in this project
-      sig { params(cmd: String, args: String).returns([T.nilable(String), T.nilable(String), T::Boolean]) }
+      sig { params(cmd: String, args: String).returns(ExecResult) }
       def bundle_exec(cmd, *args)
         opts = {}
         opts[:chdir] = path
         out, err, status = Open3.capture3(["bundle", "exec", cmd, *args].join(' '), opts)
-        [out, err, T.must(status.success?)]
+        ExecResult.new(
+          out: out,
+          err: err,
+          status: T.must(status.success?),
+          exit_code: T.must(status.exitstatus)
+        )
       end
 
       # Delete this project and its content

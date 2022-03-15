@@ -20,10 +20,10 @@ module Spoom
 
       def test_cant_open_without_config
         @project.remove("sorbet/config")
-        out, err, status = @project.bundle_exec("spoom lsp --no-color find Foo")
-        assert_empty(out)
-        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", err.lines.first.chomp)
-        refute(status)
+        result = @project.bundle_exec("spoom lsp --no-color find Foo")
+        assert_empty(result.out)
+        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", result.err.lines.first.chomp)
+        refute(result.status)
       end
 
       def test_cant_open_with_errors
@@ -39,8 +39,8 @@ module Spoom
           Foo.new.foo
           Bar.new.bar
         RB
-        _, err = @project.bundle_exec("spoom lsp --no-color find Foo")
-        assert_equal(<<~MSG, err)
+        result = @project.bundle_exec("spoom lsp --no-color find Foo")
+        assert_equal(<<~MSG, result.err)
           Error: Sorbet returned typechecking errors for `/errors.rb`
             8:0-8:11: Not enough arguments provided for method `Foo#foo`. Expected: `1`, got: `0` (7004)
             5:2-5:5: Expected `String` but found `NilClass` for method result type (7005)
@@ -60,8 +60,8 @@ module Spoom
           adef = ARGV.first
           puts adef
         RB
-        out, _ = @project.bundle_exec("spoom lsp --no-color defs lib/defs.rb 3 6")
-        assert_equal(<<~MSG, out)
+        result = @project.bundle_exec("spoom lsp --no-color defs lib/defs.rb 3 6")
+        assert_equal(<<~MSG, result.out)
           Definitions for `lib/defs.rb:3:6`:
             * /lib/defs.rb:3:7-3:17
         MSG
@@ -71,8 +71,8 @@ module Spoom
 
       def test_list_hover_empty
         @project.write("lib/hover.rb")
-        out, _ = @project.bundle_exec("spoom lsp --no-color hover lib/hover.rb 0 0")
-        assert_equal(<<~MSG, out)
+        result = @project.bundle_exec("spoom lsp --no-color hover lib/hover.rb 0 0")
+        assert_equal(<<~MSG, result.out)
           Hovering `lib/hover.rb:0:0`:
           <no data>
         MSG
@@ -84,8 +84,8 @@ module Spoom
 
           class HoverTest; end
         RB
-        out, _ = @project.bundle_exec("spoom lsp --no-color hover lib/hover.rb 2 12")
-        assert_equal(<<~MSG, out)
+        result = @project.bundle_exec("spoom lsp --no-color hover lib/hover.rb 2 12")
+        assert_equal(<<~MSG, result.out)
           Hovering `lib/hover.rb:2:12`:
           T.class_of(HoverTest)
         MSG
@@ -104,8 +104,8 @@ module Spoom
             end
           end
          RB
-        out, _ = @project.bundle_exec("spoom lsp --no-color hover lib/hover.rb 6 8")
-        assert_equal(<<~MSG, out)
+        result = @project.bundle_exec("spoom lsp --no-color hover lib/hover.rb 6 8")
+        assert_equal(<<~MSG, result.out)
           Hovering `lib/hover.rb:6:8`:
           sig {params(a: Integer).returns(String)}
           def foo(a); end
@@ -125,8 +125,8 @@ module Spoom
             end
           end
         RB
-        out, _ = @project.bundle_exec("spoom lsp --no-color hover lib/hover.rb 6 11")
-        assert_equal(<<~MSG, out)
+        result = @project.bundle_exec("spoom lsp --no-color hover lib/hover.rb 6 11")
+        assert_equal(<<~MSG, result.out)
           Hovering `lib/hover.rb:6:11`:
           Integer
         MSG
@@ -148,8 +148,8 @@ module Spoom
           ht = HoverTest.new
           ht.foo(42)
         RB
-        out, _ = @project.bundle_exec("spoom lsp --no-color hover lib/hover.rb 12 4")
-        assert_equal(<<~MSG, out)
+        result = @project.bundle_exec("spoom lsp --no-color hover lib/hover.rb 12 4")
+        assert_equal(<<~MSG, result.out)
           Hovering `lib/hover.rb:12:4`:
           sig {params(a: Integer).returns(String)}
           def foo(a); end
@@ -164,8 +164,8 @@ module Spoom
 
           class Test; end
         RB
-        out, _ = @project.bundle_exec("spoom lsp --no-color find Test")
-        assert_equal(<<~MSG, out)
+        result = @project.bundle_exec("spoom lsp --no-color find Test")
+        assert_equal(<<~MSG, result.out)
           Symbols matching `Test`:
             class Test (/lib/find.rb:2:0-2:10)
         MSG
@@ -182,8 +182,8 @@ module Spoom
           ref.sub!("name", "Alex")
           puts ref
         RB
-        out, _ = @project.bundle_exec("spoom lsp --no-color refs lib/refs.rb 2 1")
-        assert_equal(<<~MSG, out)
+        result = @project.bundle_exec("spoom lsp --no-color refs lib/refs.rb 2 1")
+        assert_equal(<<~MSG, result.out)
           References to `lib/refs.rb:2:1`:
             * /lib/refs.rb:2:0-2:3
             * /lib/refs.rb:3:0-3:3
@@ -211,8 +211,8 @@ module Spoom
           y = SigsTest.new
           y.bar(42)
         RB
-        out, _ = @project.bundle_exec("spoom lsp --no-color sigs lib/sigs.rb 12 4")
-        assert_equal(<<~MSG, out)
+        result = @project.bundle_exec("spoom lsp --no-color sigs lib/sigs.rb 12 4")
+        assert_equal(<<~MSG, result.out)
           Signature for `lib/sigs.rb:12:4`:
             * SigsTest#bar(a: Integer, <blk>: T.untyped)
         MSG
@@ -244,8 +244,8 @@ module Spoom
           module OtherModule; end
           class OtherClass; end
         RB
-        out, _ = @project.bundle_exec("spoom lsp --no-color symbols lib/symbols.rb")
-        assert_equal(<<~MSG, out)
+        result = @project.bundle_exec("spoom lsp --no-color symbols lib/symbols.rb")
+        assert_equal(<<~MSG, result.out)
           Symbols from `lib/symbols.rb`:
             module Symbols (2:0-2:14)
               class A (3:2-3:9)
@@ -273,8 +273,8 @@ module Spoom
           a = SomeType.new
           puts a
         RB
-        out, _ = @project.bundle_exec("spoom lsp --no-color types lib/types.rb 5 5")
-        assert_equal(<<~MSG, out)
+        result = @project.bundle_exec("spoom lsp --no-color types lib/types.rb 5 5")
+        assert_equal(<<~MSG, result.out)
           Type for `lib/types.rb:5:5`:
             * /lib/types.rb:2:6-2:14
         MSG
@@ -289,8 +289,8 @@ module Spoom
           class Test; end
         RB
         project = spoom_project("test_lsp_with_path_option_2")
-        out, _ = project.bundle_exec("spoom lsp -p #{@project.path} --no-color find Test")
-        assert_equal(<<~MSG, out)
+        result = project.bundle_exec("spoom lsp -p #{@project.path} --no-color find Test")
+        assert_equal(<<~MSG, result.out)
           Symbols matching `Test`:
             class Test (/lib/find.rb:2:0-2:10)
         MSG

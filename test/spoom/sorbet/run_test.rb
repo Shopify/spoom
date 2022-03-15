@@ -23,8 +23,8 @@ module Spoom
           gem 'sorbet'
         GEM
         Bundler.with_unbundled_env do
-          _, _, status = @project.bundle_install
-          assert(status)
+          result = @project.bundle_install
+          assert(result.status)
 
           result = Spoom::Sorbet.srb(path: @project.path, capture_err: true)
           assert_equal(<<~OUT, result.out)
@@ -38,8 +38,8 @@ module Spoom
       def test_run_srb_from_bundler_not_found
         @project.gemfile("source 'https://rubygems.org'")
         Bundler.with_unbundled_env do
-          _, _, status = @project.bundle_install
-          assert(status)
+          result = @project.bundle_install
+          assert(result.status)
 
           result = Spoom::Sorbet.srb(path: @project.path, capture_err: true)
           refute(result.status)

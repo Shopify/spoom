@@ -65,8 +65,8 @@ module Spoom
       end
 
       def test_display_metrics
-        out, _ = @project.bundle_exec("spoom coverage snapshot")
-        out = censor_sorbet_version(out) if out
+        result = @project.bundle_exec("spoom coverage snapshot")
+        out = censor_sorbet_version(result.out)
         assert_equal(<<~MSG, out)
           Sorbet static: X.X.XXXX
 
@@ -93,10 +93,10 @@ module Spoom
 
       def test_snapshot_outside_sorbet_dir
         @project.remove("sorbet/config")
-        out, err, status = @project.bundle_exec("spoom coverage snapshot --no-color")
-        assert_empty(out)
-        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", err.lines.first.chomp)
-        refute(status)
+        result = @project.bundle_exec("spoom coverage snapshot --no-color")
+        assert_empty(result.out)
+        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", result.err.lines.first.chomp)
+        refute(result.status)
       end
 
       def test_display_metrics_do_not_show_errors
@@ -104,8 +104,8 @@ module Spoom
           # typed: true
           A3.error.error.error
         RB
-        out, _ = @project.bundle_exec("spoom coverage snapshot")
-        out = censor_sorbet_version(out) if out
+        result = @project.bundle_exec("spoom coverage snapshot")
+        out = censor_sorbet_version(result.out)
         assert_equal(<<~MSG, out)
           Sorbet static: X.X.XXXX
 
@@ -131,8 +131,8 @@ module Spoom
       end
 
       def test_display_metrics_can_exclude_rbi_metrics
-        out, _ = @project.bundle_exec("spoom coverage snapshot --no-rbi")
-        out = censor_sorbet_version(out) if out
+        result = @project.bundle_exec("spoom coverage snapshot --no-rbi")
+        out = censor_sorbet_version(result.out)
         assert_equal(<<~MSG, out)
           Sorbet static: X.X.XXXX
 
@@ -157,21 +157,21 @@ module Spoom
       end
 
       def test_save_snapshot
-        _, _, status = @project.bundle_exec("spoom coverage snapshot --save")
-        assert(status)
+        result = @project.bundle_exec("spoom coverage snapshot --save")
+        assert(result.status)
         assert_equal(1, Dir.glob("#{@project.path}/spoom_data/*.json").size)
       end
 
       def test_save_snapshot_with_custom_dir
-        _, _, status = @project.bundle_exec("spoom coverage snapshot --save data")
-        assert(status)
+        result = @project.bundle_exec("spoom coverage snapshot --save data")
+        assert(result.status)
         assert_equal(1, Dir.glob("#{@project.path}/data/*.json").size)
       end
 
       def test_display_metrics_with_path_option
         project = spoom_project("test_display_metrics_with_path_option_2")
-        out, _ = project.bundle_exec("spoom coverage snapshot -p #{@project.path}")
-        out = censor_sorbet_version(out) if out
+        result = project.bundle_exec("spoom coverage snapshot -p #{@project.path}")
+        out = censor_sorbet_version(result.out)
         assert_equal(<<~MSG, out)
           Sorbet static: X.X.XXXX
 
@@ -199,18 +199,18 @@ module Spoom
 
       def test_timeline_outside_sorbet_dir
         @project.remove("sorbet/config")
-        out, err, status = @project.bundle_exec("spoom coverage timeline --no-color")
-        assert_empty(out)
-        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", err.lines.first.chomp)
-        refute(status)
+        result = @project.bundle_exec("spoom coverage timeline --no-color")
+        assert_empty(result.out)
+        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", result.err.lines.first.chomp)
+        refute(result.status)
       end
 
       def test_timeline_one_commit
         @project.git_init
         @project.commit
-        out, err, status = @project.bundle_exec("spoom coverage timeline --no-color")
-        assert(status)
-        out&.gsub!(/commit `[a-f0-9]+` - \d{4}-\d{2}-\d{2}/, "COMMIT")
+        result = @project.bundle_exec("spoom coverage timeline --no-color")
+        assert(result.status)
+        out = result.out.gsub!(/commit `[a-f0-9]+` - \d{4}-\d{2}-\d{2}/, "COMMIT")
         assert_equal(<<~OUT, out)
           Analyzing COMMIT (1 / 1)
             Sorbet static: 0.5.0000
@@ -234,15 +234,15 @@ module Spoom
               untyped: 1 (11%)
 
         OUT
-        assert_equal("", err)
+        assert_equal("", result.err)
         assert_equal(0, Dir.glob("#{@project.path}/spoom_data/*.json").size)
       end
 
       def test_timeline_multiple_commits
         create_git_history
-        out, err, status = @project.bundle_exec("spoom coverage timeline --no-color")
-        assert(status)
-        out&.gsub!(/commit `[a-f0-9]+` - \d{4}-\d{2}-\d{2}/, "COMMIT")
+        result = @project.bundle_exec("spoom coverage timeline --no-color")
+        assert(result.status)
+        out = result.out.gsub!(/commit `[a-f0-9]+` - \d{4}-\d{2}-\d{2}/, "COMMIT")
         assert_equal(<<~OUT, out)
           Analyzing COMMIT (1 / 3)
             Sorbet static: 0.5.0000
@@ -309,15 +309,15 @@ module Spoom
               typed: 7 (100%)
 
         OUT
-        assert_equal("", err)
+        assert_equal("", result.err)
         assert_equal(0, Dir.glob("#{@project.path}/spoom_data/*.json").size)
       end
 
       def test_timeline_multiple_commits_between_dates
         create_git_history
-        out, err, status = @project.bundle_exec("spoom coverage timeline --from 2010-01-02 --to 2010-02-02 --no-color")
-        assert(status)
-        out&.gsub!(/commit `[a-f0-9]+` - \d{4}-\d{2}-\d{2}/, "COMMIT")
+        result = @project.bundle_exec("spoom coverage timeline --from 2010-01-02 --to 2010-02-02 --no-color")
+        assert(result.status)
+        out = result.out.gsub!(/commit `[a-f0-9]+` - \d{4}-\d{2}-\d{2}/, "COMMIT")
         assert_equal(<<~OUT, out)
           Analyzing COMMIT (1 / 2)
             Sorbet static: 0.5.0000
@@ -361,42 +361,42 @@ module Spoom
               typed: 7 (100%)
 
         OUT
-        assert_equal("", err)
+        assert_equal("", result.err)
         assert_equal(0, Dir.glob("#{@project.path}/spoom_data/*.json").size)
       end
 
       def test_timeline_multiple_commits_and_save_json
         create_git_history
         assert_equal(0, Dir.glob("#{@project.path}/spoom_data/*.json").size)
-        _, err, status = @project.bundle_exec("spoom coverage timeline --save data")
-        assert(status)
-        assert_equal("", err)
+        result = @project.bundle_exec("spoom coverage timeline --save data")
+        assert(result.status)
+        assert_equal("", result.err)
         assert_equal(3, Dir.glob("#{@project.path}/data/*.json").size)
       end
 
       def test_timeline_with_path_option
         create_git_history
         project = spoom_project("test_timeline_with_path_option_2")
-        _, err, status = project.bundle_exec("spoom coverage timeline --save -p #{@project.path}")
-        assert(status)
-        assert_equal("", err)
+        result = project.bundle_exec("spoom coverage timeline --save -p #{@project.path}")
+        assert(result.status)
+        assert_equal("", result.err)
         assert_equal(3, Dir.glob("#{project.path}/spoom_data/*.json").size)
         project.destroy
       end
 
       def test_report_outside_sorbet_dir
         @project.remove("sorbet/config")
-        out, err, status = @project.bundle_exec("spoom coverage report --no-color")
-        assert_empty(out)
-        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", err.lines.first.chomp)
-        refute(status)
+        result = @project.bundle_exec("spoom coverage report --no-color")
+        assert_empty(result.out)
+        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", result.err.lines.first.chomp)
+        refute(result.status)
       end
 
       def test_report_without_any_data
         create_git_history
-        _, err, status = @project.bundle_exec("spoom coverage report --no-color")
-        refute(status)
-        assert_equal(<<~ERR, err)
+        result = @project.bundle_exec("spoom coverage report --no-color")
+        refute(result.status)
+        assert_equal(<<~ERR, result.err)
           Error: No snapshot files found in `spoom_data`
 
           If you already generated snapshot files under another directory use spoom coverage report PATH.
@@ -408,14 +408,13 @@ module Spoom
       def test_report_generate_html_file
         create_git_history
         @project.bundle_exec("spoom coverage timeline --save")
-        out, _, status = @project.bundle_exec("spoom coverage report --no-color")
-        out = T.must(out)
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom coverage report --no-color")
+        assert_equal(<<~OUT, result.out)
           Report generated under `spoom_report.html`
 
           Use `spoom coverage open` to open it.
         OUT
-        assert(status)
+        assert(result.status)
         assert(File.exist?("#{@project.path}/spoom_report.html"))
       end
 
