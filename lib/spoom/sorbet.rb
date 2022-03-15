@@ -26,7 +26,7 @@ module Spoom
           path: String,
           capture_err: T::Boolean,
           sorbet_bin: T.nilable(String)
-        ).returns([String, T::Boolean, Integer])
+        ).returns(ExecResult)
       end
       def srb(*arg, path: '.', capture_err: false, sorbet_bin: nil)
         if sorbet_bin
@@ -34,7 +34,7 @@ module Spoom
         else
           arg.prepend("bundle", "exec", "srb")
         end
-        T.unsafe(Spoom).exec(*arg, path: path, capture_err: capture_err)
+        Spoom.exec(*T.unsafe(arg), path: path, capture_err: capture_err)
       end
 
       sig do
@@ -43,11 +43,11 @@ module Spoom
           path: String,
           capture_err: T::Boolean,
           sorbet_bin: T.nilable(String)
-        ).returns([String, T::Boolean, Integer])
+        ).returns(ExecResult)
       end
       def srb_tc(*arg, path: '.', capture_err: false, sorbet_bin: nil)
         arg.prepend("tc") unless sorbet_bin
-        T.unsafe(self).srb(*arg, path: path, capture_err: capture_err, sorbet_bin: sorbet_bin)
+        srb(*T.unsafe(arg), path: path, capture_err: capture_err, sorbet_bin: sorbet_bin)
       end
 
       # List all files typechecked by Sorbet from its `config`
@@ -69,16 +69,16 @@ module Spoom
         ).returns(T.nilable(String))
       end
       def srb_version(*arg, path: '.', capture_err: false, sorbet_bin: nil)
-        out, res = T.unsafe(self).srb_tc(
+        result = T.let(T.unsafe(self).srb_tc(
           "--no-config",
           "--version",
           *arg,
           path: path,
           capture_err: capture_err,
           sorbet_bin: sorbet_bin
-        )
-        return nil unless res
-        out.split(" ")[2]
+        ), ExecResult)
+        return nil unless result.status
+        result.out.split(" ")[2]
       end
 
       sig do

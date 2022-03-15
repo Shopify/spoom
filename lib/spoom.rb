@@ -11,20 +11,26 @@ module Spoom
 
   class Error < StandardError; end
 
+  class ExecResult < T::Struct
+    const :out, String
+    const :err, String, default: ""
+    const :status, T::Boolean
+    const :exit_code, Integer
+  end
+
   sig do
     params(
       cmd: String,
       arg: String,
       path: String,
       capture_err: T::Boolean
-    ).returns([String, T::Boolean, Integer])
+    ).returns(ExecResult)
   end
   def self.exec(cmd, *arg, path: '.', capture_err: false)
     method = capture_err ? "popen2e" : "popen2"
     Open3.send(method, [cmd, *arg].join(" "), chdir: path) do |_, stdout, thread|
-      out = stdout.read
       status = T.cast(thread.value, Process::Status)
-      [out, status.success?, status.exitstatus]
+      ExecResult.new(out: stdout.read, status: T.must(status.success?), exit_code: T.must(status.exitstatus))
     end
   end
 end
