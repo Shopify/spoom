@@ -35,33 +35,33 @@ module Spoom
         sorbet = options[:sorbet]
 
         unless limit || code || sort
-          output, status, exit_code = T.unsafe(Spoom::Sorbet).srb_tc(
+          result = T.unsafe(Spoom::Sorbet).srb_tc(
             *arg,
             path: path,
             capture_err: false,
             sorbet_bin: sorbet
           )
 
-          check_sorbet_segfault(exit_code)
-          say_error(output, status: nil, nl: false)
-          exit(status)
+          check_sorbet_segfault(result.code)
+          say_error(result.err, status: nil, nl: false)
+          exit(result.status)
         end
 
-        output, status, exit_code = T.unsafe(Spoom::Sorbet).srb_tc(
+        result = T.unsafe(Spoom::Sorbet).srb_tc(
           *arg,
           path: path,
           capture_err: true,
           sorbet_bin: sorbet
         )
 
-        check_sorbet_segfault(exit_code)
+        check_sorbet_segfault(result.exit_code)
 
-        if status
-          say_error(output, status: nil, nl: false)
+        if result.status
+          say_error(result.err, status: nil, nl: false)
           exit(0)
         end
 
-        errors = Spoom::Sorbet::Errors::Parser.parse_string(output)
+        errors = Spoom::Sorbet::Errors::Parser.parse_string(result.err)
         errors_count = errors.size
 
         errors = case sort

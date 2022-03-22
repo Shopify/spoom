@@ -18,9 +18,9 @@ module Spoom
       end
 
       def test_exec_with_unexisting_path
-        _, err, status = Spoom::Git.exec("git ls", path: "/path/not/found")
-        assert_equal("Error: `/path/not/found` is not a directory.", err)
-        refute(status)
+        result = Spoom::Git.exec("git ls", path: "/path/not/found")
+        assert_equal("Error: `/path/not/found` is not a directory.", result.err)
+        refute(result.status)
       end
 
       def test_last_commit_if_not_git_dir
@@ -68,34 +68,34 @@ module Spoom
       end
 
       def test_git_diff
-        assert_equal("", Spoom::Git.diff("HEAD", path: @project.path).first)
+        assert_equal("", Spoom::Git.diff("HEAD", path: @project.path).out)
         @project.write("file", "content")
-        assert_equal("", Spoom::Git.diff("HEAD", path: @project.path).first)
+        assert_equal("", Spoom::Git.diff("HEAD", path: @project.path).out)
         @project.commit
-        assert_equal("", Spoom::Git.diff("HEAD", path: @project.path).first)
+        assert_equal("", Spoom::Git.diff("HEAD", path: @project.path).out)
         @project.write("file", "content2")
-        assert_match(/content2/, Spoom::Git.diff("HEAD", path: @project.path).first)
+        assert_match(/content2/, Spoom::Git.diff("HEAD", path: @project.path).out)
         @project.commit
-        assert_equal("", Spoom::Git.diff("HEAD", path: @project.path).first)
+        assert_equal("", Spoom::Git.diff("HEAD", path: @project.path).out)
       end
 
       def test_git_log
         @project.write("file")
         @project.commit(date: Time.parse("1987-02-05 09:00:00 +0000"))
-        log = Spoom::Git.log("--format='format:%ad'", path: @project.path).first
+        log = Spoom::Git.log("--format='format:%ad'", path: @project.path).out
         assert_equal("Thu Feb 5 09:00:00 1987 +0000", log)
       end
 
       def test_git_rev_parse
         @project.write("file")
         @project.commit
-        assert_match(/^[a-f0-9]+$/, Spoom::Git.rev_parse("main", path: @project.path).first.strip)
+        assert_match(/^[a-f0-9]+$/, Spoom::Git.rev_parse("main", path: @project.path).out.strip)
       end
 
       def test_git_show
         @project.write("file")
         @project.commit(date: Time.parse("1987-02-05 09:00:00"))
-        assert_match(/Thu Feb 5 09:00:00 1987/, Spoom::Git.show(path: @project.path).first)
+        assert_match(/Thu Feb 5 09:00:00 1987/, Spoom::Git.show(path: @project.path).out)
       end
 
       def test_sorbet_intro_not_found

@@ -19,18 +19,18 @@ module Spoom
       PROJECT = "project"
 
       def test_display_current_version_short_option
-        out, _ = @project.bundle_exec("spoom -v")
-        assert_equal("Spoom v#{Spoom::VERSION}", out&.strip)
+        result = @project.bundle_exec("spoom -v")
+        assert_equal("Spoom v#{Spoom::VERSION}", result.out.strip)
       end
 
       def test_display_current_version_long_option
-        out, _ = @project.bundle_exec("spoom --version")
-        assert_equal("Spoom v#{Spoom::VERSION}", out&.strip)
+        result = @project.bundle_exec("spoom --version")
+        assert_equal("Spoom v#{Spoom::VERSION}", result.out.strip)
       end
 
       def test_display_help_long_option
-        out, _ = @project.bundle_exec("spoom --help")
-        assert_equal(<<~OUT, out)
+        result = @project.bundle_exec("spoom --help")
+        assert_equal(<<~OUT, result.out)
           Commands:
             spoom --version       # Show version
             spoom bump            # Bump Sorbet sigils from `false` to `true` when no e...
@@ -51,12 +51,12 @@ module Spoom
       end
 
       def test_display_files_returns_1_if_no_file
-        out, err, status = @project.bundle_exec("spoom files --no-color")
-        assert_equal(<<~MSG, err)
+        result = @project.bundle_exec("spoom files --no-color")
+        assert_equal(<<~MSG, result.err)
           Error: No file matching `sorbet/config`
         MSG
-        assert_empty(out)
-        refute(status)
+        assert_empty(result.out)
+        refute(result.status)
       end
 
       def test_display_files_from_config
@@ -66,8 +66,8 @@ module Spoom
         @project.write("lib/d.rb", "# typed: strict")
         @project.write("lib/e.rb", "# typed: strong")
         @project.write("lib/f.rb", "# typed: __STDLIB_INTERNAL")
-        out, _ = @project.bundle_exec("spoom files --no-color")
-        assert_equal(<<~MSG, out)
+        result = @project.bundle_exec("spoom files --no-color")
+        assert_equal(<<~MSG, result.out)
           lib/
             c.rb (true)
             d.rb (strict)
@@ -90,8 +90,8 @@ module Spoom
           .
           --ignore=test
         CFG
-        out, _ = @project.bundle_exec("spoom files --no-color")
-        assert_equal(<<~MSG, out)
+        result = @project.bundle_exec("spoom files --no-color")
+        assert_equal(<<~MSG, result.out)
           lib/
             c.rb (true)
             d.rb (strict)
@@ -113,8 +113,8 @@ module Spoom
           --allowed-extension=.ru
           --allowed-extension=.rb
         CFG
-        out, _ = @project.bundle_exec("spoom files --no-color")
-        assert_equal(<<~MSG, out)
+        result = @project.bundle_exec("spoom files --no-color")
+        assert_equal(<<~MSG, result.out)
           lib/
             d.ru (strict)
             e.rb (strong)
@@ -129,8 +129,8 @@ module Spoom
         project.write("lib/file1.rb", "# typed: true")
         project.write("lib/file2.rb", "# typed: true")
 
-        out, _ = @project.bundle_exec("spoom files --no-color --path #{project.path}")
-        assert_equal(<<~MSG, out)
+        result = @project.bundle_exec("spoom files --no-color --path #{project.path}")
+        assert_equal(<<~MSG, result.out)
           lib/
             file1.rb (true)
             file2.rb (true)
@@ -144,8 +144,8 @@ module Spoom
         @project.write("lib/d.rb", "# typed: strict")
         @project.write("lib/e.rb", "# typed: strong")
         @project.write("lib/f.rb", "# typed: __STDLIB_INTERNAL")
-        out, _ = @project.bundle_exec("spoom files --no-color --no-tree")
-        assert_equal(<<~MSG, out)
+        result = @project.bundle_exec("spoom files --no-color --no-tree")
+        assert_equal(<<~MSG, result.out)
           lib/c.rb
           lib/d.rb
           lib/e.rb
@@ -162,14 +162,14 @@ module Spoom
         @project.write("lib/d.rb", "# typed: strict")
         @project.write("lib/e.rbi", "# typed: strong")
         @project.write("lib/f.rbi", "# typed: __STDLIB_INTERNAL")
-        out, _ = @project.bundle_exec("spoom files --no-color --no-rbi")
-        assert_equal(<<~MSG, out)
+        result = @project.bundle_exec("spoom files --no-color --no-rbi")
+        assert_equal(<<~MSG, result.out)
           lib/
             c.rb (true)
             d.rb (strict)
         MSG
-        out, _ = @project.bundle_exec("spoom files --no-color --no-tree --no-rbi")
-        assert_equal(<<~MSG, out)
+        result = @project.bundle_exec("spoom files --no-color --no-tree --no-rbi")
+        assert_equal(<<~MSG, result.out)
           lib/c.rb
           lib/d.rb
         MSG

@@ -23,39 +23,39 @@ module Spoom
           gem 'sorbet'
         GEM
         Bundler.with_unbundled_env do
-          _, _, status = @project.bundle_install
-          assert(status)
+          result = @project.bundle_install
+          assert(result.status)
 
-          out, status, exit_code = Spoom::Sorbet.srb(path: @project.path, capture_err: true)
-          assert_equal(<<~OUT, out)
+          result = Spoom::Sorbet.srb(path: @project.path, capture_err: true)
+          assert_equal(<<~OUT, result.err)
             No errors! Great job.
           OUT
-          assert(status)
-          assert_equal(0, exit_code)
+          assert(result.status)
+          assert_equal(0, result.exit_code)
         end
       end
 
       def test_run_srb_from_bundler_not_found
         @project.gemfile("source 'https://rubygems.org'")
         Bundler.with_unbundled_env do
-          _, _, status = @project.bundle_install
-          assert(status)
+          result = @project.bundle_install
+          assert(result.status)
 
-          _, status, exit_code = Spoom::Sorbet.srb(path: @project.path, capture_err: true)
-          refute(status)
-          refute_equal(0, exit_code)
+          result = Spoom::Sorbet.srb(path: @project.path, capture_err: true)
+          refute(result.status)
+          refute_equal(0, result.exit_code)
         end
       end
 
       def test_run_sorbet_from_path
         Bundler.with_unbundled_env do
-          out, status, exit_code = Spoom::Sorbet.srb(
+          result = Spoom::Sorbet.srb(
             "-h",
             path: @project.path,
             capture_err: true,
             sorbet_bin: Spoom::Sorbet::BIN_PATH
           )
-          assert_equal(<<~OUT, out)
+          assert_equal(<<~OUT, result.err)
             Typechecker for Ruby
             Usage:
               sorbet [OPTION...] <path 1> <path 2> ...
@@ -68,23 +68,23 @@ module Spoom
                   --version  Show version
 
           OUT
-          assert(status)
-          assert_equal(0, exit_code)
+          assert(result.status)
+          assert_equal(0, result.exit_code)
         end
       end
 
       def test_run_sorbet_tc_from_path
         Bundler.with_unbundled_env do
-          out, status, exit_code = Spoom::Sorbet.srb_tc(
+          result = Spoom::Sorbet.srb_tc(
             path: @project.path,
             capture_err: true,
             sorbet_bin: Spoom::Sorbet::BIN_PATH
           )
-          assert_equal(<<~OUT, out)
+          assert_equal(<<~OUT, result.err)
             No errors! Great job.
           OUT
-          assert(status)
-          assert_equal(0, exit_code)
+          assert(result.status)
+          assert_equal(0, result.exit_code)
         end
       end
     end
