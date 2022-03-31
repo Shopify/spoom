@@ -512,6 +512,30 @@ module Spoom
           assert_equal("false", Sorbet::Sigils.file_strictness("#{@project.path}/will_segfault.rb"))
         end
       end
+
+      def test_bump_preserve_empty_line
+        @project.write("file1.rb", <<~RB)
+          # typed: false
+
+          class A; end
+        RB
+
+        result = @project.bundle_exec("spoom bump --no-color")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
+          Checking files...
+
+          Bumped `1` file from `false` to `true`:
+           + file1.rb
+        OUT
+        refute(result.status)
+
+        assert_equal(<<~RB, @project.read("file1.rb"))
+          # typed: true
+
+          class A; end
+        RB
+      end
     end
   end
 end
