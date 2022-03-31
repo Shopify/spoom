@@ -25,7 +25,7 @@ module Spoom
         STRICTNESS_INTERNAL,
       ].freeze, T::Array[String])
 
-      SIGIL_REGEXP = T.let(/^#\s*typed\s*:\s*(\w*)$/.freeze, Regexp)
+      SIGIL_REGEXP = T.let(/^#[\ t]*typed[\ t]*:[ \t]*(\w*)[ \t]*/.freeze, Regexp)
 
       # returns the full sigil comment string for the passed strictness
       sig { params(strictness: String).returns(String) }
