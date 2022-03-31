@@ -59,6 +59,7 @@ module Spoom
         Dir.glob("#{@path}/**/*").sort
       end
 
+      # Return the content of the file at `rel_path`
       sig { params(rel_path: String).returns(String) }
       def read(rel_path)
         File.read(absolute_path(rel_path))
