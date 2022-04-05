@@ -220,6 +220,29 @@ module Spoom
         project.destroy
       end
 
+      def test_change_sigil_in_file_with_default_internal_encoding
+        project = spoom_project
+
+        string = <<~RB
+          # typed: true
+
+          puts "À coûté 10€"
+        RB
+
+        old_encoding = Encoding.default_internal
+        project.write("file.rb", string.encode("UTF-8"))
+
+        begin
+          Encoding.default_internal = Encoding::UTF_8
+
+          Sigils.change_sigil_in_file("#{project.path}/file.rb", "strict")
+          assert_equal("strict", Sigils.file_strictness("#{project.path}/file.rb"))
+        ensure
+          Encoding.default_internal = old_encoding
+          project.destroy
+        end
+      end
+
       def test_change_sigil_in_files_false_to_true
         project = spoom_project
         project.write("file1.rb", "# typed: false")

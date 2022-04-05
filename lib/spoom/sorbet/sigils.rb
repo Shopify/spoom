@@ -66,7 +66,7 @@ module Spoom
         content = File.read(path, encoding: Encoding::ASCII_8BIT)
         new_content = update_sigil(content, new_strictness)
 
-        File.write(path, new_content)
+        File.write(path, new_content, encoding: Encoding::ASCII_8BIT)
 
         strictness_in_content(new_content) == new_strictness
       end
