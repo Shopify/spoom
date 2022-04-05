@@ -37,5 +37,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency("sorbet", ">= 0.5.9204")
   spec.add_dependency("thor", ">= 0.19.2")
 
-  spec.required_ruby_version = ">= 2.3.7"
+  spec.required_ruby_version = ">= 2.7.0"
 end
