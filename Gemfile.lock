@@ -100,7 +100,7 @@ GEM
       spoom
       thor (>= 0.19.2)
       yard-sorbet
-    thor (1.1.0)
+    thor (1.2.1)
     thread_safe (0.3.6)
     unicode-display_width (1.7.0)
     unparser (0.5.5)
@@ -133,4 +133,4 @@ DEPENDENCIES
   tapioca
 
 BUNDLED WITH
-   2.2.27
+   2.3.10
