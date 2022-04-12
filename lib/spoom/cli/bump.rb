@@ -58,10 +58,10 @@ module Spoom
         say("Checking files...")
 
         directory = File.expand_path(directory)
-        files_to_bump = Sorbet::Sigils.files_with_sigil_strictness(directory, from)
 
-        files_from_config = config_files(path: exec_path)
-        files_to_bump.select! { |file| files_from_config.include?(file) }
+        files_to_bump = config_files(path: exec_path)
+        files_to_bump.select! { |file|  file.start_with?(directory) && !file.end_with?(".rbi") }
+        files_to_bump.select! { |file|  Sorbet::Sigils.file_has_strictness?(file, from) }
 
         if only
           list = File.read(only).lines.map { |file| File.expand_path(file.strip) }

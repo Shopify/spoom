@@ -60,6 +60,12 @@ module Spoom
         strictness_in_content(content)
       end
 
+      # does the file at `path` have the sigil `strictness`?
+      sig { params(path: T.any(String, Pathname), strictness: String).returns(T::Boolean) }
+      def self.file_has_strictness?(path, strictness)
+        file_strictness(path) == strictness
+      end
+
       # changes the sigil in the file at the passed path to the specified new strictness
       sig { params(path: T.any(String, Pathname), new_strictness: String).returns(T::Boolean) }
       def self.change_sigil_in_file(path, new_strictness)
