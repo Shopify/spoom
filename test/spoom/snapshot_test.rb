@@ -54,7 +54,7 @@ module Spoom
         assert_equal(9, snapshot.classes)
         assert_equal(1, snapshot.methods_with_sig)
         assert_equal(13, snapshot.methods_without_sig)
-        assert_equal(8, snapshot.calls_typed)
+        assert_equal(6, snapshot.calls_typed)
         assert_equal(1, snapshot.calls_untyped)
         project.destroy
       end
@@ -69,7 +69,7 @@ module Spoom
         assert_equal(5, snapshot.classes)
         assert_equal(1, snapshot.methods_with_sig)
         assert_equal(8, snapshot.methods_without_sig)
-        assert_equal(8, snapshot.calls_typed)
+        assert_equal(6, snapshot.calls_typed)
         assert_equal(1, snapshot.calls_untyped)
         project.destroy
       end
