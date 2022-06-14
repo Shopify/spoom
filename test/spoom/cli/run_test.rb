@@ -79,6 +79,25 @@ module Spoom
         refute(result.status)
       end
 
+      def test_display_errors_with_sort_default_with_custom_url
+        @project.sorbet_config(<<~CONFIG)
+          .
+          --error-url-base=https://custom#
+        CONFIG
+        result = @project.bundle_exec("spoom tc --no-color -s")
+        assert_equal(<<~MSG, result.err)
+          5002 - errors/errors.rb:5: Unable to resolve constant `Bar`
+          5002 - errors/errors.rb:5: Unable to resolve constant `C`
+          7003 - errors/errors.rb:5: Method `params` does not exist on `T.class_of(Foo)`
+          7003 - errors/errors.rb:5: Method `sig` does not exist on `T.class_of(Foo)`
+          7004 - errors/errors.rb:10: Wrong number of arguments for constructor. Expected: `0`, got: `1`
+          7003 - errors/errors.rb:11: Method `c` does not exist on `T.class_of(<root>)`
+          7004 - errors/errors.rb:11: Too many arguments provided for method `Foo#foo`. Expected: `1`, got: `2`
+          Errors: 7
+        MSG
+        refute(result.status)
+      end
+
       def test_display_errors_with_sort_loc
         result = @project.bundle_exec("spoom tc --no-color -s loc")
         assert_equal(<<~MSG, result.err)
