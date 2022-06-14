@@ -401,7 +401,7 @@ module Spoom
 
           If you already generated snapshot files under another directory use spoom coverage report PATH.
 
-          To generate snapshot files run spoom coverage timeline --save-dir spoom_data.
+          To generate snapshot files run spoom coverage timeline --save.
         ERR
       end
 
