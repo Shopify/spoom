@@ -74,7 +74,8 @@ module Spoom
         result = @project.bundle_exec("spoom lsp --no-color hover lib/hover.rb 0 0")
         assert_equal(<<~MSG, result.out)
           Hovering `lib/hover.rb:0:0`:
-          <no data>
+          This file is `# typed: false`.
+          Hover, Go To Definition, and other features are disabled in this file.
         MSG
       end
 
