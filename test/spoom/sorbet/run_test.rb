@@ -60,10 +60,10 @@ module Spoom
             Usage:
               sorbet [OPTION...] <path 1> <path 2> ...
 
-              -e, string     Parse an inline ruby string (default: "")
+              -e string      Parse an inline ruby string (default: "")
               -q, --quiet    Silence all non-critical errors
               -v, --verbose  Verbosity level [0-3]
-              -h,            Show short help
+              -h             Show short help
                   --help     Show long help
                   --version  Show version
 
