@@ -47,8 +47,10 @@ module Spoom
           exit(result.status)
         end
 
+        error_url_base = Spoom::Sorbet::Errors::DEFAULT_ERROR_URL_BASE
         result = T.unsafe(Spoom::Sorbet).srb_tc(
           *arg,
+          "--error-url-base=#{error_url_base}",
           path: path,
           capture_err: true,
           sorbet_bin: sorbet
@@ -61,7 +63,7 @@ module Spoom
           exit(0)
         end
 
-        errors = Spoom::Sorbet::Errors::Parser.parse_string(result.err)
+        errors = Spoom::Sorbet::Errors::Parser.parse_string(result.err, error_url_base: error_url_base)
         errors_count = errors.size
 
         errors = case sort
