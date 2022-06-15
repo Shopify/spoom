@@ -67,6 +67,8 @@ module Spoom
         errors = Spoom::Sorbet::Errors::Parser.parse_string(result.err, error_url_base: error_url_base)
         errors_count = errors.size
 
+        errors = errors.select { |e| e.code == code } if code
+
         errors = case sort
         when SORT_CODE
           Spoom::Sorbet::Errors.sort_errors_by_code(errors)
@@ -76,7 +78,6 @@ module Spoom
           errors # preserve natural sort
         end
 
-        errors = errors.select { |e| e.code == code } if code
         errors = T.must(errors.slice(0, limit)) if limit
 
         lines = errors.map { |e| format_error(e, format || DEFAULT_FORMAT) }
