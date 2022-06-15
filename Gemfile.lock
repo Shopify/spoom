@@ -31,7 +31,7 @@ GEM
     memoizable (0.4.2)
       thread_safe (~> 0.3, >= 0.3.1)
     method_source (1.0.0)
-    minitest (5.14.3)
+    minitest (5.15.0)
     minitest-reporters (1.4.3)
       ansi
       builder
