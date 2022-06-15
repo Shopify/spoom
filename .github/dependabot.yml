@@ -8,7 +8,6 @@ updates:
       - "Shopify/sorbet"
     labels:
       - "dependencies"
-      - "ruby"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -17,4 +16,3 @@ updates:
       - "Shopify/sorbet"
     labels:
       - "dependencies"
-      - "gh-actions"
