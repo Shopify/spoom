@@ -216,6 +216,54 @@ module Spoom
         refute(result.status)
       end
 
+      def test_display_errors_from_path
+        @project = spoom_project
+        @project.write("path_a/file1.rb", <<~RB)
+          # typed: true
+          foo
+        RB
+        @project.write("path_a/file2.rb", <<~RB)
+          # typed: true
+          bar
+        RB
+        @project.write("path_b/file1.rb", <<~RB)
+          # typed: true
+          baz
+        RB
+
+        result = @project.bundle_exec("spoom tc --no-color")
+        assert_equal(<<~MSG, result.err)
+          7003 - path_a/file1.rb:2: Method `foo` does not exist on `T.class_of(<root>)`
+          7003 - path_a/file2.rb:2: Method `bar` does not exist on `T.class_of(<root>)`
+          7003 - path_b/file1.rb:2: Method `baz` does not exist on `T.class_of(<root>)`
+          Errors: 3
+        MSG
+        refute(result.status)
+
+        result = @project.bundle_exec("spoom tc --no-color path_a/file1.rb")
+        assert_equal(<<~MSG, result.err)
+          7003 - path_a/file1.rb:2: Method `foo` does not exist on `T.class_of(<root>)`
+          Errors: 1 shown, 3 total
+        MSG
+        refute(result.status)
+
+        result = @project.bundle_exec("spoom tc --no-color path_a")
+        assert_equal(<<~MSG, result.err)
+          7003 - path_a/file1.rb:2: Method `foo` does not exist on `T.class_of(<root>)`
+          7003 - path_a/file2.rb:2: Method `bar` does not exist on `T.class_of(<root>)`
+          Errors: 2 shown, 3 total
+        MSG
+        refute(result.status)
+
+        result = @project.bundle_exec("spoom tc --no-color path_a/file1.rb path_b/file1.rb")
+        assert_equal(<<~MSG, result.err)
+          7003 - path_a/file1.rb:2: Method `foo` does not exist on `T.class_of(<root>)`
+          7003 - path_b/file1.rb:2: Method `baz` does not exist on `T.class_of(<root>)`
+          Errors: 2 shown, 3 total
+        MSG
+        refute(result.status)
+      end
+
       def test_display_errors_with_path_option
         project = spoom_project("test_display_errors_with_path_option_2")
         result = project.bundle_exec("spoom tc --no-color -s code -l 1 -p #{@project.path}")

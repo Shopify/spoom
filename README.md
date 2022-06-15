@@ -121,6 +121,12 @@ Hide the `Errors: X` at the end of the list:
 $ spoom tc --no-count
 ```
 
+List only the errors comming from specific directories or files:
+
+```
+$ spoom tc file1.rb path1/ path2/
+```
+
 #### Typing coverage
 
 Show metrics about the project contents and the typing coverage:

@@ -23,7 +23,7 @@ module Spoom
       option :count, type: :boolean, default: true, desc: "Show errors count"
       option :sorbet, type: :string, desc: "Path to custom Sorbet bin"
       option :sorbet_options, type: :string, default: "", desc: "Pass options to Sorbet"
-      def tc
+      def tc(*paths_to_select)
         in_sorbet_project!
 
         path = exec_path
@@ -68,6 +68,12 @@ module Spoom
         errors_count = errors.size
 
         errors = errors.select { |e| e.code == code } if code
+
+        unless paths_to_select.empty?
+          errors.select! do |error|
+            paths_to_select.any? { |path_to_select| error.file&.start_with?(path_to_select) }
+          end
+        end
 
         errors = case sort
         when SORT_CODE
