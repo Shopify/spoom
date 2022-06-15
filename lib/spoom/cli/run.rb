@@ -22,7 +22,8 @@ module Spoom
       option :uniq, type: :boolean, aliases: :u, desc: "Remove duplicated lines"
       option :count, type: :boolean, default: true, desc: "Show errors count"
       option :sorbet, type: :string, desc: "Path to custom Sorbet bin"
-      def tc(*arg)
+      option :sorbet_options, type: :string, default: "", desc: "Pass options to Sorbet"
+      def tc
         in_sorbet_project!
 
         path = exec_path
@@ -36,7 +37,7 @@ module Spoom
 
         unless limit || code || sort
           result = T.unsafe(Spoom::Sorbet).srb_tc(
-            *arg,
+            *options[:sorbet_options].split(" "),
             path: path,
             capture_err: false,
             sorbet_bin: sorbet
@@ -49,7 +50,7 @@ module Spoom
 
         error_url_base = Spoom::Sorbet::Errors::DEFAULT_ERROR_URL_BASE
         result = T.unsafe(Spoom::Sorbet).srb_tc(
-          *arg,
+          *options[:sorbet_options].split(" "),
           "--error-url-base=#{error_url_base}",
           path: path,
           capture_err: true,

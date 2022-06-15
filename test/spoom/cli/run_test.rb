@@ -227,6 +227,15 @@ module Spoom
         project.destroy
       end
 
+      def test_pass_options_to_sorbet
+        result = @project.bundle_exec("spoom tc --no-color --sorbet-options \"--no-config -e 'foo'\"")
+        assert_equal(<<~MSG, result.err)
+          7003 - -e:1: Method `foo` does not exist on `T.class_of(<root>)`
+          Errors: 1
+        MSG
+        refute(result.status)
+      end
+
       def test_display_sorbet_segfault
         @project.gemfile(<<~GEMFILE)
           source "https://rubygems.org"
