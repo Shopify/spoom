@@ -24,7 +24,7 @@ module Spoom
       def self.parse_hash(obj, prefix = DEFAULT_PREFIX)
         obj["metrics"].each_with_object(Hash.new(0)) do |metric, metrics|
           name = metric["name"]
-          name = name.sub(prefix, '')
+          name = name.sub(prefix, "")
           metrics[name] = metric["value"] || 0
         end
       end

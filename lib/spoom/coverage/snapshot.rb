@@ -60,6 +60,7 @@ module Spoom
         if sigils
           Snapshot::STRICTNESSES.each do |strictness|
             next unless sigils.key?(strictness)
+
             snapshot.sigils[strictness] = sigils[strictness]
           end
         end
@@ -119,6 +120,7 @@ module Spoom
         indent
         hash.each do |key, value|
           next unless value > 0
+
           printl("#{key}: #{value}#{percent(value, total)}")
         end
         dedent
@@ -127,6 +129,7 @@ module Spoom
       sig { params(value: T.nilable(Integer), total: T.nilable(Integer)).returns(String) }
       def percent(value, total)
         return "" if value.nil? || total.nil? || total == 0
+
         " (#{(value.to_f * 100.0 / total.to_f).round}%)"
       end
     end

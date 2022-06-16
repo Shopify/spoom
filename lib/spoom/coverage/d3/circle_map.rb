@@ -159,6 +159,7 @@ module Spoom
             if node.children.empty?
               return { name: node.name, strictness: tree_node_strictness(node) }
             end
+
             {
               name: node.name,
               children: node.children.values.map { |n| tree_node_to_json(n) },

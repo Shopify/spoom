@@ -26,8 +26,8 @@ module Spoom
       sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Hover) }
       def self.from_json(json)
         Hover.new(
-          contents: json['contents']['value'],
-          range: json['range'] ? Range.from_json(json['range']) : nil
+          contents: json["contents"]["value"],
+          range: json["range"] ? Range.from_json(json["range"]) : nil
         )
       end
 
@@ -53,8 +53,8 @@ module Spoom
       sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Position) }
       def self.from_json(json)
         Position.new(
-          line: json['line'].to_i,
-          char: json['character'].to_i
+          line: json["line"].to_i,
+          char: json["character"].to_i
         )
       end
 
@@ -79,8 +79,8 @@ module Spoom
       sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Range) }
       def self.from_json(json)
         Range.new(
-          start: Position.from_json(json['start']),
-          end: Position.from_json(json['end'])
+          start: Position.from_json(json["start"]),
+          end: Position.from_json(json["end"])
         )
       end
 
@@ -107,8 +107,8 @@ module Spoom
       sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Location) }
       def self.from_json(json)
         Location.new(
-          uri: json['uri'],
-          range: Range.from_json(json['range'])
+          uri: json["uri"],
+          range: Range.from_json(json["range"])
         )
       end
 
@@ -135,9 +135,9 @@ module Spoom
       sig { params(json: T::Hash[T.untyped, T.untyped]).returns(SignatureHelp) }
       def self.from_json(json)
         SignatureHelp.new(
-          label: json['label'],
-          doc: json['documentation'],
-          params: json['parameters'],
+          label: json["label"],
+          doc: json["documentation"],
+          params: json["parameters"],
         )
       end
 
@@ -145,7 +145,7 @@ module Spoom
       def accept_printer(printer)
         printer.print(label)
         printer.print("(")
-        printer.print(params.map { |l| "#{l['label']}: #{l['documentation']}" }.join(", "))
+        printer.print(params.map { |l| "#{l["label"]}: #{l["documentation"]}" }.join(", "))
         printer.print(")")
       end
 
@@ -167,10 +167,10 @@ module Spoom
       sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Diagnostic) }
       def self.from_json(json)
         Diagnostic.new(
-          range: Range.from_json(json['range']),
-          code: json['code'].to_i,
-          message: json['message'],
-          informations: json['relatedInformation']
+          range: Range.from_json(json["range"]),
+          code: json["code"].to_i,
+          message: json["message"],
+          informations: json["relatedInformation"]
         )
       end
 
@@ -199,12 +199,12 @@ module Spoom
       sig { params(json: T::Hash[T.untyped, T.untyped]).returns(DocumentSymbol) }
       def self.from_json(json)
         DocumentSymbol.new(
-          name: json['name'],
-          detail: json['detail'],
-          kind: json['kind'],
-          location: json['location'] ? Location.from_json(json['location']) : nil,
-          range: json['range'] ? Range.from_json(json['range']) : nil,
-          children: json['children'] ? json['children'].map { |symbol| DocumentSymbol.from_json(symbol) } : [],
+          name: json["name"],
+          detail: json["detail"],
+          kind: json["kind"],
+          location: json["location"] ? Location.from_json(json["location"]) : nil,
+          range: json["range"] ? Range.from_json(json["range"]) : nil,
+          children: json["children"] ? json["children"].map { |symbol| DocumentSymbol.from_json(symbol) } : [],
         )
       end
 
@@ -212,19 +212,20 @@ module Spoom
       def accept_printer(printer)
         h = serialize.hash
         return if printer.seen.include?(h)
+
         printer.seen.add(h)
 
         printer.printt
         printer.print(kind_string)
-        printer.print(' ')
+        printer.print(" ")
         printer.print_colored(name, Color::BLUE, Color::BOLD)
-        printer.print_colored(' (', Color::LIGHT_BLACK)
+        printer.print_colored(" (", Color::LIGHT_BLACK)
         if range
           printer.print_object(range)
         elsif location
           printer.print_object(location)
         end
-        printer.print_colored(')', Color::LIGHT_BLACK)
+        printer.print_colored(")", Color::LIGHT_BLACK)
         printer.printn
         unless children.empty?
           printer.indent
@@ -303,6 +304,7 @@ module Spoom
       sig { params(object: T.nilable(PrintableSymbol)).void }
       def print_object(object)
         return unless object
+
         object.accept_printer(self)
       end
 
@@ -315,6 +317,7 @@ module Spoom
       def clean_uri(uri)
         prefix = self.prefix
         return uri unless prefix
+
         uri.delete_prefix(prefix)
       end
 
@@ -322,7 +325,7 @@ module Spoom
       def print_list(objects)
         objects.each do |object|
           printt
-          print "* "
+          print("* ")
           print_object(object)
           printn
         end

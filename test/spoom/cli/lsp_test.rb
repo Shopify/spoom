@@ -103,13 +103,13 @@ module Spoom
               a.to_s
             end
           end
-         RB
+        RB
         result = @project.bundle_exec("spoom lsp --no-color hover lib/hover.rb 6 8")
         assert_equal(<<~MSG, result.out)
           Hovering `lib/hover.rb:6:8`:
           sig {params(a: Integer).returns(String)}
           def foo(a); end
-         MSG
+        MSG
       end
 
       def test_list_hover_param

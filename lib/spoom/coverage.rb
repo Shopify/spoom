@@ -12,7 +12,7 @@ module Spoom
     extend T::Sig
 
     sig { params(path: String, rbi: T::Boolean, sorbet_bin: T.nilable(String)).returns(Snapshot) }
-    def self.snapshot(path: '.', rbi: true, sorbet_bin: nil)
+    def self.snapshot(path: ".", rbi: true, sorbet_bin: nil)
       config = sorbet_config(path: path)
       config.allowed_extensions.push(".rb", ".rbi") if config.allowed_extensions.empty?
 
@@ -51,6 +51,7 @@ module Spoom
 
       Snapshot::STRICTNESSES.each do |strictness|
         next unless metrics.key?("types.input.files.sigil.#{strictness}")
+
         snapshot.sigils[strictness] = T.must(metrics["types.input.files.sigil.#{strictness}"])
       end
 

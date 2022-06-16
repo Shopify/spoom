@@ -1,8 +1,8 @@
 # typed: true
 # frozen_string_literal: true
 
-require_relative '../coverage'
-require_relative '../timeline'
+require_relative "../coverage"
+require_relative "../timeline"
 
 module Spoom
   module Cli
@@ -27,6 +27,7 @@ module Spoom
 
         save_dir = options[:save]
         return unless save_dir
+
         FileUtils.mkdir_p(save_dir)
         file = "#{save_dir}/#{snapshot.commit_sha || snapshot.timestamp}.json"
         File.write(file, snapshot.to_json)
@@ -85,7 +86,7 @@ module Spoom
 
         ticks.each_with_index do |sha, i|
           date = Spoom::Git.commit_time(sha, path: path)
-          say("Analyzing commit `#{sha}` - #{date&.strftime('%F')} (#{i + 1} / #{ticks.size})")
+          say("Analyzing commit `#{sha}` - #{date&.strftime("%F")} (#{i + 1} / #{ticks.size})")
 
           Spoom::Git.checkout(sha, path: path)
 
@@ -93,6 +94,7 @@ module Spoom
           if options[:bundle_install]
             Bundler.with_unbundled_env do
               next unless bundle_install(path, sha)
+
               snapshot = Spoom::Coverage.snapshot(path: path, sorbet_bin: sorbet)
             end
           else
@@ -104,6 +106,7 @@ module Spoom
           say("\n")
 
           next unless save_dir
+
           file = "#{save_dir}/#{sha}.json"
           File.write(file, snapshot.to_json)
           say("  Snapshot data saved under `#{file}`\n\n")
@@ -161,9 +164,9 @@ module Spoom
           say_error("No report file to open `#{file}`")
           say_error(<<~ERR, status: nil)
 
-            If you already generated a report under another name use #{blue('spoom coverage open PATH')}.
+            If you already generated a report under another name use #{blue("spoom coverage open PATH")}.
 
-            To generate a report run #{blue('spoom coverage report')}.
+            To generate a report run #{blue("spoom coverage report")}.
           ERR
           exit(1)
         end
@@ -174,6 +177,7 @@ module Spoom
       no_commands do
         def parse_time(string, option)
           return nil unless string
+
           Time.parse(string)
         rescue ArgumentError
           say_error("Invalid date `#{string}` for option `#{option}` (expected format `YYYY-MM-DD`)")
@@ -196,9 +200,9 @@ module Spoom
           say_error("No snapshot files found in `#{file}`")
           say_error(<<~ERR, status: nil)
 
-            If you already generated snapshot files under another directory use #{blue('spoom coverage report PATH')}.
+            If you already generated snapshot files under another directory use #{blue("spoom coverage report PATH")}.
 
-            To generate snapshot files run #{blue('spoom coverage timeline --save')}.
+            To generate snapshot files run #{blue("spoom coverage timeline --save")}.
           ERR
         end
       end

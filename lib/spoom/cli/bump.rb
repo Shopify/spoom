@@ -1,8 +1,8 @@
 # typed: true
 # frozen_string_literal: true
 
-require 'find'
-require 'open3'
+require "find"
+require "open3"
 
 module Spoom
   module Cli
@@ -113,12 +113,13 @@ module Spoom
           next unless path.start_with?(directory)
           next unless File.file?(path)
           next unless files_to_bump.include?(path)
+
           path
         end.compact.uniq
 
         undo_changes(files_with_errors, from)
 
-        say("Found #{errors.length} type checking error#{'s' if errors.length > 1}") if options[:count_errors]
+        say("Found #{errors.length} type checking error#{"s" if errors.length > 1}") if options[:count_errors]
 
         files_changed = files_to_bump - files_with_errors
         print_changes(files_changed, command: cmd, from: from, to: to, dry: dry, path: exec_path)
@@ -134,7 +135,7 @@ module Spoom
           end
           message = StringIO.new
           message << (dry ? "Can bump" : "Bumped")
-          message << " `#{files.size}` file#{'s' if files.size > 1}"
+          message << " `#{files.size}` file#{"s" if files.size > 1}"
           message << " from `#{from}` to `#{to}`:"
           say(message.string)
           files.each do |file|

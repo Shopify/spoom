@@ -264,13 +264,13 @@ module Spoom
                               d3.min(data_#{id}, (d) => parseVersion(d.runtime))]) - 0.01",
                 max: "d3.max([d3.max(data_#{id}, (d) => parseVersion(d.static)),
                               d3.max(data_#{id}, (d) => parseVersion(d.runtime))]) + 0.01",
-                ticks: 'ticks(8)'
+                ticks: "ticks(8)"
               )}
-              #{line(y: 'parseVersion(d.runtime)', color: '#e83e8c', curve: 'curveStepAfter')}
-              #{line(y: 'parseVersion(d.static)', color: '#007bff', curve: 'curveStepAfter')}
-              #{points(y: 'parseVersion(d.static)')}
+              #{line(y: "parseVersion(d.runtime)", color: "#e83e8c", curve: "curveStepAfter")}
+              #{line(y: "parseVersion(d.static)", color: "#007bff", curve: "curveStepAfter")}
+              #{points(y: "parseVersion(d.static)")}
               #{x_ticks}
-              #{y_ticks(ticks: 'ticks(4)', format: "'v0.' + d.toFixed(2)", padding: 50)}
+              #{y_ticks(ticks: "ticks(4)", format: "'v0.' + d.toFixed(2)", padding: 50)}
             JS
           end
         end
@@ -308,15 +308,15 @@ module Spoom
             <<~JS
               #{x_scale}
               #{y_scale(
-                min: '0',
+                min: "0",
                 max: "d3.max(data_#{id}, (d) => d.runtime)",
-                ticks: 'ticks(10)'
+                ticks: "ticks(10)"
               )}
-              #{area(y: 'd.runtime')}
-              #{line(y: 'd.runtime')}
-              #{points(y: 'd.runtime')}
+              #{area(y: "d.runtime")}
+              #{line(y: "d.runtime")}
+              #{points(y: "d.runtime")}
               #{x_ticks}
-              #{y_ticks(ticks: 'ticks(5)', format: 'd.toFixed(2) + "s"', padding: 40)}
+              #{y_ticks(ticks: "ticks(5)", format: 'd.toFixed(2) + "s"', padding: 40)}
                 .call(g => g.selectAll(".tick:first-of-type text").remove())
             JS
           end
@@ -373,15 +373,15 @@ module Spoom
           def plot
             <<~JS
               #{x_scale}
-              #{y_scale(min: '0', max: '100', ticks: 'tickValues([0, 25, 50, 75, 100])')}
-              #{line(y: 'd.data.timestamp')}
+              #{y_scale(min: "0", max: "100", ticks: "tickValues([0, 25, 50, 75, 100])")}
+              #{line(y: "d.data.timestamp")}
               #{x_ticks}
-              #{y_ticks(ticks: 'tickValues([25, 50, 75])', format: "d + '%'", padding: 30)}
+              #{y_ticks(ticks: "tickValues([25, 50, 75])", format: "d + '%'", padding: 30)}
             JS
           end
 
           sig { override.params(y: String, color: String, curve: String).returns(String) }
-          def line(y:, color: 'strictnessColor(d.key)', curve: 'curveCatmullRom.alpha(1)')
+          def line(y:, color: "strictnessColor(d.key)", curve: "curveCatmullRom.alpha(1)")
             <<~JS
               var area_#{id} = d3.area()
                 .x((d) => xScale_#{id}(parseDate(#{y})))
@@ -446,7 +446,7 @@ module Spoom
 
           sig { params(id: String, snapshots: T::Array[Snapshot]).void }
           def initialize(id, snapshots)
-            keys = ['false', 'true']
+            keys = ["false", "true"]
             data = snapshots.map do |snapshot|
               {
                 timestamp: snapshot.commit_timestamp,
@@ -473,7 +473,7 @@ module Spoom
 
           sig { params(id: String, snapshots: T::Array[Snapshot]).void }
           def initialize(id, snapshots)
-            keys = ['false', 'true']
+            keys = ["false", "true"]
             data = snapshots.map do |snapshot|
               {
                 timestamp: snapshot.commit_timestamp,
@@ -500,7 +500,7 @@ module Spoom
 
           sig { params(id: String, snapshots: T::Array[Snapshot]).void }
           def initialize(id, snapshots)
-            keys = ['rbis', 'files']
+            keys = ["rbis", "files"]
             data = snapshots.map do |snapshot|
               {
                 timestamp: snapshot.commit_timestamp,
@@ -567,7 +567,7 @@ module Spoom
           end
 
           sig { override.params(y: String, color: String, curve: String).returns(String) }
-          def line(y:, color: 'strictnessColor(d.key)', curve: 'curveCatmullRom.alpha(1)')
+          def line(y:, color: "strictnessColor(d.key)", curve: "curveCatmullRom.alpha(1)")
             <<~JS
               var area_#{id} = d3.area()
                 .x((d) => xScale_#{id}(parseDate(#{y})))
@@ -610,10 +610,10 @@ module Spoom
           def plot
             <<~JS
               #{x_scale}
-              #{y_scale(min: '0', max: "d3.max(data_#{id}, (d) => d.total + 10)", ticks: 'tickValues([0, 25, 50, 75, 100])')}
-              #{line(y: 'd.data.timestamp', color: "d.key == 'rbis' ? '#8673ff' : '#007bff'")}
+              #{y_scale(min: "0", max: "d3.max(data_#{id}, (d) => d.total + 10)", ticks: "tickValues([0, 25, 50, 75, 100])")}
+              #{line(y: "d.data.timestamp", color: "d.key == 'rbis' ? '#8673ff' : '#007bff'")}
               #{x_ticks}
-              #{y_ticks(ticks: 'tickValues([25, 50, 75])', format: 'd', padding: 20)}
+              #{y_ticks(ticks: "tickValues([25, 50, 75])", format: "d", padding: 20)}
             JS
           end
         end

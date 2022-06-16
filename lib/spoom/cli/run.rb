@@ -112,7 +112,7 @@ module Spoom
           cyan = T.let(false, T::Boolean)
           word = StringIO.new
           message.chars.each do |c|
-            if c == '`'
+            if c == "`"
               cyan = !cyan
               next
             end

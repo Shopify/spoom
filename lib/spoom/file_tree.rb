@@ -33,6 +33,7 @@ module Spoom
       if path.empty? || parts.size == 1
         return @roots[path] ||= Node.new(parent: nil, name: path)
       end
+
       parent_path = T.must(parts[0...-1]).join("/")
       parent = add_path(parent_path)
       name = T.must(parts.last)
@@ -105,6 +106,7 @@ module Spoom
       def path
         parent = self.parent
         return name unless parent
+
         "#{parent.path}/#{name}"
       end
     end

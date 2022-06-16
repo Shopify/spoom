@@ -10,7 +10,7 @@ module Spoom
 
     # Execute a `command`
     sig { params(command: String, arg: String, path: String).returns(ExecResult) }
-    def self.exec(command, *arg, path: '.')
+    def self.exec(command, *arg, path: ".")
       return ExecResult.new(
         out: "",
         err: "Error: `#{path}` is not a directory.",
@@ -33,33 +33,34 @@ module Spoom
 
     sig { params(arg: String, path: String).returns(ExecResult) }
     def self.checkout(*arg, path: ".")
-      exec("git checkout -q #{arg.join(' ')}", path: path)
+      exec("git checkout -q #{arg.join(" ")}", path: path)
     end
 
     sig { params(arg: String, path: String).returns(ExecResult) }
     def self.diff(*arg, path: ".")
-      exec("git diff #{arg.join(' ')}", path: path)
+      exec("git diff #{arg.join(" ")}", path: path)
     end
 
     sig { params(arg: String, path: String).returns(ExecResult) }
     def self.log(*arg, path: ".")
-      exec("git log #{arg.join(' ')}", path: path)
+      exec("git log #{arg.join(" ")}", path: path)
     end
 
     sig { params(arg: String, path: String).returns(ExecResult) }
     def self.rev_parse(*arg, path: ".")
-      exec("git rev-parse --short #{arg.join(' ')}", path: path)
+      exec("git rev-parse --short #{arg.join(" ")}", path: path)
     end
 
     sig { params(arg: String, path: String).returns(ExecResult) }
     def self.show(*arg, path: ".")
-      exec("git show #{arg.join(' ')}", path: path)
+      exec("git show #{arg.join(" ")}", path: path)
     end
 
     sig { params(path: String).returns(T.nilable(String)) }
     def self.current_branch(path: ".")
       result = exec("git branch --show-current", path: path)
       return nil unless result.status
+
       result.out.strip
     end
 
@@ -70,6 +71,7 @@ module Spoom
     def self.commit_timestamp(sha, path: ".")
       result = show("--no-notes --no-patch --pretty=%at #{sha}", path: path)
       return nil unless result.status
+
       result.out.strip.to_i
     end
 
@@ -78,6 +80,7 @@ module Spoom
     def self.commit_time(sha, path: ".")
       timestamp = commit_timestamp(sha, path: path)
       return nil unless timestamp
+
       epoch_to_time(timestamp.to_s)
     end
 
@@ -86,6 +89,7 @@ module Spoom
     def self.last_commit(path: ".")
       result = rev_parse("HEAD", path: path)
       return nil unless result.status
+
       result.out.strip
     end
 
@@ -106,8 +110,10 @@ module Spoom
     def self.sorbet_intro_commit(path: ".")
       result = Spoom::Git.log("--diff-filter=A --format='%h' -1 -- sorbet/config", path: path)
       return nil unless result.status
+
       out = result.out.strip
       return nil if out.empty?
+
       out
     end
 
@@ -116,8 +122,10 @@ module Spoom
     def self.sorbet_removal_commit(path: ".")
       result = Spoom::Git.log("--diff-filter=D --format='%h' -1 -- sorbet/config", path: path)
       return nil unless result.status
+
       out = result.out.strip
       return nil if out.empty?
+
       out
     end
   end

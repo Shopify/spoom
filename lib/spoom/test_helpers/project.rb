@@ -101,7 +101,7 @@ module Spoom
       def bundle_exec(cmd, *args)
         opts = {}
         opts[:chdir] = path
-        out, err, status = Open3.capture3(["bundle", "exec", cmd, *args].join(' '), opts)
+        out, err, status = Open3.capture3(["bundle", "exec", cmd, *args].join(" "), opts)
         ExecResult.new(
           out: out,
           err: err,

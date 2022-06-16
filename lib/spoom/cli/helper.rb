@@ -60,8 +60,8 @@ module Spoom
         unless in_sorbet_project?
           say_error(
             "not in a Sorbet project (`#{sorbet_config_file}` not found)\n\n" \
-            "When running spoom from another path than the project's root, " \
-            "use `--path PATH` to specify the path to the root."
+              "When running spoom from another path than the project's root, " \
+              "use `--path PATH` to specify the path to the root."
           )
           Kernel.exit(1)
         end
@@ -116,9 +116,9 @@ module Spoom
         word = StringIO.new
         in_ticks = T.let(false, T::Boolean)
         string.chars.each do |c|
-          if c == '`' && !in_ticks
+          if c == "`" && !in_ticks
             in_ticks = true
-          elsif c == '`' && in_ticks
+          elsif c == "`" && in_ticks
             in_ticks = false
             res << colorize(word.string, HIGHLIGHT_COLOR)
             word = StringIO.new
@@ -135,6 +135,7 @@ module Spoom
       sig { params(string: String, color: Color).returns(String) }
       def colorize(string, *color)
         return string unless color?
+
         T.unsafe(self).set_color(string, *color)
       end
 

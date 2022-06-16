@@ -1,7 +1,7 @@
 # typed: true
 # frozen_string_literal: true
 
-require 'shellwords'
+require "shellwords"
 
 require_relative "../sorbet/lsp"
 
@@ -28,6 +28,7 @@ module Spoom
           Dir["**/*.rb"].each do |file|
             res = client.document_symbols(to_uri(file))
             next if res.empty?
+
             say("Symbols from `#{file}`:")
             printer.print_objects(res)
           end

@@ -1,12 +1,12 @@
 # typed: strict
 # frozen_string_literal: true
 
-require 'open3'
-require 'json'
+require "open3"
+require "json"
 
-require_relative 'lsp/base'
-require_relative 'lsp/structures'
-require_relative 'lsp/errors'
+require_relative "lsp/base"
+require_relative "lsp/structures"
+require_relative "lsp/errors"
 
 module Spoom
   module LSP
@@ -58,10 +58,10 @@ module Spoom
         json = JSON.parse(raw_string)
 
         # Handle error in the LSP protocol
-        raise ResponseError.from_json(json['error']) if json['error']
+        raise ResponseError.from_json(json["error"]) if json["error"]
 
         # Handle typechecking errors
-        raise Error::Diagnostics.from_json(json['params']) if json['method'] == "textDocument/publishDiagnostics"
+        raise Error::Diagnostics.from_json(json["params"]) if json["method"] == "textDocument/publishDiagnostics"
 
         json
       end
@@ -71,16 +71,17 @@ module Spoom
       sig { params(workspace_path: String).void }
       def open(workspace_path)
         raise Error::AlreadyOpen, "Error: CLI already opened" if @open
+
         send(Request.new(
           next_id,
-          'initialize',
+          "initialize",
           {
-            'rootPath' => workspace_path,
-            'rootUri' => "file://#{workspace_path}",
-            'capabilities' => {},
+            "rootPath" => workspace_path,
+            "rootUri" => "file://#{workspace_path}",
+            "capabilities" => {},
           },
         ))
-        send(Notification.new('initialized', {}))
+        send(Notification.new("initialized", {}))
         @open = true
       end
 
@@ -88,133 +89,140 @@ module Spoom
       def hover(uri, line, column)
         json = send(Request.new(
           next_id,
-          'textDocument/hover',
+          "textDocument/hover",
           {
-            'textDocument' => {
-              'uri' => uri,
+            "textDocument" => {
+              "uri" => uri,
             },
-            'position' => {
-              'line' => line,
-              'character' => column,
+            "position" => {
+              "line" => line,
+              "character" => column,
             },
           }
         ))
 
-        return nil unless json && json['result']
-        Hover.from_json(json['result'])
+        return nil unless json && json["result"]
+
+        Hover.from_json(json["result"])
       end
 
       sig { params(uri: String, line: Integer, column: Integer).returns(T::Array[SignatureHelp]) }
       def signatures(uri, line, column)
         json = send(Request.new(
           next_id,
-          'textDocument/signatureHelp',
+          "textDocument/signatureHelp",
           {
-            'textDocument' => {
-              'uri' => uri,
+            "textDocument" => {
+              "uri" => uri,
             },
-            'position' => {
-              'line' => line,
-              'character' => column,
+            "position" => {
+              "line" => line,
+              "character" => column,
             },
           }
         ))
 
-        return [] unless json && json['result'] && json['result']['signatures']
-        json['result']['signatures'].map { |loc| SignatureHelp.from_json(loc) }
+        return [] unless json && json["result"] && json["result"]["signatures"]
+
+        json["result"]["signatures"].map { |loc| SignatureHelp.from_json(loc) }
       end
 
       sig { params(uri: String, line: Integer, column: Integer).returns(T::Array[Location]) }
       def definitions(uri, line, column)
         json = send(Request.new(
           next_id,
-          'textDocument/definition',
+          "textDocument/definition",
           {
-            'textDocument' => {
-              'uri' => uri,
+            "textDocument" => {
+              "uri" => uri,
             },
-            'position' => {
-              'line' => line,
-              'character' => column,
+            "position" => {
+              "line" => line,
+              "character" => column,
             },
           }
         ))
 
-        return [] unless json && json['result']
-        json['result'].map { |loc| Location.from_json(loc) }
+        return [] unless json && json["result"]
+
+        json["result"].map { |loc| Location.from_json(loc) }
       end
 
       sig { params(uri: String, line: Integer, column: Integer).returns(T::Array[Location]) }
       def type_definitions(uri, line, column)
         json = send(Request.new(
           next_id,
-          'textDocument/typeDefinition',
+          "textDocument/typeDefinition",
           {
-            'textDocument' => {
-              'uri' => uri,
+            "textDocument" => {
+              "uri" => uri,
             },
-            'position' => {
-              'line' => line,
-              'character' => column,
+            "position" => {
+              "line" => line,
+              "character" => column,
             },
           }
         ))
 
-        return [] unless json && json['result']
-        json['result'].map { |loc| Location.from_json(loc) }
+        return [] unless json && json["result"]
+
+        json["result"].map { |loc| Location.from_json(loc) }
       end
 
       sig { params(uri: String, line: Integer, column: Integer, include_decl: T::Boolean).returns(T::Array[Location]) }
       def references(uri, line, column, include_decl = true)
         json = send(Request.new(
           next_id,
-          'textDocument/references',
+          "textDocument/references",
           {
-            'textDocument' => {
-              'uri' => uri,
+            "textDocument" => {
+              "uri" => uri,
             },
-            'position' => {
-              'line' => line,
-              'character' => column,
+            "position" => {
+              "line" => line,
+              "character" => column,
             },
-            'context' => {
-              'includeDeclaration' => include_decl,
+            "context" => {
+              "includeDeclaration" => include_decl,
             },
           }
         ))
 
-        return [] unless json && json['result']
-        json['result'].map { |loc| Location.from_json(loc) }
+        return [] unless json && json["result"]
+
+        json["result"].map { |loc| Location.from_json(loc) }
       end
 
       sig { params(query: String).returns(T::Array[DocumentSymbol]) }
       def symbols(query)
         json = send(Request.new(
           next_id,
-          'workspace/symbol',
+          "workspace/symbol",
           {
-            'query' => query,
+            "query" => query,
           }
         ))
 
-        return [] unless json && json['result']
-        json['result'].map { |loc| DocumentSymbol.from_json(loc) }
+        return [] unless json && json["result"]
+
+        json["result"].map { |loc| DocumentSymbol.from_json(loc) }
       end
 
       sig { params(uri: String).returns(T::Array[DocumentSymbol]) }
       def document_symbols(uri)
         json = send(Request.new(
           next_id,
-          'textDocument/documentSymbol',
+          "textDocument/documentSymbol",
           {
-            'textDocument' => {
-              'uri' => uri,
+            "textDocument" => {
+              "uri" => uri,
             },
           }
         ))
 
-        return [] unless json && json['result']
-        json['result'].map { |loc| DocumentSymbol.from_json(loc) }
+        return [] unless json && json["result"]
+
+        json["result"].map { |loc| DocumentSymbol.from_json(loc) }
       end
 
       sig { void }
