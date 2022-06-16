@@ -58,9 +58,9 @@ GEM
       pry (~> 0.13.0)
     rainbow (3.1.1)
     rake (13.0.1)
-    rbi (0.0.6)
+    rbi (0.0.14)
       ast
-      parser
+      parser (>= 2.6.4.0)
       sorbet-runtime (>= 0.5.9204)
       unparser
     regexp_parser (2.5.0)
@@ -98,16 +98,19 @@ GEM
     sorbet-static (0.5.10097-universal-darwin-20)
     sorbet-static (0.5.10097-universal-darwin-21)
     sorbet-static (0.5.10097-x86_64-linux)
+    sorbet-static-and-runtime (0.5.10097)
+      sorbet (= 0.5.10097)
+      sorbet-runtime (= 0.5.10097)
     syntax_tree (2.7.1)
       prettier_print
-    tapioca (0.5.4)
+    tapioca (0.8.1)
       bundler (>= 1.17.3)
+      parallel (>= 1.21.0)
       pry (>= 0.12.2)
-      rbi
-      sorbet-runtime
-      sorbet-static (>= 0.5.6200)
-      spoom
-      thor (>= 0.19.2)
+      rbi (~> 0.0.0, >= 0.0.14)
+      sorbet-static-and-runtime (>= 0.5.9204)
+      spoom (~> 1.1.0, >= 1.1.11)
+      thor (>= 1.2.0)
       yard-sorbet
     thor (1.2.1)
     thread_safe (0.3.6)
