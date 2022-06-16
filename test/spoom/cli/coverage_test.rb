@@ -85,8 +85,8 @@ module Spoom
             without signature: 12 (86%)
 
           Calls:
-            typed: 8 (89%)
-            untyped: 1 (11%)
+            typed: 6 (86%)
+            untyped: 1 (14%)
         MSG
         assert_equal(0, Dir.glob("#{@project.path}/spoom_data/*.json").size)
       end
@@ -124,8 +124,8 @@ module Spoom
             without signature: 13 (87%)
 
           Calls:
-            typed: 8 (67%)
-            untyped: 4 (33%)
+            typed: 6 (60%)
+            untyped: 4 (40%)
         MSG
         assert_equal(0, Dir.glob("#{@project.path}/spoom_data/*.json").size)
       end
@@ -151,8 +151,8 @@ module Spoom
             without signature: 8 (89%)
 
           Calls:
-            typed: 8 (89%)
-            untyped: 1 (11%)
+            typed: 6 (86%)
+            untyped: 1 (14%)
         MSG
       end
 
@@ -190,8 +190,8 @@ module Spoom
             without signature: 12 (86%)
 
           Calls:
-            typed: 8 (89%)
-            untyped: 1 (11%)
+            typed: 6 (86%)
+            untyped: 1 (14%)
         MSG
         project.destroy
         assert_equal(0, Dir.glob("#{project.path}/spoom_data/*.json").size)
@@ -230,8 +230,8 @@ module Spoom
               without signature: 12 (86%)
 
             Calls:
-              typed: 8 (89%)
-              untyped: 1 (11%)
+              typed: 6 (86%)
+              untyped: 1 (14%)
 
         OUT
         assert_equal("", result.err)
@@ -262,7 +262,7 @@ module Spoom
               without signature: 5 (83%)
 
             Calls:
-              typed: 6 (100%)
+              typed: 4 (100%)
 
           Analyzing COMMIT (2 / 3)
             Sorbet static: 0.5.1000
@@ -283,7 +283,7 @@ module Spoom
               without signature: 8 (89%)
 
             Calls:
-              typed: 7 (100%)
+              typed: 5 (100%)
 
           Analyzing COMMIT (3 / 3)
             Sorbet static: 0.5.2000
@@ -306,7 +306,7 @@ module Spoom
               without signature: 9 (90%)
 
             Calls:
-              typed: 7 (100%)
+              typed: 5 (100%)
 
         OUT
         assert_equal("", result.err)
@@ -337,7 +337,7 @@ module Spoom
               without signature: 5 (83%)
 
             Calls:
-              typed: 6 (100%)
+              typed: 4 (100%)
 
           Analyzing COMMIT (2 / 2)
             Sorbet static: 0.5.1000
@@ -358,7 +358,7 @@ module Spoom
               without signature: 8 (89%)
 
             Calls:
-              typed: 7 (100%)
+              typed: 5 (100%)
 
         OUT
         assert_equal("", result.err)
