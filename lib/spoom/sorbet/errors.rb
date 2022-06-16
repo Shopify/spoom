@@ -85,12 +85,14 @@ module Spoom
         sig { params(error: Error).void }
         def open_error(error)
           raise "Error: Already parsing an error!" if @current_error
+
           @current_error = error
         end
 
         sig { void }
         def close_error
           raise "Error: Not already parsing an error!" unless @current_error
+
           @errors << @current_error
           @current_error = nil
         end
@@ -98,6 +100,7 @@ module Spoom
         sig { params(line: String).void }
         def append_error(line)
           raise "Error: Not already parsing an error!" unless @current_error
+
           @current_error.more << line
         end
       end
@@ -136,6 +139,7 @@ module Spoom
         sig { params(other: T.untyped).returns(Integer) }
         def <=>(other)
           return 0 unless other.is_a?(Error)
+
           [file, line, code, message] <=> [other.file, other.line, other.code, other.message]
         end
 

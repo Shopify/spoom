@@ -24,7 +24,7 @@ module Spoom
       def as_json
         instance_variables.each_with_object({}) do |var, obj|
           val = instance_variable_get(var)
-          obj[var.to_s.delete('@')] = val if val
+          obj[var.to_s.delete("@")] = val if val
         end
       end
 

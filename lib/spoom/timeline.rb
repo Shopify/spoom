@@ -46,6 +46,7 @@ module Spoom
           path: @path,
         )
         next if result.out.empty?
+
         result.out
       end.compact.uniq
     end

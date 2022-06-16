@@ -19,8 +19,8 @@ module Spoom
         sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Diagnostics) }
         def self.from_json(json)
           Diagnostics.new(
-            json['uri'],
-            json['diagnostics'].map { |d| Diagnostic.from_json(d) }
+            json["uri"],
+            json["diagnostics"].map { |d| Diagnostic.from_json(d) }
           )
         end
 
@@ -28,6 +28,7 @@ module Spoom
         def initialize(uri, diagnostics)
           @uri = uri
           @diagnostics = diagnostics
+          super()
         end
       end
     end
@@ -38,25 +39,22 @@ module Spoom
       sig { returns(Integer) }
       attr_reader :code
 
-      sig { returns(String) }
-      attr_reader :message
-
       sig { returns(T::Hash[T.untyped, T.untyped]) }
       attr_reader :data
 
       sig { params(json: T::Hash[T.untyped, T.untyped]).returns(ResponseError) }
       def self.from_json(json)
         ResponseError.new(
-          json['code'],
-          json['message'],
-          json['data']
+          json["code"],
+          json["message"],
+          json["data"]
         )
       end
 
       sig { params(code: Integer, message: String, data: T::Hash[T.untyped, T.untyped]).void }
       def initialize(code, message, data)
+        super(message)
         @code = code
-        @message = message
         @data = data
       end
     end

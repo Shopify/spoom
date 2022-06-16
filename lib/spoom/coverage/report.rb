@@ -109,7 +109,7 @@ module Spoom
         abstract!
 
         sig { void }
-        def initialize; end
+        def initialize; end # rubocop:disable Lint/MissingSuper
 
         sig { override.returns(String) }
         def html
@@ -136,17 +136,17 @@ module Spoom
 
         sig { returns(D3::Pie::Sigils) }
         def pie_sigils
-          D3::Pie::Sigils.new('pie_sigils', 'Sigils', snapshot)
+          D3::Pie::Sigils.new("pie_sigils", "Sigils", snapshot)
         end
 
         sig { returns(D3::Pie::Calls) }
         def pie_calls
-          D3::Pie::Calls.new('pie_calls', 'Calls', snapshot)
+          D3::Pie::Calls.new("pie_calls", "Calls", snapshot)
         end
 
         sig { returns(D3::Pie::Sigs) }
         def pie_sigs
-          D3::Pie::Sigs.new('pie_sigs', 'Sigs', snapshot)
+          D3::Pie::Sigs.new("pie_sigs", "Sigs", snapshot)
         end
       end
 
@@ -226,7 +226,7 @@ module Spoom
         extend T::Sig
 
         sig { params(sorbet_intro_commit: T.nilable(String), sorbet_intro_date: T.nilable(Time)).void }
-        def initialize(sorbet_intro_commit: nil, sorbet_intro_date: nil)
+        def initialize(sorbet_intro_commit: nil, sorbet_intro_date: nil) # rubocop:disable Lint/MissingSuper
           @sorbet_intro_commit = sorbet_intro_commit
           @sorbet_intro_date = sorbet_intro_date
         end
@@ -235,7 +235,7 @@ module Spoom
         def erb
           <<~ERB
             <div class="text-center" style="margin-top: 30px">
-              Typchecked by Sorbet since <b>#{@sorbet_intro_date&.strftime('%F')}</b>
+              Typchecked by Sorbet since <b>#{@sorbet_intro_date&.strftime("%F")}</b>
               (commit <b>#{@sorbet_intro_commit}</b>).
             </div>
           ERB

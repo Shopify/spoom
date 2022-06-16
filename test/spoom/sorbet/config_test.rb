@@ -7,15 +7,15 @@ module Spoom
   module Sorbet
     class ConfigTest < Minitest::Test
       def test_parses_empty_config_strings
-        config = Spoom::Sorbet::Config.parse_string('')
+        config = Spoom::Sorbet::Config.parse_string("")
         assert_empty(config.paths)
         assert_empty(config.ignore)
         assert_empty(config.allowed_extensions)
       end
 
       def test_parses_a_simple_config_string
-        config = Spoom::Sorbet::Config.parse_string('.')
-        assert_equal(['.'], config.paths)
+        config = Spoom::Sorbet::Config.parse_string(".")
+        assert_equal(["."], config.paths)
         assert_empty(config.ignore)
         assert_empty(config.allowed_extensions)
       end
@@ -25,7 +25,7 @@ module Spoom
           lib/a
           lib/b
         CONFIG
-        assert_equal(['lib/a', 'lib/b'], config.paths)
+        assert_equal(["lib/a", "lib/b"], config.paths)
         assert_empty(config.ignore)
         assert_empty(config.allowed_extensions)
       end
@@ -39,7 +39,7 @@ module Spoom
           d
           e
         CONFIG
-        assert_equal(['a', 'b', 'c', 'd', 'e'], config.paths)
+        assert_equal(["a", "b", "c", "d", "e"], config.paths)
         assert_empty(config.ignore)
         assert_empty(config.allowed_extensions)
       end
@@ -53,7 +53,7 @@ module Spoom
           d
           e
         CONFIG
-        assert_equal(['a', 'b', 'c', 'd', 'e'], config.paths)
+        assert_equal(["a", "b", "c", "d", "e"], config.paths)
         assert_empty(config.ignore)
       end
 
@@ -66,8 +66,8 @@ module Spoom
           d
           e
         CONFIG
-        assert_equal(['a', 'c', 'e'], config.paths)
-        assert_equal(['b', 'd'], config.ignore)
+        assert_equal(["a", "c", "e"], config.paths)
+        assert_equal(["b", "d"], config.ignore)
         assert_empty(config.allowed_extensions)
       end
 
@@ -81,7 +81,7 @@ module Spoom
           e
           -f
         CONFIG
-        assert_equal(['a', 'c', 'e'], config.paths)
+        assert_equal(["a", "c", "e"], config.paths)
         assert_empty(config.ignore)
         assert_empty(config.allowed_extensions)
       end
@@ -93,7 +93,7 @@ module Spoom
           --no-stdlib
           c
         CONFIG
-        assert_equal(['a', 'b', 'c'], config.paths)
+        assert_equal(["a", "b", "c"], config.paths)
         assert(config.no_stdlib)
       end
 
@@ -119,8 +119,8 @@ module Spoom
           --o
           p
         CONFIG
-        assert_equal(['a', 'c', 'f', 'h', 'i', 'l', 'm'], config.paths)
-        assert_equal(['j', 'k'], config.ignore)
+        assert_equal(["a", "c", "f", "h", "i", "l", "m"], config.paths)
+        assert_equal(["j", "k"], config.ignore)
         assert_empty(config.allowed_extensions)
       end
 
@@ -150,8 +150,8 @@ module Spoom
           --o
           p
         CONFIG
-        assert_equal(['a', 'c', 'f', 'h', 'i', 'l', 'm'], config.paths)
-        assert_equal(['j', 'k'], config.ignore)
+        assert_equal(["a", "c", "f", "h", "i", "l", "m"], config.paths)
+        assert_equal(["j", "k"], config.ignore)
         assert_empty(config.allowed_extensions)
       end
 
@@ -168,9 +168,9 @@ module Spoom
           --allowed-extension=.ru
           --no-stdlib
         CONFIG
-        assert_equal(['.'], config.paths)
-        assert_equal(['.git/', '.idea/', 'vendor/'], config.ignore)
-        assert_equal(['.rb', '.rbi', '.rake', '.ru'], config.allowed_extensions)
+        assert_equal(["."], config.paths)
+        assert_equal([".git/", ".idea/", "vendor/"], config.ignore)
+        assert_equal([".rb", ".rbi", ".rake", ".ru"], config.allowed_extensions)
         assert(config.no_stdlib)
       end
 
@@ -189,9 +189,9 @@ module Spoom
           --allowed-extension
           .ru
         CONFIG
-        assert_equal(['.'], config.paths)
-        assert_equal(['.idea/'], config.ignore)
-        assert_equal(['.rake', '.ru'], config.allowed_extensions)
+        assert_equal(["."], config.paths)
+        assert_equal([".idea/"], config.ignore)
+        assert_equal([".rake", ".ru"], config.allowed_extensions)
       end
 
       def test_options_string_empty

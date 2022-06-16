@@ -7,7 +7,7 @@ module Spoom
   module Sorbet
     class MetricsTest < Minitest::Test
       def test_parses_metrics_error
-        assert_raises JSON::ParserError do
+        assert_raises(JSON::ParserError) do
           Spoom::Sorbet::MetricsParser.parse_string("")
         end
       end

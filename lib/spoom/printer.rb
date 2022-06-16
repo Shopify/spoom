@@ -38,6 +38,7 @@ module Spoom
     sig { params(string: T.nilable(String)).void }
     def print(string)
       return unless string
+
       @out.print(string)
     end
 
@@ -47,6 +48,7 @@ module Spoom
     sig { params(string: T.nilable(String), color: Color).void }
     def print_colored(string, *color)
       return unless string
+
       string = T.unsafe(self).colorize(string, *color)
       @out.print(string)
     end
@@ -61,6 +63,7 @@ module Spoom
     sig { params(string: T.nilable(String)).void }
     def printl(string)
       return unless string
+
       printt
       print(string)
       printn
@@ -76,6 +79,7 @@ module Spoom
     sig { params(string: String, color: Spoom::Color).returns(String) }
     def colorize(string, *color)
       return string unless @colors
+
       T.unsafe(self).set_color(string, *color)
     end
   end

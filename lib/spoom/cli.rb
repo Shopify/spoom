@@ -3,7 +3,7 @@
 
 require "thor"
 
-require_relative 'cli/helper'
+require_relative "cli/helper"
 
 require_relative "cli/bump"
 require_relative "cli/config"
@@ -20,7 +20,7 @@ module Spoom
       class_option :color, type: :boolean, default: true, desc: "Use colors"
       class_option :path, type: :string, default: ".", aliases: :p, desc: "Run spoom in a specific path"
 
-      map T.unsafe(%w[--version -v] => :__print_version)
+      map T.unsafe(["--version", "-v"] => :__print_version)
 
       desc "bump", "Bump Sorbet sigils from `false` to `true` when no errors"
       subcommand "bump", Spoom::Cli::Bump
