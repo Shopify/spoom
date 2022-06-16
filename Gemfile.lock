@@ -28,6 +28,7 @@ GEM
     diff-lcs (1.4.4)
     equalizer (0.0.11)
     ice_nine (0.11.2)
+    language_server-protocol (3.16.0.3)
     memoizable (0.4.2)
       thread_safe (~> 0.3, >= 0.3.1)
     method_source (1.0.0)
@@ -47,6 +48,7 @@ GEM
     parallel (1.22.1)
     parser (3.1.2.0)
       ast (~> 2.4.1)
+    prettier_print (0.1.0)
     procto (0.0.3)
     pry (0.13.1)
       coderay (~> 1.1)
@@ -78,6 +80,11 @@ GEM
       rubocop (~> 1.30)
     rubocop-sorbet (0.4.0)
       rubocop
+    ruby-lsp (0.1.0)
+      language_server-protocol
+      rubocop (>= 1.0)
+      sorbet-runtime
+      syntax_tree (>= 2.4)
     ruby-progressbar (1.11.0)
     sorbet (0.5.10097)
       sorbet-static (= 0.5.10097)
@@ -91,6 +98,8 @@ GEM
     sorbet-static (0.5.10097-universal-darwin-20)
     sorbet-static (0.5.10097-universal-darwin-21)
     sorbet-static (0.5.10097-x86_64-linux)
+    syntax_tree (2.7.1)
+      prettier_print
     tapioca (0.5.4)
       bundler (>= 1.17.3)
       pry (>= 0.12.2)
@@ -129,6 +138,7 @@ DEPENDENCIES
   rake (~> 13.0.1)
   rubocop-shopify
   rubocop-sorbet
+  ruby-lsp
   spoom!
   tapioca
 
