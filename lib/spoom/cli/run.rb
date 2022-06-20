@@ -22,7 +22,8 @@ module Spoom
       option :uniq, type: :boolean, aliases: :u, desc: "Remove duplicated lines"
       option :count, type: :boolean, default: true, desc: "Show errors count"
       option :sorbet, type: :string, desc: "Path to custom Sorbet bin"
-      def tc(*arg)
+      option :sorbet_options, type: :string, default: "", desc: "Pass options to Sorbet"
+      def tc(*paths_to_select)
         in_sorbet_project!
 
         path = exec_path
@@ -36,7 +37,7 @@ module Spoom
 
         unless limit || code || sort
           result = T.unsafe(Spoom::Sorbet).srb_tc(
-            *arg,
+            *options[:sorbet_options].split(" "),
             path: path,
             capture_err: false,
             sorbet_bin: sorbet
@@ -49,7 +50,7 @@ module Spoom
 
         error_url_base = Spoom::Sorbet::Errors::DEFAULT_ERROR_URL_BASE
         result = T.unsafe(Spoom::Sorbet).srb_tc(
-          *arg,
+          *options[:sorbet_options].split(" "),
           "--error-url-base=#{error_url_base}",
           path: path,
           capture_err: true,
@@ -66,6 +67,14 @@ module Spoom
         errors = Spoom::Sorbet::Errors::Parser.parse_string(result.err, error_url_base: error_url_base)
         errors_count = errors.size
 
+        errors = errors.select { |e| e.code == code } if code
+
+        unless paths_to_select.empty?
+          errors.select! do |error|
+            paths_to_select.any? { |path_to_select| error.file&.start_with?(path_to_select) }
+          end
+        end
+
         errors = case sort
         when SORT_CODE
           Spoom::Sorbet::Errors.sort_errors_by_code(errors)
@@ -75,7 +84,6 @@ module Spoom
           errors # preserve natural sort
         end
 
-        errors = errors.select { |e| e.code == code } if code
         errors = T.must(errors.slice(0, limit)) if limit
 
         lines = errors.map { |e| format_error(e, format || DEFAULT_FORMAT) }
