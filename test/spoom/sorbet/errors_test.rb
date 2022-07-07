@@ -70,6 +70,7 @@ module Spoom
         assert_equal("unexpected token \"end\"", error.message)
         assert_equal(2001, error.code)
         assert_equal(["80 |end", "^^^"], error.more.each(&:strip!))
+        assert_empty(error.files_from_error_sections)
       end
 
       def test_parses_a_redefinition_error
@@ -96,6 +97,7 @@ module Spoom
           96 |    class Foo < T::Struct
           97 |    end
         MORE
+        assert_equal(["foo.rb"], error.files_from_error_sections.to_a)
       end
 
       def test_parses_a_method_missing_error
@@ -115,6 +117,7 @@ module Spoom
           105 |        printer.print "foo".light_black
           ^^^^^^^^^^^^^^^^^
         MORE
+        assert_empty(error.files_from_error_sections.to_a)
       end
 
       def test_parses_a_not_enough_arguments_error
@@ -140,6 +143,7 @@ module Spoom
           11 |          def bar(title = "Error", name)
           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         MORE
+        assert_equal(["test.rb"], error.files_from_error_sections.to_a)
       end
 
       def test_parses_multiple_errors
@@ -171,6 +175,7 @@ module Spoom
         assert_equal(["a.rb", "b.rb", "c.rb", "d.rb"], errors.map(&:file))
         assert_equal([80, 28, 100, 105], errors.map(&:line))
         assert_equal([2001, 7004, 4010, 7003], errors.map(&:code))
+        assert_equal([[], ["test.rb"], ["foo.rb"], []], errors.map(&:files_from_error_sections).map(&:to_a))
       end
 
       def test_parses_no_errors_with_debug_string
@@ -206,6 +211,7 @@ module Spoom
         assert_equal(["a.rb", "b.rb"], errors.map(&:file))
         assert_equal([80, 105], errors.map(&:line))
         assert_equal([2001, 7003], errors.map(&:code))
+        assert_equal([[], []], errors.map(&:files_from_error_sections).map(&:to_a))
       end
 
       def test_parses_errors_with_multiple_blank_lines
@@ -246,6 +252,8 @@ module Spoom
         assert_equal(["lib/a.rb", "lib/a.rb", "lib/a.rb"], errors.map(&:file))
         assert_equal([54, 55, 64], errors.map(&:line))
         assert_equal([7003, 7001, 7002], errors.map(&:code))
+        assert_equal([["lib/a.rb"], ["lib/a.rb"], ["lib/b.rb", "lib/a.rb"]],
+          errors.map(&:files_from_error_sections).map(&:to_a))
       end
 
       def test_parses_errors_with_custom_error_url_base
@@ -270,6 +278,7 @@ module Spoom
         assert_equal(["a.rb", "b.rb", "c.rb", "d.rb"], errors.map(&:file))
         assert_equal([80, 28, 100, 105], errors.map(&:line))
         assert_equal([2001, 7004, 4010, 7003], errors.map(&:code))
+        assert_equal([[], [], [], []], errors.map(&:files_from_error_sections).map(&:to_a))
       end
 
       def test_sort_errors
@@ -300,6 +309,8 @@ module Spoom
           a.rb:105: Method foo does not exist on String https://srb.help/1000
         ERR
         assert_equal(6, errors.size)
+        assert_equal([[], ["foo.rb"], ["test.rb"], [], [], []], errors.map(&:files_from_error_sections).map(&:to_a))
+
         assert_equal([1000, 1001, 7003, 7004, 4010, 2001], errors.sort.map(&:code))
 
         errors = Spoom::Sorbet::Errors.sort_errors_by_code(errors)
@@ -358,6 +369,8 @@ module Spoom
         )
         assert_equal([1, 80567, 100, 28, 7], errors.map(&:line))
         assert_equal([2001, 2001, 4010, 7004, 7001], errors.map(&:code))
+        assert_equal([[], [], ["foo.rb"], ["test.rb"], ["test/models/platform/test.rb"]],
+          errors.map(&:files_from_error_sections).map(&:to_a))
       end
     end
   end

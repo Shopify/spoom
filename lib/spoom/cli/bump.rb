@@ -85,7 +85,6 @@ module Spoom
 
         error_url_base = Spoom::Sorbet::Errors::DEFAULT_ERROR_URL_BASE
         result = Sorbet.srb_tc(
-          "--no-error-sections",
           "--error-url-base=#{error_url_base}",
           path: exec_path,
           capture_err: true,
@@ -108,8 +107,12 @@ module Spoom
 
         errors = Sorbet::Errors::Parser.parse_string(result.err, error_url_base: error_url_base)
 
-        files_with_errors = errors.map do |err|
-          path = File.expand_path(err.file)
+        all_files = errors.flat_map do |err|
+          [err.file, *err.files_from_error_sections]
+        end
+
+        files_with_errors = all_files.map do |file|
+          path = File.expand_path(file)
           next unless path.start_with?(directory)
           next unless File.file?(path)
           next unless files_to_bump.include?(path)
