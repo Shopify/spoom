@@ -24,6 +24,7 @@ GEM
       builder
       minitest (>= 5.0)
       ruby-progressbar
+    netrc (0.11.0)
     parallel (1.22.1)
     parser (3.1.2.0)
       ast (~> 2.4.1)
@@ -81,8 +82,9 @@ GEM
       sorbet-runtime (= 0.5.10151)
     syntax_tree (3.0.0)
       prettier_print
-    tapioca (0.8.3)
+    tapioca (0.9.0)
       bundler (>= 1.17.3)
+      netrc (>= 0.11.0)
       parallel (>= 1.21.0)
       pry (>= 0.12.2)
       rbi (~> 0.0.0, >= 0.0.14)
