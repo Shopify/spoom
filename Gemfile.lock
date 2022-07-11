@@ -43,7 +43,7 @@ GEM
       unparser
     regexp_parser (2.5.0)
     rexml (3.2.5)
-    rubocop (1.31.1)
+    rubocop (1.31.2)
       json (~> 2.3)
       parallel (~> 1.10)
       parser (>= 3.1.0.0)
@@ -53,15 +53,14 @@ GEM
       rubocop-ast (>= 1.18.0, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 1.4.0, < 3.0)
-    rubocop-ast (1.18.0)
+    rubocop-ast (1.19.1)
       parser (>= 3.1.1.0)
     rubocop-shopify (2.8.0)
       rubocop (~> 1.31)
     rubocop-sorbet (0.6.11)
       rubocop (>= 0.90.0)
-    ruby-lsp (0.1.0)
+    ruby-lsp (0.2.0)
       language_server-protocol
-      rubocop (>= 1.0)
       sorbet-runtime
       syntax_tree (>= 2.4)
     ruby-progressbar (1.11.0)
@@ -80,7 +79,7 @@ GEM
     sorbet-static-and-runtime (0.5.10139)
       sorbet (= 0.5.10139)
       sorbet-runtime (= 0.5.10139)
-    syntax_tree (2.7.1)
+    syntax_tree (3.0.0)
       prettier_print
     tapioca (0.8.3)
       bundler (>= 1.17.3)
