@@ -6,6 +6,7 @@ require "test_helper"
 module Spoom
   module Sorbet
     class SnapshotTest < Minitest::Test
+      extend T::Sig
       include Spoom::TestHelper
 
       def test_serialize_snapshot_empty
@@ -46,7 +47,7 @@ module Spoom
 
       def test_snapshot_project
         project = self.project
-        snapshot = Spoom::Coverage.snapshot(path: project.path)
+        snapshot = Spoom::Coverage.snapshot(path: project.absolute_path)
         assert_equal(4, snapshot.files)
         assert_equal(1, snapshot.rbi_files)
         assert_equal({ "false" => 1, "true" => 3 }, snapshot.sigils)
@@ -56,12 +57,12 @@ module Spoom
         assert_equal(13, snapshot.methods_without_sig)
         assert_equal(6, snapshot.calls_typed)
         assert_equal(1, snapshot.calls_untyped)
-        project.destroy
+        project.destroy!
       end
 
       def test_snapshot_project_without_rbi
         project = self.project
-        snapshot = Spoom::Coverage.snapshot(path: project.path, rbi: false)
+        snapshot = Spoom::Coverage.snapshot(path: project.absolute_path, rbi: false)
         assert_equal(3, snapshot.files)
         assert_equal(0, snapshot.rbi_files)
         assert_equal({ "false" => 1, "true" => 2 }, snapshot.sigils)
@@ -71,17 +72,18 @@ module Spoom
         assert_equal(8, snapshot.methods_without_sig)
         assert_equal(6, snapshot.calls_typed)
         assert_equal(1, snapshot.calls_untyped)
-        project.destroy
+        project.destroy!
       end
 
+      sig { returns(TestProject) }
       def project
-        project = spoom_project
-        project.sorbet_config(<<~CONFIG)
+        project = new_project
+        project.sorbet_config!(<<~CONFIG)
           .
           --allowed-extension .rb
           --allowed-extension .rbi
         CONFIG
-        project.write("lib/a.rb", <<~RB)
+        project.write!("lib/a.rb", <<~RB)
           # typed: false
 
           module A1; end
@@ -91,7 +93,7 @@ module Spoom
             def foo; end
           end
         RB
-        project.write("lib/b.rb", <<~RB)
+        project.write!("lib/b.rb", <<~RB)
           # typed: true
 
           module B1
@@ -101,12 +103,12 @@ module Spoom
             def self.foo; end
           end
         RB
-        project.write("lib/c.rb", <<~RB)
+        project.write!("lib/c.rb", <<~RB)
           # typed: true
           A3.new.foo
           B1.foo
         RB
-        project.write("lib/d.rbi", <<~RB)
+        project.write!("lib/d.rbi", <<~RB)
           # typed: true
 
           module D1; end

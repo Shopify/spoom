@@ -1,27 +1,22 @@
 # typed: true
 # frozen_string_literal: true
 
-require "test_helper"
+require "test_with_project"
 
 module Spoom
   module Sorbet
-    class TimelineTest < Minitest::Test
-      include Spoom::TestHelper
-
+    class TimelineTest < TestWithProject
       def setup
-        @project = spoom_project
-        @project.git_init
-        @project.commit("commit 1", date: Time.parse("2010-01-02 03:04:05"))
-        @project.write("file2", "")
-        @project.commit("commit 2", date: Time.parse("2010-04-01 03:04:05"))
-        @project.write("file3", "")
-        @project.commit("commit 3", date: Time.parse("2010-06-30 03:04:05"))
-        @project.write("file4", "")
-        @project.commit("commit 4", date: Time.parse("2011-01-02 03:04:05"))
-      end
-
-      def teardown
-        @project.destroy
+        @project.git_init!
+        @project.exec("git config user.name 'spoom-tests'")
+        @project.exec("git config user.email 'spoom@shopify.com'")
+        @project.commit!("commit 1", date: Time.parse("2010-01-02 03:04:05"))
+        @project.write!("file2", "")
+        @project.commit!("commit 2", date: Time.parse("2010-04-01 03:04:05"))
+        @project.write!("file3", "")
+        @project.commit!("commit 3", date: Time.parse("2010-06-30 03:04:05"))
+        @project.write!("file4", "")
+        @project.commit!("commit 4", date: Time.parse("2011-01-02 03:04:05"))
       end
 
       def test_timeline_months
@@ -35,7 +30,7 @@ module Spoom
         timeline = Spoom::Timeline.new(
           Time.parse("2010-01-01 00:00:00"),
           Time.parse("2020-01-01 00:00:00"),
-          path: @project.path
+          path: @project.absolute_path
         )
 
         dates = [
@@ -64,7 +59,7 @@ module Spoom
         timeline = Spoom::Timeline.new(
           Time.parse("2010-01-01 00:00:00"),
           Time.parse("2020-01-01 00:00:00"),
-          path: @project.path
+          path: @project.absolute_path
         )
         assert_equal(4, timeline.ticks.size)
       end

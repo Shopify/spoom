@@ -1,48 +1,39 @@
 # typed: true
 # frozen_string_literal: true
 
-require "test_helper"
+require "test_with_project"
 
 module Spoom
   module Sorbet
-    class VersionTest < Minitest::Test
-      include Spoom::TestHelper
-
-      def setup
-        @project = spoom_project
-      end
-
-      def teardown
-        @project.destroy
-      end
-
+    class VersionTest < TestWithProject
       def test_srb_version_return_nil_if_srb_not_installed
-        @project.gemfile("")
+        @project.gemfile!("")
         Bundler.with_unbundled_env do
-          version = Spoom::Sorbet.srb_version(path: @project.path, capture_err: true)
+          version = Spoom::Sorbet.srb_version(path: @project.absolute_path, capture_err: true)
           assert_nil(version)
         end
       end
 
       def test_srb_version_return_version_string
-        version = Spoom::Sorbet.srb_version(path: @project.path)
+        version = Spoom::Sorbet.srb_version(path: @project.absolute_path)
         version = censor_sorbet_version(version) if version
         assert_equal("X.X.XXXX", version)
       end
 
       def test_version_from_gemfile_lock_return_nil_if_no_gemfile_lock
-        version = Spoom::Sorbet.version_from_gemfile_lock(path: @project.path)
+        @project.remove!("Gemfile.lock")
+        version = Spoom::Sorbet.version_from_gemfile_lock(path: @project.absolute_path)
         assert_nil(version)
       end
 
       def test_version_from_gemfile_lock_return_nil_if_gemfil_lock_does_not_contain_sorbet
-        @project.write("Gemfile.lock", "")
-        version = Spoom::Sorbet.version_from_gemfile_lock(path: @project.path)
+        @project.write!("Gemfile.lock", "")
+        version = Spoom::Sorbet.version_from_gemfile_lock(path: @project.absolute_path)
         assert_nil(version)
       end
 
       def test_version_from_gemfile_lock_return_sorbet_version
-        @project.write("Gemfile.lock", <<~STR)
+        @project.write!("Gemfile.lock", <<~STR)
           PATH
             remote: .
             specs:
@@ -68,9 +59,18 @@ module Spoom
           BUNDLED WITH
              1.17.3
         STR
-        assert_equal("0.5.5001", Spoom::Sorbet.version_from_gemfile_lock(gem: "sorbet", path: @project.path))
-        assert_equal("0.5.5002", Spoom::Sorbet.version_from_gemfile_lock(gem: "sorbet-runtime", path: @project.path))
-        assert_equal("0.5.5003", Spoom::Sorbet.version_from_gemfile_lock(gem: "sorbet-static", path: @project.path))
+        assert_equal(
+          "0.5.5001",
+          Spoom::Sorbet.version_from_gemfile_lock(gem: "sorbet", path: @project.absolute_path)
+        )
+        assert_equal(
+          "0.5.5002",
+          Spoom::Sorbet.version_from_gemfile_lock(gem: "sorbet-runtime", path: @project.absolute_path)
+        )
+        assert_equal(
+          "0.5.5003",
+          Spoom::Sorbet.version_from_gemfile_lock(gem: "sorbet-static", path: @project.absolute_path)
+        )
       end
     end
   end
