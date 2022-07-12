@@ -4,7 +4,7 @@
 $LOAD_PATH.unshift(File.expand_path("../../lib", __FILE__))
 
 require "spoom"
-require "spoom/test_helpers/project"
+require "test_project"
 
 module Spoom
   module TestHelper
@@ -13,13 +13,22 @@ module Spoom
 
     requires_ancestor { Minitest::Test }
 
-    TEST_PROJECTS_PATH = "/tmp/spoom/tests"
-
-    sig { params(name: T.nilable(String)).returns(TestHelpers::Project) }
-    def spoom_project(name = nil)
-      project = TestHelpers::Project.new("#{TEST_PROJECTS_PATH}/#{name || self.name}")
-      project.sorbet_config(".")
+    sig { params(name: T.nilable(String)).returns(TestProject) }
+    def new_project(name = nil)
+      project = TestProject.mktmp!(name || self.name)
+      project.gemfile!(spoom_gemfile)
+      project.sorbet_config!(".")
       project
+    end
+
+    # Default Gemfile contents requiring only Spoom
+    sig { returns(String) }
+    def spoom_gemfile
+      <<~GEMFILE
+        source("https://rubygems.org")
+
+        gemspec name: "spoom", path: "#{SPOOM_PATH}"
+      GEMFILE
     end
 
     # Replace all sorbet-like version "0.5.5888" in `test` by "X.X.XXXX"
