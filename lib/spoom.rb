@@ -12,10 +12,23 @@ module Spoom
   class Error < StandardError; end
 
   class ExecResult < T::Struct
+    extend T::Sig
+
     const :out, String
     const :err, String
     const :status, T::Boolean
     const :exit_code, Integer
+
+    sig { returns(String) }
+    def to_s
+      <<~STR
+        ########## STDOUT ##########
+        #{out.empty? ? "<empty>" : out}
+        ########## STDERR ##########
+        #{err.empty? ? "<empty>" : err}
+        ########## STATUS: #{status} ##########
+      STR
+    end
   end
 
   sig do
