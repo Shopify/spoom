@@ -101,6 +101,10 @@ module Spoom
         def append_error(line)
           raise "Error: Not already parsing an error!" unless @current_error
 
+          filepath_match = line.match(/^    (.*?):\d+/)
+          if filepath_match && filepath_match[1]
+            @current_error.files_from_error_sections << T.must(filepath_match[1])
+          end
           @current_error.more << line
         end
       end
@@ -118,6 +122,10 @@ module Spoom
         sig { returns(T::Array[String]) }
         attr_reader :more
 
+        # Other files associated with the error
+        sig { returns(T::Set[String]) }
+        attr_reader :files_from_error_sections
+
         sig do
           params(
             file: T.nilable(String),
@@ -133,6 +141,7 @@ module Spoom
           @message = message
           @code = code
           @more = more
+          @files_from_error_sections = T.let(Set.new, T::Set[String])
         end
 
         # By default errors are sorted by location

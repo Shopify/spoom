@@ -353,12 +353,13 @@ module Spoom
         @project.write("file1.rb", <<~RB)
           # typed: false
           class A
-            def foo(a, b); end
+            def bar(a, b); end
           end
         RB
         @project.write("file2.rbi", <<~RB)
           # typed: true
           class A
+            CONSTANT_NOT_FOUND # we want there to be an existing type error in this file
             def foo(a, b, c); end
           end
         RB
@@ -535,6 +536,28 @@ module Spoom
 
           class A; end
         RB
+      end
+
+      def test_multiple_constant_definitions
+        @project.write("file1.rb", <<~CONTENTS)
+          # typed: ignore
+          class Bar; end
+          Foo = Bar
+        CONTENTS
+
+        @project.write("file2.rb", <<~CONTENTS)
+          # typed: false
+          class Foo; end
+        CONTENTS
+
+        result = @project.bundle_exec("spoom bump --no-color --from ignore --to false")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
+          Checking files...
+
+          No file to bump from `ignore` to `false`
+        OUT
+        assert(result.status)
       end
     end
   end
