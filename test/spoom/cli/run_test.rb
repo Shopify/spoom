@@ -302,6 +302,14 @@ module Spoom
 
         project.destroy!
       end
+
+      def test_display_sorbet_error
+        result = @project.bundle_exec("spoom tc --no-color --sorbet-options=\"--not-found\"")
+        assert_equal(<<~MSG, result.err)
+          Option ‘not-found’ does not exist. To see all available options pass `--help`.
+        MSG
+        refute(result.status)
+      end
     end
   end
 end

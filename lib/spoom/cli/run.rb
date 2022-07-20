@@ -64,6 +64,13 @@ module Spoom
           exit(0)
         end
 
+        unless result.exit_code == 100
+          # Sorbet will return exit code 100 if there are type checking errors.
+          # If Sorbet returned something else, it means it didn't terminate normally.
+          say_error(result.err, status: nil, nl: false)
+          exit(1)
+        end
+
         errors = Spoom::Sorbet::Errors::Parser.parse_string(result.err, error_url_base: error_url_base)
         errors_count = errors.size
 
