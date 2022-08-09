@@ -248,17 +248,17 @@ module Spoom
         result = @project.bundle_exec("spoom lsp --no-color symbols lib/symbols.rb")
         assert_equal(<<~MSG, result.out)
           Symbols from `lib/symbols.rb`:
-            module Symbols (2:0-2:14)
-              class A (3:2-3:9)
+            module Symbols (2:0-17:3)
+              class A (3:2-11:5)
                 def a (4:4-4:22)
                 def b (4:4-4:22)
-                def bar (8:4-8:11)
-                def foo (6:4-6:11)
-                def self.baz (10:4-10:16)
-              class B (13:2-13:13)
-                class C (15:4-15:11)
-            module OtherModule (19:0-19:18)
-            class OtherClass (20:0-20:16)
+                def bar (8:4-8:16)
+                def foo (6:4-6:16)
+                def self.baz (10:4-10:21)
+              class B (13:2-16:5)
+                class C (15:4-15:16)
+            module OtherModule (19:0-19:23)
+            class OtherClass (20:0-20:21)
         MSG
       end
 
