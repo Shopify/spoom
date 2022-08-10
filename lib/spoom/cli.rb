@@ -7,6 +7,7 @@ require_relative "cli/helper"
 
 require_relative "cli/bump"
 require_relative "cli/config"
+require_relative "cli/docs"
 require_relative "cli/lsp"
 require_relative "cli/coverage"
 require_relative "cli/run"
@@ -30,6 +31,9 @@ module Spoom
 
       desc "coverage", "Collect metrics related to Sorbet coverage"
       subcommand "coverage", Spoom::Cli::Coverage
+
+      desc "docs", "TODO"
+      subcommand "docs", Spoom::Cli::Docs
 
       desc "lsp", "Send LSP requests to Sorbet"
       subcommand "lsp", Spoom::Cli::LSP
