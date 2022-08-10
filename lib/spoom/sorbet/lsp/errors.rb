@@ -28,7 +28,7 @@ module Spoom
         def initialize(uri, diagnostics)
           @uri = uri
           @diagnostics = diagnostics
-          super()
+          super(diagnostics.join("\n"))
         end
       end
     end

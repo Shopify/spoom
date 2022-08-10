@@ -1,0 +1,6 @@
+<h3><%= file.path %></h3>
+<div>
+  <% file.symbols.each do |symbol| %>
+    <%= symbol_card(symbol).html %>
+  <% end %>
+</div>

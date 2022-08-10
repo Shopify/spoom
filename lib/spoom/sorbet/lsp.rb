@@ -61,7 +61,10 @@ module Spoom
         raise ResponseError.from_json(json["error"]) if json["error"]
 
         # Handle typechecking errors
-        raise Error::Diagnostics.from_json(json["params"]) if json["method"] == "textDocument/publishDiagnostics"
+        while json["method"] == "textDocument/publishDiagnostics"
+          puts Error::Diagnostics.from_json(json["params"]).message
+          json = read
+        end
 
         json
       end

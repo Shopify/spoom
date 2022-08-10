@@ -2,8 +2,8 @@
 # frozen_string_literal: true
 
 require_relative "../model/model"
-require_relative "../docs/index"
-require_relative "../docs/html_symbol_printer"
+require_relative "../docs/template"
+
 require "benchmark"
 
 module Spoom
@@ -28,10 +28,8 @@ module Spoom
         )
         client.open(File.expand_path(path))
 
-        # Build file tree from project
         config = sorbet_config
         files = Spoom::Sorbet.srb_files(config, path: path)
-        # files = files.reject { |file| file.end_with?(".rbi") }
 
         if files.empty?
           say_error("No file matching `#{sorbet_config_file}`")
@@ -44,48 +42,42 @@ module Spoom
         time = Benchmark.realtime do
           model = Spoom::Model::Builder::LSP.build_model(exec_path, client, files)
         end
-        print("Done (#{time.round(2)}s)\n")
+        print(" Done (#{time.round(2)}s)\n")
 
+        FileUtils.mkdir_p("docs")
 
-        print("Building index...  ")
+        print("Building index...")
         time = Benchmark.realtime do
-          index = Spoom::Docs::Index.new(model)
-          FileUtils.mkdir_p("docs")
-          File.write("docs/index.html", index.to_html)
+          page = Spoom::Docs::Templates::Page.new(
+            Spoom::Docs::Templates::Pages::Index.new(model)
+          )
+          page.write!("docs/index.html")
         end
-        print("Done (#{time.round(2)}s)\n")
+        print(" Done (#{time.round(2)}s)\n")
 
-        # model.files.each do |file|
-        #   puts file
-        #   uri = to_uri(file)
-        #   output_file = "docs/#{file}.html"
-        #   output_dir = File.dirname(output_file)
-        #   FileUtils.mkdir_p(output_dir)
-
-        #   output_html = String.new
-        #   symbols = client.document_symbols(uri)
-
-        #   symbol_printer = Spoom::Docs::HTMLSymbolPrinter.new(
-        #     client,
-        #     uri,
-        #     output_html
-        #   )
-
-        #   symbol_printer.visit_symbols(symbols)
-        #   File.write(output_file, output_html)
+        # print("Building file pages...")
+        # time = Benchmark.realtime do
+        #   model.files.sort.each do |_path, file|
+        #     page = Spoom::Docs::Templates::Page.new(
+        #       Spoom::Docs::Templates::Pages::FileSymbols.new(file)
+        #     )
+        #     page.write!("docs/files/#{file.path}.html")
+        #   end
         # end
+        # print(" Done (#{time.round(2)}s)\n")
 
-        # tree = FileTree.new(files, strip_prefix: path)
-        # client.
-
-        # TODO get full symbol tree
-        # TODO get documentation for symbols
-      end
-
-      no_commands do
-        def to_uri(path)
-          "file://" + File.join(File.expand_path(exec_path), path)
+        print("Building scopes pages...")
+        time = Benchmark.realtime do
+          model.scopes.sort.each do |fully_qualified_name, scopes|
+            page = Spoom::Docs::Templates::Page.new(
+              Spoom::Docs::Templates::Pages::Scope.new(fully_qualified_name, scopes)
+            )
+            page.write!( "docs/scopes/#{fully_qualified_name}.html")
+          end
         end
+        print(" Done (#{time.round(2)}s)\n")
+
+        # TODO: handle links properly
       end
     end
   end
