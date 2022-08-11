@@ -197,13 +197,13 @@ module Spoom
     # Read the contents of `sorbet/config` in this context directory
     sig { returns(String) }
     def sorbet_config
-      read("sorbet/config")
+      read(Spoom::Sorbet::CONFIG_PATH)
     end
 
     # Set the `contents` of `sorbet/config` in this context directory
     sig { params(contents: String, append: T::Boolean).void }
     def sorbet_config!(contents, append: false)
-      write!("sorbet/config", contents, append: append)
+      write!(Spoom::Sorbet::CONFIG_PATH, contents, append: append)
     end
 
     # Read the strictness sigil from the file at `relative_path` (returns `nil` if no sigil)
