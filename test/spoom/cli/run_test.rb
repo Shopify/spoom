@@ -32,7 +32,7 @@ module Spoom
       end
 
       def test_display_no_errors_without_filter
-        @project.sorbet_config!("file.rb")
+        @project.write_sorbet_config!("file.rb")
         result = @project.spoom("tc")
         assert_equal(<<~MSG, result.err)
           No errors! Great job.
@@ -41,7 +41,7 @@ module Spoom
       end
 
       def test_display_no_errors_with_sort
-        @project.sorbet_config!("file.rb")
+        @project.write_sorbet_config!("file.rb")
         result = @project.spoom("tc --no-color -s")
         assert_equal(<<~MSG, result.err)
           No errors! Great job.
@@ -73,7 +73,7 @@ module Spoom
       end
 
       def test_display_errors_with_sort_default_with_custom_url
-        @project.sorbet_config!(<<~CONFIG)
+        @project.write_sorbet_config!(<<~CONFIG)
           .
           --error-url-base=https://custom#
         CONFIG
@@ -279,7 +279,7 @@ module Spoom
 
       def test_display_sorbet_segfault
         project = new_project
-        project.gemfile!(<<~GEMFILE)
+        project.write_gemfile!(<<~GEMFILE)
           source "https://rubygems.org"
 
           gem "sorbet-static", "= 0.5.9267"

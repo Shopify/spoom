@@ -16,8 +16,8 @@ module Spoom
     sig { params(name: T.nilable(String)).returns(TestProject) }
     def new_project(name = nil)
       project = TestProject.mktmp!(name || self.name)
-      project.gemfile!(spoom_gemfile)
-      project.sorbet_config!(".")
+      project.write_gemfile!(spoom_gemfile)
+      project.write_sorbet_config!(".")
       project
     end
 

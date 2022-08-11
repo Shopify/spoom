@@ -15,7 +15,7 @@ module Spoom
       end
 
       def test_display_empty_config
-        @project.sorbet_config!("")
+        @project.write_sorbet_config!("")
         result = @project.spoom("config --no-color")
         assert_equal(<<~MSG, result.out)
           Found Sorbet config at `sorbet/config`.
@@ -50,7 +50,7 @@ module Spoom
       end
 
       def test_display_multi_config
-        @project.sorbet_config!(<<~CFG)
+        @project.write_sorbet_config!(<<~CFG)
           lib
           --dir=test
           --dir
@@ -75,7 +75,7 @@ module Spoom
       end
 
       def test_display_config_with_ignored_files
-        @project.sorbet_config!(<<~CFG)
+        @project.write_sorbet_config!(<<~CFG)
           lib/project.rb
           --ignore=lib/main
           --ignore
@@ -99,7 +99,7 @@ module Spoom
       end
 
       def test_display_config_with_allowed_extensions
-        @project.sorbet_config!(<<~CFG)
+        @project.write_sorbet_config!(<<~CFG)
           lib/project.rb
           --ignore=lib/main
           --ignore

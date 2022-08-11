@@ -11,7 +11,7 @@ module Spoom
       end
 
       def test_run_srb_from_bundler
-        @project.gemfile!(<<~GEM)
+        @project.write_gemfile!(<<~GEM)
           source 'https://rubygems.org'
           gem 'sorbet'
         GEM
@@ -29,7 +29,7 @@ module Spoom
       end
 
       def test_run_srb_from_bundler_not_found
-        @project.gemfile!("source 'https://rubygems.org'")
+        @project.write_gemfile!("source 'https://rubygems.org'")
         Bundler.with_unbundled_env do
           result = @project.bundle_install!
           assert(result.status)

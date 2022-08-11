@@ -74,7 +74,7 @@ module Spoom
         @project.write!("lib/d.rb", "# typed: strict")
         @project.write!("lib/e.rb", "# typed: strong")
         @project.write!("lib/f.rb", "# typed: __STDLIB_INTERNAL")
-        @project.sorbet_config!(<<~CFG)
+        @project.write_sorbet_config!(<<~CFG)
           .
           --ignore=test
         CFG
@@ -95,7 +95,7 @@ module Spoom
         @project.write!("lib/d.ru", "# typed: strict")
         @project.write!("lib/e.rb", "# typed: strong")
         @project.write!("lib/f.rb", "# typed: __STDLIB_INTERNAL")
-        @project.sorbet_config!(<<~CFG)
+        @project.write_sorbet_config!(<<~CFG)
           .
           --allowed-extension=.rake
           --allowed-extension=.ru
