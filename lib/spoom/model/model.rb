@@ -158,6 +158,7 @@ module Spoom
 
         sig { params(path: String).void }
         def visit_file(path)
+          puts "visit_file: #{path}"
           return if @model.files.key?(path)
           return if path.start_with?("test/")
           return if path.start_with?("sorbet/")
@@ -171,8 +172,6 @@ module Spoom
           return if roots.empty?
 
           visit_document_symbols(roots)
-        rescue Spoom::LSP::Error::Diagnostics => error
-          puts "Error: #{error.message}"
         end
 
         sig { params(document_symbols: T::Array[Spoom::LSP::DocumentSymbol]).void }
@@ -232,7 +231,7 @@ module Spoom
 
         sig { params(path: String).returns(String) }
         def to_uri(path)
-          "file://" + ::File.join(::File.expand_path(@exec_path), path)
+          "file://" + ::File.absolute_path(path)
         end
       end
     end

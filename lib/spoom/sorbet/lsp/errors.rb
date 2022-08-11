@@ -47,13 +47,13 @@ module Spoom
         ResponseError.new(
           json["code"],
           json["message"],
-          json["data"]
+          json["data"] || {}
         )
       end
 
       sig { params(code: Integer, message: String, data: T::Hash[T.untyped, T.untyped]).void }
       def initialize(code, message, data)
-        super(message)
+        super("Error: " + message)
         @code = code
         @data = data
       end

@@ -46,10 +46,10 @@ module Spoom
       sig { returns(String) }
       attr_reader :method
 
-      sig { returns(T::Hash[T.untyped, T.untyped]) }
+      sig { returns(T.nilable(T::Hash[T.untyped, T.untyped])) }
       attr_reader :params
 
-      sig { params(id: Integer, method: String, params: T::Hash[T.untyped, T.untyped]).void }
+      sig { params(id: Integer, method: String, params: T.nilable(T::Hash[T.untyped, T.untyped])).void }
       def initialize(id, method, params)
         super()
         @id = id

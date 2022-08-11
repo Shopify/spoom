@@ -1,0 +1,12 @@
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title"><%= @symbol.name %></h5>
+    <p class="card-text"></p>
+    <% if @symbol.comment_string %>
+      <p><%= @symbol.comment_string %></p>
+    <% end %>
+    <% if @symbol.sig_string %>
+      <pre class="bg-light"><code><%= @symbol.sig_string %></code></pre>
+    <% end %>
+  </div>
+</div>

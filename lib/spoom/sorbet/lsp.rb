@@ -17,10 +17,10 @@ module Spoom
       def initialize(sorbet_bin, *sorbet_args, path: ".")
         @id = T.let(0, Integer)
         @open = T.let(false, T::Boolean)
-        io_in, io_out, io_err, _status = T.unsafe(Open3).popen3(sorbet_bin, *sorbet_args, chdir: path)
+        io_in, io_out, _status = T.unsafe(Open3).popen2(sorbet_bin, *sorbet_args, chdir: path)
         @in = T.let(io_in, IO)
         @out = T.let(io_out, IO)
-        @err = T.let(io_err, IO)
+        # @err = T.let(io_err, IO)
       end
 
       sig { returns(Integer) }
@@ -42,6 +42,13 @@ module Spoom
       sig { returns(T.nilable(String)) }
       def read_raw
         header = @out.gets
+
+        # begin
+        #   @err.
+        #   $stderr.print @err.read_nonblock(1000)
+        # rescue IO::WaitReadable
+        #   # noop
+        # end
 
         # Sorbet returned an error and forgot to answer
         raise Error::BadHeaders, "bad response headers" unless header&.match?(/Content-Length: /)
@@ -230,10 +237,10 @@ module Spoom
 
       sig { void }
       def close
-        send(Request.new(next_id, "shutdown", {}))
+        send(Request.new(next_id, "shutdown", nil))
         @in.close
         @out.close
-        @err.close
+        # @err.close
         @open = false
       end
     end

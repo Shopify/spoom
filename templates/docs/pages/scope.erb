@@ -1,40 +1,45 @@
-<table style="width: 100%">
-  <tr>
-    <td style="vertical-align: top; width: 30%">
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-3">
       <% if scope_constants.any? %>
-        <h4>Constants</h4>
-        <% scope_constants.each do |symbol| %>
-          <a href="<%= link_to_symbol(symbol) %>"><%= symbol.name %></a><br>
-        <% end %>
+        <p><strong>Constants</strong></p>
+        <ul class="list-unstyled">
+          <% scope_constants.each do |symbol| %>
+            <li><%= symbol_link(symbol, qualified_name: false).html %></li>
+          <% end %>
+        </ul>
       <% end %>
       <% if scope_properties.any? %>
-        <h4>Properties</h4>
-        <% scope_properties.each do |symbol| %>
-          <a href="<%= link_to_symbol(symbol) %>"><%= symbol.name %></a><br>
-        <% end %>
+        <p><strong>Properties</strong></p>
+        <ul class="list-unstyled">
+          <% scope_properties.each do |symbol| %>
+            <li><%= symbol_link(symbol, qualified_name: false, anchor: true).html %></li>
+          <% end %>
+        </ul>
       <% end %>
-    </td>
-    <td style="vertical-align: top">
-      <h2><%= @fully_qualified_name %></h2>
-      <% @symbols.each do |symbol| %>
-        <% if symbol.comment_string %>
-          <p><%= symbol.comment_string %></p>
+    </div>
+    <div class="col-sm-9">
+    <div class="card">
+      <div class="card-body">
+        <h1 class="card-title"><%= @fully_qualified_name.split("::").last %></h1>
+
+        <% @symbols.each do |symbol| %>
+          <% if symbol.comment_string %>
+            <p><%= symbol.comment_string %></p>
+          <% end %>
         <% end %>
-      <% end %>
-      <% @symbols.each do |symbol| %>
-        <% if symbol.sig_string %>
-          <pre><code><%= symbol.sig_string %></code></pre>
+        <% @symbols.each do |symbol| %>
+          <% if symbol.sig_string %>
+            <pre class="bg-light"><code><%= symbol.sig_string %></code></pre>
+          <% end %>
         <% end %>
-      <% end %>
+      </div>
+    </div>
+    <% if scope_properties.any? %>
+      <h3 class="mt-3">Properties</h3>
       <% scope_properties.each do |symbol| %>
-        <h4><%= symbol.name %></h3>
-        <% if symbol.comment_string %>
-          <p><%= symbol.comment_string %></p>
-        <% end %>
-        <% if symbol.sig_string %>
-          <pre><code><%= symbol.sig_string %></code></pre>
-        <% end %>
+        <%= symbol_card(symbol).html %>
       <% end %>
-    </td>
-  </tr>
-</table>
+    <% end %>
+  </div>
+</div>

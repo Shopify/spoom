@@ -36,7 +36,7 @@ module Spoom
 
         sig { params(qname: String).returns(String) }
         def link_for_scope(qname)
-          "docs/scopes/#{qname}.html"
+          "./#{qname}.html"
         end
 
         sig { params(qname: String).returns(String) }
@@ -45,15 +45,33 @@ module Spoom
         end
 
         sig { params(symbol: Spoom::Model::Symbol).returns(String) }
-        def link_to_symbol(symbol)
+        def anchor_to_symbol(symbol)
+          "##{symbol.name}"
+        end
+
+        sig { params(symbol: Spoom::Model::Symbol, anchor: T::Boolean).returns(String) }
+        def link_to_symbol(symbol, anchor: false)
           case symbol
           when Spoom::Model::Scope
             link_for_scope(symbol.fully_qualified_name)
           when Spoom::Model::Prop
-            link_for_prop(symbol.fully_qualified_name)
+            # TODO: handle top level
+            parent_scope = T.must(symbol.parent_scope)
+            "#{link_to_symbol(parent_scope)}##{symbol.name}"
           else
             raise "Unknown symbol type #{symbol.class}"
           end
+        end
+
+        sig do
+          params(
+            symbol: Spoom::Model::Symbol,
+            anchor: T::Boolean,
+            qualified_name: T::Boolean
+          ).returns(Templates::SymbolLink)
+        end
+        def symbol_link(symbol, anchor: false, qualified_name: true)
+          Templates::SymbolLink.new(symbol, anchor: anchor, qualified_name: qualified_name)
         end
 
         sig { params(symbol: Spoom::Model::Symbol).returns(Templates::SymbolCard) }
@@ -129,14 +147,14 @@ module Spoom
           sig { returns(T::Array[String]) }
           def scopes_links
             @model.scopes.keys.sort.map do |name|
-              "<a href='../#{link_for_scope(name)}'>#{name}</a>"
+              "<a href='#{link_for_scope(name)}'>#{name}</a>"
             end
           end
 
           sig { returns(T::Array[String]) }
           def props_links
             @model.props.keys.sort.map do |name|
-              "<a href='../#{link_for_prop(name)}'>#{name}</a>"
+              "<a href='#{link_for_prop(name)}'>#{name}</a>"
             end
           end
         end
@@ -204,12 +222,29 @@ module Spoom
         end
       end
 
+      class SymbolLink < Template
+        extend T::Sig
+
+        sig { params(symbol: Spoom::Model::Symbol, anchor: T::Boolean, qualified_name: T::Boolean).void }
+        def initialize(symbol, anchor: false, qualified_name: true)
+          super("#{Spoom::SPOOM_PATH}/templates/docs/partials/symbol_link.erb")
+          @symbol = symbol
+          @title = T.let(symbol.comment_string&.lstrip&.lines&.first&.strip, T.nilable(String))
+
+          link = anchor ? anchor_to_symbol(symbol) : link_to_symbol(symbol)
+          @link = T.let(link, T.nilable(String))
+
+          name = qualified_name ? symbol.fully_qualified_name : symbol.name
+          @text = T.let(name, T.nilable(String))
+        end
+      end
+
       class SymbolCard < Template
         extend T::Sig
 
         sig { params(symbol: Spoom::Model::Symbol).void }
         def initialize(symbol)
-          super("#{Spoom::SPOOM_PATH}/templates/docs/cards/symbol.erb")
+          super("#{Spoom::SPOOM_PATH}/templates/docs/symbol_card.erb")
           @symbol = symbol
         end
       end
