@@ -117,25 +117,25 @@ module Spoom
       end
 
       def test_files_with_sigil_strictness_nested_directory
-        project = spoom_project
-        project.write("false.rb", "# typed: false")
-        project.write("true.rb", "# typed: true")
-        project.write("nested/false.rb", "# typed: false")
-        project.write("nested/true.rb", "# typed: true")
+        project = new_project
+        project.write!("false.rb", "# typed: false")
+        project.write!("true.rb", "# typed: true")
+        project.write!("nested/false.rb", "# typed: false")
+        project.write!("nested/true.rb", "# typed: true")
 
-        files = Sigils.files_with_sigil_strictness(project.path, "false").sort
+        files = Sigils.files_with_sigil_strictness(project.absolute_path, "false").sort
 
         expected_files = [
-          "#{project.path}/false.rb",
-          "#{project.path}/nested/false.rb",
+          "#{project.absolute_path}/false.rb",
+          "#{project.absolute_path}/nested/false.rb",
         ]
         assert_equal(expected_files, files)
 
-        project.destroy
+        project.destroy!
       end
 
       def test_files_with_sigil_strictness_with_iso_content
-        project = spoom_project
+        project = new_project
 
         string_utf = <<~RB
           # typed: true
@@ -144,14 +144,14 @@ module Spoom
         RB
 
         string_iso = string_utf.encode("ISO-8859-15")
-        project.write("file1.rb", string_iso)
-        project.write("file2.rb", string_iso)
-        expected_files = ["#{project.path}/file1.rb", "#{project.path}/file2.rb"]
+        project.write!("file1.rb", string_iso)
+        project.write!("file2.rb", string_iso)
+        expected_files = ["#{project.absolute_path}/file1.rb", "#{project.absolute_path}/file2.rb"]
 
-        files = Sigils.files_with_sigil_strictness(project.path, "true").sort
+        files = Sigils.files_with_sigil_strictness(project.absolute_path, "true").sort
         assert_equal(expected_files, files)
 
-        project.destroy
+        project.destroy!
       end
 
       def test_file_strictness_returns_nil_if_file_not_found
@@ -165,23 +165,23 @@ module Spoom
       end
 
       def test_file_strictness_with_valid_sigil
-        project = spoom_project
-        project.write("file.rb", "# typed: true")
-        strictness = Sigils.file_strictness("#{project.path}/file.rb")
+        project = new_project
+        project.write!("file.rb", "# typed: true")
+        strictness = Sigils.file_strictness("#{project.absolute_path}/file.rb")
         assert_equal("true", strictness)
-        project.destroy
+        project.destroy!
       end
 
       def test_file_strictness_with_invalid_sigil
-        project = spoom_project
-        project.write("file.rb", "# typed: asdf")
-        strictness = Sigils.file_strictness("#{project.path}/file.rb")
+        project = new_project
+        project.write!("file.rb", "# typed: asdf")
+        strictness = Sigils.file_strictness("#{project.absolute_path}/file.rb")
         assert_equal("asdf", strictness)
-        project.destroy
+        project.destroy!
       end
 
       def test_file_strictness_with_iso_content
-        project = spoom_project
+        project = new_project
 
         string = <<~RB
           # typed: true
@@ -189,24 +189,24 @@ module Spoom
           puts "À coûté 10€"
         RB
 
-        project.write("file.rb", string.encode("ISO-8859-15"))
-        strictness = Sigils.file_strictness("#{project.path}/file.rb")
+        project.write!("file.rb", string.encode("ISO-8859-15"))
+        strictness = Sigils.file_strictness("#{project.absolute_path}/file.rb")
         assert_equal("true", strictness)
-        project.destroy
+        project.destroy!
       end
 
       def test_change_sigil_in_file_false_to_true
-        project = spoom_project
-        project.write("file.rb", "# typed: false")
-        updated = Sigils.change_sigil_in_file("#{project.path}/file.rb", "true")
+        project = new_project
+        project.write!("file.rb", "# typed: false")
+        updated = Sigils.change_sigil_in_file("#{project.absolute_path}/file.rb", "true")
         assert(updated)
-        strictness = Sigils.file_strictness("#{project.path}/file.rb")
+        strictness = Sigils.file_strictness("#{project.absolute_path}/file.rb")
         assert_equal("true", strictness)
-        project.destroy
+        project.destroy!
       end
 
       def test_change_sigil_in_file_with_iso_content
-        project = spoom_project
+        project = new_project
 
         string = <<~RB
           # typed: true
@@ -214,14 +214,14 @@ module Spoom
           puts "À coûté 10€"
         RB
 
-        project.write("file.rb", string.encode("ISO-8859-15"))
-        Sigils.change_sigil_in_file("#{project.path}/file.rb", "strict")
-        assert_equal("strict", Sigils.file_strictness("#{project.path}/file.rb"))
-        project.destroy
+        project.write!("file.rb", string.encode("ISO-8859-15"))
+        Sigils.change_sigil_in_file("#{project.absolute_path}/file.rb", "strict")
+        assert_equal("strict", Sigils.file_strictness("#{project.absolute_path}/file.rb"))
+        project.destroy!
       end
 
       def test_change_sigil_in_file_with_default_internal_encoding
-        project = spoom_project
+        project = new_project
 
         string = <<~RB
           # typed: true
@@ -230,35 +230,35 @@ module Spoom
         RB
 
         old_encoding = Encoding.default_internal
-        project.write("file.rb", string.encode("UTF-8"))
+        project.write!("file.rb", string.encode("UTF-8"))
 
         begin
           Encoding.default_internal = Encoding::UTF_8
 
-          Sigils.change_sigil_in_file("#{project.path}/file.rb", "strict")
-          assert_equal("strict", Sigils.file_strictness("#{project.path}/file.rb"))
+          Sigils.change_sigil_in_file("#{project.absolute_path}/file.rb", "strict")
+          assert_equal("strict", Sigils.file_strictness("#{project.absolute_path}/file.rb"))
         ensure
           Encoding.default_internal = old_encoding
-          project.destroy
+          project.destroy!
         end
       end
 
       def test_change_sigil_in_files_false_to_true
-        project = spoom_project
-        project.write("file1.rb", "# typed: false")
-        project.write("file2.rb", "# typed: ignore")
-        files = ["#{project.path}/file1.rb", "#{project.path}/file2.rb"]
+        project = new_project
+        project.write!("file1.rb", "# typed: false")
+        project.write!("file2.rb", "# typed: ignore")
+        files = ["#{project.absolute_path}/file1.rb", "#{project.absolute_path}/file2.rb"]
 
         changed_files = Sigils.change_sigil_in_files(files, "true")
         assert_equal(files, changed_files)
-        assert_equal("true", Sigils.file_strictness("#{project.path}/file1.rb"))
-        assert_equal("true", Sigils.file_strictness("#{project.path}/file2.rb"))
+        assert_equal("true", Sigils.file_strictness("#{project.absolute_path}/file1.rb"))
+        assert_equal("true", Sigils.file_strictness("#{project.absolute_path}/file2.rb"))
 
-        project.destroy
+        project.destroy!
       end
 
       def test_change_sigil_in_files_with_iso_content
-        project = spoom_project
+        project = new_project
 
         string_utf = <<~RB
           # typed: true
@@ -267,15 +267,15 @@ module Spoom
         RB
 
         string_iso = string_utf.encode("ISO-8859-15")
-        project.write("file1.rb", string_iso)
-        project.write("file2.rb", string_iso)
-        files = ["#{project.path}/file1.rb", "#{project.path}/file2.rb"]
+        project.write!("file1.rb", string_iso)
+        project.write!("file2.rb", string_iso)
+        files = ["#{project.absolute_path}/file1.rb", "#{project.absolute_path}/file2.rb"]
 
         changed_files = Sigils.change_sigil_in_files(files, "true")
         assert_equal(files, changed_files)
-        assert_equal("true", Sigils.file_strictness("#{project.path}/file1.rb"))
-        assert_equal("true", Sigils.file_strictness("#{project.path}/file2.rb"))
-        project.destroy
+        assert_equal("true", Sigils.file_strictness("#{project.absolute_path}/file1.rb"))
+        assert_equal("true", Sigils.file_strictness("#{project.absolute_path}/file2.rb"))
+        project.destroy!
       end
     end
   end
