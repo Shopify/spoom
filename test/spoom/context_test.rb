@@ -154,9 +154,9 @@ module Spoom
 
       def test_context_gemfile
         context = Context.mktmp!
-        context.gemfile!("CONTENTS")
+        context.write_gemfile!("CONTENTS")
         assert(context.file?("Gemfile"))
-        assert_equal("CONTENTS", context.gemfile)
+        assert_equal("CONTENTS", context.read_gemfile)
         context.destroy!
       end
 
@@ -180,7 +180,7 @@ module Spoom
         assert_equal("Could not locate Gemfile\n", res.err)
         refute(res.status)
 
-        context.gemfile!(<<~GEMFILE)
+        context.write_gemfile!(<<~GEMFILE)
           source "https://rubygems.org"
 
           gem "ansi"
@@ -248,15 +248,15 @@ module Spoom
         context.destroy!
       end
 
-      def test_context_sorbet_config!
+      def test_context_write_sorbet_config!
         context = Context.mktmp!
 
         assert_raises(Errno::ENOENT) do
-          context.sorbet_config
+          context.read_sorbet_config
         end
 
-        context.sorbet_config!(".")
-        assert_equal(".", context.sorbet_config)
+        context.write_sorbet_config!(".")
+        assert_equal(".", context.read_sorbet_config)
 
         context.destroy!
       end
@@ -273,7 +273,7 @@ module Spoom
         res = context.srb("tc")
         refute(res.status)
 
-        context.gemfile!(<<~GEMFILE)
+        context.write_gemfile!(<<~GEMFILE)
           source "https://rubygems.org"
 
           gem "sorbet"
@@ -283,7 +283,7 @@ module Spoom
         res = context.srb("tc")
         refute(res.status)
 
-        context.sorbet_config!(".")
+        context.write_sorbet_config!(".")
         res = context.srb("tc")
         assert_equal(<<~ERR, res.err)
           a.rb:3: Method `foo` does not exist on `T.class_of(<root>)` https://srb.help/7003
@@ -306,13 +306,13 @@ module Spoom
       def test_context_file_strictness
         context = Context.mktmp!
 
-        assert_nil(context.file_strictness("a.rb"))
+        assert_nil(context.read_file_strictness("a.rb"))
 
         context.write!("a.rb", "")
-        assert_nil(context.file_strictness("a.rb"))
+        assert_nil(context.read_file_strictness("a.rb"))
 
         context.write!("a.rb", "# typed: true\n")
-        assert_equal("true", context.file_strictness("a.rb"))
+        assert_equal("true", context.read_file_strictness("a.rb"))
 
         context.destroy!
       end

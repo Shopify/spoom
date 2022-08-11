@@ -78,7 +78,7 @@ module Spoom
       sig { returns(TestProject) }
       def project
         project = new_project
-        project.sorbet_config!(<<~CONFIG)
+        project.write_sorbet_config!(<<~CONFIG)
           .
           --allowed-extension .rb
           --allowed-extension .rbi

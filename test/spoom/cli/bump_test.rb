@@ -45,8 +45,8 @@ module Spoom
         OUT
         refute(result.status)
 
-        assert_equal("true", @project.file_strictness("file1.rb"))
-        assert_equal("false", @project.file_strictness("file2.rb"))
+        assert_equal("true", @project.read_file_strictness("file1.rb"))
+        assert_equal("false", @project.read_file_strictness("file2.rb"))
       end
 
       def test_bump_doesnt_change_sigils_outside_directory
@@ -64,9 +64,9 @@ module Spoom
         OUT
         refute(result.status)
 
-        assert_equal("false", @project.file_strictness("lib/a/file.rb"))
-        assert_equal("true", @project.file_strictness("lib/b/file.rb"))
-        assert_equal("true", @project.file_strictness("lib/c/file.rb"))
+        assert_equal("false", @project.read_file_strictness("lib/a/file.rb"))
+        assert_equal("true", @project.read_file_strictness("lib/b/file.rb"))
+        assert_equal("true", @project.read_file_strictness("lib/c/file.rb"))
 
         @project.destroy!
       end
@@ -91,8 +91,8 @@ module Spoom
         OUT
         refute(result.status)
 
-        assert_equal("false", @project.file_strictness("file1.rb"))
-        assert_equal("strict", @project.file_strictness("file2.rb"))
+        assert_equal("false", @project.read_file_strictness("file1.rb"))
+        assert_equal("strict", @project.read_file_strictness("file2.rb"))
       end
 
       def test_bump_nondefault_from_to_revert
@@ -115,8 +115,8 @@ module Spoom
         OUT
         refute(result.status)
 
-        assert_equal("strong", @project.file_strictness("file1.rb"))
-        assert_equal("ignore", @project.file_strictness("file2.rb"))
+        assert_equal("strong", @project.read_file_strictness("file1.rb"))
+        assert_equal("ignore", @project.read_file_strictness("file2.rb"))
       end
 
       def test_force_bump_without_typecheck
@@ -140,8 +140,8 @@ module Spoom
         OUT
         refute(result.status)
 
-        assert_equal("strong", @project.file_strictness("file1.rb"))
-        assert_equal("strong", @project.file_strictness("file2.rb"))
+        assert_equal("strong", @project.read_file_strictness("file1.rb"))
+        assert_equal("strong", @project.read_file_strictness("file2.rb"))
       end
 
       def test_bump_with_multiline_error
@@ -171,11 +171,11 @@ module Spoom
         OUT
         assert(result.status)
 
-        assert_equal("true", @project.file_strictness("file.rb"))
+        assert_equal("true", @project.read_file_strictness("file.rb"))
       end
 
       def test_bump_with_custom_error_url_base
-        @project.sorbet_config!(<<~CONFIG)
+        @project.write_sorbet_config!(<<~CONFIG)
           .
           --error-url-base="https://docs.org#"
         CONFIG
@@ -206,7 +206,7 @@ module Spoom
         OUT
         assert(result.status)
 
-        assert_equal("true", @project.file_strictness("file.rb"))
+        assert_equal("true", @project.read_file_strictness("file.rb"))
       end
 
       def test_bump_preserve_file_encoding
@@ -226,7 +226,7 @@ module Spoom
         OUT
         refute(result.status)
 
-        strictness = @project.file_strictness("file.rb")
+        strictness = @project.read_file_strictness("file.rb")
         assert_equal("true", strictness)
         assert_match("ISO-8859", %x{file "#{@project.absolute_path}/file.rb"})
       end
@@ -253,8 +253,8 @@ module Spoom
         OUT
         refute(result.status)
 
-        assert_equal("false", @project.file_strictness("file1.rb"))
-        assert_equal("false", @project.file_strictness("file2.rb"))
+        assert_equal("false", @project.read_file_strictness("file1.rb"))
+        assert_equal("false", @project.read_file_strictness("file2.rb"))
       end
 
       def test_bump_dry_does_nothing_even_with_force
@@ -280,8 +280,8 @@ module Spoom
         OUT
         refute(result.status)
 
-        assert_equal("false", @project.file_strictness("file1.rb"))
-        assert_equal("false", @project.file_strictness("file2.rb"))
+        assert_equal("false", @project.read_file_strictness("file1.rb"))
+        assert_equal("false", @project.read_file_strictness("file2.rb"))
       end
 
       def test_bump_dry_suggest_custom_command
@@ -302,7 +302,7 @@ module Spoom
         OUT
         refute(result.status)
 
-        assert_equal("false", @project.file_strictness("file1.rb"))
+        assert_equal("false", @project.read_file_strictness("file1.rb"))
       end
 
       def test_bump_dry_does_nothing_with_no_file
@@ -335,8 +335,8 @@ module Spoom
         OUT
         assert(result.status)
 
-        assert_equal("false", @project.file_strictness("file1.rb"))
-        assert_equal("false", @project.file_strictness("file2.rb"))
+        assert_equal("false", @project.read_file_strictness("file1.rb"))
+        assert_equal("false", @project.read_file_strictness("file2.rb"))
       end
 
       def test_bump_dry_does_not_revert_files_not_bumped
@@ -366,8 +366,8 @@ module Spoom
         OUT
         refute(result.status)
 
-        assert_equal("false", @project.file_strictness("file1.rb"))
-        assert_equal("true", @project.file_strictness("file2.rbi"))
+        assert_equal("false", @project.read_file_strictness("file1.rb"))
+        assert_equal("true", @project.read_file_strictness("file2.rbi"))
       end
 
       def test_bump_only_specified_files
@@ -396,7 +396,7 @@ module Spoom
       end
 
       def test_bump_files_according_to_config
-        @project.sorbet_config!(<<~CONFIG)
+        @project.write_sorbet_config!(<<~CONFIG)
           .
           --ignore=vendor/
         CONFIG
@@ -419,8 +419,8 @@ module Spoom
         OUT
         refute(result.status)
 
-        assert_equal("true", @project.file_strictness("file1.rb"))
-        assert_equal("false", @project.file_strictness("vendor/file2.rb"))
+        assert_equal("true", @project.read_file_strictness("file1.rb"))
+        assert_equal("false", @project.read_file_strictness("vendor/file2.rb"))
       end
 
       def test_count_errors_without_dry
@@ -462,12 +462,12 @@ module Spoom
           No file to bump from `false` to `true`
         OUT
         assert(result.status)
-        assert_equal("false", @project.file_strictness("file1.rb"))
+        assert_equal("false", @project.read_file_strictness("file1.rb"))
       end
 
       def test_bump_with_sorbet_segfault
         project = new_project
-        project.gemfile!(<<~GEMFILE)
+        project.write_gemfile!(<<~GEMFILE)
           source "https://rubygems.org"
 
           gem "sorbet-static", "= 0.5.9267"
@@ -498,9 +498,9 @@ module Spoom
         OUT
         refute(result.status)
 
-        assert_equal("false", project.file_strictness("cant_be_bump1.rb"))
-        assert_equal("false", project.file_strictness("cant_be_bump2.rb"))
-        assert_equal("false", project.file_strictness("will_segfault.rb"))
+        assert_equal("false", project.read_file_strictness("cant_be_bump1.rb"))
+        assert_equal("false", project.read_file_strictness("cant_be_bump2.rb"))
+        assert_equal("false", project.read_file_strictness("will_segfault.rb"))
 
         project.destroy!
       end

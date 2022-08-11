@@ -131,13 +131,13 @@ module Spoom
 
     # Read the `contents` of the Gemfile in this context directory
     sig { returns(T.nilable(String)) }
-    def gemfile
+    def read_gemfile
       read("Gemfile")
     end
 
     # Set the `contents` of the Gemfile in this context directory
     sig { params(contents: String, append: T::Boolean).void }
-    def gemfile!(contents, append: false)
+    def write_gemfile!(contents, append: false)
       write!("Gemfile", contents, append: append)
     end
 
@@ -196,19 +196,19 @@ module Spoom
 
     # Read the contents of `sorbet/config` in this context directory
     sig { returns(String) }
-    def sorbet_config
+    def read_sorbet_config
       read(Spoom::Sorbet::CONFIG_PATH)
     end
 
     # Set the `contents` of `sorbet/config` in this context directory
     sig { params(contents: String, append: T::Boolean).void }
-    def sorbet_config!(contents, append: false)
+    def write_sorbet_config!(contents, append: false)
       write!(Spoom::Sorbet::CONFIG_PATH, contents, append: append)
     end
 
     # Read the strictness sigil from the file at `relative_path` (returns `nil` if no sigil)
     sig { params(relative_path: String).returns(T.nilable(String)) }
-    def file_strictness(relative_path)
+    def read_file_strictness(relative_path)
       Spoom::Sorbet::Sigils.file_strictness(absolute_path_to(relative_path))
     end
   end
