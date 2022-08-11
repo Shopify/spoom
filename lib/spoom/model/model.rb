@@ -30,8 +30,12 @@ module Spoom
         case kind
         when "module", "class"
           Scope.new(name, parent_scope: parent_scope)
-        when "def"
+        when "const"
+          Const.new(name, parent_scope: parent_scope)
+        when "constructor", "def", "field"
           Prop.new(name, parent_scope: parent_scope)
+        else
+          raise "Unknown symbol kind: #{kind}"
         end
       end
 
@@ -96,9 +100,6 @@ module Spoom
     class Scope < Symbol
       extend T::Sig
 
-      sig { returns(T::Array[Symbol]) }
-      attr_reader :symbols
-
       sig { params(name: String, parent_scope: T.nilable(Scope)).void }
       def initialize(name, parent_scope: nil)
         super(name, parent_scope: parent_scope)
@@ -108,6 +109,35 @@ module Spoom
       sig { override.returns(String) }
       def fully_qualified_name
         return name if name.start_with?("::")
+
+        "#{parent_scope&.fully_qualified_name}::#{name}"
+      end
+
+      sig { returns(T::Array[Scope]) }
+      def namespace
+        symbols = T.let([], T::Array[Scope])
+        symbols << self
+        parent = T.let(parent_scope, T.nilable(Scope))
+        while parent
+          symbols << parent
+          parent = parent.parent_scope
+        end
+        symbols.reverse
+      end
+
+      sig { params(kind: T.nilable(T.class_of(Symbol))).returns(T::Array[Symbol]) }
+      def symbols(kind = nil)
+        return @symbols unless kind
+
+        @symbols.select { |s| s.is_a?(kind) }
+      end
+    end
+
+    class Const < Symbol
+      sig { override.returns(String) }
+      def fully_qualified_name
+        scope = parent_scope
+        return name unless scope
 
         "#{parent_scope&.fully_qualified_name}::#{name}"
       end

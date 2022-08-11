@@ -1,0 +1,17 @@
+<% namespace = @symbol.namespace %>
+
+<nav style="--bs-breadcrumb-divider: '::';" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <% namespace.each_with_index do |symbol, index| %>
+      <% if index < namespace.size - 1 %>
+        <li class="breadcrumb-item">
+          <%= symbol_link(symbol, qualified_name: false).html %>
+        </li>
+      <% else %>
+        <li class="breadcrumb-item active" aria-current="page">
+          <%= symbol.name %>
+        </li>
+      <% end %>
+    <% end %>
+  </ol>
+</nav>

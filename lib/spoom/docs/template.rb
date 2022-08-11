@@ -19,9 +19,9 @@ module Spoom
           File.read(@template)
         end
 
-        sig { returns(String) }
-        def html
-          ERB.new(erb).result(get_binding)
+        sig { params(binding: Binding).returns(String) }
+        def html(binding: get_binding)
+          ERB.new(erb).result(binding)
         end
 
         sig { returns(Binding) }
@@ -54,7 +54,7 @@ module Spoom
           case symbol
           when Spoom::Model::Scope
             link_for_scope(symbol.fully_qualified_name)
-          when Spoom::Model::Prop
+          when Spoom::Model::Const, Spoom::Model::Prop
             # TODO: handle top level
             parent_scope = T.must(symbol.parent_scope)
             "#{link_to_symbol(parent_scope)}##{symbol.name}"
@@ -62,6 +62,13 @@ module Spoom
             raise "Unknown symbol type #{symbol.class}"
           end
         end
+
+        # sig { params(name: String, bindings: T.nilable(Object)).returns(String) }
+        # def template(name, bindings: nil)
+        #   template = Template.new("#{Spoom::SPOOM_PATH}/templates/docs/#{name}.erb")
+        #   template.html(binding: bindings&.send(:binding) || template.get_binding)
+        #   # template.html(binding: { foo: "bar" }.send(:binding))
+        # end
 
         sig do
           params(
@@ -77,6 +84,16 @@ module Spoom
         sig { params(symbol: Spoom::Model::Symbol).returns(Templates::SymbolCard) }
         def symbol_card(symbol)
           Templates::SymbolCard.new(symbol)
+        end
+
+        sig { params(symbol: Spoom::Model::Symbol).returns(Templates::SymbolSig) }
+        def symbol_sig(symbol)
+          Templates::SymbolSig.new(symbol)
+        end
+
+        sig { params(symbol: Spoom::Model::Symbol).returns(Templates::SymbolNamespace) }
+        def symbol_namespace(symbol)
+          Templates::SymbolNamespace.new(symbol)
         end
       end
 
@@ -189,35 +206,7 @@ module Spoom
 
           sig { override.returns(String) }
           def title
-            @fully_qualified_name
-          end
-
-          sig { returns(T::Array[Spoom::Model::Scope]) }
-          def scope_constants
-            @scope_constants ||= T.let(
-              T.cast(
-                @symbols
-                  .map { |symbol| symbol.symbols.select { |child| child.is_a?(Spoom::Model::Scope) } }
-                  .flatten
-                  .uniq
-                  .sort_by(&:fully_qualified_name),
-                T::Array[Spoom::Model::Scope]
-              ), T.nilable(T::Array[Spoom::Model::Scope])
-            )
-          end
-
-          sig { returns(T::Array[Spoom::Model::Prop]) }
-          def scope_properties
-            @scope_properties ||= T.let(
-              T.cast(
-                @symbols
-                  .map { |symbol| symbol.symbols.select { |child| child.is_a?(Spoom::Model::Prop) } }
-                  .flatten
-                  .uniq
-                  .sort_by(&:fully_qualified_name),
-                T::Array[Spoom::Model::Prop]
-              ), T.nilable(T::Array[Spoom::Model::Prop])
-            )
+            @fully_qualified_name.delete_prefix("::")
           end
         end
       end
@@ -227,7 +216,7 @@ module Spoom
 
         sig { params(symbol: Spoom::Model::Symbol, anchor: T::Boolean, qualified_name: T::Boolean).void }
         def initialize(symbol, anchor: false, qualified_name: true)
-          super("#{Spoom::SPOOM_PATH}/templates/docs/partials/symbol_link.erb")
+          super("#{Spoom::SPOOM_PATH}/templates/docs/symbol_link.erb")
           @symbol = symbol
           @title = T.let(symbol.comment_string&.lstrip&.lines&.first&.strip, T.nilable(String))
 
@@ -245,6 +234,36 @@ module Spoom
         sig { params(symbol: Spoom::Model::Symbol).void }
         def initialize(symbol)
           super("#{Spoom::SPOOM_PATH}/templates/docs/symbol_card.erb")
+          @symbol = symbol
+        end
+      end
+
+      class SymbolNamespace < Template
+        extend T::Sig
+
+        sig { params(symbol: Spoom::Model::Symbol).void }
+        def initialize(symbol)
+          super("#{Spoom::SPOOM_PATH}/templates/docs/symbol_namespace.erb")
+          @symbol = symbol
+        end
+      end
+
+      class SymbolSig < Template
+        extend T::Sig
+
+        sig { params(symbol: Spoom::Model::Symbol).void }
+        def initialize(symbol)
+          super("#{Spoom::SPOOM_PATH}/templates/docs/symbol_sig.erb")
+          @symbol = symbol
+        end
+      end
+
+      class SymbolNamespace < Template
+        extend T::Sig
+
+        sig { params(symbol: Spoom::Model::Symbol).void }
+        def initialize(symbol)
+          super("#{Spoom::SPOOM_PATH}/templates/docs/symbol_namespace.erb")
           @symbol = symbol
         end
       end

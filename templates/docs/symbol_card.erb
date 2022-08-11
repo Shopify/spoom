@@ -1,6 +1,6 @@
 <div class="card">
   <div class="card-body">
-    <h5 class="card-title"><%= @symbol.name %></h5>
+    <h5 class="card-title text-primary"><%= symbol_sig(@symbol).html %></h5>
     <p class="card-text"></p>
     <% if @symbol.comment_string %>
       <p><%= @symbol.comment_string %></p>

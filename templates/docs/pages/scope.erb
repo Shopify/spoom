@@ -1,18 +1,22 @@
+<% constants = @symbols.map { |symbol| symbol.symbols(Spoom::Model::Const) }.flatten.sort_by(&:fully_qualified_name) %>
+<% scopes = @symbols.map { |symbol| symbol.symbols(Spoom::Model::Scope) }.flatten.sort_by(&:fully_qualified_name) %>
+<% properties = @symbols.map { |symbol| symbol.symbols(Spoom::Model::Prop) }.flatten.sort_by(&:fully_qualified_name) %>
+
 <div class="container-fluid">
   <div class="row">
     <div class="col-sm-3">
-      <% if scope_constants.any? %>
-        <p><strong>Constants</strong></p>
+      <% if constants.any? || scopes.any? %>
+        <p class="text-muted"><strong>Constants</strong></p>
         <ul class="list-unstyled">
-          <% scope_constants.each do |symbol| %>
+          <% (constants + scopes).each do |symbol| %>
             <li><%= symbol_link(symbol, qualified_name: false).html %></li>
           <% end %>
         </ul>
       <% end %>
-      <% if scope_properties.any? %>
-        <p><strong>Properties</strong></p>
+      <% if properties.any? %>
+        <p class="text-muted"><strong>Properties</strong></p>
         <ul class="list-unstyled">
-          <% scope_properties.each do |symbol| %>
+          <% properties.each do |symbol| %>
             <li><%= symbol_link(symbol, qualified_name: false, anchor: true).html %></li>
           <% end %>
         </ul>
@@ -22,8 +26,8 @@
     <div class="card">
       <div class="card-body">
         <h1 class="card-title"><%= @fully_qualified_name.split("::").last %></h1>
-
         <% @symbols.each do |symbol| %>
+          <%= symbol_namespace(symbol).html %>
           <% if symbol.comment_string %>
             <p><%= symbol.comment_string %></p>
           <% end %>
@@ -35,9 +39,16 @@
         <% end %>
       </div>
     </div>
-    <% if scope_properties.any? %>
-      <h3 class="mt-3">Properties</h3>
-      <% scope_properties.each do |symbol| %>
+
+    <% if constants.any? || scopes.any? %>
+      <h4 class="mt-3 text-muted">Constants</h4>
+      <% (constants + scopes).each do |symbol| %>
+      <% end %>
+    <% end %>
+
+    <% if properties.any? %>
+      <h4 class="mt-3 text-muted">Properties</h4>
+      <% properties.each do |symbol| %>
         <%= symbol_card(symbol).html %>
       <% end %>
     <% end %>
