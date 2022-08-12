@@ -16,12 +16,16 @@ module Spoom
         sig { returns(T::Array[Diagnostic]) }
         attr_reader :diagnostics
 
-        sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Diagnostics) }
-        def self.from_json(json)
-          Diagnostics.new(
-            json["uri"],
-            json["diagnostics"].map { |d| Diagnostic.from_json(d) }
-          )
+        class << self
+          extend T::Sig
+
+          sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Diagnostics) }
+          def from_json(json)
+            Diagnostics.new(
+              json["uri"],
+              json["diagnostics"].map { |d| Diagnostic.from_json(d) }
+            )
+          end
         end
 
         sig { params(uri: String, diagnostics: T::Array[Diagnostic]).void }
@@ -42,13 +46,17 @@ module Spoom
       sig { returns(T::Hash[T.untyped, T.untyped]) }
       attr_reader :data
 
-      sig { params(json: T::Hash[T.untyped, T.untyped]).returns(ResponseError) }
-      def self.from_json(json)
-        ResponseError.new(
-          json["code"],
-          json["message"],
-          json["data"]
-        )
+      class << self
+        extend T::Sig
+
+        sig { params(json: T::Hash[T.untyped, T.untyped]).returns(ResponseError) }
+        def from_json(json)
+          ResponseError.new(
+            json["code"],
+            json["message"],
+            json["data"]
+          )
+        end
       end
 
       sig { params(code: Integer, message: String, data: T::Hash[T.untyped, T.untyped]).void }

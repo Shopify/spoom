@@ -18,79 +18,83 @@ module Spoom
           @keys = keys
         end
 
-        sig { returns(String) }
-        def self.header_style
-          <<~CSS
-            .domain {
-              stroke: transparent;
-            }
+        class << self
+          extend T::Sig
 
-            .grid line {
-              stroke: #ccc;
-            }
-
-            .axis text {
-              font: 12px Arial, sans-serif;
-              fill: #333;
-              text-anchor: right;
-              pointer-events: none;
-            }
-
-            .area {
-              fill-opacity: 0.5;
-            }
-
-            .line {
-              stroke-width: 2;
-              fill: transparent;
-            }
-
-            .dot {
-              r: 2;
-              fill: #888;
-            }
-
-            .inverted .grid line {
-              stroke: #777;
-            }
-
-            .inverted .area {
-              fill-opacity: 0.9;
-            }
-
-            .inverted .axis text {
-              fill: #fff;
-            }
-
-            .inverted .axis line {
-              stroke: #fff;
-            }
-
-            .inverted .dot {
-              fill: #fff;
-            }
-          CSS
-        end
-
-        sig { returns(String) }
-        def self.header_script
-          <<~JS
-            var parseVersion = function(version) {
-              if (!version) {
-                return null;
+          sig { returns(String) }
+          def header_style
+            <<~CSS
+              .domain {
+                stroke: transparent;
               }
-              return parseFloat(version.replaceAll("0.", ""));
-            }
 
-            function tooltipTimeline(d, kind) {
-              moveTooltip(d)
-                .html("commit <b>" + d.data.commit + "</b><br>"
-                  + d3.timeFormat("%y/%m/%d")(parseDate(d.data.timestamp)) + "<br><br>"
-                  + "<b>typed: " + d.key + "</b><br><br>"
-                  + "<b>" + (d.data.values[d.key] ? d.data.values[d.key] : 0) + "</b> " + kind +"<br>"
-                  + "<b>" + toPercent(d.data.values[d.key] ? d.data.values[d.key] : 0, d.data.total) + "%")
-            }
-          JS
+              .grid line {
+                stroke: #ccc;
+              }
+
+              .axis text {
+                font: 12px Arial, sans-serif;
+                fill: #333;
+                text-anchor: right;
+                pointer-events: none;
+              }
+
+              .area {
+                fill-opacity: 0.5;
+              }
+
+              .line {
+                stroke-width: 2;
+                fill: transparent;
+              }
+
+              .dot {
+                r: 2;
+                fill: #888;
+              }
+
+              .inverted .grid line {
+                stroke: #777;
+              }
+
+              .inverted .area {
+                fill-opacity: 0.9;
+              }
+
+              .inverted .axis text {
+                fill: #fff;
+              }
+
+              .inverted .axis line {
+                stroke: #fff;
+              }
+
+              .inverted .dot {
+                fill: #fff;
+              }
+            CSS
+          end
+
+          sig { returns(String) }
+          def header_script
+            <<~JS
+              var parseVersion = function(version) {
+                if (!version) {
+                  return null;
+                }
+                return parseFloat(version.replaceAll("0.", ""));
+              }
+
+              function tooltipTimeline(d, kind) {
+                moveTooltip(d)
+                  .html("commit <b>" + d.data.commit + "</b><br>"
+                    + d3.timeFormat("%y/%m/%d")(parseDate(d.data.timestamp)) + "<br><br>"
+                    + "<b>typed: " + d.key + "</b><br><br>"
+                    + "<b>" + (d.data.values[d.key] ? d.data.values[d.key] : 0) + "</b> " + kind +"<br>"
+                    + "<b>" + toPercent(d.data.values[d.key] ? d.data.values[d.key] : 0, d.data.total) + "%")
+              }
+            JS
+          end
         end
 
         sig { override.returns(String) }

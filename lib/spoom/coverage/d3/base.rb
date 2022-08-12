@@ -19,14 +19,18 @@ module Spoom
           @data = data
         end
 
-        sig { returns(String) }
-        def self.header_style
-          ""
-        end
+        class << self
+          extend T::Sig
 
-        sig { returns(String) }
-        def self.header_script
-          ""
+          sig { returns(String) }
+          def header_style
+            ""
+          end
+
+          sig { returns(String) }
+          def header_script
+            ""
+          end
         end
 
         sig { returns(String) }
