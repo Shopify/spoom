@@ -71,8 +71,10 @@ module Spoom
 
       # Utils
 
-      def self.exit_on_failure?
-        true
+      class << self
+        def exit_on_failure?
+          true
+        end
       end
     end
   end

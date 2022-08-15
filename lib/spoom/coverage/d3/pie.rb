@@ -18,34 +18,38 @@ module Spoom
           @title = title
         end
 
-        sig { returns(String) }
-        def self.header_style
-          <<~CSS
-            .pie .title {
-              font: 18px Arial, sans-serif;
-              font-weight: bold;
-              fill: #212529;
-              text-anchor: middle;
-              pointer-events: none;
-            }
+        class << self
+          extend T::Sig
 
-            .pie .arc {
-              stroke: #fff;
-              stroke-width: 2px;
-            }
-          CSS
-        end
+          sig { returns(String) }
+          def header_style
+            <<~CSS
+              .pie .title {
+                font: 18px Arial, sans-serif;
+                font-weight: bold;
+                fill: #212529;
+                text-anchor: middle;
+                pointer-events: none;
+              }
 
-        sig { returns(String) }
-        def self.header_script
-          <<~JS
-            function tooltipPie(d, title, kind, sum) {
-              moveTooltip(d)
-                .html("<b>" + title + "</b><br><br>"
-                  + "<b>" + d.data.value + "</b> " + kind + "<br>"
-                  + "<b>" + toPercent(d.data.value, sum) + "</b>%")
-            }
-          JS
+              .pie .arc {
+                stroke: #fff;
+                stroke-width: 2px;
+              }
+            CSS
+          end
+
+          sig { returns(String) }
+          def header_script
+            <<~JS
+              function tooltipPie(d, title, kind, sum) {
+                moveTooltip(d)
+                  .html("<b>" + title + "</b><br><br>"
+                    + "<b>" + d.data.value + "</b> " + kind + "<br>"
+                    + "<b>" + toPercent(d.data.value, sum) + "</b>%")
+              }
+            JS
+          end
         end
 
         sig { override.returns(String) }

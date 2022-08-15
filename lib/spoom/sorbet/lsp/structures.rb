@@ -23,12 +23,16 @@ module Spoom
       const :contents, String
       const :range, T.nilable(Range)
 
-      sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Hover) }
-      def self.from_json(json)
-        Hover.new(
-          contents: json["contents"]["value"],
-          range: json["range"] ? Range.from_json(json["range"]) : nil
-        )
+      class << self
+        extend T::Sig
+
+        sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Hover) }
+        def from_json(json)
+          Hover.new(
+            contents: json["contents"]["value"],
+            range: json["range"] ? Range.from_json(json["range"]) : nil
+          )
+        end
       end
 
       sig { override.params(printer: SymbolPrinter).void }
@@ -50,12 +54,16 @@ module Spoom
       const :line, Integer
       const :char, Integer
 
-      sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Position) }
-      def self.from_json(json)
-        Position.new(
-          line: json["line"].to_i,
-          char: json["character"].to_i
-        )
+      class << self
+        extend T::Sig
+
+        sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Position) }
+        def from_json(json)
+          Position.new(
+            line: json["line"].to_i,
+            char: json["character"].to_i
+          )
+        end
       end
 
       sig { override.params(printer: SymbolPrinter).void }
@@ -76,12 +84,16 @@ module Spoom
       const :start, Position
       const :end, Position
 
-      sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Range) }
-      def self.from_json(json)
-        Range.new(
-          start: Position.from_json(json["start"]),
-          end: Position.from_json(json["end"])
-        )
+      class << self
+        extend T::Sig
+
+        sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Range) }
+        def from_json(json)
+          Range.new(
+            start: Position.from_json(json["start"]),
+            end: Position.from_json(json["end"])
+          )
+        end
       end
 
       sig { override.params(printer: SymbolPrinter).void }
@@ -104,12 +116,16 @@ module Spoom
       const :uri, String
       const :range, LSP::Range
 
-      sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Location) }
-      def self.from_json(json)
-        Location.new(
-          uri: json["uri"],
-          range: Range.from_json(json["range"])
-        )
+      class << self
+        extend T::Sig
+
+        sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Location) }
+        def from_json(json)
+          Location.new(
+            uri: json["uri"],
+            range: Range.from_json(json["range"])
+          )
+        end
       end
 
       sig { override.params(printer: SymbolPrinter).void }
@@ -132,13 +148,17 @@ module Spoom
       const :doc, Object # TODO
       const :params, T::Array[T.untyped] # TODO
 
-      sig { params(json: T::Hash[T.untyped, T.untyped]).returns(SignatureHelp) }
-      def self.from_json(json)
-        SignatureHelp.new(
-          label: json["label"],
-          doc: json["documentation"],
-          params: json["parameters"],
-        )
+      class << self
+        extend T::Sig
+
+        sig { params(json: T::Hash[T.untyped, T.untyped]).returns(SignatureHelp) }
+        def from_json(json)
+          SignatureHelp.new(
+            label: json["label"],
+            doc: json["documentation"],
+            params: json["parameters"],
+          )
+        end
       end
 
       sig { override.params(printer: SymbolPrinter).void }
@@ -164,14 +184,18 @@ module Spoom
       const :message, String
       const :informations, Object
 
-      sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Diagnostic) }
-      def self.from_json(json)
-        Diagnostic.new(
-          range: Range.from_json(json["range"]),
-          code: json["code"].to_i,
-          message: json["message"],
-          informations: json["relatedInformation"]
-        )
+      class << self
+        extend T::Sig
+
+        sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Diagnostic) }
+        def from_json(json)
+          Diagnostic.new(
+            range: Range.from_json(json["range"]),
+            code: json["code"].to_i,
+            message: json["message"],
+            informations: json["relatedInformation"]
+          )
+        end
       end
 
       sig { override.params(printer: SymbolPrinter).void }
@@ -196,16 +220,20 @@ module Spoom
       const :range, T.nilable(Range)
       const :children, T::Array[DocumentSymbol]
 
-      sig { params(json: T::Hash[T.untyped, T.untyped]).returns(DocumentSymbol) }
-      def self.from_json(json)
-        DocumentSymbol.new(
-          name: json["name"],
-          detail: json["detail"],
-          kind: json["kind"],
-          location: json["location"] ? Location.from_json(json["location"]) : nil,
-          range: json["range"] ? Range.from_json(json["range"]) : nil,
-          children: json["children"] ? json["children"].map { |symbol| DocumentSymbol.from_json(symbol) } : [],
-        )
+      class << self
+        extend T::Sig
+
+        sig { params(json: T::Hash[T.untyped, T.untyped]).returns(DocumentSymbol) }
+        def from_json(json)
+          DocumentSymbol.new(
+            name: json["name"],
+            detail: json["detail"],
+            kind: json["kind"],
+            location: json["location"] ? Location.from_json(json["location"]) : nil,
+            range: json["range"] ? Range.from_json(json["range"]) : nil,
+            children: json["children"] ? json["children"].map { |symbol| DocumentSymbol.from_json(symbol) } : [],
+          )
+        end
       end
 
       sig { override.params(printer: SymbolPrinter).void }

@@ -31,31 +31,35 @@ module Spoom
     end
   end
 
-  sig do
-    params(
-      cmd: String,
-      arg: String,
-      path: String,
-      capture_err: T::Boolean
-    ).returns(ExecResult)
-  end
-  def self.exec(cmd, *arg, path: ".", capture_err: false)
-    if capture_err
-      stdout, stderr, status = T.unsafe(Open3).capture3([cmd, *arg].join(" "), chdir: path)
-      ExecResult.new(
-        out: stdout,
-        err: stderr,
-        status: status.success?,
-        exit_code: status.exitstatus
-      )
-    else
-      stdout, status = T.unsafe(Open3).capture2([cmd, *arg].join(" "), chdir: path)
-      ExecResult.new(
-        out: stdout,
-        err: "",
-        status: status.success?,
-        exit_code: status.exitstatus
-      )
+  class << self
+    extend T::Sig
+
+    sig do
+      params(
+        cmd: String,
+        arg: String,
+        path: String,
+        capture_err: T::Boolean
+      ).returns(ExecResult)
+    end
+    def exec(cmd, *arg, path: ".", capture_err: false)
+      if capture_err
+        stdout, stderr, status = T.unsafe(Open3).capture3([cmd, *arg].join(" "), chdir: path)
+        ExecResult.new(
+          out: stdout,
+          err: stderr,
+          status: status.success?,
+          exit_code: status.exitstatus
+        )
+      else
+        stdout, status = T.unsafe(Open3).capture2([cmd, *arg].join(" "), chdir: path)
+        ExecResult.new(
+          out: stdout,
+          err: "",
+          status: status.success?,
+          exit_code: status.exitstatus
+        )
+      end
     end
   end
 end

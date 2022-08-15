@@ -7,50 +7,52 @@ module Spoom
   module Coverage
     module D3
       class CircleMap < Base
-        extend T::Sig
+        class << self
+          extend T::Sig
 
-        sig { returns(String) }
-        def self.header_style
-          <<~CSS
-            .node {
-              cursor: pointer;
-            }
+          sig { returns(String) }
+          def header_style
+            <<~CSS
+              .node {
+                cursor: pointer;
+              }
 
-            .node:hover {
-              stroke: #333;
-              stroke-width: 1px;
-            }
+              .node:hover {
+                stroke: #333;
+                stroke-width: 1px;
+              }
 
-            .label.dir {
-              fill: #333;
-            }
+              .label.dir {
+                fill: #333;
+              }
 
-            .label.file {
-              font: 12px Arial, sans-serif;
-            }
+              .label.file {
+                font: 12px Arial, sans-serif;
+              }
 
-            .node.root, .node.file {
-              pointer-events: none;
-            }
-          CSS
-        end
+              .node.root, .node.file {
+                pointer-events: none;
+              }
+            CSS
+          end
 
-        sig { returns(String) }
-        def self.header_script
-          <<~JS
-            function treeHeight(root, height = 0) {
-              height += 1;
-              if (root.children && root.children.length > 0)
-                return Math.max(...root.children.map(child => treeHeight(child, height)));
-              else
-                return height;
-            }
+          sig { returns(String) }
+          def header_script
+            <<~JS
+              function treeHeight(root, height = 0) {
+                height += 1;
+                if (root.children && root.children.length > 0)
+                  return Math.max(...root.children.map(child => treeHeight(child, height)));
+                else
+                  return height;
+              }
 
-            function tooltipMap(d) {
-              moveTooltip(d)
-                .html("<b>" + d.data.name + "</b>")
-            }
-          JS
+              function tooltipMap(d) {
+                moveTooltip(d)
+                  .html("<b>" + d.data.name + "</b>")
+              }
+            JS
+          end
         end
 
         sig { override.returns(String) }

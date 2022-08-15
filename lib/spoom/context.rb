@@ -16,13 +16,17 @@ module Spoom
     sig { returns(String) }
     attr_reader :absolute_path
 
-    # Create a new context in the system's temporary directory
-    #
-    # `name` is used as prefix to the temporary directory name.
-    # The directory will be created if it doesn't exist.
-    sig { params(name: T.nilable(String)).returns(T.attached_class) }
-    def self.mktmp!(name = nil)
-      new(::Dir.mktmpdir(name))
+    class << self
+      extend T::Sig
+
+      # Create a new context in the system's temporary directory
+      #
+      # `name` is used as prefix to the temporary directory name.
+      # The directory will be created if it doesn't exist.
+      sig { params(name: T.nilable(String)).returns(T.attached_class) }
+      def mktmp!(name = nil)
+        new(::Dir.mktmpdir(name))
+      end
     end
 
     # Create a new context about `absolute_path`

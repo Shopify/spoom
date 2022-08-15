@@ -4,10 +4,16 @@
 module Spoom
   module Sorbet
     module Errors
-      extend T::Sig
-
       DEFAULT_ERROR_URL_BASE = "https://srb.help/"
 
+      class << self
+        extend T::Sig
+
+        sig { params(errors: T::Array[Error]).returns(T::Array[Error]) }
+        def sort_errors_by_code(errors)
+          errors.sort_by { |e| [e.code, e.file, e.line, e.message] }
+        end
+      end
       # Parse errors from Sorbet output
       class Parser
         extend T::Sig
@@ -20,10 +26,14 @@ module Spoom
           "or set SORBET_SILENCE_DEV_MESSAGE=1 in your shell environment.",
         ], T::Array[String])
 
-        sig { params(output: String, error_url_base: String).returns(T::Array[Error]) }
-        def self.parse_string(output, error_url_base: DEFAULT_ERROR_URL_BASE)
-          parser = Spoom::Sorbet::Errors::Parser.new(error_url_base: error_url_base)
-          parser.parse(output)
+        class << self
+          extend T::Sig
+
+          sig { params(output: String, error_url_base: String).returns(T::Array[Error]) }
+          def parse_string(output, error_url_base: DEFAULT_ERROR_URL_BASE)
+            parser = Spoom::Sorbet::Errors::Parser.new(error_url_base: error_url_base)
+            parser.parse(output)
+          end
         end
 
         sig { params(error_url_base: String).void }
@@ -156,11 +166,6 @@ module Spoom
         def to_s
           "#{file}:#{line}: #{message} (#{code})"
         end
-      end
-
-      sig { params(errors: T::Array[Error]).returns(T::Array[Error]) }
-      def self.sort_errors_by_code(errors)
-        errors.sort_by { |e| [e.code, e.file, e.line, e.message] }
       end
     end
   end
