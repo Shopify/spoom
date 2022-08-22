@@ -60,7 +60,7 @@ GEM
       rubocop (~> 1.33)
     rubocop-sorbet (0.6.11)
       rubocop (>= 0.90.0)
-    ruby-lsp (0.2.2)
+    ruby-lsp (0.2.3)
       language_server-protocol
       sorbet-runtime
       syntax_tree (>= 2.4)
@@ -81,7 +81,7 @@ GEM
     sorbet-static-and-runtime (0.5.10326)
       sorbet (= 0.5.10326)
       sorbet-runtime (= 0.5.10326)
-    syntax_tree (3.3.0)
+    syntax_tree (3.4.0)
       prettier_print
     tapioca (0.9.2)
       bundler (>= 1.17.3)
