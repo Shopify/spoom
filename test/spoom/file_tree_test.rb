@@ -76,7 +76,7 @@ module Spoom
         out = StringIO.new
         tree.print(out: out, colors: false)
         assert_equal(<<~EXP, out.string)
-          Gemfile
+          Gemfile (false)
           a/
             b/
               c/
@@ -84,9 +84,9 @@ module Spoom
                   e1.rb (true)
                   e2.rb (false)
               c.rb (strict)
-            b.rb
+            b.rb (false)
           sorbet/
-            config
+            config (false)
         EXP
       end
     end

@@ -75,12 +75,14 @@ module Spoom
           exit(0)
         end
 
-        Sorbet::Sigils.change_sigil_in_files(files_to_bump, to)
+        update_to = files_to_bump.each_with_object({}) { |path, update_to| update_to[path] = to }
+
+        updated_from = Sorbet::Sigils.change_sigil_in_files(update_to)
 
         if force
-          print_changes(files_to_bump, command: cmd, from: from, to: to, dry: dry, path: exec_path)
-          undo_changes(files_to_bump, from) if dry
-          exit(files_to_bump.empty?)
+          print_changes(updated_from.keys, command: cmd, from: from, to: to, dry: dry, path: exec_path)
+          undo_changes(updated_from) if dry
+          exit(update_to.empty?)
         end
 
         error_url_base = Spoom::Sorbet::Errors::DEFAULT_ERROR_URL_BASE
@@ -96,12 +98,12 @@ module Spoom
             It means one of the file bumped to `typed: #{to}` made Sorbet crash.
             Run `spoom bump -f` locally followed by `bundle exec srb tc` to investigate the problem.
           ERR
-          undo_changes(files_to_bump, from)
+          undo_changes(updated_from)
         end
 
         if result.status
           print_changes(files_to_bump, command: cmd, from: from, to: to, dry: dry, path: exec_path)
-          undo_changes(files_to_bump, from) if dry
+          undo_changes(updated_from) if dry
           exit(files_to_bump.empty?)
         end
 
@@ -120,13 +122,13 @@ module Spoom
           path
         end.compact.uniq
 
-        undo_changes(files_with_errors, from)
+        undo_changes(T.unsafe(updated_from).slice(*files_with_errors))
 
         say("Found #{errors.length} type checking error#{"s" if errors.length > 1}") if options[:count_errors]
 
         files_changed = files_to_bump - files_with_errors
         print_changes(files_changed, command: cmd, from: from, to: to, dry: dry, path: exec_path)
-        undo_changes(files_to_bump, from) if dry
+        undo_changes(updated_from) if dry
         exit(files_changed.empty?)
       end
 
@@ -152,8 +154,8 @@ module Spoom
           end
         end
 
-        def undo_changes(files, from_strictness)
-          Sorbet::Sigils.change_sigil_in_files(files, from_strictness)
+        def undo_changes(updated_from)
+          Sorbet::Sigils.change_sigil_in_files(updated_from)
         end
 
         def config_files(path: ".")

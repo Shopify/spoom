@@ -309,7 +309,7 @@ module Spoom
         assert_nil(context.read_file_strictness("a.rb"))
 
         context.write!("a.rb", "")
-        assert_nil(context.read_file_strictness("a.rb"))
+        assert_equal("false", context.read_file_strictness("a.rb"))
 
         context.write!("a.rb", "# typed: true\n")
         assert_equal("true", context.read_file_strictness("a.rb"))

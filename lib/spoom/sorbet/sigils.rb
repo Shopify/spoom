@@ -16,6 +16,8 @@ module Spoom
       STRICTNESS_STRONG = "strong"
       STRICTNESS_INTERNAL = "__STDLIB_INTERNAL"
 
+      DEFAULT_STRICTNESS = STRICTNESS_FALSE
+
       VALID_STRICTNESS = T.let([
         STRICTNESS_IGNORE,
         STRICTNESS_FALSE,
@@ -54,6 +56,17 @@ module Spoom
           content.sub(SIGIL_REGEXP, sigil_string(new_strictness))
         end
 
+        sig { params(content: String, new_strictness: String).returns(String) }
+        def prepend_sigil(content, new_strictness)
+          sigil_string(new_strictness) + "\n" + content
+        end
+
+        sig { params(content: String).returns(String) }
+        def remove_sigil(content)
+          sigil_with_newline = /#{SIGIL_REGEXP}\n/
+          content.gsub(sigil_with_newline, "")
+        end
+
         # returns a string containing the strictness of a sigil in a file at the passed path
         # * returns nil if no sigil
         sig { params(path: T.any(String, Pathname)).returns(T.nilable(String)) }
@@ -61,25 +74,38 @@ module Spoom
           return nil unless File.file?(path)
 
           content = File.read(path, encoding: Encoding::ASCII_8BIT)
-          strictness_in_content(content)
+          strictness_in_content(content) || DEFAULT_STRICTNESS
         end
 
         # changes the sigil in the file at the passed path to the specified new strictness
-        sig { params(path: T.any(String, Pathname), new_strictness: String).returns(T::Boolean) }
+        sig { params(path: T.any(String, Pathname), new_strictness: T.nilable(String)).returns(T.nilable(String)) }
         def change_sigil_in_file(path, new_strictness)
           content = File.read(path, encoding: Encoding::ASCII_8BIT)
-          new_content = update_sigil(content, new_strictness)
-
+          old_sigil = strictness_in_content(content)
+          new_content = update_content(content, old_sigil, new_strictness)
           File.write(path, new_content, encoding: Encoding::ASCII_8BIT)
 
-          strictness_in_content(new_content) == new_strictness
+          old_sigil
+        end
+
+        sig { params(old_content: String, old_sigil: T.nilable(String), new_sigil: T.nilable(String)).returns(String) }
+        def update_content(old_content, old_sigil, new_sigil)
+          return remove_sigil(old_content) if new_sigil.nil?
+
+          if old_sigil
+            update_sigil(old_content, new_sigil)
+          else
+            prepend_sigil(old_content, new_sigil)
+          end
         end
 
         # changes the sigil to have a new strictness in a list of files
-        sig { params(path_list: T::Array[String], new_strictness: String).returns(T::Array[String]) }
-        def change_sigil_in_files(path_list, new_strictness)
-          path_list.filter do |path|
-            change_sigil_in_file(path, new_strictness)
+        sig { params(path_list: T::Hash[String, String]).returns(T::Hash[String, String]) }
+        def change_sigil_in_files(path_list)
+          path_list.each_with_object({}) do |path_and_strictness, updated_from|
+            path, strictness = path_and_strictness
+            old_sigil = change_sigil_in_file(path, strictness)
+            updated_from[path] = old_sigil
           end
         end
 

@@ -87,6 +87,29 @@ module Spoom
         assert_equal("false", strictness)
       end
 
+      def test_update_content_from_default_strictness
+        content = <<~STR
+          class A; end
+        STR
+
+        new_content = Sigils.update_content(content, nil, "true")
+
+        strictness = Sigils.strictness_in_content(new_content)
+
+        assert_equal("true", strictness)
+      end
+
+      def test_remove_sigil
+        content = <<~STR
+          # typed: false
+          class A; end
+        STR
+
+        new_content = Sigils.remove_sigil(content)
+        assert_nil(Sigils.strictness_in_content(new_content))
+        assert_equal("class A; end\n", new_content)
+      end
+
       def test_update_sigil_to_use_invalid_strictness
         content = <<~STR
           # typed: ignore
@@ -249,8 +272,8 @@ module Spoom
         project.write!("file2.rb", "# typed: ignore")
         files = ["#{project.absolute_path}/file1.rb", "#{project.absolute_path}/file2.rb"]
 
-        changed_files = Sigils.change_sigil_in_files(files, "true")
-        assert_equal(files, changed_files)
+        changed_files = Sigils.change_sigil_in_files(Hash[files.zip(Array.new(2, "true"))])
+        assert_equal(files, changed_files.keys)
         assert_equal("true", Sigils.file_strictness("#{project.absolute_path}/file1.rb"))
         assert_equal("true", Sigils.file_strictness("#{project.absolute_path}/file2.rb"))
 
@@ -271,8 +294,8 @@ module Spoom
         project.write!("file2.rb", string_iso)
         files = ["#{project.absolute_path}/file1.rb", "#{project.absolute_path}/file2.rb"]
 
-        changed_files = Sigils.change_sigil_in_files(files, "true")
-        assert_equal(files, changed_files)
+        changed_files = Sigils.change_sigil_in_files(Hash[files.zip(Array.new(2, "true"))])
+        assert_equal(files, changed_files.keys)
         assert_equal("true", Sigils.file_strictness("#{project.absolute_path}/file1.rb"))
         assert_equal("true", Sigils.file_strictness("#{project.absolute_path}/file2.rb"))
         project.destroy!
