@@ -46,7 +46,7 @@ module Spoom
             "-h",
             path: @project.absolute_path,
             capture_err: true,
-            sorbet_bin: Spoom::Sorbet::BIN_PATH
+            sorbet_bin: Spoom::Sorbet::BIN_PATH,
           )
           assert_equal(<<~OUT, result.err)
             Typechecker for Ruby
@@ -71,7 +71,7 @@ module Spoom
           result = Spoom::Sorbet.srb_tc(
             path: @project.absolute_path,
             capture_err: true,
-            sorbet_bin: Spoom::Sorbet::BIN_PATH
+            sorbet_bin: Spoom::Sorbet::BIN_PATH,
           )
           assert_equal(<<~OUT, result.err)
             No errors! Great job.

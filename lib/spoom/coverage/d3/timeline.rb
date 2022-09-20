@@ -268,7 +268,7 @@ module Spoom
                               d3.min(data_#{id}, (d) => parseVersion(d.runtime))]) - 0.01",
                 max: "d3.max([d3.max(data_#{id}, (d) => parseVersion(d.static)),
                               d3.max(data_#{id}, (d) => parseVersion(d.runtime))]) + 0.01",
-                ticks: "ticks(8)"
+                ticks: "ticks(8)",
               )}
               #{line(y: "parseVersion(d.runtime)", color: "#e83e8c", curve: "curveStepAfter")}
               #{line(y: "parseVersion(d.static)", color: "#007bff", curve: "curveStepAfter")}
@@ -314,7 +314,7 @@ module Spoom
               #{y_scale(
                 min: "0",
                 max: "d3.max(data_#{id}, (d) => d.runtime)",
-                ticks: "ticks(10)"
+                ticks: "ticks(10)",
               )}
               #{area(y: "d.runtime")}
               #{line(y: "d.runtime")}

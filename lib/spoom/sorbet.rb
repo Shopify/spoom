@@ -25,7 +25,7 @@ module Spoom
           arg: String,
           path: String,
           capture_err: T::Boolean,
-          sorbet_bin: T.nilable(String)
+          sorbet_bin: T.nilable(String),
         ).returns(ExecResult)
       end
       def srb(*arg, path: ".", capture_err: false, sorbet_bin: nil)
@@ -42,7 +42,7 @@ module Spoom
           arg: String,
           path: String,
           capture_err: T::Boolean,
-          sorbet_bin: T.nilable(String)
+          sorbet_bin: T.nilable(String),
         ).returns(ExecResult)
       end
       def srb_tc(*arg, path: ".", capture_err: false, sorbet_bin: nil)
@@ -65,7 +65,7 @@ module Spoom
           arg: String,
           path: String,
           capture_err: T::Boolean,
-          sorbet_bin: T.nilable(String)
+          sorbet_bin: T.nilable(String),
         ).returns(T.nilable(String))
       end
       def srb_version(*arg, path: ".", capture_err: false, sorbet_bin: nil)
@@ -75,7 +75,7 @@ module Spoom
           *arg,
           path: path,
           capture_err: capture_err,
-          sorbet_bin: sorbet_bin
+          sorbet_bin: sorbet_bin,
         ), ExecResult)
         return nil unless result.status
 
@@ -87,7 +87,7 @@ module Spoom
           arg: String,
           path: String,
           capture_err: T::Boolean,
-          sorbet_bin: T.nilable(String)
+          sorbet_bin: T.nilable(String),
         ).returns(T.nilable(T::Hash[String, Integer]))
       end
       def srb_metrics(*arg, path: ".", capture_err: false, sorbet_bin: nil)
@@ -99,7 +99,7 @@ module Spoom
           *arg,
           path: path,
           capture_err: capture_err,
-          sorbet_bin: sorbet_bin
+          sorbet_bin: sorbet_bin,
         )
         if File.exist?(metrics_path)
           metrics = Spoom::Sorbet::MetricsParser.parse_file(metrics_path)

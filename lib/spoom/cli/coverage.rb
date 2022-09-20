@@ -148,7 +148,7 @@ module Spoom
           false: options[:color_false],
           true: options[:color_true],
           strict: options[:color_strict],
-          strong: options[:color_strong]
+          strong: options[:color_strong],
         )
 
         report = Spoom::Coverage.report(snapshots, palette: palette, path: exec_path)

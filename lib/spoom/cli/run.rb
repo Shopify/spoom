@@ -40,7 +40,7 @@ module Spoom
             *options[:sorbet_options].split(" "),
             path: path,
             capture_err: false,
-            sorbet_bin: sorbet
+            sorbet_bin: sorbet,
           )
 
           check_sorbet_segfault(result.code)
@@ -54,7 +54,7 @@ module Spoom
           "--error-url-base=#{error_url_base}",
           path: path,
           capture_err: true,
-          sorbet_bin: sorbet
+          sorbet_bin: sorbet,
         )
 
         check_sorbet_segfault(result.exit_code)

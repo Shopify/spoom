@@ -98,7 +98,7 @@ module Spoom
               "line" => line,
               "character" => column,
             },
-          }
+          },
         ))
 
         return nil unless json && json["result"]
@@ -119,7 +119,7 @@ module Spoom
               "line" => line,
               "character" => column,
             },
-          }
+          },
         ))
 
         return [] unless json && json["result"] && json["result"]["signatures"]
@@ -140,7 +140,7 @@ module Spoom
               "line" => line,
               "character" => column,
             },
-          }
+          },
         ))
 
         return [] unless json && json["result"]
@@ -161,7 +161,7 @@ module Spoom
               "line" => line,
               "character" => column,
             },
-          }
+          },
         ))
 
         return [] unless json && json["result"]
@@ -185,7 +185,7 @@ module Spoom
             "context" => {
               "includeDeclaration" => include_decl,
             },
-          }
+          },
         ))
 
         return [] unless json && json["result"]
@@ -200,7 +200,7 @@ module Spoom
           "workspace/symbol",
           {
             "query" => query,
-          }
+          },
         ))
 
         return [] unless json && json["result"]
@@ -217,7 +217,7 @@ module Spoom
             "textDocument" => {
               "uri" => uri,
             },
-          }
+          },
         ))
 
         return [] unless json && json["result"]

@@ -88,7 +88,7 @@ module Spoom
           "--error-url-base=#{error_url_base}",
           path: exec_path,
           capture_err: true,
-          sorbet_bin: options[:sorbet]
+          sorbet_bin: options[:sorbet],
         )
 
         check_sorbet_segfault(result.exit_code) do

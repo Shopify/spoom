@@ -30,7 +30,7 @@ module Spoom
         def from_json(json)
           Hover.new(
             contents: json["contents"]["value"],
-            range: json["range"] ? Range.from_json(json["range"]) : nil
+            range: json["range"] ? Range.from_json(json["range"]) : nil,
           )
         end
       end
@@ -61,7 +61,7 @@ module Spoom
         def from_json(json)
           Position.new(
             line: json["line"].to_i,
-            char: json["character"].to_i
+            char: json["character"].to_i,
           )
         end
       end
@@ -91,7 +91,7 @@ module Spoom
         def from_json(json)
           Range.new(
             start: Position.from_json(json["start"]),
-            end: Position.from_json(json["end"])
+            end: Position.from_json(json["end"]),
           )
         end
       end
@@ -123,7 +123,7 @@ module Spoom
         def from_json(json)
           Location.new(
             uri: json["uri"],
-            range: Range.from_json(json["range"])
+            range: Range.from_json(json["range"]),
           )
         end
       end
@@ -193,7 +193,7 @@ module Spoom
             range: Range.from_json(json["range"]),
             code: json["code"].to_i,
             message: json["message"],
-            informations: json["relatedInformation"]
+            informations: json["relatedInformation"],
           )
         end
       end
@@ -317,7 +317,7 @@ module Spoom
           out: T.any(IO, StringIO),
           colors: T::Boolean,
           indent_level: Integer,
-          prefix: T.nilable(String)
+          prefix: T.nilable(String),
         ).void
       end
       def initialize(out: $stdout, colors: true, indent_level: 0, prefix: nil)

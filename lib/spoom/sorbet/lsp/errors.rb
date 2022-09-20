@@ -23,7 +23,7 @@ module Spoom
           def from_json(json)
             Diagnostics.new(
               json["uri"],
-              json["diagnostics"].map { |d| Diagnostic.from_json(d) }
+              json["diagnostics"].map { |d| Diagnostic.from_json(d) },
             )
           end
         end
@@ -54,7 +54,7 @@ module Spoom
           ResponseError.new(
             json["code"],
             json["message"],
-            json["data"]
+            json["data"],
           )
         end
       end

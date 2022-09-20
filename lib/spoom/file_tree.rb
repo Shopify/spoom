@@ -65,7 +65,7 @@ module Spoom
         out: T.any(IO, StringIO),
         show_strictness: T::Boolean,
         colors: T::Boolean,
-        indent_level: Integer
+        indent_level: Integer,
       ).void
     end
     def print(out: $stdout, show_strictness: true, colors: true, indent_level: 0)
@@ -74,7 +74,7 @@ module Spoom
         out: out,
         show_strictness: show_strictness,
         colors: colors,
-        indent_level: indent_level
+        indent_level: indent_level,
       )
       printer.print_tree
     end
@@ -126,7 +126,7 @@ module Spoom
           out: T.any(IO, StringIO),
           show_strictness: T::Boolean,
           colors: T::Boolean,
-          indent_level: Integer
+          indent_level: Integer,
         ).void
       end
       def initialize(tree:, out: $stdout, show_strictness: true, colors: true, indent_level: 0)

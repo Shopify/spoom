@@ -30,7 +30,7 @@ module Spoom
         timeline = Spoom::Timeline.new(
           Time.parse("2010-01-01 00:00:00"),
           Time.parse("2020-01-01 00:00:00"),
-          path: @project.absolute_path
+          path: @project.absolute_path,
         )
 
         dates = [
@@ -59,7 +59,7 @@ module Spoom
         timeline = Spoom::Timeline.new(
           Time.parse("2010-01-01 00:00:00"),
           Time.parse("2020-01-01 00:00:00"),
-          path: @project.absolute_path
+          path: @project.absolute_path,
         )
         assert_equal(4, timeline.ticks.size)
       end

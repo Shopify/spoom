@@ -142,7 +142,7 @@ module Spoom
             line: T.nilable(Integer),
             message: T.nilable(String),
             code: T.nilable(Integer),
-            more: T::Array[String]
+            more: T::Array[String],
           ).void
         end
         def initialize(file, line, message, code, more = [])

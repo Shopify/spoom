@@ -33,7 +33,7 @@ module Spoom
         params(
           message: String,
           status: T.nilable(String),
-          nl: T::Boolean
+          nl: T::Boolean,
         ).void
       end
       def say_error(message, status: "Error", nl: true)
@@ -61,7 +61,7 @@ module Spoom
           say_error(
             "not in a Sorbet project (`#{sorbet_config_file}` not found)\n\n" \
               "When running spoom from another path than the project's root, " \
-              "use `--path PATH` to specify the path to the root."
+              "use `--path PATH` to specify the path to the root.",
           )
           Kernel.exit(1)
         end

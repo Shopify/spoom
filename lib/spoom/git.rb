@@ -16,7 +16,7 @@ module Spoom
           out: "",
           err: "Error: `#{path}` is not a directory.",
           status: false,
-          exit_code: 1
+          exit_code: 1,
         ) unless File.directory?(path)
 
         T.unsafe(Open3).popen3(command, *arg, chdir: path) do |_, stdout, stderr, thread|
@@ -25,7 +25,7 @@ module Spoom
             out: stdout.read,
             err: stderr.read,
             status: T.must(status.success?),
-            exit_code: T.must(status.exitstatus)
+            exit_code: T.must(status.exitstatus),
           )
         end
       end
