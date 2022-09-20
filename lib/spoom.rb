@@ -39,7 +39,7 @@ module Spoom
         cmd: String,
         arg: String,
         path: String,
-        capture_err: T::Boolean
+        capture_err: T::Boolean,
       ).returns(ExecResult)
     end
     def exec(cmd, *arg, path: ".", capture_err: false)
@@ -49,7 +49,7 @@ module Spoom
           out: stdout,
           err: stderr,
           status: status.success?,
-          exit_code: status.exitstatus
+          exit_code: status.exitstatus,
         )
       else
         stdout, status = T.unsafe(Open3).capture2([cmd, *arg].join(" "), chdir: path)
@@ -57,7 +57,7 @@ module Spoom
           out: stdout,
           err: "",
           status: status.success?,
-          exit_code: status.exitstatus
+          exit_code: status.exitstatus,
         )
       end
     end

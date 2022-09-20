@@ -88,7 +88,7 @@ module Spoom
           params(
             directory: T.any(String, Pathname),
             strictness: String,
-            extension: String
+            extension: String,
           ).returns(T::Array[String])
         end
         def files_with_sigil_strictness(directory, strictness, extension: ".rb")

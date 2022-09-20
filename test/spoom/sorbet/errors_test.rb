@@ -365,7 +365,7 @@ module Spoom
             "path-with-dashes_and_underscores and some space/forward slashes\\and back slashes.foo.bar.ru.rake",
             "some/multiline|error/thing/going/on/here@12.13.45.rb",
           ],
-          errors.map(&:file)
+          errors.map(&:file),
         )
         assert_equal([1, 80567, 100, 28, 7], errors.map(&:line))
         assert_equal([2001, 2001, 4010, 7004, 7001], errors.map(&:code))

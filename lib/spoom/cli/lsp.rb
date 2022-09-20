@@ -118,7 +118,7 @@ module Spoom
             "--lsp",
             "--enable-all-experimental-lsp-features",
             "--disable-watchman",
-            path: path
+            path: path,
           )
           client.open(File.expand_path(path))
           client
@@ -128,7 +128,7 @@ module Spoom
           Spoom::LSP::SymbolPrinter.new(
             indent_level: 2,
             colors: options[:color],
-            prefix: "file://#{File.expand_path(exec_path)}"
+            prefix: "file://#{File.expand_path(exec_path)}",
           )
         end
 
