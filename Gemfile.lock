@@ -83,7 +83,7 @@ GEM
       sorbet-runtime (= 0.5.10474)
     syntax_tree (3.5.0)
       prettier_print
-    tapioca (0.10.1)
+    tapioca (0.10.2)
       bundler (>= 1.17.3)
       netrc (>= 0.11.0)
       parallel (>= 1.21.0)
