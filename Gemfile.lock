@@ -67,6 +67,7 @@ GEM
     sorbet (0.5.10482)
       sorbet-static (= 0.5.10482)
     sorbet-runtime (0.5.10474)
+    sorbet-static (0.5.10482-universal-darwin-21)
     sorbet-static (0.5.10482-x86_64-linux)
     syntax_tree (3.6.1)
       prettier_print
@@ -92,6 +93,8 @@ GEM
       yard (>= 0.9)
 
 PLATFORMS
+  ruby
+  universal-darwin-22
   x86_64-linux
 
 DEPENDENCIES
@@ -107,4 +110,4 @@ DEPENDENCIES
   tapioca
 
 BUNDLED WITH
-   2.3.11
+   2.3.23
