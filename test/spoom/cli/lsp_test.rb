@@ -267,7 +267,7 @@ module Spoom
         result = @project.spoom("lsp --no-color types lib/types.rb 5 5")
         assert_equal(<<~MSG, result.out)
           Type for `lib/types.rb:5:5`:
-            * /lib/types.rb:2:6-2:14
+            * /lib/types.rb:2:0-2:14
         MSG
       end
 
