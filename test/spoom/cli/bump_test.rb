@@ -20,7 +20,7 @@ module Spoom
         assert_equal(<<~OUT, result.out)
           Checking files...
 
-          No file to bump from `false` to `true`
+          No files to bump from `false` to `true`
         OUT
         assert(result.status)
       end
@@ -167,7 +167,7 @@ module Spoom
         assert_equal(<<~OUT, result.out)
           Checking files...
 
-          No file to bump from `true` to `strict`
+          No files to bump from `true` to `strict`
         OUT
         assert(result.status)
 
@@ -202,7 +202,7 @@ module Spoom
         assert_equal(<<~OUT, result.out)
           Checking files...
 
-          No file to bump from `true` to `strict`
+          No files to bump from `true` to `strict`
         OUT
         assert(result.status)
 
@@ -298,7 +298,7 @@ module Spoom
           Can bump `1` file from `false` to `true`:
            + file1.rb
 
-          Run `bump.sh` to bump them
+          Run `bump.sh` to bump it
         OUT
         refute(result.status)
 
@@ -311,7 +311,7 @@ module Spoom
         assert_equal(<<~OUT, result.out)
           Checking files...
 
-          No file to bump from `false` to `true`
+          No files to bump from `false` to `true`
         OUT
         assert(result.status)
       end
@@ -331,7 +331,7 @@ module Spoom
         assert_equal(<<~OUT, result.out)
           Checking files...
 
-          No file to bump from `false` to `true`
+          No files to bump from `false` to `true`
         OUT
         assert(result.status)
 
@@ -459,7 +459,7 @@ module Spoom
           Checking files...
 
           Found 1 type checking error
-          No file to bump from `false` to `true`
+          No files to bump from `false` to `true`
         OUT
         assert(result.status)
         assert_equal("false", @project.read_file_strictness("file1.rb"))
@@ -546,7 +546,7 @@ module Spoom
         assert_equal(<<~OUT, result.out)
           Checking files...
 
-          No file to bump from `ignore` to `false`
+          No files to bump from `ignore` to `false`
         OUT
         assert(result.status)
       end

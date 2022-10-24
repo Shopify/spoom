@@ -71,7 +71,7 @@ module Spoom
         say("\n")
 
         if files_to_bump.empty?
-          say("No file to bump from `#{from}` to `#{to}`")
+          say("No files to bump from `#{from}` to `#{to}`")
           exit(0)
         end
 
@@ -132,13 +132,14 @@ module Spoom
 
       no_commands do
         def print_changes(files, command:, from: "false", to: "true", dry: false, path: File.expand_path("."))
-          if files.empty?
-            say("No file to bump from `#{from}` to `#{to}`")
+          files_count = files.size
+          if files_count.zero?
+            say("No files to bump from `#{from}` to `#{to}`")
             return
           end
           message = StringIO.new
           message << (dry ? "Can bump" : "Bumped")
-          message << " `#{files.size}` file#{"s" if files.size > 1}"
+          message << " `#{files_count}` file#{"s" if files_count > 1}"
           message << " from `#{from}` to `#{to}`:"
           say(message.string)
           files.each do |file|
@@ -146,7 +147,7 @@ module Spoom
             say(" + #{file_path}")
           end
           if dry && command
-            say("\nRun `#{command}` to bump them")
+            say("\nRun `#{command}` to bump #{files_count > 1 ? "them" : "it"}")
           elsif dry
             say("\nRun `spoom bump --from #{from} --to #{to}` locally then `commit the changes` and `push them`")
           end
