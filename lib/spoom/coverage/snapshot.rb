@@ -22,6 +22,9 @@ module Spoom
       prop :calls_untyped, Integer, default: 0
       prop :calls_typed, Integer, default: 0
       prop :sigils, T::Hash[String, Integer], default: Hash.new(0)
+      prop :methods_with_sig_excluding_rbis, Integer, default: 0
+      prop :methods_without_sig_excluding_rbis, Integer, default: 0
+      prop :sigils_excluding_rbis, T::Hash[String, Integer], default: Hash.new(0)
 
       # The strictness name as found in the Sorbet metrics file
       STRICTNESSES = T.let(["ignore", "false", "true", "strict", "strong", "stdlib"].freeze, T::Array[String])
