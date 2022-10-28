@@ -67,6 +67,7 @@ GEM
     sorbet (0.5.10511)
       sorbet-static (= 0.5.10511)
     sorbet-runtime (0.5.10511)
+    sorbet-static (0.5.10511-universal-darwin-21)
     sorbet-static (0.5.10511-universal-darwin-22)
     sorbet-static (0.5.10511-x86_64-linux)
     syntax_tree (4.0.0)
@@ -93,6 +94,7 @@ GEM
       yard (>= 0.9)
 
 PLATFORMS
+  arm64-darwin-21
   universal-darwin-22
   x86_64-linux
 

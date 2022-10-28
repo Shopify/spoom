@@ -57,6 +57,10 @@ module Spoom
         assert_equal(13, snapshot.methods_without_sig)
         assert_equal(6, snapshot.calls_typed)
         assert_equal(1, snapshot.calls_untyped)
+        assert_equal(1, snapshot.methods_with_sig_excluding_rbis)
+        assert_equal(8, snapshot.methods_without_sig_excluding_rbis)
+        assert_equal({ "false" => 1, "true" => 3 }, snapshot.sigils)
+        assert_equal({ "false" => 1, "true" => 2 }, snapshot.sigils_excluding_rbis)
         project.destroy!
       end
 
@@ -72,6 +76,10 @@ module Spoom
         assert_equal(8, snapshot.methods_without_sig)
         assert_equal(6, snapshot.calls_typed)
         assert_equal(1, snapshot.calls_untyped)
+        assert_equal(1, snapshot.methods_with_sig_excluding_rbis)
+        assert_equal(8, snapshot.methods_without_sig_excluding_rbis)
+        assert_equal({ "false" => 1, "true" => 2 }, snapshot.sigils)
+        assert_equal({ "false" => 1, "true" => 2 }, snapshot.sigils_excluding_rbis)
         project.destroy!
       end
 
@@ -108,7 +116,7 @@ module Spoom
           A3.new.foo
           B1.foo
         RB
-        project.write!("lib/d.rbi", <<~RB)
+        project.write!("sorbet/rbi/d.rbi", <<~RB)
           # typed: true
 
           module D1; end

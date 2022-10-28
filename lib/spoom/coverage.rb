@@ -19,13 +19,24 @@ module Spoom
 
         new_config = config.copy
         new_config.allowed_extensions.reject! { |ext| !rbi && ext == ".rbi" }
-
-        metrics = Spoom::Sorbet.srb_metrics(
+        flags = [
           "--no-config",
           "--no-error-sections",
           "--no-error-count",
           "--isolate-error-code=0",
           new_config.options_string,
+        ]
+
+        metrics = Spoom::Sorbet.srb_metrics(
+          *flags,
+          path: path,
+          capture_err: true,
+          sorbet_bin: sorbet_bin,
+        )
+        # Collect extra information using a different configuration
+        flags << "--ignore sorbet/rbi/"
+        metrics_without_rbis = Spoom::Sorbet.srb_metrics(
+          *flags,
           path: path,
           capture_err: true,
           sorbet_bin: sorbet_bin,
@@ -50,10 +61,20 @@ module Spoom
         snapshot.duration += metrics.fetch("run.utilization.system_time.us", 0)
         snapshot.duration += metrics.fetch("run.utilization.user_time.us", 0)
 
-        Snapshot::STRICTNESSES.each do |strictness|
-          next unless metrics.key?("types.input.files.sigil.#{strictness}")
+        if metrics_without_rbis
+          snapshot.methods_with_sig_excluding_rbis = metrics_without_rbis.fetch("types.sig.count", 0)
+          snapshot.methods_without_sig_excluding_rbis = metrics_without_rbis.fetch("types.input.methods.total",
+            0) - snapshot.methods_with_sig_excluding_rbis
+        end
 
-          snapshot.sigils[strictness] = T.must(metrics["types.input.files.sigil.#{strictness}"])
+        Snapshot::STRICTNESSES.each do |strictness|
+          if metrics.key?("types.input.files.sigil.#{strictness}")
+            snapshot.sigils[strictness] = T.must(metrics["types.input.files.sigil.#{strictness}"])
+          end
+          if metrics_without_rbis&.key?("types.input.files.sigil.#{strictness}")
+            snapshot.sigils_excluding_rbis[strictness] =
+              T.must(metrics_without_rbis["types.input.files.sigil.#{strictness}"])
+          end
         end
 
         snapshot.version_static = Spoom::Sorbet.version_from_gemfile_lock(gem: "sorbet-static", path: path)
