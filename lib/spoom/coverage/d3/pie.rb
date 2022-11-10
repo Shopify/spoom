@@ -125,14 +125,14 @@ module Spoom
 
           sig { params(id: String, title: String, snapshot: Snapshot).void }
           def initialize(id, title, snapshot)
-            super(id, title, snapshot.sigils.select { |_k, v| v })
+            super(id, title, snapshot.sigils_excluding_rbis.select { |_k, v| v })
           end
 
           sig { override.returns(String) }
           def tooltip
             <<~JS
               function tooltip_#{id}(d) {
-                tooltipPie(d, "typed: " + d.data.key, "files", sum_#{id});
+                tooltipPie(d, "typed: " + d.data.key, "files excluding RBIs", sum_#{id});
               }
             JS
           end
@@ -161,14 +161,21 @@ module Spoom
 
           sig { params(id: String, title: String, snapshot: Snapshot).void }
           def initialize(id, title, snapshot)
-            super(id, title, { true: snapshot.methods_with_sig, false: snapshot.methods_without_sig })
+            super(
+              id,
+              title,
+              { true: snapshot.methods_with_sig_excluding_rbis, false: snapshot.methods_without_sig_excluding_rbis }
+            )
           end
 
           sig { override.returns(String) }
           def tooltip
             <<~JS
               function tooltip_#{id}(d) {
-                tooltipPie(d, (d.data.key == "true" ? " with" : " without") + " a signature", "methods", sum_#{id})
+                tooltipPie(
+                  d,
+                  (d.data.key == "true" ? " with" : " without") + " a signature", "methods excluding RBIs", sum_#{id}
+                )
               }
             JS
           end

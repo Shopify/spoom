@@ -428,8 +428,8 @@ module Spoom
               {
                 timestamp: snapshot.commit_timestamp,
                 commit: snapshot.commit_sha,
-                total: snapshot.files,
-                values: snapshot.sigils,
+                total: snapshot.files - snapshot.rbi_files,
+                values: snapshot.sigils_excluding_rbis,
               }
             end
             super(id, data, keys)
@@ -439,7 +439,7 @@ module Spoom
           def tooltip
             <<~JS
               function tooltip_#{id}(d) {
-                tooltipTimeline(d, "files");
+                tooltipTimeline(d, "files excluding RBIs");
               }
             JS
           end
@@ -482,8 +482,11 @@ module Spoom
               {
                 timestamp: snapshot.commit_timestamp,
                 commit: snapshot.commit_sha,
-                total: snapshot.methods_with_sig + snapshot.methods_without_sig,
-                values: { true: snapshot.methods_with_sig, false: snapshot.methods_without_sig },
+                total: snapshot.methods_with_sig_excluding_rbis + snapshot.methods_without_sig_excluding_rbis,
+                values: {
+                  true: snapshot.methods_with_sig_excluding_rbis,
+                  false: snapshot.methods_without_sig_excluding_rbis,
+                },
               }
             end
             super(id, data, keys)
@@ -493,7 +496,7 @@ module Spoom
           def tooltip
             <<~JS
               function tooltip_#{id}(d) {
-                tooltipTimeline(d, "methods");
+                tooltipTimeline(d, "methods excluding RBIs");
               }
             JS
           end

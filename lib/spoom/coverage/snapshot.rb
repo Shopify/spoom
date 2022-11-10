@@ -66,6 +66,8 @@ module Spoom
           snapshot.methods_without_sig = obj.fetch("methods_without_sig", 0)
           snapshot.calls_typed = obj.fetch("calls_typed", 0)
           snapshot.calls_untyped = obj.fetch("calls_untyped", 0)
+          snapshot.methods_with_sig_excluding_rbis = obj.fetch("methods_with_sig_excluding_rbis", 0)
+          snapshot.methods_without_sig_excluding_rbis = obj.fetch("methods_without_sig_excluding_rbis", 0)
 
           sigils = obj.fetch("sigils", {})
           if sigils
@@ -73,6 +75,15 @@ module Spoom
               next unless sigils.key?(strictness)
 
               snapshot.sigils[strictness] = sigils[strictness]
+            end
+          end
+
+          sigils_excluding_rbis = obj.fetch("sigils_excluding_rbis", {})
+          if sigils_excluding_rbis
+            Snapshot::STRICTNESSES.each do |strictness|
+              next unless sigils_excluding_rbis.key?(strictness)
+
+              snapshot.sigils_excluding_rbis[strictness] = sigils_excluding_rbis[strictness]
             end
           end
 
@@ -87,6 +98,7 @@ module Spoom
       sig { params(snapshot: Snapshot).void }
       def print_snapshot(snapshot)
         methods = snapshot.methods_with_sig + snapshot.methods_without_sig
+        methods_excluding_rbis = snapshot.methods_with_sig_excluding_rbis + snapshot.methods_without_sig_excluding_rbis
         calls = snapshot.calls_typed + snapshot.calls_untyped
 
         if snapshot.version_static || snapshot.version_runtime
@@ -96,10 +108,12 @@ module Spoom
         end
         printl("Content:")
         indent
-        printl("files: #{snapshot.files} (including #{snapshot.rbi_files} RBIs)")
+        printl("files: #{snapshot.files}")
+        printl("files excluding rbis: #{snapshot.files - snapshot.rbi_files}")
         printl("modules: #{snapshot.modules}")
         printl("classes: #{snapshot.classes - snapshot.singleton_classes}")
         printl("methods: #{methods}")
+        printl("methods excluding rbis: #{methods_excluding_rbis}")
         dedent
         printn
         printl("Sigils:")
@@ -111,6 +125,13 @@ module Spoom
           "without signature" => snapshot.methods_without_sig,
         }
         print_map(methods_map, methods)
+        printn
+        printl("Methods excluding RBIs")
+        methods_excluding_rbis_map = {
+          "with signature" => snapshot.methods_with_sig_excluding_rbis,
+          "without signature" => snapshot.methods_without_sig_excluding_rbis,
+        }
+        print_map(methods_excluding_rbis_map, methods_excluding_rbis)
         printn
         printl("Calls:")
         calls_map = {
