@@ -60,16 +60,22 @@ module Spoom
           Sorbet runtime: X.X.XXXX
 
           Content:
-            files: 4 (including 1 RBIs)
+            files: 4
+            files excluding rbis: 3
             modules: 5
             classes: 2
             methods: 14
+            methods excluding rbis: 14
 
           Sigils:
             false: 1 (25%)
             true: 3 (75%)
 
           Methods:
+            with signature: 2 (14%)
+            without signature: 12 (86%)
+
+          Methods excluding RBIs
             with signature: 2 (14%)
             without signature: 12 (86%)
 
@@ -100,16 +106,22 @@ module Spoom
           Sorbet runtime: X.X.XXXX
 
           Content:
-            files: 5 (including 1 RBIs)
+            files: 5
+            files excluding rbis: 4
             modules: 5
             classes: 2
             methods: 15
+            methods excluding rbis: 15
 
           Sigils:
             false: 1 (20%)
             true: 4 (80%)
 
           Methods:
+            with signature: 2 (13%)
+            without signature: 13 (87%)
+
+          Methods excluding RBIs
             with signature: 2 (13%)
             without signature: 13 (87%)
 
@@ -128,16 +140,22 @@ module Spoom
           Sorbet runtime: X.X.XXXX
 
           Content:
-            files: 3 (including 0 RBIs)
+            files: 3
+            files excluding rbis: 3
             modules: 3
             classes: 1
             methods: 9
+            methods excluding rbis: 9
 
           Sigils:
             false: 1 (33%)
             true: 2 (67%)
 
           Methods:
+            with signature: 1 (11%)
+            without signature: 8 (89%)
+
+          Methods excluding RBIs
             with signature: 1 (11%)
             without signature: 8 (89%)
 
@@ -168,16 +186,22 @@ module Spoom
           Sorbet runtime: X.X.XXXX
 
           Content:
-            files: 4 (including 1 RBIs)
+            files: 4
+            files excluding rbis: 3
             modules: 5
             classes: 2
             methods: 14
+            methods excluding rbis: 14
 
           Sigils:
             false: 1 (25%)
             true: 3 (75%)
 
           Methods:
+            with signature: 2 (14%)
+            without signature: 12 (86%)
+
+          Methods excluding RBIs
             with signature: 2 (14%)
             without signature: 12 (86%)
 
@@ -212,16 +236,22 @@ module Spoom
             Sorbet runtime: X.X.XXXX
 
             Content:
-              files: 4 (including 1 RBIs)
+              files: 4
+              files excluding rbis: 3
               modules: 5
               classes: 2
               methods: 14
+              methods excluding rbis: 14
 
             Sigils:
               false: 1 (25%)
               true: 3 (75%)
 
             Methods:
+              with signature: 2 (14%)
+              without signature: 12 (86%)
+
+            Methods excluding RBIs
               with signature: 2 (14%)
               without signature: 12 (86%)
 
@@ -246,16 +276,22 @@ module Spoom
             Sorbet runtime: X.X.XXXX
 
             Content:
-              files: 2 (including 0 RBIs)
+              files: 2
+              files excluding rbis: 2
               modules: 1
               classes: 1
               methods: 6
+              methods excluding rbis: 6
 
             Sigils:
               false: 1 (50%)
               strict: 1 (50%)
 
             Methods:
+              with signature: 1 (17%)
+              without signature: 5 (83%)
+
+            Methods excluding RBIs
               with signature: 1 (17%)
               without signature: 5 (83%)
 
@@ -267,10 +303,12 @@ module Spoom
             Sorbet runtime: X.X.XXXX
 
             Content:
-              files: 4 (including 0 RBIs)
+              files: 4
+              files excluding rbis: 4
               modules: 1
               classes: 2
               methods: 9
+              methods excluding rbis: 9
 
             Sigils:
               false: 2 (50%)
@@ -278,6 +316,10 @@ module Spoom
               strict: 1 (25%)
 
             Methods:
+              with signature: 1 (11%)
+              without signature: 8 (89%)
+
+            Methods excluding RBIs
               with signature: 1 (11%)
               without signature: 8 (89%)
 
@@ -289,10 +331,12 @@ module Spoom
             Sorbet runtime: X.X.XXXX
 
             Content:
-              files: 6 (including 0 RBIs)
+              files: 6
+              files excluding rbis: 6
               modules: 1
               classes: 2
               methods: 10
+              methods excluding rbis: 10
 
             Sigils:
               ignore: 1 (17%)
@@ -301,6 +345,10 @@ module Spoom
               strict: 1 (17%)
 
             Methods:
+              with signature: 1 (10%)
+              without signature: 9 (90%)
+
+            Methods excluding RBIs
               with signature: 1 (10%)
               without signature: 9 (90%)
 
@@ -324,16 +372,22 @@ module Spoom
             Sorbet runtime: X.X.XXXX
 
             Content:
-              files: 2 (including 0 RBIs)
+              files: 2
+              files excluding rbis: 2
               modules: 1
               classes: 1
               methods: 6
+              methods excluding rbis: 6
 
             Sigils:
               false: 1 (50%)
               strict: 1 (50%)
 
             Methods:
+              with signature: 1 (17%)
+              without signature: 5 (83%)
+
+            Methods excluding RBIs
               with signature: 1 (17%)
               without signature: 5 (83%)
 
@@ -345,10 +399,12 @@ module Spoom
             Sorbet runtime: X.X.XXXX
 
             Content:
-              files: 4 (including 0 RBIs)
+              files: 4
+              files excluding rbis: 4
               modules: 1
               classes: 2
               methods: 9
+              methods excluding rbis: 9
 
             Sigils:
               false: 2 (50%)
@@ -356,6 +412,10 @@ module Spoom
               strict: 1 (25%)
 
             Methods:
+              with signature: 1 (11%)
+              without signature: 8 (89%)
+
+            Methods excluding RBIs
               with signature: 1 (11%)
               without signature: 8 (89%)
 
