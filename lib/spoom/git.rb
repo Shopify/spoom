@@ -6,6 +6,18 @@ require "time"
 module Spoom
   # Execute git commands
   module Git
+    class Commit < T::Struct
+      extend T::Sig
+
+      const :sha, String
+      const :time, Time
+
+      sig { returns(Integer) }
+      def timestamp
+        time.to_i
+      end
+    end
+
     class << self
       extend T::Sig
 
