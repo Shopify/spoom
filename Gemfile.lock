@@ -66,7 +66,7 @@ GEM
     ruby-progressbar (1.11.0)
     sorbet (0.5.10545)
       sorbet-static (= 0.5.10545)
-    sorbet-runtime (0.5.10539)
+    sorbet-runtime (0.5.10554)
     sorbet-static (0.5.10545-universal-darwin-21)
     sorbet-static (0.5.10545-universal-darwin-22)
     sorbet-static (0.5.10545-x86_64-linux)
