@@ -46,7 +46,7 @@ module Spoom
         sorbet = options[:sorbet]
 
         ref_before = Spoom::Git.current_branch
-        ref_before = Spoom::Git.last_commit(path: path) unless ref_before
+        ref_before = Spoom::Git.last_commit(path: path)&.sha unless ref_before
         unless ref_before
           say_error("Not in a git repository")
           say_error("\nSpoom needs to checkout into your previous commits to build the timeline.", status: nil)

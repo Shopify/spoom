@@ -97,13 +97,16 @@ module Spoom
         epoch_to_time(timestamp.to_s)
       end
 
-      # Get the last commit sha
-      sig { params(path: String).returns(T.nilable(String)) }
+      # Get the last commit in the currently checked out branch
+      sig { params(path: String).returns(T.nilable(Commit)) }
       def last_commit(path: ".")
-        result = rev_parse("HEAD", path: path)
+        result = log("HEAD --format='%h %at' -1", path: path)
         return nil unless result.status
 
-        result.out.strip
+        out = result.out.strip
+        return nil if out.empty?
+
+        parse_commit(out)
       end
 
       # Translate a git epoch timestamp into a Time

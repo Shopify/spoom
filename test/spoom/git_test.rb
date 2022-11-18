@@ -50,16 +50,16 @@ module Spoom
         time = Time.parse("1987-02-05 09:00:00")
         @project.write!("file")
         @project.commit!(time: time)
-        sha = Spoom::Git.last_commit(path: @project.absolute_path)
-        assert_equal(time.strftime("%s").to_i, Spoom::Git.commit_timestamp(T.must(sha), path: @project.absolute_path))
+        last_commit = Spoom::Git.last_commit(path: @project.absolute_path)
+        assert_equal(time.to_i, last_commit&.timestamp)
       end
 
       def test_commit_time
         time = Time.parse("1987-02-05 09:00:00")
         @project.write!("file")
         @project.commit!(time: time)
-        sha = Spoom::Git.last_commit(path: @project.absolute_path)
-        assert_equal(time, Spoom::Git.commit_time(T.must(sha), path: @project.absolute_path))
+        last_commit = Spoom::Git.last_commit(path: @project.absolute_path)
+        assert_equal(time, last_commit&.time)
       end
 
       def test_git_diff

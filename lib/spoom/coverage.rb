@@ -45,9 +45,9 @@ module Spoom
         snapshot = Snapshot.new
         return snapshot unless metrics
 
-        sha = Spoom::Git.last_commit(path: path)
-        snapshot.commit_sha = sha
-        snapshot.commit_timestamp = Spoom::Git.commit_timestamp(sha, path: path).to_i if sha
+        last_commit = Spoom::Git.last_commit(path: path)
+        snapshot.commit_sha = last_commit&.sha
+        snapshot.commit_timestamp = last_commit&.timestamp
 
         snapshot.files = metrics.fetch("types.input.files", 0)
         snapshot.modules = metrics.fetch("types.input.modules.total", 0)
