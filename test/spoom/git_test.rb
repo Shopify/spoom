@@ -94,15 +94,17 @@ module Spoom
       end
 
       def test_sorbet_intro_not_found
-        sha = Spoom::Git.sorbet_intro_commit(path: @project.absolute_path)
-        assert_nil(sha)
+        commit = Spoom::Git.sorbet_intro_commit(path: @project.absolute_path)
+        assert_nil(commit)
       end
 
       def test_sorbet_intro_found
+        intro_time = Time.parse("1987-02-05 09:00:00 +0000")
         @project.write!("sorbet/config")
-        @project.commit!
-        sha = Spoom::Git.sorbet_intro_commit(path: @project.absolute_path)
-        assert_match(/\A[a-z0-9]+\z/, sha)
+        @project.commit!(time: intro_time)
+        commit = Spoom::Git.sorbet_intro_commit(path: @project.absolute_path)
+        assert_match(/\A[a-z0-9]+\z/, commit&.sha)
+        assert_equal(intro_time, commit&.time)
       end
 
       def test_sorbet_removal_not_found
@@ -111,12 +113,15 @@ module Spoom
       end
 
       def test_sorbet_removal_found
+        intro_time = Time.parse("1987-02-05 09:00:00 +0000")
+        removal_time = Time.parse("1987-02-05 21:00:00 +0000")
         @project.write!("sorbet/config")
-        @project.commit!
+        @project.commit!(time: intro_time)
         @project.remove!("sorbet/config")
-        @project.commit!
-        sha = Spoom::Git.sorbet_removal_commit(path: @project.absolute_path)
-        assert_match(/\A[a-z0-9]+\z/, sha)
+        @project.commit!(time: removal_time)
+        commit = Spoom::Git.sorbet_removal_commit(path: @project.absolute_path)
+        assert_match(/\A[a-z0-9]+\z/, commit&.sha)
+        assert_equal(removal_time, commit&.time)
       end
     end
   end

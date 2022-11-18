@@ -71,9 +71,9 @@ module Spoom
         to = parse_time(options[:to], "--to")
 
         unless from
-          intro_sha = Spoom::Git.sorbet_intro_commit(path: path)
-          intro_sha = T.must(intro_sha) # we know it's in there since in_sorbet_project!
-          from = Spoom::Git.commit_time(intro_sha, path: path)
+          intro_commit = Spoom::Git.sorbet_intro_commit(path: path)
+          intro_commit = T.must(intro_commit) # we know it's in there since in_sorbet_project!
+          from = intro_commit.time
         end
 
         timeline = Spoom::Timeline.new(from, to, path: path)
