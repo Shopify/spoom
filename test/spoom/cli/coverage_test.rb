@@ -513,7 +513,7 @@ module Spoom
             def self.bar; end
           end
         RB
-        @project.commit!(date: Time.parse("2010-01-02 03:04:05"))
+        @project.commit!(time: Time.parse("2010-01-02 03:04:05"))
         @project.write!("c.rb", <<~RB)
           # typed: false
           class Baz; end
@@ -522,10 +522,10 @@ module Spoom
           # typed: true
           Baz.new
         RB
-        @project.commit!(date: Time.parse("2010-02-02 03:04:05"))
+        @project.commit!(time: Time.parse("2010-02-02 03:04:05"))
         @project.write!("e.rb", "# typed: ignore")
         @project.write!("f.rb", "# typed: __INTERNAL_STDLIB")
-        @project.commit!(date: Time.parse("2010-03-02 03:04:05"))
+        @project.commit!(time: Time.parse("2010-03-02 03:04:05"))
       end
     end
   end

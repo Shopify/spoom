@@ -47,19 +47,19 @@ module Spoom
       end
 
       def test_commit_timestamp
-        date = Time.parse("1987-02-05 09:00:00")
+        time = Time.parse("1987-02-05 09:00:00")
         @project.write!("file")
-        @project.commit!(date: date)
+        @project.commit!(time: time)
         sha = Spoom::Git.last_commit(path: @project.absolute_path)
-        assert_equal(date.strftime("%s").to_i, Spoom::Git.commit_timestamp(T.must(sha), path: @project.absolute_path))
+        assert_equal(time.strftime("%s").to_i, Spoom::Git.commit_timestamp(T.must(sha), path: @project.absolute_path))
       end
 
       def test_commit_time
-        date = Time.parse("1987-02-05 09:00:00")
+        time = Time.parse("1987-02-05 09:00:00")
         @project.write!("file")
-        @project.commit!(date: date)
+        @project.commit!(time: time)
         sha = Spoom::Git.last_commit(path: @project.absolute_path)
-        assert_equal(date, Spoom::Git.commit_time(T.must(sha), path: @project.absolute_path))
+        assert_equal(time, Spoom::Git.commit_time(T.must(sha), path: @project.absolute_path))
       end
 
       def test_git_diff
@@ -76,7 +76,7 @@ module Spoom
 
       def test_git_log
         @project.write!("file")
-        @project.commit!(date: Time.parse("1987-02-05 09:00:00 +0000"))
+        @project.commit!(time: Time.parse("1987-02-05 09:00:00 +0000"))
         log = Spoom::Git.log("--format='format:%ad'", path: @project.absolute_path).out
         assert_equal("Thu Feb 5 09:00:00 1987 +0000", log)
       end
@@ -89,7 +89,7 @@ module Spoom
 
       def test_git_show
         @project.write!("file")
-        @project.commit!(date: Time.parse("1987-02-05 09:00:00"))
+        @project.commit!(time: Time.parse("1987-02-05 09:00:00"))
         assert_match(/Thu Feb 5 09:00:00 1987/, Spoom::Git.show(path: @project.absolute_path).out)
       end
 
