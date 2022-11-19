@@ -60,11 +60,6 @@ module Spoom
       end
 
       sig { params(arg: String, path: String).returns(ExecResult) }
-      def rev_parse(*arg, path: ".")
-        exec("git rev-parse --short #{arg.join(" ")}", path: path)
-      end
-
-      sig { params(arg: String, path: String).returns(ExecResult) }
       def show(*arg, path: ".")
         exec("git show #{arg.join(" ")}", path: path)
       end
@@ -79,24 +74,6 @@ module Spoom
 
       # Utils
 
-      # Get the commit epoch timestamp for a `sha`
-      sig { params(sha: String, path: String).returns(T.nilable(Integer)) }
-      def commit_timestamp(sha, path: ".")
-        result = show("--no-notes --no-patch --pretty=%at #{sha}", path: path)
-        return nil unless result.status
-
-        result.out.strip.to_i
-      end
-
-      # Get the commit Time for a `sha`
-      sig { params(sha: String, path: String).returns(T.nilable(Time)) }
-      def commit_time(sha, path: ".")
-        timestamp = commit_timestamp(sha, path: path)
-        return nil unless timestamp
-
-        epoch_to_time(timestamp.to_s)
-      end
-
       # Get the last commit in the currently checked out branch
       sig { params(path: String).returns(T.nilable(Commit)) }
       def last_commit(path: ".")
@@ -107,12 +84,6 @@ module Spoom
         return nil if out.empty?
 
         parse_commit(out)
-      end
-
-      # Translate a git epoch timestamp into a Time
-      sig { params(timestamp: String).returns(Time) }
-      def epoch_to_time(timestamp)
-        Time.strptime(timestamp, "%s")
       end
 
       # Is there uncommited changes in `path`?
@@ -151,7 +122,8 @@ module Spoom
         sha, epoch = string.split(" ", 2)
         return nil unless sha && epoch
 
-        Commit.new(sha: sha, time: epoch_to_time(epoch))
+        time = Time.strptime(epoch, "%s")
+        Commit.new(sha: sha, time: time)
       end
     end
   end

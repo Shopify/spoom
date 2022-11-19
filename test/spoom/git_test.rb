@@ -81,12 +81,6 @@ module Spoom
         assert_equal("Thu Feb 5 09:00:00 1987 +0000", log)
       end
 
-      def test_git_rev_parse
-        @project.write!("file")
-        @project.commit!
-        assert_match(/^[a-f0-9]+$/, Spoom::Git.rev_parse("main", path: @project.absolute_path).out.strip)
-      end
-
       def test_git_show
         @project.write!("file")
         @project.commit!(time: Time.parse("1987-02-05 09:00:00"))
