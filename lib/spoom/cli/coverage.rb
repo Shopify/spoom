@@ -84,16 +84,15 @@ module Spoom
           exit(1)
         end
 
-        ticks.each_with_index do |sha, i|
-          date = Spoom::Git.commit_time(sha, path: path)
-          say("Analyzing commit `#{sha}` - #{date&.strftime("%F")} (#{i + 1} / #{ticks.size})")
+        ticks.each_with_index do |commit, i|
+          say("Analyzing commit `#{commit.sha}` - #{commit.time.strftime("%F")} (#{i + 1} / #{ticks.size})")
 
-          Spoom::Git.checkout(sha, path: path)
+          Spoom::Git.checkout(commit.sha, path: path)
 
           snapshot = T.let(nil, T.nilable(Spoom::Coverage::Snapshot))
           if options[:bundle_install]
             Bundler.with_unbundled_env do
-              next unless bundle_install(path, sha)
+              next unless bundle_install(path, commit.sha)
 
               snapshot = Spoom::Coverage.snapshot(path: path, sorbet_bin: sorbet)
             end
@@ -107,7 +106,7 @@ module Spoom
 
           next unless save_dir
 
-          file = "#{save_dir}/#{sha}.json"
+          file = "#{save_dir}/#{commit.sha}.json"
           File.write(file, snapshot.to_json)
           say("  Snapshot data saved under `#{file}`\n\n")
         end
