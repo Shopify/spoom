@@ -47,19 +47,19 @@ module Spoom
       end
 
       def test_commit_timestamp
-        date = Time.parse("1987-02-05 09:00:00")
+        time = Time.parse("1987-02-05 09:00:00")
         @project.write!("file")
-        @project.commit!(date: date)
-        sha = Spoom::Git.last_commit(path: @project.absolute_path)
-        assert_equal(date.strftime("%s").to_i, Spoom::Git.commit_timestamp(T.must(sha), path: @project.absolute_path))
+        @project.commit!(time: time)
+        last_commit = Spoom::Git.last_commit(path: @project.absolute_path)
+        assert_equal(time.to_i, last_commit&.timestamp)
       end
 
       def test_commit_time
-        date = Time.parse("1987-02-05 09:00:00")
+        time = Time.parse("1987-02-05 09:00:00")
         @project.write!("file")
-        @project.commit!(date: date)
-        sha = Spoom::Git.last_commit(path: @project.absolute_path)
-        assert_equal(date, Spoom::Git.commit_time(T.must(sha), path: @project.absolute_path))
+        @project.commit!(time: time)
+        last_commit = Spoom::Git.last_commit(path: @project.absolute_path)
+        assert_equal(time, last_commit&.time)
       end
 
       def test_git_diff
@@ -76,33 +76,29 @@ module Spoom
 
       def test_git_log
         @project.write!("file")
-        @project.commit!(date: Time.parse("1987-02-05 09:00:00 +0000"))
+        @project.commit!(time: Time.parse("1987-02-05 09:00:00 +0000"))
         log = Spoom::Git.log("--format='format:%ad'", path: @project.absolute_path).out
         assert_equal("Thu Feb 5 09:00:00 1987 +0000", log)
       end
 
-      def test_git_rev_parse
-        @project.write!("file")
-        @project.commit!
-        assert_match(/^[a-f0-9]+$/, Spoom::Git.rev_parse("main", path: @project.absolute_path).out.strip)
-      end
-
       def test_git_show
         @project.write!("file")
-        @project.commit!(date: Time.parse("1987-02-05 09:00:00"))
+        @project.commit!(time: Time.parse("1987-02-05 09:00:00"))
         assert_match(/Thu Feb 5 09:00:00 1987/, Spoom::Git.show(path: @project.absolute_path).out)
       end
 
       def test_sorbet_intro_not_found
-        sha = Spoom::Git.sorbet_intro_commit(path: @project.absolute_path)
-        assert_nil(sha)
+        commit = Spoom::Git.sorbet_intro_commit(path: @project.absolute_path)
+        assert_nil(commit)
       end
 
       def test_sorbet_intro_found
+        intro_time = Time.parse("1987-02-05 09:00:00 +0000")
         @project.write!("sorbet/config")
-        @project.commit!
-        sha = Spoom::Git.sorbet_intro_commit(path: @project.absolute_path)
-        assert_match(/\A[a-z0-9]+\z/, sha)
+        @project.commit!(time: intro_time)
+        commit = Spoom::Git.sorbet_intro_commit(path: @project.absolute_path)
+        assert_match(/\A[a-z0-9]+\z/, commit&.sha)
+        assert_equal(intro_time, commit&.time)
       end
 
       def test_sorbet_removal_not_found
@@ -111,12 +107,15 @@ module Spoom
       end
 
       def test_sorbet_removal_found
+        intro_time = Time.parse("1987-02-05 09:00:00 +0000")
+        removal_time = Time.parse("1987-02-05 21:00:00 +0000")
         @project.write!("sorbet/config")
-        @project.commit!
+        @project.commit!(time: intro_time)
         @project.remove!("sorbet/config")
-        @project.commit!
-        sha = Spoom::Git.sorbet_removal_commit(path: @project.absolute_path)
-        assert_match(/\A[a-z0-9]+\z/, sha)
+        @project.commit!(time: removal_time)
+        commit = Spoom::Git.sorbet_removal_commit(path: @project.absolute_path)
+        assert_match(/\A[a-z0-9]+\z/, commit&.sha)
+        assert_equal(removal_time, commit&.time)
       end
     end
   end

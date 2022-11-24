@@ -13,10 +13,10 @@ module Spoom
 
     # Git
 
-    sig { params(message: String, date: Time).void }
-    def commit!(message = "message", date: Time.now.utc)
+    sig { params(message: String, time: Time).void }
+    def commit!(message = "message", time: Time.now.utc)
       exec("git add --all")
-      exec("GIT_COMMITTER_DATE=\"#{date}\" git commit -m '#{message}' --date '#{date}'")
+      exec("GIT_COMMITTER_DATE=\"#{time}\" git commit -m '#{message}' --date '#{time}'")
     end
 
     sig { params(name: String).void }

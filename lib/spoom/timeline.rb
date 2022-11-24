@@ -15,7 +15,7 @@ module Spoom
     end
 
     # Return one commit for each month between `from` and `to`
-    sig { returns(T::Array[String]) }
+    sig { returns(T::Array[Git::Commit]) }
     def ticks
       commits_for_dates(months)
     end
@@ -34,21 +34,21 @@ module Spoom
     end
 
     # Return one commit for each date in `dates`
-    sig { params(dates: T::Array[Time]).returns(T::Array[String]) }
+    sig { params(dates: T::Array[Time]).returns(T::Array[Git::Commit]) }
     def commits_for_dates(dates)
       dates.map do |t|
         result = Spoom::Git.log(
           "--since='#{t}'",
           "--until='#{t.to_date.next_month}'",
-          "--format='format:%h'",
+          "--format='format:%h %at'",
           "--author-date-order",
           "-1",
           path: @path,
         )
         next if result.out.empty?
 
-        result.out
-      end.compact.uniq
+        Git.parse_commit(result.out.strip)
+      end.compact.uniq(&:sha)
     end
   end
 end

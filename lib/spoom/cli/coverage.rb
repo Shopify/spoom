@@ -46,7 +46,7 @@ module Spoom
         sorbet = options[:sorbet]
 
         ref_before = Spoom::Git.current_branch
-        ref_before = Spoom::Git.last_commit(path: path) unless ref_before
+        ref_before = Spoom::Git.last_commit(path: path)&.sha unless ref_before
         unless ref_before
           say_error("Not in a git repository")
           say_error("\nSpoom needs to checkout into your previous commits to build the timeline.", status: nil)
@@ -71,9 +71,9 @@ module Spoom
         to = parse_time(options[:to], "--to")
 
         unless from
-          intro_sha = Spoom::Git.sorbet_intro_commit(path: path)
-          intro_sha = T.must(intro_sha) # we know it's in there since in_sorbet_project!
-          from = Spoom::Git.commit_time(intro_sha, path: path)
+          intro_commit = Spoom::Git.sorbet_intro_commit(path: path)
+          intro_commit = T.must(intro_commit) # we know it's in there since in_sorbet_project!
+          from = intro_commit.time
         end
 
         timeline = Spoom::Timeline.new(from, to, path: path)
@@ -84,16 +84,15 @@ module Spoom
           exit(1)
         end
 
-        ticks.each_with_index do |sha, i|
-          date = Spoom::Git.commit_time(sha, path: path)
-          say("Analyzing commit `#{sha}` - #{date&.strftime("%F")} (#{i + 1} / #{ticks.size})")
+        ticks.each_with_index do |commit, i|
+          say("Analyzing commit `#{commit.sha}` - #{commit.time.strftime("%F")} (#{i + 1} / #{ticks.size})")
 
-          Spoom::Git.checkout(sha, path: path)
+          Spoom::Git.checkout(commit.sha, path: path)
 
           snapshot = T.let(nil, T.nilable(Spoom::Coverage::Snapshot))
           if options[:bundle_install]
             Bundler.with_unbundled_env do
-              next unless bundle_install(path, sha)
+              next unless bundle_install(path, commit.sha)
 
               snapshot = Spoom::Coverage.snapshot(path: path, sorbet_bin: sorbet)
             end
@@ -107,7 +106,7 @@ module Spoom
 
           next unless save_dir
 
-          file = "#{save_dir}/#{sha}.json"
+          file = "#{save_dir}/#{commit.sha}.json"
           File.write(file, snapshot.to_json)
           say("  Snapshot data saved under `#{file}`\n\n")
         end
