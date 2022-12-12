@@ -466,29 +466,21 @@ module Spoom
       end
 
       def test_bump_with_sorbet_segfault
-        project = new_project
-        project.write_gemfile!(<<~GEMFILE)
-          source "https://rubygems.org"
+        # Create a fake Sorbet that will segfault
+        @project.write!("mock_sorbet", <<~RB)
+          #!/usr/bin/env ruby
+          $stderr.puts "segfault"
+          exit(139)
+        RB
+        @project.exec("chmod +x mock_sorbet")
 
-          gem "sorbet-static", "= 0.5.9267"
-          gem "spoom"
-        GEMFILE
-        project.write!("cant_be_bump1.rb", <<~RB)
+        # Any file will segfault with this
+        @project.write!("will_segfault.rb", <<~RB)
           # typed: false
           foo
         RB
-        project.write!("cant_be_bump2.rb", <<~RB)
-          # typed: false
-          bar
-        RB
-        project.write!("will_segfault.rb", <<~RB)
-          # typed: false
-          [{1 => 2}] + [{}]
-        RB
-        result = project.bundle_install!
-        assert(result.status)
 
-        result = project.spoom("bump --no-color")
+        result = @project.bundle_exec("spoom bump --no-color --sorbet #{@project.absolute_path}/mock_sorbet")
         assert_equal(<<~OUT, result.err)
           !!! Sorbet exited with code 139 - SEGFAULT !!!
 
@@ -498,11 +490,18 @@ module Spoom
         OUT
         refute(result.status)
 
-        assert_equal("false", project.read_file_strictness("cant_be_bump1.rb"))
-        assert_equal("false", project.read_file_strictness("cant_be_bump2.rb"))
-        assert_equal("false", project.read_file_strictness("will_segfault.rb"))
+        assert_equal("false", @project.read_file_strictness("will_segfault.rb"))
+      end
 
-        project.destroy!
+      def test_bump_display_sorbet_error
+        @project.write!("file.rb", <<~RB)
+          # typed: false
+        RB
+        result = @project.bundle_exec("spoom bump --no-color --sorbet-options=\"--not-found\"")
+        assert_equal(<<~MSG, result.err)
+          Option ‘not-found’ does not exist. To see all available options pass `--help`.
+        MSG
+        refute(result.status)
       end
 
       def test_bump_preserve_empty_line

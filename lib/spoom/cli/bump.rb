@@ -28,6 +28,7 @@ module Spoom
         desc: "Command to suggest if files can be bumped"
       option :count_errors, type: :boolean, default: false,
         desc: "Count the number of errors if all files were bumped"
+      option :sorbet_options, type: :string, default: "", desc: "Pass options to Sorbet"
       sig { params(directory: String).void }
       def bump(directory = ".")
         in_sorbet_project!
@@ -85,6 +86,7 @@ module Spoom
 
         error_url_base = Spoom::Sorbet::Errors::DEFAULT_ERROR_URL_BASE
         result = Sorbet.srb_tc(
+          *options[:sorbet_options].split(" "),
           "--error-url-base=#{error_url_base}",
           path: exec_path,
           capture_err: true,
@@ -103,6 +105,14 @@ module Spoom
           print_changes(files_to_bump, command: cmd, from: from, to: to, dry: dry, path: exec_path)
           undo_changes(files_to_bump, from) if dry
           exit(files_to_bump.empty?)
+        end
+
+        unless result.exit_code == 100
+          # Sorbet will return exit code 100 if there are type checking errors.
+          # If Sorbet returned something else, it means it didn't terminate normally.
+          say_error(result.err, status: nil, nl: false)
+          undo_changes(files_to_bump, from)
+          exit(1)
         end
 
         errors = Sorbet::Errors::Parser.parse_string(result.err, error_url_base: error_url_base)
