@@ -248,6 +248,25 @@ module Spoom
         context.destroy!
       end
 
+      def test_context_git_last_commit
+        context = Context.mktmp!
+        assert_nil(context.git_last_commit)
+
+        context.git_init!
+        context.git("config user.name 'John Doe'")
+        context.git("config user.email 'john@doe.org'")
+
+        context.git("-c commit.gpgsign=false commit -m '#{message}' --allow-empty")
+
+        sha = T.must(context.git_last_commit).sha
+        assert(sha.size < 40)
+
+        sha = T.must(context.git_last_commit(short_sha: false)).sha
+        assert(sha.size == 40)
+
+        context.destroy!
+      end
+
       def test_context_write_sorbet_config!
         context = Context.mktmp!
 
