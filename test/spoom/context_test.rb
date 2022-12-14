@@ -8,19 +8,17 @@ module Spoom
     class ContextTest < Minitest::Test
       def test_context_mktmp!
         context = Context.mktmp!
-
-        assert(File.directory?(context.absolute_path))
-
+        assert(context.exist?)
         context.destroy!
       end
 
       def test_context_make!
         context = Context.new("/tmp/spoom-context-test")
-        refute(File.directory?(context.absolute_path))
+        refute(context.exist?)
         context.mkdir!
-        assert(File.directory?(context.absolute_path))
+        assert(context.exist?)
         context.destroy!
-        refute(File.directory?(context.absolute_path))
+        refute(context.exist?)
       end
 
       def test_context_glob
