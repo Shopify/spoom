@@ -218,12 +218,12 @@ module Spoom
 
         context.write!("a", "")
         context.git("add a")
-        context.git("commit -m 'a'")
+        context.git("-c commit.gpgsign=false commit -m 'a'")
 
         context.git("checkout -b b")
         context.write!("b", "")
         context.git("add b")
-        context.git("commit -m 'b'")
+        context.git("-c commit.gpgsign=false commit -m 'b'")
 
         res = context.git_checkout!(ref: "a")
         assert(res.status)
