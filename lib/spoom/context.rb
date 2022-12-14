@@ -190,6 +190,12 @@ module Spoom
       Spoom::Git.current_branch(path: @absolute_path)
     end
 
+    # Get the last commit in the currently checked out branch
+    sig { params(short_sha: T::Boolean).returns(T.nilable(Git::Commit)) }
+    def git_last_commit(short_sha: true)
+      Spoom::Git.last_commit(path: @absolute_path, short_sha: short_sha)
+    end
+
     # Sorbet
 
     # Run `bundle exec srb` in this context directory

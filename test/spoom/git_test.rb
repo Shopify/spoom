@@ -30,7 +30,12 @@ module Spoom
       def test_last_commit
         @project.write!("file")
         @project.commit!
-        assert(Spoom::Git.last_commit(path: @project.absolute_path))
+
+        sha = T.must(Spoom::Git.last_commit(path: @project.absolute_path)).sha
+        assert(sha.size < 40)
+
+        sha = T.must(Spoom::Git.last_commit(path: @project.absolute_path, short_sha: false)).sha
+        assert(sha.size == 40)
       end
 
       def test_clean_workdir_on_clean_repo

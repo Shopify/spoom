@@ -75,9 +75,9 @@ module Spoom
       # Utils
 
       # Get the last commit in the currently checked out branch
-      sig { params(path: String).returns(T.nilable(Commit)) }
-      def last_commit(path: ".")
-        result = log("HEAD --format='%h %at' -1", path: path)
+      sig { params(path: String, short_sha: T::Boolean).returns(T.nilable(Commit)) }
+      def last_commit(path: ".", short_sha: true)
+        result = log("HEAD --format='%#{short_sha ? "h" : "H"} %at' -1", path: path)
         return nil unless result.status
 
         out = result.out.strip
