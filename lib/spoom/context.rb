@@ -46,6 +46,12 @@ module Spoom
 
     # File System
 
+    # Does the context directory at `absolute_path` exist and is a directory?
+    sig { returns(T::Boolean) }
+    def exist?
+      File.directory?(@absolute_path)
+    end
+
     # Create the context directory at `absolute_path`
     sig { void }
     def mkdir!
