@@ -32,6 +32,5 @@ jobs:
     - name: Check sigils
       run: bundle exec exe/spoom bump --from true --to strict --dry
     - run: bin/test
-      continue-on-error: ${{ matrix.experimental }}
     - name: Run style
       run: bin/style
