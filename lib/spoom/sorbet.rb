@@ -69,14 +69,17 @@ module Spoom
         ).returns(T.nilable(String))
       end
       def srb_version(*arg, path: ".", capture_err: false, sorbet_bin: nil)
-        result = T.let(T.unsafe(self).srb_tc(
-          "--no-config",
-          "--version",
-          *arg,
-          path: path,
-          capture_err: capture_err,
-          sorbet_bin: sorbet_bin,
-        ), ExecResult)
+        result = T.let(
+          T.unsafe(self).srb_tc(
+            "--no-config",
+            "--version",
+            *arg,
+            path: path,
+            capture_err: capture_err,
+            sorbet_bin: sorbet_bin,
+          ),
+          ExecResult,
+        )
         return nil unless result.status
 
         result.out.split(" ")[2]

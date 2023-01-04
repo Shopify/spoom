@@ -16,14 +16,17 @@ module Spoom
       STRICTNESS_STRONG = "strong"
       STRICTNESS_INTERNAL = "__STDLIB_INTERNAL"
 
-      VALID_STRICTNESS = T.let([
-        STRICTNESS_IGNORE,
-        STRICTNESS_FALSE,
-        STRICTNESS_TRUE,
-        STRICTNESS_STRICT,
-        STRICTNESS_STRONG,
-        STRICTNESS_INTERNAL,
-      ].freeze, T::Array[String])
+      VALID_STRICTNESS = T.let(
+        [
+          STRICTNESS_IGNORE,
+          STRICTNESS_FALSE,
+          STRICTNESS_TRUE,
+          STRICTNESS_STRICT,
+          STRICTNESS_STRONG,
+          STRICTNESS_INTERNAL,
+        ].freeze,
+        T::Array[String],
+      )
 
       SIGIL_REGEXP = T.let(/^#[\ t]*typed[\ t]*:[ \t]*(\w*)[ \t]*/.freeze, Regexp)
 

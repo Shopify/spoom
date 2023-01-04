@@ -13,20 +13,36 @@ module Spoom
       default_task :bump
 
       desc "bump DIRECTORY", "Change Sorbet sigils from one strictness to another when no errors"
-      option :from, type: :string, default: Spoom::Sorbet::Sigils::STRICTNESS_FALSE,
+      option :from,
+        type: :string,
+        default: Spoom::Sorbet::Sigils::STRICTNESS_FALSE,
         desc: "Change only files from this strictness"
-      option :to, type: :string, default: Spoom::Sorbet::Sigils::STRICTNESS_TRUE,
+      option :to,
+        type: :string,
+        default: Spoom::Sorbet::Sigils::STRICTNESS_TRUE,
         desc: "Change files to this strictness"
-      option :force, type: :boolean, default: false, aliases: :f,
+      option :force,
+        type: :boolean,
+        default: false,
+        aliases: :f,
         desc: "Change strictness without type checking"
       option :sorbet, type: :string, desc: "Path to custom Sorbet bin"
-      option :dry, type: :boolean, default: false, aliases: :d,
+      option :dry,
+        type: :boolean,
+        default: false,
+        aliases: :d,
         desc: "Only display what would happen, do not actually change sigils"
-      option :only, type: :string, default: nil, aliases: :o,
+      option :only,
+        type: :string,
+        default: nil,
+        aliases: :o,
         desc: "Only change specified list (one file by line)"
-      option :suggest_bump_command, type: :string,
+      option :suggest_bump_command,
+        type: :string,
         desc: "Command to suggest if files can be bumped"
-      option :count_errors, type: :boolean, default: false,
+      option :count_errors,
+        type: :boolean,
+        default: false,
         desc: "Count the number of errors if all files were bumped"
       option :sorbet_options, type: :string, default: "", desc: "Pass options to Sorbet"
       sig { params(directory: String).void }
