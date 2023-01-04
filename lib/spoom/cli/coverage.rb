@@ -115,17 +115,30 @@ module Spoom
 
       desc "report", "Produce a typing coverage report"
       option :data, type: :string, default: DATA_DIR, desc: "Snapshots JSON data"
-      option :file, type: :string, default: "spoom_report.html", aliases: :f,
+      option :file,
+        type: :string,
+        default: "spoom_report.html",
+        aliases: :f,
         desc: "Save report to file"
-      option :color_ignore, type: :string, default: Spoom::Coverage::D3::COLOR_IGNORE,
+      option :color_ignore,
+        type: :string,
+        default: Spoom::Coverage::D3::COLOR_IGNORE,
         desc: "Color used for typed: ignore"
-      option :color_false, type: :string, default: Spoom::Coverage::D3::COLOR_FALSE,
+      option :color_false,
+        type: :string,
+        default: Spoom::Coverage::D3::COLOR_FALSE,
         desc: "Color used for typed: false"
-      option :color_true, type: :string, default: Spoom::Coverage::D3::COLOR_TRUE,
+      option :color_true,
+        type: :string,
+        default: Spoom::Coverage::D3::COLOR_TRUE,
         desc: "Color used for typed: true"
-      option :color_strict, type: :string, default: Spoom::Coverage::D3::COLOR_STRICT,
+      option :color_strict,
+        type: :string,
+        default: Spoom::Coverage::D3::COLOR_STRICT,
         desc: "Color used for typed: strict"
-      option :color_strong, type: :string, default: Spoom::Coverage::D3::COLOR_STRONG,
+      option :color_strong,
+        type: :string,
+        default: Spoom::Coverage::D3::COLOR_STRONG,
         desc: "Color used for typed: strong"
       def report
         in_sorbet_project!

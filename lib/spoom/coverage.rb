@@ -63,8 +63,10 @@ module Spoom
 
         if metrics_without_rbis
           snapshot.methods_with_sig_excluding_rbis = metrics_without_rbis.fetch("types.sig.count", 0)
-          snapshot.methods_without_sig_excluding_rbis = metrics_without_rbis.fetch("types.input.methods.total",
-            0) - snapshot.methods_with_sig_excluding_rbis
+          snapshot.methods_without_sig_excluding_rbis = metrics_without_rbis.fetch(
+            "types.input.methods.total",
+            0,
+          ) - snapshot.methods_with_sig_excluding_rbis
         end
 
         Snapshot::STRICTNESSES.each do |strictness|

@@ -252,8 +252,10 @@ module Spoom
         assert_equal(["lib/a.rb", "lib/a.rb", "lib/a.rb"], errors.map(&:file))
         assert_equal([54, 55, 64], errors.map(&:line))
         assert_equal([7003, 7001, 7002], errors.map(&:code))
-        assert_equal([["lib/a.rb"], ["lib/a.rb"], ["lib/b.rb", "lib/a.rb"]],
-          errors.map(&:files_from_error_sections).map(&:to_a))
+        assert_equal(
+          [["lib/a.rb"], ["lib/a.rb"], ["lib/b.rb", "lib/a.rb"]],
+          errors.map(&:files_from_error_sections).map(&:to_a),
+        )
       end
 
       def test_parses_errors_with_custom_error_url_base
@@ -369,8 +371,10 @@ module Spoom
         )
         assert_equal([1, 80567, 100, 28, 7], errors.map(&:line))
         assert_equal([2001, 2001, 4010, 7004, 7001], errors.map(&:code))
-        assert_equal([[], [], ["foo.rb"], ["test.rb"], ["test/models/platform/test.rb"]],
-          errors.map(&:files_from_error_sections).map(&:to_a))
+        assert_equal(
+          [[], [], ["foo.rb"], ["test.rb"], ["test/models/platform/test.rb"]],
+          errors.map(&:files_from_error_sections).map(&:to_a),
+        )
       end
     end
   end
