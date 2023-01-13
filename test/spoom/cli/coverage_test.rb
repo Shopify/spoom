@@ -489,6 +489,17 @@ module Spoom
         assert_equal("fake-branch", @project.git_current_branch)
       end
 
+      def test_error_raised_when_metrics_fails
+        @project.write_sorbet_config!("not_a_file.xyz")
+        result = @project.spoom("coverage snapshot --no-color")
+        assert_empty(result.out)
+        assert_match(
+          %r{not_a_file\.xyz: File Not Found https://srb\.help/1004 \(Spoom::Sorbet::Error::Metrics\)},
+          result.err,
+        )
+        refute(result.status)
+      end
+
       private
 
       def create_git_history!

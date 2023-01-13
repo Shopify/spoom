@@ -80,6 +80,52 @@ module Spoom
           assert_equal(0, result.exit_code)
         end
       end
+
+      def test_run_sorbet_metrics_from_path
+        Bundler.with_unbundled_env do
+          result = Spoom::Sorbet.srb_metrics(
+            path: @project.absolute_path,
+            sorbet_bin: Spoom::Sorbet::BIN_PATH,
+          )
+
+          assert_instance_of(Hash, result)
+          refute_empty(result)
+        end
+      end
+
+      def test_sorbet_raises_when_killed
+        Bundler.with_unbundled_env do
+          mock_result = ExecResult.new(
+            out: "out",
+            err: "err",
+            status: false,
+            exit_code: Spoom::Sorbet::KILLED_CODE,
+          )
+
+          Spoom.stub(:exec, mock_result) do
+            assert_raises(Spoom::Sorbet::Error::Killed, "Sorbet was killed.") do
+              Spoom::Sorbet.srb("-e foo")
+            end
+          end
+        end
+      end
+
+      def test_sorbet_raises_on_sefault
+        Bundler.with_unbundled_env do
+          mock_result = ExecResult.new(
+            out: "out",
+            err: "err",
+            status: false,
+            exit_code: Spoom::Sorbet::SEGFAULT_CODE,
+          )
+
+          Spoom.stub(:exec, mock_result) do
+            assert_raises(Spoom::Sorbet::Error::Segfault, "Sorbet segfaulted.") do
+              Spoom::Sorbet.srb("-e foo")
+            end
+          end
+        end
+      end
     end
   end
 end
