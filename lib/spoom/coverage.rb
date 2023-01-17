@@ -30,7 +30,6 @@ module Spoom
         metrics = Spoom::Sorbet.srb_metrics(
           *flags,
           path: path,
-          capture_err: true,
           sorbet_bin: sorbet_bin,
         )
         # Collect extra information using a different configuration
@@ -38,7 +37,6 @@ module Spoom
         metrics_without_rbis = Spoom::Sorbet.srb_metrics(
           *flags,
           path: path,
-          capture_err: true,
           sorbet_bin: sorbet_bin,
         )
 
