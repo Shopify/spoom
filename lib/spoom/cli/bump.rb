@@ -119,6 +119,15 @@ module Spoom
           ERR
           undo_changes(files_to_bump, from)
           exit(error.result.exit_code)
+        rescue Spoom::Sorbet::Error::Killed => error
+          say_error(<<~ERR, status: nil)
+            !!! Sorbet exited with code #{Spoom::Sorbet::KILLED_CODE} - KILLED !!!
+
+            It means Sorbet was killed while executing. Changes to files have not been applied.
+            Re-run `spoom bump` to try again.
+          ERR
+          undo_changes(files_to_bump, from)
+          exit(error.result.exit_code)
         end
 
         if result.status

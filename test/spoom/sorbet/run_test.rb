@@ -93,6 +93,23 @@ module Spoom
         end
       end
 
+      def test_sorbet_raises_when_killed
+        Bundler.with_unbundled_env do
+          mock_result = ExecResult.new(
+            out: "out",
+            err: "err",
+            status: false,
+            exit_code: Spoom::Sorbet::KILLED_CODE,
+          )
+
+          Spoom.stub(:exec, mock_result) do
+            assert_raises(Spoom::Sorbet::Error::Killed, "Sorbet was killed.") do
+              Spoom::Sorbet.srb("-e foo")
+            end
+          end
+        end
+      end
+
       def test_sorbet_raises_on_sefault
         Bundler.with_unbundled_env do
           mock_result = ExecResult.new(

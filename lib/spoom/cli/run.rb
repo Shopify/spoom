@@ -114,6 +114,12 @@ module Spoom
         ERR
 
         exit(error.result.exit_code)
+      rescue Spoom::Sorbet::Error::Killed => error
+        say_error(<<~ERR, status: nil)
+          #{red("!!! Sorbet exited with code #{error.result.exit_code} - KILLED !!!")}
+        ERR
+
+        exit(error.result.exit_code)
       end
 
       no_commands do
