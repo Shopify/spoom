@@ -282,7 +282,7 @@ module Spoom
         @project.write!("mock_sorbet", <<~RB)
           #!/usr/bin/env ruby
           $stderr.puts "segfault"
-          exit(139)
+          exit(#{Spoom::Sorbet::SEGFAULT_CODE})
         RB
         @project.exec("chmod +x mock_sorbet")
 

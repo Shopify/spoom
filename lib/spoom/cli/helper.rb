@@ -83,20 +83,6 @@ module Spoom
         Sorbet::Config.parse_file(sorbet_config_file)
       end
 
-      sig { params(exit_code: Integer, block: T.nilable(T.proc.void)).void }
-      def check_sorbet_segfault(exit_code, &block)
-        return unless exit_code == Spoom::Sorbet::SEGFAULT_CODE
-
-        say_error(<<~ERR, status: nil)
-          #{red("!!! Sorbet exited with code #{exit_code} - SEGFAULT !!!")}
-
-          This is most likely related to a bug in Sorbet.
-        ERR
-
-        block&.call
-        exit(exit_code)
-      end
-
       # Colors
 
       # Color used to highlight expressions in backticks
