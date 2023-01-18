@@ -301,6 +301,28 @@ module Spoom
         refute(result.status)
       end
 
+      def test_display_sorbet_killed
+        # Create a fake Sorbet that will segfault
+        @project.write!("mock_sorbet", <<~RB)
+          #!/usr/bin/env ruby
+          $stderr.puts "segfault"
+          exit(#{Spoom::Sorbet::KILLED_CODE})
+        RB
+        @project.exec("chmod +x mock_sorbet")
+
+        # Any file will segfault with this
+        @project.write!("will_segfault.rb", <<~RB)
+          # typed: true
+          foo
+        RB
+
+        result = @project.bundle_exec("spoom tc --no-color --sorbet #{@project.absolute_path}/mock_sorbet")
+        assert_equal(<<~OUT, result.err)
+          !!! Sorbet exited with code 137 - KILLED !!!
+        OUT
+        refute(result.status)
+      end
+
       def test_display_sorbet_error
         result = @project.bundle_exec("spoom tc --no-color --sorbet-options=\"--not-found\"")
         assert_equal(<<~MSG, result.err)

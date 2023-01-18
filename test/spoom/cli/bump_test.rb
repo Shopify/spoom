@@ -493,6 +493,33 @@ module Spoom
         assert_equal("false", @project.read_file_strictness("will_segfault.rb"))
       end
 
+      def test_bump_with_sorbet_killed
+        # Create a fake Sorbet that will be killed
+        @project.write!("mock_sorbet", <<~RB)
+          #!/usr/bin/env ruby
+          $stderr.puts "killed"
+          exit(#{Spoom::Sorbet::KILLED_CODE})
+        RB
+        @project.exec("chmod +x mock_sorbet")
+
+        # Any file will be killed with this
+        @project.write!("will_be_killed.rb", <<~RB)
+          # typed: false
+          foo
+        RB
+
+        result = @project.bundle_exec("spoom bump --no-color --sorbet #{@project.absolute_path}/mock_sorbet")
+        assert_equal(<<~OUT, result.err)
+          !!! Sorbet exited with code 137 - KILLED !!!
+
+          It means Sorbet was killed while executing. Changes to files have not been applied.
+          Re-run `spoom bump` to try again.
+        OUT
+        refute(result.status)
+
+        assert_equal("false", @project.read_file_strictness("will_be_killed.rb"))
+      end
+
       def test_bump_display_sorbet_error
         @project.write!("file.rb", <<~RB)
           # typed: false
