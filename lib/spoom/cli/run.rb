@@ -43,7 +43,6 @@ module Spoom
             sorbet_bin: sorbet,
           )
 
-          check_sorbet_segfault(result.code)
           say_error(result.err, status: nil, nl: false)
           exit(result.status)
         end
@@ -56,8 +55,6 @@ module Spoom
           capture_err: true,
           sorbet_bin: sorbet,
         )
-
-        check_sorbet_segfault(result.exit_code)
 
         if result.status
           say_error(result.err, status: nil, nl: false)
@@ -109,6 +106,14 @@ module Spoom
         end
 
         exit(1)
+      rescue Spoom::Sorbet::Error::Segfault => error
+        say_error(<<~ERR, status: nil)
+          #{red("!!! Sorbet exited with code #{error.result.exit_code} - SEGFAULT !!!")}
+
+          This is most likely related to a bug in Sorbet.
+        ERR
+
+        exit(error.result.exit_code)
       end
 
       no_commands do

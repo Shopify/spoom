@@ -101,20 +101,24 @@ module Spoom
         end
 
         error_url_base = Spoom::Sorbet::Errors::DEFAULT_ERROR_URL_BASE
-        result = Sorbet.srb_tc(
-          *options[:sorbet_options].split(" "),
-          "--error-url-base=#{error_url_base}",
-          path: exec_path,
-          capture_err: true,
-          sorbet_bin: options[:sorbet],
-        )
-
-        check_sorbet_segfault(result.exit_code) do
+        result = begin
+          Sorbet.srb_tc(
+            *options[:sorbet_options].split(" "),
+            "--error-url-base=#{error_url_base}",
+            path: exec_path,
+            capture_err: true,
+            sorbet_bin: options[:sorbet],
+          )
+        rescue Spoom::Sorbet::Error::Segfault => error
           say_error(<<~ERR, status: nil)
+            !!! Sorbet exited with code #{Spoom::Sorbet::SEGFAULT_CODE} - SEGFAULT !!!
+
+            This is most likely related to a bug in Sorbet.
             It means one of the file bumped to `typed: #{to}` made Sorbet crash.
             Run `spoom bump -f` locally followed by `bundle exec srb tc` to investigate the problem.
           ERR
           undo_changes(files_to_bump, from)
+          exit(error.result.exit_code)
         end
 
         if result.status
