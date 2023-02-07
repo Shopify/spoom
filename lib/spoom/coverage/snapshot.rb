@@ -147,7 +147,7 @@ module Spoom
       def print_map(hash, total)
         indent
         hash.each do |key, value|
-          next unless value > 0
+          next if value <= 0
 
           printl("#{key}: #{value}#{percent(value, total)}")
         end
