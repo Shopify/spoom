@@ -6,7 +6,7 @@ source "https://rubygems.org"
 gemspec
 
 group :development do
-  gem "pry-byebug"
+  gem "debug"
   gem "ruby-lsp"
   gem "rubocop-shopify", require: false
   gem "rubocop-sorbet", require: false
