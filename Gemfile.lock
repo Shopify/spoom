@@ -12,9 +12,14 @@ GEM
     ansi (1.5.0)
     ast (2.4.2)
     builder (3.2.4)
-    byebug (11.1.3)
     coderay (1.1.3)
+    debug (1.7.1)
+      irb (>= 1.5.0)
+      reline (>= 0.3.1)
     diff-lcs (1.5.0)
+    io-console (0.6.0)
+    irb (1.6.2)
+      reline (>= 0.3.0)
     json (2.6.3)
     language_server-protocol (3.17.0.2)
     method_source (1.0.0)
@@ -31,9 +36,6 @@ GEM
     pry (0.14.2)
       coderay (~> 1.1)
       method_source (~> 1.0)
-    pry-byebug (3.10.1)
-      byebug (~> 11.0)
-      pry (>= 0.13, < 0.15)
     rainbow (3.1.1)
     rake (13.0.6)
     rbi (0.0.16)
@@ -42,6 +44,8 @@ GEM
       sorbet-runtime (>= 0.5.9204)
       unparser
     regexp_parser (2.6.2)
+    reline (0.3.2)
+      io-console (~> 0.5)
     rexml (3.2.5)
     rubocop (1.44.1)
       json (~> 2.3)
@@ -100,9 +104,9 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (>= 2.2.10)
+  debug
   minitest (~> 5.0)
   minitest-reporters
-  pry-byebug
   rake (~> 13.0.1)
   rubocop-shopify
   rubocop-sorbet
