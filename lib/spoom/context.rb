@@ -3,6 +3,7 @@
 
 require "fileutils"
 require "open3"
+require "tmpdir"
 
 module Spoom
   # An abstraction to a Ruby project context
