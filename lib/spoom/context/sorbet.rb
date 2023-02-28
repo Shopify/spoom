@@ -43,7 +43,7 @@ module Spoom
         out = res.out.strip
         return nil if out.empty?
 
-        Spoom::Git.parse_commit(out)
+        Spoom::Git::Commit.parse_line(out)
       end
 
       # Get the commit removing the `sorbet/config` file
@@ -55,7 +55,7 @@ module Spoom
         out = res.out.strip
         return nil if out.empty?
 
-        Spoom::Git.parse_commit(out)
+        Spoom::Git::Commit.parse_line(out)
       end
     end
   end

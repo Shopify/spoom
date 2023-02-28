@@ -2,6 +2,34 @@
 # frozen_string_literal: true
 
 module Spoom
+  module Git
+    class Commit < T::Struct
+      extend T::Sig
+
+      class << self
+        extend T::Sig
+
+        # Parse a line formated as `%h %at` into a `Commit`
+        sig { params(string: String).returns(T.nilable(Commit)) }
+        def parse_line(string)
+          sha, epoch = string.split(" ", 2)
+          return nil unless sha && epoch
+
+          time = Time.strptime(epoch, "%s")
+          Commit.new(sha: sha, time: time)
+        end
+      end
+
+      const :sha, String
+      const :time, Time
+
+      sig { returns(Integer) }
+      def timestamp
+        time.to_i
+      end
+    end
+  end
+
   class Context
     # Git features for a context
     module Git
@@ -70,7 +98,7 @@ module Spoom
         out = res.out.strip
         return nil if out.empty?
 
-        Spoom::Git.parse_commit(out)
+        Spoom::Git::Commit.parse_line(out)
       end
 
       sig { params(arg: String).returns(ExecResult) }

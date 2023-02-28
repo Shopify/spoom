@@ -1,8 +1,6 @@
 # typed: strict
 # frozen_string_literal: true
 
-require_relative "git"
-
 module Spoom
   class Timeline
     extend T::Sig
@@ -46,7 +44,7 @@ module Spoom
         )
         next if result.out.empty?
 
-        Git.parse_commit(result.out.strip)
+        Spoom::Git::Commit.parse_line(result.out.strip)
       end.compact.uniq(&:sha)
     end
   end

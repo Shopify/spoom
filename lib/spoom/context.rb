@@ -3,6 +3,7 @@
 
 require "fileutils"
 require "open3"
+require "time"
 require "tmpdir"
 
 require_relative "context/bundle"
