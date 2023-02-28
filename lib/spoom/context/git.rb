@@ -35,6 +35,17 @@ module Spoom
         git("checkout #{ref}")
       end
 
+      # Run `git add . && git commit` in this context directory
+      sig { params(message: String, time: Time, allow_empty: T::Boolean).void }
+      def git_commit!(message: "message", time: Time.now.utc, allow_empty: false)
+        git("add --all")
+
+        args = ["-m '#{message}'", "--date '#{time}'"]
+        args << "--allow-empty" if allow_empty
+
+        exec("GIT_COMMITTER_DATE=\"#{time}\" git -c commit.gpgsign=false commit #{args.join(" ")}")
+      end
+
       # Get the current git branch in this context directory
       sig { returns(T.nilable(String)) }
       def git_current_branch

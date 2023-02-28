@@ -10,13 +10,13 @@ module Spoom
         @project.git_init!
         @project.exec("git config user.name 'spoom-tests'")
         @project.exec("git config user.email 'spoom@shopify.com'")
-        @project.commit!("commit 1", time: Time.parse("2010-01-02 03:04:05"))
+        @project.git_commit!(message: "commit 1", time: Time.parse("2010-01-02 03:04:05"))
         @project.write!("file2", "")
-        @project.commit!("commit 2", time: Time.parse("2010-04-01 03:04:05"))
+        @project.git_commit!(message: "commit 2", time: Time.parse("2010-04-01 03:04:05"))
         @project.write!("file3", "")
-        @project.commit!("commit 3", time: Time.parse("2010-06-30 03:04:05"))
+        @project.git_commit!(message: "commit 3", time: Time.parse("2010-06-30 03:04:05"))
         @project.write!("file4", "")
-        @project.commit!("commit 4", time: Time.parse("2011-01-02 03:04:05"))
+        @project.git_commit!(message: "commit 4", time: Time.parse("2011-01-02 03:04:05"))
       end
 
       def test_timeline_months

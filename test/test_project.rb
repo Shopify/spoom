@@ -13,12 +13,6 @@ module Spoom
 
     # Git
 
-    sig { params(message: String, time: Time).void }
-    def commit!(message = "message", time: Time.now.utc)
-      exec("git add --all")
-      exec("GIT_COMMITTER_DATE=\"#{time}\" git -c commit.gpgsign=false commit -m '#{message}' --date '#{time}'")
-    end
-
     sig { params(name: String).void }
     def create_and_checkout_branch!(name)
       exec("git checkout -b #{name}")
