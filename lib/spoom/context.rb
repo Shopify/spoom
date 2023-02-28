@@ -5,6 +5,7 @@ require "fileutils"
 require "open3"
 require "tmpdir"
 
+require_relative "context/bundle"
 require_relative "context/exec"
 require_relative "context/file_system"
 
@@ -16,6 +17,7 @@ module Spoom
   class Context
     extend T::Sig
 
+    include Bundle
     include Exec
     include FileSystem
 
@@ -43,39 +45,6 @@ module Spoom
     sig { params(absolute_path: String).void }
     def initialize(absolute_path)
       @absolute_path = T.let(::File.expand_path(absolute_path), String)
-    end
-
-    # Bundle
-
-    # Read the `contents` of the Gemfile in this context directory
-    sig { returns(T.nilable(String)) }
-    def read_gemfile
-      read("Gemfile")
-    end
-
-    # Set the `contents` of the Gemfile in this context directory
-    sig { params(contents: String, append: T::Boolean).void }
-    def write_gemfile!(contents, append: false)
-      write!("Gemfile", contents, append: append)
-    end
-
-    # Run a command with `bundle` in this context directory
-    sig { params(command: String, version: T.nilable(String)).returns(ExecResult) }
-    def bundle(command, version: nil)
-      command = "_#{version}_ #{command}" if version
-      exec("bundle #{command}")
-    end
-
-    # Run `bundle install` in this context directory
-    sig { params(version: T.nilable(String)).returns(ExecResult) }
-    def bundle_install!(version: nil)
-      bundle("install", version: version)
-    end
-
-    # Run a command `bundle exec` in this context directory
-    sig { params(command: String, version: T.nilable(String)).returns(ExecResult) }
-    def bundle_exec(command, version: nil)
-      bundle("exec #{command}", version: version)
     end
 
     # Git
