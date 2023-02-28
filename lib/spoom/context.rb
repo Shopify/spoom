@@ -25,10 +25,6 @@ module Spoom
     include Git
     include Sorbet
 
-    # The absolute path to the directory this context is about
-    sig { returns(String) }
-    attr_reader :absolute_path
-
     class << self
       extend T::Sig
 
@@ -41,6 +37,10 @@ module Spoom
         new(::Dir.mktmpdir(name))
       end
     end
+
+    # The absolute path to the directory this context is about
+    sig { returns(String) }
+    attr_reader :absolute_path
 
     # Create a new context about `absolute_path`
     #
