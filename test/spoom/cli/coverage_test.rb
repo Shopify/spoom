@@ -493,7 +493,7 @@ module Spoom
 
       def create_git_history!
         @project.remove!("lib")
-        @project.git_init!
+        @project.git_init!(branch: "main")
         @project.exec("git config user.name 'spoom-tests'")
         @project.exec("git config user.email 'spoom@shopify.com'")
         @project.write!("a.rb", <<~RB)

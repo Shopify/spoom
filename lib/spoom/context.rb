@@ -180,9 +180,16 @@ module Spoom
     end
 
     # Run `git init` in this context directory
-    sig { params(branch: String).void }
-    def git_init!(branch: "main")
-      git("init -q -b #{branch}")
+    #
+    # Warning: passing a branch will run `git init -b <branch>` which is only available in git 2.28+.
+    # In older versions, use `git_init!` followed by `git("checkout -b <branch>")`.
+    sig { params(branch: T.nilable(String)).returns(ExecResult) }
+    def git_init!(branch: nil)
+      if branch
+        git("init -b #{branch}")
+      else
+        git("init")
+      end
     end
 
     # Run `git checkout` in this context directory
