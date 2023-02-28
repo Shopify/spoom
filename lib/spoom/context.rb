@@ -9,6 +9,7 @@ require_relative "context/bundle"
 require_relative "context/exec"
 require_relative "context/file_system"
 require_relative "context/git"
+require_relative "context/sorbet"
 
 module Spoom
   # An abstraction to a Ruby project context
@@ -22,6 +23,7 @@ module Spoom
     include Exec
     include FileSystem
     include Git
+    include Sorbet
 
     # The absolute path to the directory this context is about
     sig { returns(String) }
@@ -47,32 +49,6 @@ module Spoom
     sig { params(absolute_path: String).void }
     def initialize(absolute_path)
       @absolute_path = T.let(::File.expand_path(absolute_path), String)
-    end
-
-    # Sorbet
-
-    # Run `bundle exec srb` in this context directory
-    sig { params(command: String).returns(ExecResult) }
-    def srb(command)
-      bundle_exec("srb #{command}")
-    end
-
-    # Read the contents of `sorbet/config` in this context directory
-    sig { returns(String) }
-    def read_sorbet_config
-      read(Spoom::Sorbet::CONFIG_PATH)
-    end
-
-    # Set the `contents` of `sorbet/config` in this context directory
-    sig { params(contents: String, append: T::Boolean).void }
-    def write_sorbet_config!(contents, append: false)
-      write!(Spoom::Sorbet::CONFIG_PATH, contents, append: append)
-    end
-
-    # Read the strictness sigil from the file at `relative_path` (returns `nil` if no sigil)
-    sig { params(relative_path: String).returns(T.nilable(String)) }
-    def read_file_strictness(relative_path)
-      Spoom::Sorbet::Sigils.file_strictness(absolute_path_to(relative_path))
     end
   end
 end
