@@ -88,7 +88,7 @@ module Spoom
         ticks.each_with_index do |commit, i|
           say("Analyzing commit `#{commit.sha}` - #{commit.time.strftime("%F")} (#{i + 1} / #{ticks.size})")
 
-          Spoom::Git.checkout(commit.sha, path: path)
+          context.git_checkout!(ref: commit.sha)
 
           snapshot = T.let(nil, T.nilable(Spoom::Coverage::Snapshot))
           if options[:bundle_install]
@@ -111,7 +111,7 @@ module Spoom
           File.write(file, snapshot.to_json)
           say("  Snapshot data saved under `#{file}`\n\n")
         end
-        Spoom::Git.checkout(ref_before, path: path)
+        context.git_checkout!(ref: ref_before)
       end
 
       desc "report", "Produce a typing coverage report"
