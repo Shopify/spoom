@@ -59,31 +59,6 @@ module Spoom
           path: String,
           capture_err: T::Boolean,
           sorbet_bin: T.nilable(String),
-        ).returns(T.nilable(String))
-      end
-      def srb_version(*arg, path: ".", capture_err: false, sorbet_bin: nil)
-        result = T.let(
-          T.unsafe(self).srb_tc(
-            "--no-config",
-            "--version",
-            *arg,
-            path: path,
-            capture_err: capture_err,
-            sorbet_bin: sorbet_bin,
-          ),
-          ExecResult,
-        )
-        return nil unless result.status
-
-        result.out.split(" ")[2]
-      end
-
-      sig do
-        params(
-          arg: String,
-          path: String,
-          capture_err: T::Boolean,
-          sorbet_bin: T.nilable(String),
         ).returns(T.nilable(T::Hash[String, Integer]))
       end
       def srb_metrics(*arg, path: ".", capture_err: false, sorbet_bin: nil)

@@ -145,6 +145,29 @@ module Spoom
         context.destroy!
       end
 
+      def test_context_srb_version_return_nil_if_srb_not_installed
+        context = Context.mktmp!
+        context.write_gemfile!("")
+
+        assert_nil(context.srb_version)
+
+        context.destroy!
+      end
+
+      def test_context_srb_version_return_version_string
+        context = Context.mktmp!
+        context.write_gemfile!(<<~GEMFILE)
+          source "https://rubygems.org"
+
+          gem "sorbet"
+        GEMFILE
+        context.bundle_install!
+
+        refute_nil(context.srb_version)
+
+        context.destroy!
+      end
+
       def test_context_file_strictness
         context = Context.mktmp!
 
