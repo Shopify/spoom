@@ -23,11 +23,6 @@ module Spoom
 
       # Git commands
 
-      sig { params(arg: String, path: String).returns(ExecResult) }
-      def show(*arg, path: ".")
-        Spoom.exec("git show #{arg.join(" ")}", path: path)
-      end
-
       # Utils
 
       # Parse a line formated as `%h %at` into a `Commit`

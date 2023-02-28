@@ -143,6 +143,19 @@ module Spoom
         context.destroy!
       end
 
+      def test_context_git_show
+        context = Context.mktmp!
+        context.git_init!
+        context.git("config user.name 'John Doe'")
+        context.git("config user.email 'john@doe.org'")
+        context.write!("file")
+        context.git_commit!(time: Time.parse("1987-02-05 09:00:00"))
+
+        assert_match(/Thu Feb 5 09:00:00 1987/, context.git_show.out)
+
+        context.destroy!
+      end
+
       def test_context_clean_workdir_on_clean_repo
         context = Context.mktmp!
         context.git_init!

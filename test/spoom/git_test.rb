@@ -18,12 +18,6 @@ module Spoom
         end
         assert_equal("No such file or directory - /path/not/found", e.message)
       end
-
-      def test_git_show
-        @project.write!("file")
-        @project.commit!(time: Time.parse("1987-02-05 09:00:00"))
-        assert_match(/Thu Feb 5 09:00:00 1987/, Spoom::Git.show(path: @project.absolute_path).out)
-      end
     end
   end
 end

@@ -78,6 +78,11 @@ module Spoom
         git("log #{arg.join(" ")}")
       end
 
+      sig { params(arg: String).returns(ExecResult) }
+      def git_show(*arg)
+        git("show #{arg.join(" ")}")
+      end
+
       # Is there uncommited changes in this context directory?
       sig { params(path: String).returns(T::Boolean) }
       def git_workdir_clean?(path: ".")
