@@ -64,7 +64,13 @@ module Spoom
       # Get the last commit in the currently checked out branch
       sig { params(short_sha: T::Boolean).returns(T.nilable(Spoom::Git::Commit)) }
       def git_last_commit(short_sha: true)
-        Spoom::Git.last_commit(path: absolute_path, short_sha: short_sha)
+        res = git_log("HEAD --format='%#{short_sha ? "h" : "H"} %at' -1")
+        return nil unless res.status
+
+        out = res.out.strip
+        return nil if out.empty?
+
+        Spoom::Git.parse_commit(out)
       end
 
       sig { params(arg: String).returns(ExecResult) }

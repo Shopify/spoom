@@ -12,8 +12,9 @@ module Spoom
     class << self
       extend T::Sig
 
-      sig { params(path: String, rbi: T::Boolean, sorbet_bin: T.nilable(String)).returns(Snapshot) }
-      def snapshot(path: ".", rbi: true, sorbet_bin: nil)
+      sig { params(context: Context, rbi: T::Boolean, sorbet_bin: T.nilable(String)).returns(Snapshot) }
+      def snapshot(context, rbi: true, sorbet_bin: nil)
+        path = context.absolute_path
         config = sorbet_config(path: path)
         config.allowed_extensions.push(".rb", ".rbi") if config.allowed_extensions.empty?
 
@@ -45,7 +46,7 @@ module Spoom
         snapshot = Snapshot.new
         return snapshot unless metrics
 
-        last_commit = Spoom::Git.last_commit(path: path)
+        last_commit = context.git_last_commit
         snapshot.commit_sha = last_commit&.sha
         snapshot.commit_timestamp = last_commit&.timestamp
 

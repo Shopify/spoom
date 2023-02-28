@@ -30,18 +30,6 @@ module Spoom
 
       # Utils
 
-      # Get the last commit in the currently checked out branch
-      sig { params(path: String, short_sha: T::Boolean).returns(T.nilable(Commit)) }
-      def last_commit(path: ".", short_sha: true)
-        result = log("HEAD --format='%#{short_sha ? "h" : "H"} %at' -1", path: path)
-        return nil unless result.status
-
-        out = result.out.strip
-        return nil if out.empty?
-
-        parse_commit(out)
-      end
-
       # Get the commit introducing the `sorbet/config` file
       sig { params(path: String).returns(T.nilable(Commit)) }
       def sorbet_intro_commit(path: ".")

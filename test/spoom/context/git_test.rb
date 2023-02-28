@@ -88,21 +88,43 @@ module Spoom
         context.destroy!
       end
 
+      def test_context_git_last_commit_if_not_git_dir
+        context = Context.mktmp!
+
+        assert_nil(context.git_last_commit)
+
+        context.destroy!
+      end
+
+      def test_context_git_last_commit_if_no_commit
+        context = Context.mktmp!
+        context.git_init!
+
+        assert_nil(context.git_last_commit)
+
+        context.destroy!
+      end
+
       def test_context_git_last_commit
         context = Context.mktmp!
         assert_nil(context.git_last_commit)
 
+        time = Time.parse("1987-02-05 09:00:00")
         context.git_init!
         context.git("config user.name 'John Doe'")
         context.git("config user.email 'john@doe.org'")
 
-        context.git("-c commit.gpgsign=false commit -m '#{message}' --allow-empty")
+        context.git_commit!(allow_empty: true, time: time)
 
         sha = T.must(context.git_last_commit).sha
         assert(sha.size < 40)
 
         sha = T.must(context.git_last_commit(short_sha: false)).sha
         assert(sha.size == 40)
+
+        last_commit = context.git_last_commit
+        assert_equal(time.to_i, last_commit&.timestamp)
+        assert_equal(time, last_commit&.time)
 
         context.destroy!
       end

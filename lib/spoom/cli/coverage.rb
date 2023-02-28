@@ -23,7 +23,7 @@ module Spoom
         context = Context.new(path)
         sorbet = options[:sorbet]
 
-        snapshot = Spoom::Coverage.snapshot(path: path, rbi: options[:rbi], sorbet_bin: sorbet)
+        snapshot = Spoom::Coverage.snapshot(context, rbi: options[:rbi], sorbet_bin: sorbet)
         snapshot.print
 
         save_dir = options[:save]
@@ -48,7 +48,7 @@ module Spoom
         sorbet = options[:sorbet]
 
         ref_before = context.git_current_branch
-        ref_before = Spoom::Git.last_commit(path: path)&.sha unless ref_before
+        ref_before = context.git_last_commit&.sha unless ref_before
         unless ref_before
           say_error("Not in a git repository")
           say_error("\nSpoom needs to checkout into your previous commits to build the timeline.", status: nil)
@@ -96,10 +96,10 @@ module Spoom
             Bundler.with_unbundled_env do
               next unless bundle_install(path, commit.sha)
 
-              snapshot = Spoom::Coverage.snapshot(path: path, sorbet_bin: sorbet)
+              snapshot = Spoom::Coverage.snapshot(context, sorbet_bin: sorbet)
             end
           else
-            snapshot = Spoom::Coverage.snapshot(path: path, sorbet_bin: sorbet)
+            snapshot = Spoom::Coverage.snapshot(context, sorbet_bin: sorbet)
           end
           next unless snapshot
 

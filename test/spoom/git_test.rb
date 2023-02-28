@@ -19,42 +19,6 @@ module Spoom
         assert_equal("No such file or directory - /path/not/found", e.message)
       end
 
-      def test_last_commit_if_not_git_dir
-        @project.remove!(".git")
-        assert(Spoom::Git.last_commit(path: @project.absolute_path).nil?)
-      end
-
-      def test_last_commit_if_no_commit
-        assert(Spoom::Git.last_commit(path: @project.absolute_path).nil?)
-      end
-
-      def test_last_commit
-        @project.write!("file")
-        @project.commit!
-
-        sha = T.must(Spoom::Git.last_commit(path: @project.absolute_path)).sha
-        assert(sha.size < 40)
-
-        sha = T.must(Spoom::Git.last_commit(path: @project.absolute_path, short_sha: false)).sha
-        assert(sha.size == 40)
-      end
-
-      def test_commit_timestamp
-        time = Time.parse("1987-02-05 09:00:00")
-        @project.write!("file")
-        @project.commit!(time: time)
-        last_commit = Spoom::Git.last_commit(path: @project.absolute_path)
-        assert_equal(time.to_i, last_commit&.timestamp)
-      end
-
-      def test_commit_time
-        time = Time.parse("1987-02-05 09:00:00")
-        @project.write!("file")
-        @project.commit!(time: time)
-        last_commit = Spoom::Git.last_commit(path: @project.absolute_path)
-        assert_equal(time, last_commit&.time)
-      end
-
       def test_git_show
         @project.write!("file")
         @project.commit!(time: Time.parse("1987-02-05 09:00:00"))
