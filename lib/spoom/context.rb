@@ -180,9 +180,9 @@ module Spoom
     end
 
     # Run `git init` in this context directory
-    sig { params(branch: String).void }
+    sig { params(branch: String).returns(ExecResult) }
     def git_init!(branch: "main")
-      git("init -q -b #{branch}")
+      git("init -b #{branch}")
     end
 
     # Run `git checkout` in this context directory

@@ -198,7 +198,11 @@ module Spoom
         assert_equal("fatal: not a git repository (or any of the parent directories): .git\n", res.err)
         refute(res.status)
 
-        context.git_init!
+        res = context.git_init!
+        path = File.realdirpath(context.absolute_path)
+        assert_equal("Initialized empty Git repository in #{path}/.git/", res.out.strip)
+        assert_empty(res.err)
+        assert(res.status)
 
         res = context.git("log")
         assert_empty(res.out)
