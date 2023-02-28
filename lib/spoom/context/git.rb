@@ -55,6 +55,12 @@ module Spoom
         res.out.strip
       end
 
+      # Run `git diff` in this context directory
+      sig { params(arg: String).returns(ExecResult) }
+      def git_diff(*arg)
+        git("diff #{arg.join(" ")}")
+      end
+
       # Get the last commit in the currently checked out branch
       sig { params(short_sha: T::Boolean).returns(T.nilable(Spoom::Git::Commit)) }
       def git_last_commit(short_sha: true)

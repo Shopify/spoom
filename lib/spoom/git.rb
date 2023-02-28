@@ -24,11 +24,6 @@ module Spoom
       # Git commands
 
       sig { params(arg: String, path: String).returns(ExecResult) }
-      def diff(*arg, path: ".")
-        Spoom.exec("git diff #{arg.join(" ")}", path: path)
-      end
-
-      sig { params(arg: String, path: String).returns(ExecResult) }
       def log(*arg, path: ".")
         Spoom.exec("git log #{arg.join(" ")}", path: path)
       end

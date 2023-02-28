@@ -68,6 +68,26 @@ module Spoom
         context.destroy!
       end
 
+      def test_context_git_diff
+        context = Context.mktmp!
+
+        context.git_init!
+        context.exec("git config user.name 'spoom-tests'")
+        context.exec("git config user.email 'spoom@shopify.com'")
+
+        assert_equal("", context.git_diff("HEAD").out)
+        context.write!("file", "content")
+        assert_equal("", context.git_diff("HEAD").out)
+        context.git_commit!
+        assert_equal("", context.git_diff("HEAD").out)
+        context.write!("file", "content2")
+        assert_match(/content2/, context.git_diff("HEAD").out)
+        context.git_commit!
+        assert_equal("", context.git_diff("HEAD").out)
+
+        context.destroy!
+      end
+
       def test_context_git_last_commit
         context = Context.mktmp!
         assert_nil(context.git_last_commit)

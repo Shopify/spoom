@@ -68,18 +68,6 @@ module Spoom
         assert_equal(time, last_commit&.time)
       end
 
-      def test_git_diff
-        assert_equal("", Spoom::Git.diff("HEAD", path: @project.absolute_path).out)
-        @project.write!("file", "content")
-        assert_equal("", Spoom::Git.diff("HEAD", path: @project.absolute_path).out)
-        @project.commit!
-        assert_equal("", Spoom::Git.diff("HEAD", path: @project.absolute_path).out)
-        @project.write!("file", "content2")
-        assert_match(/content2/, Spoom::Git.diff("HEAD", path: @project.absolute_path).out)
-        @project.commit!
-        assert_equal("", Spoom::Git.diff("HEAD", path: @project.absolute_path).out)
-      end
-
       def test_git_log
         @project.write!("file")
         @project.commit!(time: Time.parse("1987-02-05 09:00:00 +0000"))
