@@ -43,14 +43,6 @@ module Spoom
         Spoom.exec("git show #{arg.join(" ")}", path: path)
       end
 
-      sig { params(path: String).returns(T.nilable(String)) }
-      def current_branch(path: ".")
-        result = Spoom.exec("git branch --show-current", path: path)
-        return nil unless result.status
-
-        result.out.strip
-      end
-
       # Utils
 
       # Get the last commit in the currently checked out branch

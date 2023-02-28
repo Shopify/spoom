@@ -49,7 +49,10 @@ module Spoom
       # Get the current git branch in this context directory
       sig { returns(T.nilable(String)) }
       def git_current_branch
-        Spoom::Git.current_branch(path: absolute_path)
+        res = git("branch --show-current")
+        return nil unless res.status
+
+        res.out.strip
       end
 
       # Get the last commit in the currently checked out branch

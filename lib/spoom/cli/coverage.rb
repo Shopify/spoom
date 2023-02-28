@@ -43,9 +43,10 @@ module Spoom
       def timeline
         in_sorbet_project!
         path = exec_path
+        context = Context.new(path)
         sorbet = options[:sorbet]
 
-        ref_before = Spoom::Git.current_branch
+        ref_before = context.git_current_branch
         ref_before = Spoom::Git.last_commit(path: path)&.sha unless ref_before
         unless ref_before
           say_error("Not in a git repository")
