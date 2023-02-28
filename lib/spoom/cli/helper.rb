@@ -67,6 +67,27 @@ module Spoom
         end
       end
 
+      # Returns the context at `--path` (by default the current working directory)
+      sig { returns(Context) }
+      def context
+        @context ||= T.let(Context.new(exec_path), T.nilable(Context))
+      end
+
+      # Raise if `spoom` is not ran inside a context with a `sorbet/config` file
+      sig { returns(Context) }
+      def context_requiring_sorbet!
+        context = self.context
+        unless context.has_sorbet_config?
+          say_error(
+            "not in a Sorbet project (`#{Spoom::Sorbet::CONFIG_PATH}` not found)\n\n" \
+              "When running spoom from another path than the project's root, " \
+              "use `--path PATH` to specify the path to the root.",
+          )
+          Kernel.exit(1)
+        end
+        context
+      end
+
       # Return the path specified through `--path`
       sig { returns(String) }
       def exec_path
