@@ -30,30 +30,6 @@ module Spoom
 
       # Utils
 
-      # Get the commit introducing the `sorbet/config` file
-      sig { params(path: String).returns(T.nilable(Commit)) }
-      def sorbet_intro_commit(path: ".")
-        result = log("--diff-filter=A --format='%h %at' -1 -- sorbet/config", path: path)
-        return nil unless result.status
-
-        out = result.out.strip
-        return nil if out.empty?
-
-        parse_commit(out)
-      end
-
-      # Get the commit removing the `sorbet/config` file
-      sig { params(path: String).returns(T.nilable(Commit)) }
-      def sorbet_removal_commit(path: ".")
-        result = log("--diff-filter=D --format='%h %at' -1 -- sorbet/config", path: path)
-        return nil unless result.status
-
-        out = result.out.strip
-        return nil if out.empty?
-
-        parse_commit(out)
-      end
-
       # Parse a line formated as `%h %at` into a `Commit`
       sig { params(string: String).returns(T.nilable(Commit)) }
       def parse_commit(string)

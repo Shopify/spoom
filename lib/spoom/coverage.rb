@@ -89,15 +89,15 @@ module Spoom
         snapshot
       end
 
-      sig { params(snapshots: T::Array[Snapshot], palette: D3::ColorPalette, path: String).returns(Report) }
-      def report(snapshots, palette:, path: ".")
-        intro_commit = Git.sorbet_intro_commit(path: path)
+      sig { params(context: Context, snapshots: T::Array[Snapshot], palette: D3::ColorPalette).returns(Report) }
+      def report(context, snapshots, palette:)
+        intro_commit = context.sorbet_intro_commit
 
         Report.new(
-          project_name: File.basename(File.expand_path(path)),
+          project_name: File.basename(context.absolute_path),
           palette: palette,
           snapshots: snapshots,
-          sigils_tree: sigils_tree(path: path),
+          sigils_tree: sigils_tree(path: context.absolute_path),
           sorbet_intro_commit: intro_commit&.sha,
           sorbet_intro_date: intro_commit&.time,
         )

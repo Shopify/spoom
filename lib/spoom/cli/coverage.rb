@@ -73,7 +73,7 @@ module Spoom
         to = parse_time(options[:to], "--to")
 
         unless from
-          intro_commit = Spoom::Git.sorbet_intro_commit(path: path)
+          intro_commit = context.sorbet_intro_commit
           intro_commit = T.must(intro_commit) # we know it's in there since in_sorbet_project!
           from = intro_commit.time
         end
@@ -144,6 +144,7 @@ module Spoom
         desc: "Color used for typed: strong"
       def report
         in_sorbet_project!
+        context = Context.new(exec_path)
 
         data_dir = options[:data]
         files = Dir.glob("#{data_dir}/*.json")
@@ -165,7 +166,7 @@ module Spoom
           strong: options[:color_strong],
         )
 
-        report = Spoom::Coverage.report(snapshots, palette: palette, path: exec_path)
+        report = Spoom::Coverage.report(context, snapshots, palette: palette)
         file = options[:file]
         File.write(file, report.html)
         say("Report generated under `#{file}`")
