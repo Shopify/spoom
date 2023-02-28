@@ -42,7 +42,7 @@ module Spoom
         capture_err: T::Boolean,
       ).returns(ExecResult)
     end
-    def exec(cmd, *arg, path: ".", capture_err: false)
+    def exec(cmd, *arg, path: ".", capture_err: true)
       if capture_err
         stdout, stderr, status = T.unsafe(Open3).capture3([cmd, *arg].join(" "), chdir: path)
         ExecResult.new(
