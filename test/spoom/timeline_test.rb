@@ -22,15 +22,15 @@ module Spoom
       def test_timeline_months
         from = Time.parse("2010-01-02 03:04:05")
         to = Time.parse("2010-03-02 03:04:05")
-        timeline = Spoom::Timeline.new(from, to)
+        timeline = Spoom::Timeline.new(@project, from, to)
         assert_equal(["2010-01", "2010-02", "2010-03"], timeline.months.map { |d| d.strftime("%Y-%m") })
       end
 
       def test_timeline_commits_for_dates
         timeline = Spoom::Timeline.new(
+          @project,
           Time.parse("2010-01-01 00:00:00"),
           Time.parse("2020-01-01 00:00:00"),
-          path: @project.absolute_path,
         )
 
         dates = [
@@ -57,9 +57,9 @@ module Spoom
 
       def test_timeline_ticks
         timeline = Spoom::Timeline.new(
+          @project,
           Time.parse("2010-01-01 00:00:00"),
           Time.parse("2020-01-01 00:00:00"),
-          path: @project.absolute_path,
         )
         assert_equal(4, timeline.ticks.size)
       end

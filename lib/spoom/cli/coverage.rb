@@ -77,7 +77,7 @@ module Spoom
           from = intro_commit.time
         end
 
-        timeline = Spoom::Timeline.new(from, to, path: path)
+        timeline = Spoom::Timeline.new(context, from, to)
         ticks = timeline.ticks
 
         if ticks.empty?

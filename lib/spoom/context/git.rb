@@ -66,6 +66,11 @@ module Spoom
       def git_last_commit(short_sha: true)
         Spoom::Git.last_commit(path: absolute_path, short_sha: short_sha)
       end
+
+      sig { params(arg: String).returns(ExecResult) }
+      def git_log(*arg)
+        git("log #{arg.join(" ")}")
+      end
     end
   end
 end

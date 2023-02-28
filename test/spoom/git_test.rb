@@ -68,13 +68,6 @@ module Spoom
         assert_equal(time, last_commit&.time)
       end
 
-      def test_git_log
-        @project.write!("file")
-        @project.commit!(time: Time.parse("1987-02-05 09:00:00 +0000"))
-        log = Spoom::Git.log("--format='format:%ad'", path: @project.absolute_path).out
-        assert_equal("Thu Feb 5 09:00:00 1987 +0000", log)
-      end
-
       def test_git_show
         @project.write!("file")
         @project.commit!(time: Time.parse("1987-02-05 09:00:00"))
