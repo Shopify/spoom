@@ -143,20 +143,6 @@ module Spoom
         end
         nil
       end
-
-      # Get `gem` version from the `Gemfile.lock` content
-      #
-      # Returns `nil` if `gem` cannot be found in the Gemfile.
-      sig { params(gem: String, path: String).returns(T.nilable(String)) }
-      def version_from_gemfile_lock(gem: "sorbet", path: ".")
-        gemfile_path = "#{path}/Gemfile.lock"
-        return nil unless File.exist?(gemfile_path)
-
-        content = File.read(gemfile_path).match(/^    #{gem} \(.*(\d+\.\d+\.\d+).*\)/)
-        return nil unless content
-
-        content[1]
-      end
     end
   end
 end

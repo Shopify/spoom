@@ -40,6 +40,19 @@ module Spoom
       def bundle_exec(command, version: nil)
         bundle("exec #{command}", version: version)
       end
+
+      # Get `gem` version from the `Gemfile.lock` content
+      #
+      # Returns `nil` if `gem` cannot be found in the Gemfile.
+      sig { params(gem: String).returns(T.nilable(String)) }
+      def gem_version_from_gemfile_lock(gem)
+        return nil unless file?("Gemfile.lock")
+
+        content = read("Gemfile.lock").match(/^    #{gem} \(.*(\d+\.\d+\.\d+).*\)/)
+        return nil unless content
+
+        content[1]
+      end
     end
   end
 end
