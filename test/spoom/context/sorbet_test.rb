@@ -132,6 +132,19 @@ module Spoom
         context.destroy!
       end
 
+      def test_context_run_srb_tc_from_path
+        context = Context.mktmp!
+
+        res = context.srb_tc("-e ''", sorbet_bin: Spoom::Sorbet::BIN_PATH)
+        assert_equal(<<~OUT, res.err)
+          No errors! Great job.
+        OUT
+        assert(res.status)
+        assert_equal(0, res.exit_code)
+
+        context.destroy!
+      end
+
       def test_context_file_strictness
         context = Context.mktmp!
 

@@ -34,11 +34,11 @@ module Spoom
         format = options[:format]
         count = options[:count]
         sorbet = options[:sorbet]
+        context = Context.new(path)
 
         unless limit || code || sort
-          result = T.unsafe(Spoom::Sorbet).srb_tc(
+          result = T.unsafe(context).srb_tc(
             *options[:sorbet_options].split(" "),
-            path: path,
             capture_err: false,
             sorbet_bin: sorbet,
           )
@@ -48,10 +48,9 @@ module Spoom
         end
 
         error_url_base = Spoom::Sorbet::Errors::DEFAULT_ERROR_URL_BASE
-        result = T.unsafe(Spoom::Sorbet).srb_tc(
+        result = T.unsafe(context).srb_tc(
           *options[:sorbet_options].split(" "),
           "--error-url-base=#{error_url_base}",
-          path: path,
           capture_err: true,
           sorbet_bin: sorbet,
         )

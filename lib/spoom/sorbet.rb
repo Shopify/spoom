@@ -43,19 +43,6 @@ module Spoom
     class << self
       extend T::Sig
 
-      sig do
-        params(
-          arg: String,
-          path: String,
-          capture_err: T::Boolean,
-          sorbet_bin: T.nilable(String),
-        ).returns(ExecResult)
-      end
-      def srb_tc(*arg, path: ".", capture_err: false, sorbet_bin: nil)
-        arg.prepend("tc") unless sorbet_bin
-        srb(*T.unsafe(arg), path: path, capture_err: capture_err, sorbet_bin: sorbet_bin)
-      end
-
       # List all files typechecked by Sorbet from its `config`
       sig { params(config: Config, path: String).returns(T::Array[String]) }
       def srb_files(config, path: ".")

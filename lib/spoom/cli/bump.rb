@@ -56,6 +56,7 @@ module Spoom
         only = options[:only]
         cmd = options[:suggest_bump_command]
         exec_path = File.expand_path(self.exec_path)
+        context = Context.new(exec_path)
 
         unless Sorbet::Sigils.valid_strictness?(from)
           say_error("Invalid strictness `#{from}` for option `--from`")
@@ -102,10 +103,9 @@ module Spoom
 
         error_url_base = Spoom::Sorbet::Errors::DEFAULT_ERROR_URL_BASE
         result = begin
-          Sorbet.srb_tc(
+          T.unsafe(context).srb_tc(
             *options[:sorbet_options].split(" "),
             "--error-url-base=#{error_url_base}",
-            path: exec_path,
             capture_err: true,
             sorbet_bin: options[:sorbet],
           )

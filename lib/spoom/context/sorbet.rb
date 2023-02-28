@@ -29,6 +29,12 @@ module Spoom
         res
       end
 
+      sig { params(arg: String, sorbet_bin: T.nilable(String), capture_err: T::Boolean).returns(ExecResult) }
+      def srb_tc(*arg, sorbet_bin: nil, capture_err: true)
+        arg.prepend("tc") unless sorbet_bin
+        T.unsafe(self).srb(*arg, sorbet_bin: sorbet_bin, capture_err: capture_err)
+      end
+
       # Read the contents of `sorbet/config` in this context directory
       sig { returns(String) }
       def read_sorbet_config
