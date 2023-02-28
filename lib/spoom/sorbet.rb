@@ -51,32 +51,6 @@ module Spoom
           sorbet_bin: T.nilable(String),
         ).returns(ExecResult)
       end
-      def srb(*arg, path: ".", capture_err: false, sorbet_bin: nil)
-        if sorbet_bin
-          arg.prepend(sorbet_bin)
-        else
-          arg.prepend("bundle", "exec", "srb")
-        end
-        result = Spoom.exec(*T.unsafe(arg), path: path, capture_err: capture_err)
-
-        case result.exit_code
-        when KILLED_CODE
-          raise Error::Killed.new("Sorbet was killed.", result)
-        when SEGFAULT_CODE
-          raise Error::Segfault.new("Sorbet segfaulted.", result)
-        end
-
-        result
-      end
-
-      sig do
-        params(
-          arg: String,
-          path: String,
-          capture_err: T::Boolean,
-          sorbet_bin: T.nilable(String),
-        ).returns(ExecResult)
-      end
       def srb_tc(*arg, path: ".", capture_err: false, sorbet_bin: nil)
         arg.prepend("tc") unless sorbet_bin
         srb(*T.unsafe(arg), path: path, capture_err: capture_err, sorbet_bin: sorbet_bin)

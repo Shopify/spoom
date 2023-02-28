@@ -11,9 +11,22 @@ module Spoom
       requires_ancestor { Context }
 
       # Run `bundle exec srb` in this context directory
-      sig { params(command: String).returns(ExecResult) }
-      def srb(command)
-        bundle_exec("srb #{command}")
+      sig { params(arg: String, sorbet_bin: T.nilable(String), capture_err: T::Boolean).returns(ExecResult) }
+      def srb(*arg, sorbet_bin: nil, capture_err: true)
+        res = if sorbet_bin
+          exec("#{sorbet_bin} #{arg.join(" ")}", capture_err: capture_err)
+        else
+          bundle_exec("srb #{arg.join(" ")}", capture_err: capture_err)
+        end
+
+        case res.exit_code
+        when Spoom::Sorbet::KILLED_CODE
+          raise Spoom::Sorbet::Error::Killed.new("Sorbet was killed.", res)
+        when Spoom::Sorbet::SEGFAULT_CODE
+          raise Spoom::Sorbet::Error::Segfault.new("Sorbet segfaulted.", res)
+        end
+
+        res
       end
 
       # Read the contents of `sorbet/config` in this context directory
