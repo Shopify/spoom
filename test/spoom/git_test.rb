@@ -13,9 +13,10 @@ module Spoom
       end
 
       def test_exec_with_unexisting_path
-        result = Spoom::Git.exec("git ls", path: "/path/not/found")
-        assert_equal("Error: `/path/not/found` is not a directory.", result.err)
-        refute(result.status)
+        e = assert_raises(Errno::ENOENT) do
+          Spoom.exec("git ls", path: "/path/not/found")
+        end
+        assert_equal("No such file or directory - /path/not/found", e.message)
       end
 
       def test_last_commit_if_not_git_dir

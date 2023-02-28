@@ -21,52 +21,31 @@ module Spoom
     class << self
       extend T::Sig
 
-      # Execute a `command`
-      sig { params(command: String, arg: String, path: String).returns(ExecResult) }
-      def exec(command, *arg, path: ".")
-        return ExecResult.new(
-          out: "",
-          err: "Error: `#{path}` is not a directory.",
-          status: false,
-          exit_code: 1,
-        ) unless File.directory?(path)
-
-        T.unsafe(Open3).popen3(command, *arg, chdir: path) do |_, stdout, stderr, thread|
-          status = T.cast(thread.value, Process::Status)
-          ExecResult.new(
-            out: stdout.read,
-            err: stderr.read,
-            status: T.must(status.success?),
-            exit_code: T.must(status.exitstatus),
-          )
-        end
-      end
-
       # Git commands
 
       sig { params(arg: String, path: String).returns(ExecResult) }
       def checkout(*arg, path: ".")
-        exec("git checkout -q #{arg.join(" ")}", path: path)
+        Spoom.exec("git checkout -q #{arg.join(" ")}", path: path)
       end
 
       sig { params(arg: String, path: String).returns(ExecResult) }
       def diff(*arg, path: ".")
-        exec("git diff #{arg.join(" ")}", path: path)
+        Spoom.exec("git diff #{arg.join(" ")}", path: path)
       end
 
       sig { params(arg: String, path: String).returns(ExecResult) }
       def log(*arg, path: ".")
-        exec("git log #{arg.join(" ")}", path: path)
+        Spoom.exec("git log #{arg.join(" ")}", path: path)
       end
 
       sig { params(arg: String, path: String).returns(ExecResult) }
       def show(*arg, path: ".")
-        exec("git show #{arg.join(" ")}", path: path)
+        Spoom.exec("git show #{arg.join(" ")}", path: path)
       end
 
       sig { params(path: String).returns(T.nilable(String)) }
       def current_branch(path: ".")
-        result = exec("git branch --show-current", path: path)
+        result = Spoom.exec("git branch --show-current", path: path)
         return nil unless result.status
 
         result.out.strip

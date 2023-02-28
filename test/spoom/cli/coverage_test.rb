@@ -90,7 +90,7 @@ module Spoom
         @project.remove!("sorbet/config")
         result = @project.spoom("coverage snapshot --no-color")
         assert_empty(result.out)
-        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", result.err.lines.first&.chomp)
+        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", result.err&.lines&.first&.chomp)
         refute(result.status)
       end
 
@@ -217,7 +217,7 @@ module Spoom
         @project.remove!("sorbet/config")
         result = @project.spoom("coverage timeline --no-color")
         assert_empty(result.out)
-        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", result.err.lines.first&.chomp)
+        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", result.err&.lines&.first&.chomp)
         refute(result.status)
       end
 
@@ -450,7 +450,7 @@ module Spoom
         @project.remove!("sorbet/config")
         result = @project.spoom("coverage report --no-color")
         assert_empty(result.out)
-        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", result.err.lines.first&.chomp)
+        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", result.err&.lines&.first&.chomp)
         refute(result.status)
       end
 

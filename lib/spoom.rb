@@ -15,7 +15,7 @@ module Spoom
     extend T::Sig
 
     const :out, String
-    const :err, String
+    const :err, T.nilable(String)
     const :status, T::Boolean
     const :exit_code, Integer
 
@@ -25,7 +25,7 @@ module Spoom
         ########## STDOUT ##########
         #{out.empty? ? "<empty>" : out}
         ########## STDERR ##########
-        #{err.empty? ? "<empty>" : err}
+        #{err&.empty? ? "<empty>" : err}
         ########## STATUS: #{status} ##########
       STR
     end
@@ -42,7 +42,7 @@ module Spoom
         capture_err: T::Boolean,
       ).returns(ExecResult)
     end
-    def exec(cmd, *arg, path: ".", capture_err: false)
+    def exec(cmd, *arg, path: ".", capture_err: true)
       if capture_err
         stdout, stderr, status = T.unsafe(Open3).capture3([cmd, *arg].join(" "), chdir: path)
         ExecResult.new(
@@ -55,7 +55,7 @@ module Spoom
         stdout, status = T.unsafe(Open3).capture2([cmd, *arg].join(" "), chdir: path)
         ExecResult.new(
           out: stdout,
-          err: "",
+          err: nil,
           status: status.success?,
           exit_code: status.exitstatus,
         )
