@@ -120,6 +120,33 @@ module Spoom
 
         context.destroy!
       end
+
+      def test_context_clean_workdir_on_clean_repo
+        context = Context.mktmp!
+        context.git_init!
+        context.exec("git config user.name 'spoom-tests'")
+        context.exec("git config user.email 'spoom@shopify.com'")
+        context.write!("file")
+        context.git_commit!
+
+        assert(context.git_workdir_clean?)
+
+        context.destroy!
+      end
+
+      def test_context_clean_workdir_on_dirty_repo
+        context = Context.mktmp!
+        context.git_init!
+        context.exec("git config user.name 'spoom-tests'")
+        context.exec("git config user.email 'spoom@shopify.com'")
+        context.write!("file", "content1")
+        context.git_commit!
+        context.write!("file", "content2")
+
+        refute(context.git_workdir_clean?)
+
+        context.destroy!
+      end
     end
   end
 end

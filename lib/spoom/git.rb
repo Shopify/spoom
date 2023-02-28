@@ -42,12 +42,6 @@ module Spoom
         parse_commit(out)
       end
 
-      # Is there uncommited changes in `path`?
-      sig { params(path: String).returns(T::Boolean) }
-      def workdir_clean?(path: ".")
-        diff("HEAD", path: path).out.empty?
-      end
-
       # Get the commit introducing the `sorbet/config` file
       sig { params(path: String).returns(T.nilable(Commit)) }
       def sorbet_intro_commit(path: ".")

@@ -20,6 +20,7 @@ module Spoom
       def snapshot
         in_sorbet_project!
         path = exec_path
+        context = Context.new(path)
         sorbet = options[:sorbet]
 
         snapshot = Spoom::Coverage.snapshot(path: path, rbi: options[:rbi], sorbet_bin: sorbet)
@@ -54,7 +55,7 @@ module Spoom
           exit(1)
         end
 
-        unless Spoom::Git.workdir_clean?(path: path)
+        unless context.git_workdir_clean?
           say_error("Uncommited changes")
           say_error(<<~ERR, status: nil)
 

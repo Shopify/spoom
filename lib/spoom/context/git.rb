@@ -71,6 +71,12 @@ module Spoom
       def git_log(*arg)
         git("log #{arg.join(" ")}")
       end
+
+      # Is there uncommited changes in this context directory?
+      sig { params(path: String).returns(T::Boolean) }
+      def git_workdir_clean?(path: ".")
+        git_diff("HEAD").out.empty?
+      end
     end
   end
 end

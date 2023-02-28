@@ -39,19 +39,6 @@ module Spoom
         assert(sha.size == 40)
       end
 
-      def test_clean_workdir_on_clean_repo
-        @project.write!("file")
-        @project.commit!
-        assert(Spoom::Git.workdir_clean?(path: @project.absolute_path))
-      end
-
-      def test_clean_workdir_on_dirty_repo
-        @project.write!("file", "content1")
-        @project.commit!
-        @project.write!("file", "content2")
-        refute(Spoom::Git.workdir_clean?(path: @project.absolute_path))
-      end
-
       def test_commit_timestamp
         time = Time.parse("1987-02-05 09:00:00")
         @project.write!("file")
