@@ -23,22 +23,22 @@ module Spoom
       end
 
       # Run a command with `bundle` in this context directory
-      sig { params(command: String, version: T.nilable(String)).returns(ExecResult) }
-      def bundle(command, version: nil)
+      sig { params(command: String, version: T.nilable(String), capture_err: T::Boolean).returns(ExecResult) }
+      def bundle(command, version: nil, capture_err: true)
         command = "_#{version}_ #{command}" if version
-        exec("bundle #{command}")
+        exec("bundle #{command}", capture_err: capture_err)
       end
 
       # Run `bundle install` in this context directory
-      sig { params(version: T.nilable(String)).returns(ExecResult) }
-      def bundle_install!(version: nil)
-        bundle("install", version: version)
+      sig { params(version: T.nilable(String), capture_err: T::Boolean).returns(ExecResult) }
+      def bundle_install!(version: nil, capture_err: true)
+        bundle("install", version: version, capture_err: capture_err)
       end
 
       # Run a command `bundle exec` in this context directory
-      sig { params(command: String, version: T.nilable(String)).returns(ExecResult) }
-      def bundle_exec(command, version: nil)
-        bundle("exec #{command}", version: version)
+      sig { params(command: String, version: T.nilable(String), capture_err: T::Boolean).returns(ExecResult) }
+      def bundle_exec(command, version: nil, capture_err: true)
+        bundle("exec #{command}", version: version, capture_err: capture_err)
       end
 
       # Get `gem` version from the `Gemfile.lock` content
