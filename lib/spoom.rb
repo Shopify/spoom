@@ -10,26 +10,6 @@ module Spoom
   SPOOM_PATH = T.let((Pathname.new(__FILE__) / ".." / "..").to_s, String)
 
   class Error < StandardError; end
-
-  class ExecResult < T::Struct
-    extend T::Sig
-
-    const :out, String
-    const :err, T.nilable(String)
-    const :status, T::Boolean
-    const :exit_code, Integer
-
-    sig { returns(String) }
-    def to_s
-      <<~STR
-        ########## STDOUT ##########
-        #{out.empty? ? "<empty>" : out}
-        ########## STDERR ##########
-        #{err&.empty? ? "<empty>" : err}
-        ########## STATUS: #{status} ##########
-      STR
-    end
-  end
 end
 
 require "spoom/context"
