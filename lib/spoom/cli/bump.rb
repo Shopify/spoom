@@ -78,7 +78,7 @@ module Spoom
         directory = File.expand_path(directory)
         files_to_bump = Sorbet::Sigils.files_with_sigil_strictness(directory, from)
 
-        files_from_config = config_files(path: exec_path)
+        files_from_config = context.srb_files.map { |file| File.expand_path(file) }
         files_to_bump.select! { |file| files_from_config.include?(file) }
 
         if only
@@ -194,12 +194,6 @@ module Spoom
 
         def undo_changes(files, from_strictness)
           Sorbet::Sigils.change_sigil_in_files(files, from_strictness)
-        end
-
-        def config_files(path: ".")
-          config = sorbet_config
-          files = Sorbet.srb_files(config, path: path)
-          files.map { |file| File.expand_path(file) }
         end
       end
     end

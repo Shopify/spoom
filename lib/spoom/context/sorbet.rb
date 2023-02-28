@@ -60,12 +60,28 @@ module Spoom
         metrics
       end
 
+      # List all files typechecked by Sorbet from its `config`
+      sig { params(with_config: T.nilable(Spoom::Sorbet::Config)).returns(T::Array[String]) }
+      def srb_files(with_config: nil)
+        config = with_config || sorbet_config
+        regs = config.ignore.map { |string| Regexp.new(Regexp.escape(string)) }
+        exts = config.allowed_extensions.empty? ? [".rb", ".rbi"] : config.allowed_extensions
+        glob("**/*{#{exts.join(",")}}").reject do |f|
+          regs.any? { |re| re.match?(f) }
+        end.sort
+      end
+
       sig { params(arg: String, sorbet_bin: T.nilable(String), capture_err: T::Boolean).returns(T.nilable(String)) }
       def srb_version(*arg, sorbet_bin: nil, capture_err: true)
         res = T.unsafe(self).srb_tc("--no-config", "--version", *arg, sorbet_bin: sorbet_bin, capture_err: capture_err)
         return nil unless res.status
 
         res.out.split(" ")[2]
+      end
+
+      sig { returns(Spoom::Sorbet::Config) }
+      def sorbet_config
+        Spoom::Sorbet::Config.parse_string(read_sorbet_config)
       end
 
       # Read the contents of `sorbet/config` in this context directory

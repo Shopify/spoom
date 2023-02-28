@@ -39,19 +39,5 @@ module Spoom
 
     KILLED_CODE = 137
     SEGFAULT_CODE = 139
-
-    class << self
-      extend T::Sig
-
-      # List all files typechecked by Sorbet from its `config`
-      sig { params(config: Config, path: String).returns(T::Array[String]) }
-      def srb_files(config, path: ".")
-        regs = config.ignore.map { |string| Regexp.new(Regexp.escape(string)) }
-        exts = config.allowed_extensions.empty? ? [".rb", ".rbi"] : config.allowed_extensions
-        Dir.glob((Pathname.new(path) / "**/*{#{exts.join(",")}}").to_s).reject do |f|
-          regs.any? { |re| re.match?(f) }
-        end.sort
-      end
-    end
   end
 end

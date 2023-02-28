@@ -44,8 +44,8 @@ module Spoom
         in_sorbet_project!
 
         path = exec_path
-        config = sorbet_config
-        files = Spoom::Sorbet.srb_files(config, path: path)
+        context = Context.new(path)
+        files = context.srb_files
 
         unless options[:rbi]
           files = files.reject { |file| file.end_with?(".rbi") }
