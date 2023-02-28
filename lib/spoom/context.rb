@@ -133,7 +133,7 @@ module Spoom
           ExecResult.new(out: out, err: err, status: T.must(status.success?), exit_code: T.must(status.exitstatus))
         else
           out, status = Open3.capture2(command, opts)
-          ExecResult.new(out: out, err: "", status: T.must(status.success?), exit_code: T.must(status.exitstatus))
+          ExecResult.new(out: out, err: nil, status: T.must(status.success?), exit_code: T.must(status.exitstatus))
         end
       end
     end

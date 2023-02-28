@@ -12,7 +12,7 @@ module Spoom
         @project.remove!("sorbet/config")
         result = @project.spoom("lsp --no-color find Foo")
         assert_empty(result.out)
-        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", result.err.lines.first&.chomp)
+        assert_equal("Error: not in a Sorbet project (`sorbet/config` not found)", result.err&.lines&.first&.chomp)
         refute(result.status)
       end
 
