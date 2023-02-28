@@ -145,6 +145,16 @@ module Spoom
         context.destroy!
       end
 
+      def test_context_run_srb_metrics_from_path
+        context = Context.mktmp!
+
+        res = context.srb_metrics("-e ''", sorbet_bin: Spoom::Sorbet::BIN_PATH)
+        assert_instance_of(Hash, res)
+        refute_empty(res)
+
+        context.destroy!
+      end
+
       def test_context_srb_version_return_nil_if_srb_not_installed
         context = Context.mktmp!
         context.write_gemfile!("")

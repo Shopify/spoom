@@ -35,6 +35,31 @@ module Spoom
         T.unsafe(self).srb(*arg, sorbet_bin: sorbet_bin, capture_err: capture_err)
       end
 
+      sig do
+        params(
+          arg: String,
+          sorbet_bin: T.nilable(String),
+          capture_err: T::Boolean,
+        ).returns(T.nilable(T::Hash[String, Integer]))
+      end
+      def srb_metrics(*arg, sorbet_bin: nil, capture_err: false)
+        metrics_file = "metrics.tmp"
+
+        T.unsafe(self).srb_tc(
+          "--metrics-file",
+          metrics_file,
+          *arg,
+          sorbet_bin: sorbet_bin,
+          capture_err: capture_err,
+        )
+        return nil unless file?(metrics_file)
+
+        metrics_path = absolute_path_to(metrics_file)
+        metrics = Spoom::Sorbet::MetricsParser.parse_file(metrics_path)
+        remove!(metrics_file)
+        metrics
+      end
+
       sig { params(arg: String, sorbet_bin: T.nilable(String), capture_err: T::Boolean).returns(T.nilable(String)) }
       def srb_version(*arg, sorbet_bin: nil, capture_err: true)
         res = T.unsafe(self).srb_tc("--no-config", "--version", *arg, sorbet_bin: sorbet_bin, capture_err: capture_err)

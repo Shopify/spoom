@@ -52,33 +52,6 @@ module Spoom
           regs.any? { |re| re.match?(f) }
         end.sort
       end
-
-      sig do
-        params(
-          arg: String,
-          path: String,
-          capture_err: T::Boolean,
-          sorbet_bin: T.nilable(String),
-        ).returns(T.nilable(T::Hash[String, Integer]))
-      end
-      def srb_metrics(*arg, path: ".", capture_err: false, sorbet_bin: nil)
-        metrics_file = "metrics.tmp"
-        metrics_path = "#{path}/#{metrics_file}"
-        T.unsafe(self).srb_tc(
-          "--metrics-file",
-          metrics_file,
-          *arg,
-          path: path,
-          capture_err: capture_err,
-          sorbet_bin: sorbet_bin,
-        )
-        if File.exist?(metrics_path)
-          metrics = Spoom::Sorbet::MetricsParser.parse_file(metrics_path)
-          File.delete(metrics_path)
-          return metrics
-        end
-        nil
-      end
     end
   end
 end

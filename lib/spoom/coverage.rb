@@ -28,20 +28,11 @@ module Spoom
           new_config.options_string,
         ]
 
-        metrics = Spoom::Sorbet.srb_metrics(
-          *flags,
-          path: path,
-          capture_err: true,
-          sorbet_bin: sorbet_bin,
-        )
+        metrics = context.srb_metrics(*flags, capture_err: true, sorbet_bin: sorbet_bin)
+
         # Collect extra information using a different configuration
         flags << "--ignore sorbet/rbi/"
-        metrics_without_rbis = Spoom::Sorbet.srb_metrics(
-          *flags,
-          path: path,
-          capture_err: true,
-          sorbet_bin: sorbet_bin,
-        )
+        metrics_without_rbis = context.srb_metrics(*flags, capture_err: true, sorbet_bin: sorbet_bin)
 
         snapshot = Snapshot.new
         return snapshot unless metrics
