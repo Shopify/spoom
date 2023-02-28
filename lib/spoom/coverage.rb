@@ -14,8 +14,7 @@ module Spoom
 
       sig { params(context: Context, rbi: T::Boolean, sorbet_bin: T.nilable(String)).returns(Snapshot) }
       def snapshot(context, rbi: true, sorbet_bin: nil)
-        path = context.absolute_path
-        config = sorbet_config(path: path)
+        config = context.sorbet_config
         config.allowed_extensions.push(".rb", ".rbi") if config.allowed_extensions.empty?
 
         new_config = config.copy
@@ -92,11 +91,6 @@ module Spoom
           sorbet_intro_commit: intro_commit&.sha,
           sorbet_intro_date: intro_commit&.time,
         )
-      end
-
-      sig { params(path: String).returns(Sorbet::Config) }
-      def sorbet_config(path: ".")
-        Sorbet::Config.parse_file("#{path}/#{Spoom::Sorbet::CONFIG_PATH}")
       end
 
       sig { params(context: Context).returns(FileTree) }
