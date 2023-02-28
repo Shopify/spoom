@@ -198,7 +198,7 @@ module Spoom
         assert_equal("fatal: not a git repository (or any of the parent directories): .git\n", res.err)
         refute(res.status)
 
-        res = context.git_init!
+        res = context.git_init!(branch: "main")
         path = File.realdirpath(context.absolute_path)
         assert_equal("Initialized empty Git repository in #{path}/.git/", res.out.strip)
         assert_empty(res.err)
@@ -244,8 +244,10 @@ module Spoom
         context = Context.mktmp!
         assert_nil(context.git_current_branch)
 
-        context.git_init!
+        context.git_init!(branch: "main")
         assert_equal("main", context.git_current_branch)
+        context.git("checkout -b other")
+        assert_equal("other", context.git_current_branch)
 
         context.destroy!
       end
