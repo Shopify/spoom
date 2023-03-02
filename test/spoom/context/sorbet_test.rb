@@ -74,6 +74,63 @@ module Spoom
 
         context.destroy!
       end
+
+      def test_context_sorbet_intro_not_found
+        context = Context.mktmp!
+        context.git_init!
+        context.git("config user.name 'John Doe'")
+        context.git("config user.email 'john@doe.org'")
+
+        assert_nil(context.sorbet_intro_commit)
+
+        context.destroy!
+      end
+
+      def test_context_sorbet_intro_found
+        intro_time = Time.parse("1987-02-05 09:00:00 +0000")
+        context = Context.mktmp!
+        context.git_init!
+        context.git("config user.name 'John Doe'")
+        context.git("config user.email 'john@doe.org'")
+        context.write!("sorbet/config")
+        context.git_commit!(time: intro_time)
+
+        commit = context.sorbet_intro_commit
+        assert_match(/\A[a-z0-9]+\z/, commit&.sha)
+        assert_equal(intro_time, commit&.time)
+
+        context.destroy!
+      end
+
+      def test_context_sorbet_removal_not_found
+        context = Context.mktmp!
+        context.git_init!
+        context.git("config user.name 'John Doe'")
+        context.git("config user.email 'john@doe.org'")
+
+        assert_nil(context.sorbet_removal_commit)
+
+        context.destroy!
+      end
+
+      def test_context_sorbet_removal_found
+        intro_time = Time.parse("1987-02-05 09:00:00 +0000")
+        removal_time = Time.parse("1987-02-05 21:00:00 +0000")
+        context = Context.mktmp!
+        context.git_init!
+        context.git("config user.name 'John Doe'")
+        context.git("config user.email 'john@doe.org'")
+        context.write!("sorbet/config")
+        context.git_commit!(time: intro_time)
+        context.remove!("sorbet/config")
+        context.git_commit!(time: removal_time)
+
+        commit = context.sorbet_removal_commit
+        assert_match(/\A[a-z0-9]+\z/, commit&.sha)
+        assert_equal(removal_time, commit&.time)
+
+        context.destroy!
+      end
     end
   end
 end

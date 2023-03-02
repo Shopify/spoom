@@ -47,7 +47,7 @@ module Spoom
 
       def test_snapshot_project
         project = self.project
-        snapshot = Spoom::Coverage.snapshot(path: project.absolute_path)
+        snapshot = Spoom::Coverage.snapshot(project)
         assert_equal(4, snapshot.files)
         assert_equal(1, snapshot.rbi_files)
         assert_equal({ "false" => 1, "true" => 3 }, snapshot.sigils)
@@ -66,7 +66,7 @@ module Spoom
 
       def test_snapshot_project_without_rbi
         project = self.project
-        snapshot = Spoom::Coverage.snapshot(path: project.absolute_path, rbi: false)
+        snapshot = Spoom::Coverage.snapshot(project, rbi: false)
         assert_equal(3, snapshot.files)
         assert_equal(0, snapshot.rbi_files)
         assert_equal({ "false" => 1, "true" => 2 }, snapshot.sigils)

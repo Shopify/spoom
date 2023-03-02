@@ -1,17 +1,15 @@
 # typed: strict
 # frozen_string_literal: true
 
-require_relative "git"
-
 module Spoom
   class Timeline
     extend T::Sig
 
-    sig { params(from: Time, to: Time, path: String).void }
-    def initialize(from, to, path: ".")
+    sig { params(context: Context, from: Time, to: Time).void }
+    def initialize(context, from, to)
+      @context = context
       @from = from
       @to = to
-      @path = path
     end
 
     # Return one commit for each month between `from` and `to`
@@ -37,17 +35,16 @@ module Spoom
     sig { params(dates: T::Array[Time]).returns(T::Array[Git::Commit]) }
     def commits_for_dates(dates)
       dates.map do |t|
-        result = Spoom::Git.log(
+        result = @context.git_log(
           "--since='#{t}'",
           "--until='#{t.to_date.next_month}'",
           "--format='format:%h %at'",
           "--author-date-order",
           "-1",
-          path: @path,
         )
         next if result.out.empty?
 
-        Git.parse_commit(result.out.strip)
+        Spoom::Git::Commit.parse_line(result.out.strip)
       end.compact.uniq(&:sha)
     end
   end

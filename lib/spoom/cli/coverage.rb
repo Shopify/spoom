@@ -20,9 +20,10 @@ module Spoom
       def snapshot
         in_sorbet_project!
         path = exec_path
+        context = Context.new(path)
         sorbet = options[:sorbet]
 
-        snapshot = Spoom::Coverage.snapshot(path: path, rbi: options[:rbi], sorbet_bin: sorbet)
+        snapshot = Spoom::Coverage.snapshot(context, rbi: options[:rbi], sorbet_bin: sorbet)
         snapshot.print
 
         save_dir = options[:save]
@@ -43,17 +44,18 @@ module Spoom
       def timeline
         in_sorbet_project!
         path = exec_path
+        context = Context.new(path)
         sorbet = options[:sorbet]
 
-        ref_before = Spoom::Git.current_branch
-        ref_before = Spoom::Git.last_commit(path: path)&.sha unless ref_before
+        ref_before = context.git_current_branch
+        ref_before = context.git_last_commit&.sha unless ref_before
         unless ref_before
           say_error("Not in a git repository")
           say_error("\nSpoom needs to checkout into your previous commits to build the timeline.", status: nil)
           exit(1)
         end
 
-        unless Spoom::Git.workdir_clean?(path: path)
+        unless context.git_workdir_clean?
           say_error("Uncommited changes")
           say_error(<<~ERR, status: nil)
 
@@ -71,12 +73,12 @@ module Spoom
         to = parse_time(options[:to], "--to")
 
         unless from
-          intro_commit = Spoom::Git.sorbet_intro_commit(path: path)
+          intro_commit = context.sorbet_intro_commit
           intro_commit = T.must(intro_commit) # we know it's in there since in_sorbet_project!
           from = intro_commit.time
         end
 
-        timeline = Spoom::Timeline.new(from, to, path: path)
+        timeline = Spoom::Timeline.new(context, from, to)
         ticks = timeline.ticks
 
         if ticks.empty?
@@ -87,17 +89,17 @@ module Spoom
         ticks.each_with_index do |commit, i|
           say("Analyzing commit `#{commit.sha}` - #{commit.time.strftime("%F")} (#{i + 1} / #{ticks.size})")
 
-          Spoom::Git.checkout(commit.sha, path: path)
+          context.git_checkout!(ref: commit.sha)
 
           snapshot = T.let(nil, T.nilable(Spoom::Coverage::Snapshot))
           if options[:bundle_install]
             Bundler.with_unbundled_env do
               next unless bundle_install(path, commit.sha)
 
-              snapshot = Spoom::Coverage.snapshot(path: path, sorbet_bin: sorbet)
+              snapshot = Spoom::Coverage.snapshot(context, sorbet_bin: sorbet)
             end
           else
-            snapshot = Spoom::Coverage.snapshot(path: path, sorbet_bin: sorbet)
+            snapshot = Spoom::Coverage.snapshot(context, sorbet_bin: sorbet)
           end
           next unless snapshot
 
@@ -110,7 +112,7 @@ module Spoom
           File.write(file, snapshot.to_json)
           say("  Snapshot data saved under `#{file}`\n\n")
         end
-        Spoom::Git.checkout(ref_before, path: path)
+        context.git_checkout!(ref: ref_before)
       end
 
       desc "report", "Produce a typing coverage report"
@@ -142,6 +144,7 @@ module Spoom
         desc: "Color used for typed: strong"
       def report
         in_sorbet_project!
+        context = Context.new(exec_path)
 
         data_dir = options[:data]
         files = Dir.glob("#{data_dir}/*.json")
@@ -163,7 +166,7 @@ module Spoom
           strong: options[:color_strong],
         )
 
-        report = Spoom::Coverage.report(snapshots, palette: palette, path: exec_path)
+        report = Spoom::Coverage.report(context, snapshots, palette: palette)
         file = options[:file]
         File.write(file, report.html)
         say("Report generated under `#{file}`")
