@@ -24,9 +24,7 @@ module Spoom
       option :sorbet, type: :string, desc: "Path to custom Sorbet bin"
       option :sorbet_options, type: :string, default: "", desc: "Pass options to Sorbet"
       def tc(*paths_to_select)
-        in_sorbet_project!
-
-        path = exec_path
+        context = context_requiring_sorbet!
         limit = options[:limit]
         sort = options[:sort]
         code = options[:code]
@@ -34,7 +32,6 @@ module Spoom
         format = options[:format]
         count = options[:count]
         sorbet = options[:sorbet]
-        context = Context.new(path)
 
         unless limit || code || sort
           result = T.unsafe(context).srb_tc(

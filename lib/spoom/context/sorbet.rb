@@ -79,6 +79,12 @@ module Spoom
         res.out.split(" ")[2]
       end
 
+      # Does this context has a `sorbet/config` file?
+      sig { returns(T::Boolean) }
+      def has_sorbet_config?
+        file?(Spoom::Sorbet::CONFIG_PATH)
+      end
+
       sig { returns(Spoom::Sorbet::Config) }
       def sorbet_config
         Spoom::Sorbet::Config.parse_string(read_sorbet_config)

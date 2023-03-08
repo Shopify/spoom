@@ -46,41 +46,31 @@ module Spoom
         $stderr.flush
       end
 
-      # Is `spoom` ran inside a project with a `sorbet/config` file?
-      sig { returns(T::Boolean) }
-      def in_sorbet_project?
-        File.file?(sorbet_config_file)
+      # Returns the context at `--path` (by default the current working directory)
+      sig { returns(Context) }
+      def context
+        @context ||= T.let(Context.new(exec_path), T.nilable(Context))
       end
 
-      # Enforce that `spoom` is ran inside a project with a `sorbet/config` file
-      #
-      # Display an error message and exit otherwise.
-      sig { void }
-      def in_sorbet_project!
-        unless in_sorbet_project?
+      # Raise if `spoom` is not ran inside a context with a `sorbet/config` file
+      sig { returns(Context) }
+      def context_requiring_sorbet!
+        context = self.context
+        unless context.has_sorbet_config?
           say_error(
-            "not in a Sorbet project (`#{sorbet_config_file}` not found)\n\n" \
+            "not in a Sorbet project (`#{Spoom::Sorbet::CONFIG_PATH}` not found)\n\n" \
               "When running spoom from another path than the project's root, " \
               "use `--path PATH` to specify the path to the root.",
           )
           Kernel.exit(1)
         end
+        context
       end
 
       # Return the path specified through `--path`
       sig { returns(String) }
       def exec_path
         options[:path]
-      end
-
-      sig { returns(String) }
-      def sorbet_config_file
-        Pathname.new("#{exec_path}/#{Spoom::Sorbet::CONFIG_PATH}").cleanpath.to_s
-      end
-
-      sig { returns(Sorbet::Config) }
-      def sorbet_config
-        Sorbet::Config.parse_file(sorbet_config_file)
       end
 
       # Colors

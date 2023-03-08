@@ -178,6 +178,16 @@ module Spoom
         context.destroy!
       end
 
+      def test_context_has_sorbet_config
+        context = Context.mktmp!
+        refute(context.has_sorbet_config?)
+
+        context.write_sorbet_config!(".")
+        assert(context.has_sorbet_config?)
+
+        context.destroy!
+      end
+
       def test_context_file_strictness
         context = Context.mktmp!
 

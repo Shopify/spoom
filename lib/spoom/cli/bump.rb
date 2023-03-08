@@ -47,8 +47,7 @@ module Spoom
       option :sorbet_options, type: :string, default: "", desc: "Pass options to Sorbet"
       sig { params(directory: String).void }
       def bump(directory = ".")
-        in_sorbet_project!
-
+        context = context_requiring_sorbet!
         from = options[:from]
         to = options[:to]
         force = options[:force]
@@ -56,7 +55,6 @@ module Spoom
         only = options[:only]
         cmd = options[:suggest_bump_command]
         exec_path = File.expand_path(self.exec_path)
-        context = Context.new(exec_path)
 
         unless Sorbet::Sigils.valid_strictness?(from)
           say_error("Invalid strictness `#{from}` for option `--from`")

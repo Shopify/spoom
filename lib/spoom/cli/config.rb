@@ -13,10 +13,11 @@ module Spoom
 
       desc "show", "Show Sorbet config"
       def show
-        in_sorbet_project!
-        config = sorbet_config
+        context = context_requiring_sorbet!
+        config = context.sorbet_config
+        config_path = Pathname.new("#{exec_path}/#{Spoom::Sorbet::CONFIG_PATH}").cleanpath
 
-        say("Found Sorbet config at `#{sorbet_config_file}`.")
+        say("Found Sorbet config at `#{config_path}`.")
 
         say("\nPaths typechecked:")
         if config.paths.empty?
