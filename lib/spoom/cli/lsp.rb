@@ -14,7 +14,8 @@ module Spoom
 
       desc "interactive", "Interactive LSP mode"
       def show
-        in_sorbet_project!
+        context_requiring_sorbet!
+
         lsp = lsp_client
         # TODO: run interactive mode
         puts lsp
@@ -111,7 +112,8 @@ module Spoom
 
       no_commands do
         def lsp_client
-          in_sorbet_project!
+          context_requiring_sorbet!
+
           path = exec_path
           client = Spoom::LSP::Client.new(
             Spoom::Sorbet::BIN_PATH,

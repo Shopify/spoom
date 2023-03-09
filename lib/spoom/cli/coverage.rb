@@ -18,9 +18,7 @@ module Spoom
       option :rbi, type: :boolean, default: true, desc: "Include RBI files in metrics"
       option :sorbet, type: :string, desc: "Path to custom Sorbet bin"
       def snapshot
-        in_sorbet_project!
-        path = exec_path
-        context = Context.new(path)
+        context = context_requiring_sorbet!
         sorbet = options[:sorbet]
 
         snapshot = Spoom::Coverage.snapshot(context, rbi: options[:rbi], sorbet_bin: sorbet)
@@ -42,9 +40,8 @@ module Spoom
       option :bundle_install, type: :boolean, desc: "Execute `bundle install` before collecting metrics"
       option :sorbet, type: :string, desc: "Path to custom Sorbet bin"
       def timeline
-        in_sorbet_project!
+        context = context_requiring_sorbet!
         path = exec_path
-        context = Context.new(path)
         sorbet = options[:sorbet]
 
         ref_before = context.git_current_branch
@@ -143,8 +140,7 @@ module Spoom
         default: Spoom::Coverage::D3::COLOR_STRONG,
         desc: "Color used for typed: strong"
       def report
-        in_sorbet_project!
-        context = Context.new(exec_path)
+        context = context_requiring_sorbet!
 
         data_dir = options[:data]
         files = Dir.glob("#{data_dir}/*.json")

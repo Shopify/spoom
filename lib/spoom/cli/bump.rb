@@ -47,8 +47,7 @@ module Spoom
       option :sorbet_options, type: :string, default: "", desc: "Pass options to Sorbet"
       sig { params(directory: String).void }
       def bump(directory = ".")
-        in_sorbet_project!
-
+        context = context_requiring_sorbet!
         from = options[:from]
         to = options[:to]
         force = options[:force]
@@ -77,7 +76,7 @@ module Spoom
         directory = File.expand_path(directory)
         files_to_bump = Sorbet::Sigils.files_with_sigil_strictness(directory, from)
 
-        files_from_config = config_files(path: exec_path)
+        files_from_config = context.srb_files.map { |file| File.expand_path(file) }
         files_to_bump.select! { |file| files_from_config.include?(file) }
 
         if only
@@ -102,10 +101,9 @@ module Spoom
 
         error_url_base = Spoom::Sorbet::Errors::DEFAULT_ERROR_URL_BASE
         result = begin
-          Sorbet.srb_tc(
+          T.unsafe(context).srb_tc(
             *options[:sorbet_options].split(" "),
             "--error-url-base=#{error_url_base}",
-            path: exec_path,
             capture_err: true,
             sorbet_bin: options[:sorbet],
           )
@@ -194,12 +192,6 @@ module Spoom
 
         def undo_changes(files, from_strictness)
           Sorbet::Sigils.change_sigil_in_files(files, from_strictness)
-        end
-
-        def config_files(path: ".")
-          config = sorbet_config
-          files = Sorbet.srb_files(config, path: path)
-          files.map { |file| File.expand_path(file) }
         end
       end
     end

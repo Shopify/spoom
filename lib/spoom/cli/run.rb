@@ -24,9 +24,7 @@ module Spoom
       option :sorbet, type: :string, desc: "Path to custom Sorbet bin"
       option :sorbet_options, type: :string, default: "", desc: "Pass options to Sorbet"
       def tc(*paths_to_select)
-        in_sorbet_project!
-
-        path = exec_path
+        context = context_requiring_sorbet!
         limit = options[:limit]
         sort = options[:sort]
         code = options[:code]
@@ -36,9 +34,8 @@ module Spoom
         sorbet = options[:sorbet]
 
         unless limit || code || sort
-          result = T.unsafe(Spoom::Sorbet).srb_tc(
+          result = T.unsafe(context).srb_tc(
             *options[:sorbet_options].split(" "),
-            path: path,
             capture_err: false,
             sorbet_bin: sorbet,
           )
@@ -48,10 +45,9 @@ module Spoom
         end
 
         error_url_base = Spoom::Sorbet::Errors::DEFAULT_ERROR_URL_BASE
-        result = T.unsafe(Spoom::Sorbet).srb_tc(
+        result = T.unsafe(context).srb_tc(
           *options[:sorbet_options].split(" "),
           "--error-url-base=#{error_url_base}",
-          path: path,
           capture_err: true,
           sorbet_bin: sorbet,
         )

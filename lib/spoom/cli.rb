@@ -41,23 +41,20 @@ module Spoom
       option :tree, type: :boolean, default: true, desc: "Display list as an indented tree"
       option :rbi, type: :boolean, default: true, desc: "Show RBI files"
       def files
-        in_sorbet_project!
-
-        path = exec_path
-        config = sorbet_config
-        files = Spoom::Sorbet.srb_files(config, path: path)
+        context = context_requiring_sorbet!
+        files = context.srb_files
 
         unless options[:rbi]
           files = files.reject { |file| file.end_with?(".rbi") }
         end
 
         if files.empty?
-          say_error("No file matching `#{sorbet_config_file}`")
+          say_error("No file matching `#{Sorbet::CONFIG_PATH}`")
           exit(1)
         end
 
         if options[:tree]
-          tree = FileTree.new(files, strip_prefix: path)
+          tree = FileTree.new(files, strip_prefix: exec_path)
           tree.print(colors: options[:color], indent_level: 0)
         else
           puts files

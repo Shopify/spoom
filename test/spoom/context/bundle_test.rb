@@ -45,6 +45,61 @@ module Spoom
 
         context.destroy!
       end
+
+      def test_context_gem_version_from_gemfile_lock_return_nil_if_no_gemfile_lock
+        context = Context.mktmp!
+        version = context.gem_version_from_gemfile_lock("sorbet")
+        assert_nil(version)
+      end
+
+      def test_version_from_gemfile_lock_return_nil_if_gemfil_lock_does_not_contain_sorbet
+        context = Context.mktmp!
+        context.write!("Gemfile.lock", "")
+        version = context.gem_version_from_gemfile_lock("sorbet")
+        assert_nil(version)
+      end
+
+      def test_version_from_gemfile_lock_return_sorbet_version
+        context = Context.mktmp!
+        context.write!("Gemfile.lock", <<~STR)
+          PATH
+            remote: .
+            specs:
+              test (1.0.0)
+                sorbet (~> 0.5.5)
+                sorbet-runtime
+
+          GEM
+            remote: https://rubygems.org/
+            specs:
+              sorbet (0.5.5001)
+                sorbet-static (= 0.X.XXXX)
+              sorbet-runtime (0.5.5002)
+              sorbet-static (0.5.5003)
+
+          PLATFORMS
+            ruby
+
+          DEPENDENCIES
+            bundler (~> 1.17)
+            test!
+
+          BUNDLED WITH
+             1.17.3
+        STR
+        assert_equal(
+          "0.5.5001",
+          context.gem_version_from_gemfile_lock("sorbet"),
+        )
+        assert_equal(
+          "0.5.5002",
+          context.gem_version_from_gemfile_lock("sorbet-runtime"),
+        )
+        assert_equal(
+          "0.5.5003",
+          context.gem_version_from_gemfile_lock("sorbet-static"),
+        )
+      end
     end
   end
 end

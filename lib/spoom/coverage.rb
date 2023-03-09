@@ -14,8 +14,7 @@ module Spoom
 
       sig { params(context: Context, rbi: T::Boolean, sorbet_bin: T.nilable(String)).returns(Snapshot) }
       def snapshot(context, rbi: true, sorbet_bin: nil)
-        path = context.absolute_path
-        config = sorbet_config(path: path)
+        config = context.sorbet_config
         config.allowed_extensions.push(".rb", ".rbi") if config.allowed_extensions.empty?
 
         new_config = config.copy
@@ -28,20 +27,11 @@ module Spoom
           new_config.options_string,
         ]
 
-        metrics = Spoom::Sorbet.srb_metrics(
-          *flags,
-          path: path,
-          capture_err: true,
-          sorbet_bin: sorbet_bin,
-        )
+        metrics = context.srb_metrics(*flags, capture_err: true, sorbet_bin: sorbet_bin)
+
         # Collect extra information using a different configuration
         flags << "--ignore sorbet/rbi/"
-        metrics_without_rbis = Spoom::Sorbet.srb_metrics(
-          *flags,
-          path: path,
-          capture_err: true,
-          sorbet_bin: sorbet_bin,
-        )
+        metrics_without_rbis = context.srb_metrics(*flags, capture_err: true, sorbet_bin: sorbet_bin)
 
         snapshot = Snapshot.new
         return snapshot unless metrics
@@ -80,10 +70,10 @@ module Spoom
           end
         end
 
-        snapshot.version_static = Spoom::Sorbet.version_from_gemfile_lock(gem: "sorbet-static", path: path)
-        snapshot.version_runtime = Spoom::Sorbet.version_from_gemfile_lock(gem: "sorbet-runtime", path: path)
+        snapshot.version_static = context.gem_version_from_gemfile_lock("sorbet-static")
+        snapshot.version_runtime = context.gem_version_from_gemfile_lock("sorbet-runtime")
 
-        files = Spoom::Sorbet.srb_files(new_config, path: path)
+        files = context.srb_files(with_config: new_config)
         snapshot.rbi_files = files.count { |file| file.end_with?(".rbi") }
 
         snapshot
@@ -97,23 +87,17 @@ module Spoom
           project_name: File.basename(context.absolute_path),
           palette: palette,
           snapshots: snapshots,
-          sigils_tree: sigils_tree(path: context.absolute_path),
+          sigils_tree: sigils_tree(context),
           sorbet_intro_commit: intro_commit&.sha,
           sorbet_intro_date: intro_commit&.time,
         )
       end
 
-      sig { params(path: String).returns(Sorbet::Config) }
-      def sorbet_config(path: ".")
-        Sorbet::Config.parse_file("#{path}/#{Spoom::Sorbet::CONFIG_PATH}")
-      end
+      sig { params(context: Context).returns(FileTree) }
+      def sigils_tree(context)
+        files = context.srb_files
 
-      sig { params(path: String).returns(FileTree) }
-      def sigils_tree(path: ".")
-        config = sorbet_config(path: path)
-        files = Sorbet.srb_files(config, path: path)
-
-        extensions = config.allowed_extensions
+        extensions = context.sorbet_config.allowed_extensions
         extensions = [".rb"] if extensions.empty?
         extensions -= [".rbi"]
 
@@ -121,7 +105,7 @@ module Spoom
         files.select! { |file| file =~ pattern }
         files.reject! { |file| file =~ %r{/test/} }
 
-        FileTree.new(files, strip_prefix: path)
+        FileTree.new(files, strip_prefix: context.absolute_path)
       end
     end
   end

@@ -19,7 +19,7 @@ module Spoom
         context.destroy!
       end
 
-      def test_context_srb
+      def test_context_run_srb_from_bundle
         context = Context.mktmp!
 
         context.write!("a.rb", <<~RB)
@@ -57,6 +57,133 @@ module Spoom
 
         res = context.srb("tc")
         assert(res.status)
+
+        context.destroy!
+      end
+
+      def test_context_run_srb_from_path
+        context = Context.mktmp!
+        context.write_gemfile!(<<~GEMFILE)
+          source "https://rubygems.org"
+
+          gem "sorbet"
+        GEMFILE
+        context.bundle_install!
+
+        result = context.srb(
+          "-h",
+          capture_err: true,
+          sorbet_bin: Spoom::Sorbet::BIN_PATH,
+        )
+        assert_equal(<<~OUT, result.err)
+          Typechecker for Ruby
+          Usage:
+            sorbet [OPTION...] <path 1> <path 2> ...
+
+            -e string      Parse an inline ruby string (default: "")
+            -q, --quiet    Silence all non-critical errors
+            -v, --verbose  Verbosity level [0-3]
+            -h             Show short help
+                --help     Show long help
+                --version  Show version
+
+        OUT
+        assert(result.status)
+        assert_equal(0, result.exit_code)
+
+        context.destroy!
+      end
+
+      def test_context_run_srb_raises_when_killed
+        context = Context.mktmp!
+
+        mock_result = ExecResult.new(
+          out: "out",
+          err: "err",
+          status: false,
+          exit_code: Spoom::Sorbet::KILLED_CODE,
+        )
+
+        context.stub(:exec, mock_result) do
+          assert_raises(Spoom::Sorbet::Error::Killed, "Sorbet was killed.") do
+            context.srb("-e foo")
+          end
+        end
+
+        context.destroy!
+      end
+
+      def test_context_run_srb_raises_on_sefault
+        context = Context.mktmp!
+
+        mock_result = ExecResult.new(
+          out: "out",
+          err: "err",
+          status: false,
+          exit_code: Spoom::Sorbet::SEGFAULT_CODE,
+        )
+
+        context.stub(:exec, mock_result) do
+          assert_raises(Spoom::Sorbet::Error::Segfault, "Sorbet segfaulted.") do
+            context.srb("-e foo")
+          end
+        end
+
+        context.destroy!
+      end
+
+      def test_context_run_srb_tc_from_path
+        context = Context.mktmp!
+
+        res = context.srb_tc("-e ''", sorbet_bin: Spoom::Sorbet::BIN_PATH)
+        assert_equal(<<~OUT, res.err)
+          No errors! Great job.
+        OUT
+        assert(res.status)
+        assert_equal(0, res.exit_code)
+
+        context.destroy!
+      end
+
+      def test_context_run_srb_metrics_from_path
+        context = Context.mktmp!
+
+        res = context.srb_metrics("-e ''", sorbet_bin: Spoom::Sorbet::BIN_PATH)
+        assert_instance_of(Hash, res)
+        refute_empty(res)
+
+        context.destroy!
+      end
+
+      def test_context_srb_version_return_nil_if_srb_not_installed
+        context = Context.mktmp!
+        context.write_gemfile!("")
+
+        assert_nil(context.srb_version)
+
+        context.destroy!
+      end
+
+      def test_context_srb_version_return_version_string
+        context = Context.mktmp!
+        context.write_gemfile!(<<~GEMFILE)
+          source "https://rubygems.org"
+
+          gem "sorbet"
+        GEMFILE
+        context.bundle_install!
+
+        refute_nil(context.srb_version)
+
+        context.destroy!
+      end
+
+      def test_context_has_sorbet_config
+        context = Context.mktmp!
+        refute(context.has_sorbet_config?)
+
+        context.write_sorbet_config!(".")
+        assert(context.has_sorbet_config?)
 
         context.destroy!
       end
