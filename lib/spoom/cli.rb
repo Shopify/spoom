@@ -40,12 +40,17 @@ module Spoom
       desc "files", "List all the files typechecked by Sorbet"
       option :tree, type: :boolean, default: true, desc: "Display list as an indented tree"
       option :rbi, type: :boolean, default: true, desc: "Show RBI files"
-      def files
+      def files(path = nil)
         context = context_requiring_sorbet!
         files = context.srb_files
 
         unless options[:rbi]
           files = files.reject { |file| file.end_with?(".rbi") }
+        end
+
+        if path
+          expanded_path = File.expand_path(path, exec_path)
+          files = files.select { |file| File.expand_path(file, exec_path).start_with?(expanded_path) }
         end
 
         if files.empty?
