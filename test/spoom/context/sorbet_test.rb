@@ -258,6 +258,106 @@ module Spoom
 
         context.destroy!
       end
+
+      def test_context_srb_files_with_default_extensions
+        context = Context.mktmp!
+
+        context.write_sorbet_config!(".")
+
+        context.write!("a.rb", "")
+        context.write!("b/c.rb", "")
+        context.write!("d/e/f.rbi", "")
+        context.write!("g.rake", "")
+        context.write!("h.js", "")
+        context.write!("i", "")
+
+        assert_equal(["a.rb", "b/c.rb", "d/e/f.rbi"], context.srb_files)
+
+        context.destroy!
+      end
+
+      def test_context_srb_files_with_custom_extensions
+        context = Context.mktmp!
+
+        context.write_sorbet_config!(<<~CONFIG)
+          .
+          --allowed-extension=.rb
+          --allowed-extension=.rbi
+          --allowed-extension=.rake
+        CONFIG
+
+        context.write!("a.rb", "")
+        context.write!("b/c.rb", "")
+        context.write!("d/e/f.rbi", "")
+        context.write!("g.rake", "")
+        context.write!("h", "")
+
+        assert_equal(["a.rb", "b/c.rb", "d/e/f.rbi", "g.rake"], context.srb_files)
+
+        context.destroy!
+      end
+
+      def test_context_srb_files_with_custom_paths
+        context = Context.mktmp!
+
+        context.write_sorbet_config!(<<~CONFIG)
+          b
+          d
+        CONFIG
+
+        context.write!("a.rb", "")
+        context.write!("b/c.rb", "")
+        context.write!("d/e/f.rbi", "")
+        context.write!("g.rake", "")
+        context.write!("h", "")
+
+        assert_equal(["b/c.rb", "d/e/f.rbi"], context.srb_files)
+
+        context.destroy!
+      end
+
+      def test_context_srb_files_with_custom_ignore
+        context = Context.mktmp!
+
+        context.write_sorbet_config!(<<~CONFIG)
+          .
+          --ignore=foo
+        CONFIG
+
+        context.write!("foo.rb", "")
+        context.write!("foo/bar.rb", "")
+        context.write!("bar/foo/baz.rb", "")
+        context.write!("foo2/bar.rb", "")
+
+        # From Sorbet docs on `--ignore`:
+        # > Ignores input files that contain the given string in their paths (relative to the input path passed to
+        # > Sorbet). Strings beginning with / match against the prefix of these relative paths; others are substring
+        # > matchs. Matches must be against whole folder and file names, so `foo` matches `/foo/bar.rb` and
+        # > `/bar/foo/baz.rb` but not `/foo.rb` or `/foo2/bar.rb`.
+        assert_equal(["foo.rb", "foo2/bar.rb"], context.srb_files)
+
+        context.destroy!
+      end
+
+      def test_context_srb_files_with_custom_config
+        context = Context.mktmp!
+
+        context.write_sorbet_config!(".")
+
+        context.write!("a.rb", "")
+        context.write!("b/c.rb", "")
+        context.write!("d/e/f.rbi", "")
+        context.write!("g.rake", "")
+        context.write!("h.js", "")
+        context.write!("i", "")
+
+        config = Spoom::Sorbet::Config.new
+        config.paths = ["b", "d"]
+
+        assert_equal(["b/c.rb", "d/e/f.rbi"], context.srb_files(with_config: config))
+
+        context.destroy!
+      end
     end
   end
 end

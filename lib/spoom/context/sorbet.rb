@@ -64,11 +64,15 @@ module Spoom
       sig { params(with_config: T.nilable(Spoom::Sorbet::Config)).returns(T::Array[String]) }
       def srb_files(with_config: nil)
         config = with_config || sorbet_config
-        regs = config.ignore.map { |string| Regexp.new(Regexp.escape(string)) }
-        exts = config.allowed_extensions.empty? ? [".rb", ".rbi"] : config.allowed_extensions
-        glob("**/*{#{exts.join(",")}}").reject do |f|
-          regs.any? { |re| re.match?(f) }
-        end.sort
+
+        allowed_extensions = config.allowed_extensions
+        allowed_extensions = Spoom::Sorbet::Config::DEFAULT_ALLOWED_EXTENSIONS if allowed_extensions.empty?
+
+        excluded_patterns = config.ignore.map { |string| File.join("**", string, "**") }
+
+        collector = FileCollector.new(allow_extensions: allowed_extensions, exclude_patterns: excluded_patterns)
+        collector.visit_paths(config.paths.map { |path| absolute_path_to(path) })
+        collector.files.map { |file| file.delete_prefix("#{absolute_path}/") }.sort
       end
 
       sig { params(arg: String, sorbet_bin: T.nilable(String), capture_err: T::Boolean).returns(T.nilable(String)) }
