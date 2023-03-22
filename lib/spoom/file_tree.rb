@@ -69,14 +69,14 @@ module Spoom
       ).void
     end
     def print(out: $stdout, show_strictness: true, colors: true, indent_level: 0)
-      printer = TreePrinter.new(
+      printer = Printer.new(
         tree: self,
         out: out,
         show_strictness: show_strictness,
         colors: colors,
         indent_level: indent_level,
       )
-      printer.print_tree
+      printer.visit_tree(self)
     end
 
     # A node representing either a file or a directory inside a FileTree
@@ -114,7 +114,7 @@ module Spoom
         visit_nodes(tree.roots)
       end
 
-      sig { params(node: FileTree::Node).void}
+      sig { params(node: FileTree::Node).void }
       def visit_node(node)
         visit_nodes(node.children.values)
       end
@@ -148,7 +148,7 @@ module Spoom
     # An internal class used to print a FileTree
     #
     # See `FileTree#print`
-    class TreePrinter < Spoom::Printer
+    class Printer < Visitor
       extend T::Sig
 
       sig { returns(FileTree) }
@@ -164,46 +164,38 @@ module Spoom
         ).void
       end
       def initialize(tree:, out: $stdout, show_strictness: true, colors: true, indent_level: 0)
-        super(out: out, colors: colors, indent_level: indent_level)
+        super()
+        @colors = colors
+        @printer = T.let(Spoom::Printer.new(out: out, colors: colors, indent_level: indent_level), Spoom::Printer)
         @tree = tree
         @show_strictness = show_strictness
       end
 
-      sig { void }
-      def print_tree
-        print_nodes(tree.roots)
-      end
-
-      sig { params(node: FileTree::Node).void }
-      def print_node(node)
-        printt
+      sig { override.params(node: FileTree::Node).void }
+      def visit_node(node)
+        @printer.printt
         if node.children.empty?
           if @show_strictness
             strictness = node_strictness(node)
             if @colors
-              print_colored(node.name, strictness_color(strictness))
+              @printer.print_colored(node.name, strictness_color(strictness))
             elsif strictness
-              print("#{node.name} (#{strictness})")
+              @printer.print("#{node.name} (#{strictness})")
             else
-              print(node.name.to_s)
+              @printer.print(node.name.to_s)
             end
           else
-            print(node.name.to_s)
+            @printer.print(node.name.to_s)
           end
-          print("\n")
+          @printer.print("\n")
         else
-          print_colored(node.name, Color::BLUE)
-          print("/")
-          printn
-          indent
-          print_nodes(node.children.values)
-          dedent
+          @printer.print_colored(node.name, Color::BLUE)
+          @printer.print("/")
+          @printer.printn
+          @printer.indent
+          super
+          @printer.dedent
         end
-      end
-
-      sig { params(nodes: T::Array[FileTree::Node]).void }
-      def print_nodes(nodes)
-        nodes.each { |node| print_node(node) }
       end
 
       private
