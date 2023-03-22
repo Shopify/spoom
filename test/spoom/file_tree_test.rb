@@ -13,7 +13,7 @@ module Spoom
 
       def test_empty_file_tree_contains_no_path
         tree = Spoom::FileTree.new
-        assert(tree.paths.empty?)
+        assert_empty(tree.paths)
       end
 
       def test_file_tree_one_root
@@ -49,7 +49,7 @@ module Spoom
           "b/c/d/e.rb",
         ])
         out = StringIO.new
-        tree.print(out: out, show_strictness: false, colors: false)
+        tree.print(out: out, colors: false)
         assert_equal(<<~EXP, out.string)
           a/
             b/
@@ -74,7 +74,7 @@ module Spoom
         project.write!("a/b.rb")
         tree = Spoom::FileTree.new(project.glob, strip_prefix: project.absolute_path)
         out = StringIO.new
-        tree.print(out: out, colors: false)
+        tree.print_with_strictnesses(project, out: out, colors: false)
         assert_equal(<<~EXP, out.string)
           Gemfile
           a/

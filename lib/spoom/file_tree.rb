@@ -60,22 +60,25 @@ module Spoom
       nodes.map(&:path)
     end
 
-    sig do
-      params(
-        out: T.any(IO, StringIO),
-        show_strictness: T::Boolean,
-        colors: T::Boolean,
-        indent_level: Integer,
-      ).void
+    # Return a map of strictnesses for each node in the tree
+    sig { params(context: Context).returns(T::Hash[Node, T.nilable(String)]) }
+    def nodes_strictnesses(context)
+      v = CollectStrictnesses.new(context)
+      v.visit_tree(self)
+      v.strictnesses
     end
-    def print(out: $stdout, show_strictness: true, colors: true, indent_level: 0)
-      printer = Printer.new(
-        tree: self,
-        out: out,
-        show_strictness: show_strictness,
-        colors: colors,
-        indent_level: indent_level,
-      )
+
+    sig { params(out: T.any(IO, StringIO), colors: T::Boolean).void }
+    def print(out: $stdout, colors: true)
+      printer = Printer.new({}, out: out, colors: colors)
+      printer.visit_tree(self)
+    end
+
+    sig { params(context: Context, out: T.any(IO, StringIO), colors: T::Boolean).void }
+    def print_with_strictnesses(context, out: $stdout, colors: true)
+      strictnesses = nodes_strictnesses(context)
+
+      printer = Printer.new(strictnesses, out: out, colors: colors)
       printer.visit_tree(self)
     end
 
@@ -145,45 +148,58 @@ module Spoom
       end
     end
 
+    # A visitor that collects the strictness of each node in a tree
+    class CollectStrictnesses < Visitor
+      extend T::Sig
+
+      sig { returns(T::Hash[Node, T.nilable(String)]) }
+      attr_reader :strictnesses
+
+      sig { params(context: Context).void }
+      def initialize(context)
+        super()
+        @context = context
+        @strictnesses = T.let({}, T::Hash[Node, T.nilable(String)])
+      end
+
+      sig { override.params(node: FileTree::Node).void }
+      def visit_node(node)
+        path = node.path
+        @strictnesses[node] = @context.read_file_strictness(path) if @context.file?(path)
+
+        super
+      end
+    end
+
     # An internal class used to print a FileTree
     #
     # See `FileTree#print`
     class Printer < Visitor
       extend T::Sig
 
-      sig { returns(FileTree) }
-      attr_reader :tree
-
       sig do
         params(
-          tree: FileTree,
+          strictnesses: T::Hash[FileTree::Node, T.nilable(String)],
           out: T.any(IO, StringIO),
-          show_strictness: T::Boolean,
           colors: T::Boolean,
-          indent_level: Integer,
         ).void
       end
-      def initialize(tree:, out: $stdout, show_strictness: true, colors: true, indent_level: 0)
+      def initialize(strictnesses, out: $stdout, colors: true)
         super()
+        @strictnesses = strictnesses
         @colors = colors
-        @printer = T.let(Spoom::Printer.new(out: out, colors: colors, indent_level: indent_level), Spoom::Printer)
-        @tree = tree
-        @show_strictness = show_strictness
+        @printer = T.let(Spoom::Printer.new(out: out, colors: colors), Spoom::Printer)
       end
 
       sig { override.params(node: FileTree::Node).void }
       def visit_node(node)
         @printer.printt
         if node.children.empty?
-          if @show_strictness
-            strictness = node_strictness(node)
-            if @colors
-              @printer.print_colored(node.name, strictness_color(strictness))
-            elsif strictness
-              @printer.print("#{node.name} (#{strictness})")
-            else
-              @printer.print(node.name.to_s)
-            end
+          strictness = @strictnesses[node]
+          if @colors
+            @printer.print_colored(node.name, strictness_color(strictness))
+          elsif strictness
+            @printer.print("#{node.name} (#{strictness})")
           else
             @printer.print(node.name.to_s)
           end
@@ -199,14 +215,6 @@ module Spoom
       end
 
       private
-
-      sig { params(node: FileTree::Node).returns(T.nilable(String)) }
-      def node_strictness(node)
-        path = node.path
-        prefix = tree.strip_prefix
-        path = "#{prefix}/#{path}" if prefix
-        Spoom::Sorbet::Sigils.file_strictness(path)
-      end
 
       sig { params(strictness: T.nilable(String)).returns(Color) }
       def strictness_color(strictness)
