@@ -68,6 +68,20 @@ module Spoom
       v.strictnesses
     end
 
+    # Return a map of typing scores for each node in the tree
+    sig { params(context: Context).returns(T::Hash[Node, Float]) }
+    def nodes_strictness_scores(context)
+      v = CollectScores.new(context)
+      v.visit_tree(self)
+      v.scores
+    end
+
+    # Return a map of typing scores for each path in the tree
+    sig { params(context: Context).returns(T::Hash[String, Float]) }
+    def paths_strictness_scores(context)
+      nodes_strictness_scores(context).map { |node, score| [node.path, score] }.to_h
+    end
+
     sig { params(out: T.any(IO, StringIO), colors: T::Boolean).void }
     def print(out: $stdout, colors: true)
       printer = Printer.new({}, out: out, colors: colors)
@@ -168,6 +182,49 @@ module Spoom
         @strictnesses[node] = @context.read_file_strictness(path) if @context.file?(path)
 
         super
+      end
+    end
+
+    # A visitor that collects the typing score of each node in a tree
+    class CollectScores < CollectStrictnesses
+      extend T::Sig
+
+      sig { returns(T::Hash[Node, Float]) }
+      attr_reader :scores
+
+      sig { params(context: Context).void }
+      def initialize(context)
+        super
+        @context = context
+        @scores = T.let({}, T::Hash[Node, Float])
+      end
+
+      sig { override.params(node: FileTree::Node).void }
+      def visit_node(node)
+        super
+
+        @scores[node] = node_score(node)
+      end
+
+      private
+
+      sig { params(node: Node).returns(Float) }
+      def node_score(node)
+        if @context.file?(node.path)
+          strictness_score(@strictnesses[node])
+        else
+          node.children.values.sum { |child| @scores.fetch(child, 0.0) } / node.children.size.to_f
+        end
+      end
+
+      sig { params(strictness: T.nilable(String)).returns(Float) }
+      def strictness_score(strictness)
+        case strictness
+        when "true", "strict", "strong"
+          1.0
+        else
+          0.0
+        end
       end
     end
 

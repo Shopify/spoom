@@ -89,6 +89,24 @@ module Spoom
             config
         EXP
       end
+
+      def test_file_tree_strictness_scores
+        project = new_project
+        project.write!("a/a1.rb", "# typed: true")
+        project.write!("a/a2.rb", "# typed: false")
+        project.write!("a/b/b1.rb", "# typed: strict")
+        project.write!("a/b/b2.rb")
+
+        tree = Spoom::FileTree.new(project.glob)
+        scores = tree.paths_strictness_scores(project)
+
+        assert_equal(1.0, scores["a/a1.rb"])
+        assert_equal(0.0, scores["a/a2.rb"])
+        assert_equal(1.0, scores["a/b/b1.rb"])
+        assert_equal(0.0, scores["a/b/b2.rb"])
+        assert_equal(0.5, scores["a/b"])
+        assert_equal(0.5, scores["a"])
+      end
     end
   end
 end
