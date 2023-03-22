@@ -61,12 +61,13 @@ module Spoom
       end
 
       # List all files typechecked by Sorbet from its `config`
-      sig { params(with_config: T.nilable(Spoom::Sorbet::Config)).returns(T::Array[String]) }
-      def srb_files(with_config: nil)
+      sig { params(with_config: T.nilable(Spoom::Sorbet::Config), include_rbis: T::Boolean).returns(T::Array[String]) }
+      def srb_files(with_config: nil, include_rbis: true)
         config = with_config || sorbet_config
 
         allowed_extensions = config.allowed_extensions
         allowed_extensions = Spoom::Sorbet::Config::DEFAULT_ALLOWED_EXTENSIONS if allowed_extensions.empty?
+        allowed_extensions -= [".rbi"] unless include_rbis
 
         excluded_patterns = config.ignore.map { |string| File.join("**", string, "**") }
 

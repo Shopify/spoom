@@ -95,16 +95,10 @@ module Spoom
 
       sig { params(context: Context).returns(FileTree) }
       def sigils_tree(context)
-        files = context.srb_files
+        config = context.sorbet_config
+        config.ignore += ["test"]
 
-        extensions = context.sorbet_config.allowed_extensions
-        extensions = [".rb"] if extensions.empty?
-        extensions -= [".rbi"]
-
-        pattern = /\.(#{Regexp.union(extensions.map { |ext| ext[1..-1] })})$/
-        files.select! { |file| file =~ pattern }
-        files.reject! { |file| file =~ %r{/test/} }
-
+        files = context.srb_files(with_config: config, include_rbis: false)
         FileTree.new(files, strip_prefix: context.absolute_path)
       end
     end

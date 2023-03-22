@@ -358,6 +358,19 @@ module Spoom
 
         context.destroy!
       end
+
+      def test_context_srb_files_without_rbis
+        context = Context.mktmp!
+
+        context.write_sorbet_config!(".")
+
+        context.write!("a.rb", "")
+        context.write!("b.rbi", "")
+
+        assert_equal(["a.rb"], context.srb_files(include_rbis: false))
+
+        context.destroy!
+      end
     end
   end
 end
