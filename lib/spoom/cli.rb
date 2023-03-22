@@ -39,7 +39,7 @@ module Spoom
 
       desc "files", "List all the files typechecked by Sorbet"
       option :tree, type: :boolean, default: true, desc: "Display list as an indented tree"
-      option :rbi, type: :boolean, default: true, desc: "Show RBI files"
+      option :rbi, type: :boolean, default: false, desc: "Show RBI files"
       def files
         context = context_requiring_sorbet!
 
