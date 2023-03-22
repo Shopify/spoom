@@ -371,6 +371,40 @@ module Spoom
 
         context.destroy!
       end
+
+      def test_context_srb_files_with_strictness
+        context = Context.mktmp!
+        context.write_sorbet_config!(".")
+        context.write!("false.rb", "# typed: false")
+        context.write!("true.rb", "# typed: true")
+        context.write!("nested/false.rb", "# typed: false")
+        context.write!("nested/true.rb", "# typed: true")
+
+        files = context.srb_files_with_strictness("false")
+        assert_equal(["false.rb", "nested/false.rb"], files)
+
+        context.destroy!
+      end
+
+      def test_context_srb_files_with_strictness_with_iso_content
+        string_utf = <<~RB
+          # typed: true
+
+          puts "À coûté 10€"
+        RB
+
+        string_iso = string_utf.encode("ISO-8859-15")
+
+        context = Context.mktmp!
+        context.write_sorbet_config!(".")
+        context.write!("file1.rb", string_utf)
+        context.write!("file2.rb", string_iso)
+
+        files = context.srb_files_with_strictness("true")
+        assert_equal(["file1.rb", "file2.rb"], files)
+
+        context.destroy!
+      end
     end
   end
 end

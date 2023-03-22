@@ -85,21 +85,6 @@ module Spoom
             change_sigil_in_file(path, new_strictness)
           end
         end
-
-        # finds all files in the specified directory with the passed strictness
-        sig do
-          params(
-            directory: T.any(String, Pathname),
-            strictness: String,
-            extension: String,
-          ).returns(T::Array[String])
-        end
-        def files_with_sigil_strictness(directory, strictness, extension: ".rb")
-          paths = Dir.glob("#{File.expand_path(directory)}/**/*#{extension}").sort.uniq
-          paths.filter do |path|
-            file_strictness(path) == strictness
-          end
-        end
       end
     end
   end

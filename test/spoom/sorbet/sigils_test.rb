@@ -116,44 +116,6 @@ module Spoom
         assert_equal("true", strictness)
       end
 
-      def test_files_with_sigil_strictness_nested_directory
-        project = new_project
-        project.write!("false.rb", "# typed: false")
-        project.write!("true.rb", "# typed: true")
-        project.write!("nested/false.rb", "# typed: false")
-        project.write!("nested/true.rb", "# typed: true")
-
-        files = Sigils.files_with_sigil_strictness(project.absolute_path, "false").sort
-
-        expected_files = [
-          "#{project.absolute_path}/false.rb",
-          "#{project.absolute_path}/nested/false.rb",
-        ]
-        assert_equal(expected_files, files)
-
-        project.destroy!
-      end
-
-      def test_files_with_sigil_strictness_with_iso_content
-        project = new_project
-
-        string_utf = <<~RB
-          # typed: true
-
-          puts "À coûté 10€"
-        RB
-
-        string_iso = string_utf.encode("ISO-8859-15")
-        project.write!("file1.rb", string_iso)
-        project.write!("file2.rb", string_iso)
-        expected_files = ["#{project.absolute_path}/file1.rb", "#{project.absolute_path}/file2.rb"]
-
-        files = Sigils.files_with_sigil_strictness(project.absolute_path, "true").sort
-        assert_equal(expected_files, files)
-
-        project.destroy!
-      end
-
       def test_file_strictness_returns_nil_if_file_not_found
         strictness = Sigils.file_strictness("/file/not/found.rb")
         assert_nil(strictness)

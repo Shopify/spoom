@@ -76,6 +76,19 @@ module Spoom
         collector.files.map { |file| file.delete_prefix("#{absolute_path}/") }.sort
       end
 
+      # List all files typechecked by Sorbet from its `config` that matches `strictness`
+      sig do
+        params(
+          strictness: String,
+          with_config: T.nilable(Spoom::Sorbet::Config),
+          include_rbis: T::Boolean,
+        ).returns(T::Array[String])
+      end
+      def srb_files_with_strictness(strictness, with_config: nil, include_rbis: true)
+        srb_files(with_config: with_config, include_rbis: include_rbis)
+          .select { |file| read_file_strictness(file) == strictness }
+      end
+
       sig { params(arg: String, sorbet_bin: T.nilable(String), capture_err: T::Boolean).returns(T.nilable(String)) }
       def srb_version(*arg, sorbet_bin: nil, capture_err: true)
         res = T.unsafe(self).srb_tc("--no-config", "--version", *arg, sorbet_bin: sorbet_bin, capture_err: capture_err)
