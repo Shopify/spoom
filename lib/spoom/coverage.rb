@@ -83,18 +83,24 @@ module Spoom
       def report(context, snapshots, palette:)
         intro_commit = context.sorbet_intro_commit
 
+        file_tree = file_tree(context)
+        v = FileTree::CollectScores.new(context)
+        v.visit_tree(file_tree)
+
         Report.new(
           project_name: File.basename(context.absolute_path),
           palette: palette,
           snapshots: snapshots,
-          sigils_tree: sigils_tree(context),
+          file_tree: file_tree,
+          nodes_strictnesses: v.strictnesses,
+          nodes_strictness_scores: v.scores,
           sorbet_intro_commit: intro_commit&.sha,
           sorbet_intro_date: intro_commit&.time,
         )
       end
 
       sig { params(context: Context).returns(FileTree) }
-      def sigils_tree(context)
+      def file_tree(context)
         config = context.sorbet_config
         config.ignore += ["test"]
 

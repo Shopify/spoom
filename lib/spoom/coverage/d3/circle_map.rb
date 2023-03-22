@@ -148,48 +148,34 @@ module Spoom
         class Sigils < CircleMap
           extend T::Sig
 
-          sig { params(id: String, sigils_tree: FileTree).void }
-          def initialize(id, sigils_tree)
-            @scores = T.let({}, T::Hash[FileTree::Node, Float])
-            @strictnesses = T.let({}, T::Hash[FileTree::Node, T.nilable(String)])
-            @sigils_tree = sigils_tree
-            super(id, sigils_tree.roots.map { |r| tree_node_to_json(r) })
+          sig do
+            params(
+              id: String,
+              file_tree: FileTree,
+              nodes_strictnesses: T::Hash[FileTree::Node, T.nilable(String)],
+              nodes_scores: T::Hash[FileTree::Node, Float],
+            ).void
+          end
+          def initialize(id, file_tree, nodes_strictnesses, nodes_scores)
+            @nodes_strictnesses = nodes_strictnesses
+            @nodes_scores = nodes_scores
+            super(id, file_tree.roots.map { |r| tree_node_to_json(r) })
           end
 
           sig { params(node: FileTree::Node).returns(T::Hash[Symbol, T.untyped]) }
           def tree_node_to_json(node)
             if node.children.empty?
-              return { name: node.name, strictness: tree_node_strictness(node) }
+              {
+                name: node.name,
+                strictness: @nodes_strictnesses.fetch(node, "false"),
+              }
+            else
+              {
+                name: node.name,
+                children: node.children.values.map { |n| tree_node_to_json(n) },
+                score: @nodes_scores.fetch(node, 0.0),
+              }
             end
-
-            {
-              name: node.name,
-              children: node.children.values.map { |n| tree_node_to_json(n) },
-              score: tree_node_score(node),
-            }
-          end
-
-          sig { params(node: FileTree::Node).returns(T.nilable(String)) }
-          def tree_node_strictness(node)
-            prefix = @sigils_tree.strip_prefix
-            path = node.path
-            path = "#{prefix}/#{path}" if prefix
-            @strictnesses[node] ||= Spoom::Sorbet::Sigils.file_strictness(path)
-          end
-
-          sig { params(node: FileTree::Node).returns(Float) }
-          def tree_node_score(node)
-            unless @scores.key?(node)
-              if node.name =~ /\.rbi?$/
-                case tree_node_strictness(node)
-                when "true", "strict", "strong"
-                  @scores[node] = 1.0
-                end
-              elsif !node.children.empty?
-                @scores[node] = node.children.values.sum { |n| tree_node_score(n) } / node.children.size.to_f
-              end
-            end
-            @scores[node] || 0.0
           end
         end
       end
