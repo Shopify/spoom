@@ -49,15 +49,15 @@ module Spoom
     # All the nodes in this tree
     sig { returns(T::Array[Node]) }
     def nodes
-      all_nodes = []
-      @roots.values.each { |root| collect_nodes(root, all_nodes) }
-      all_nodes
+      v = CollectNodes.new
+      v.visit_tree(self)
+      v.nodes
     end
 
     # All the paths in this tree
     sig { returns(T::Array[String]) }
     def paths
-      nodes.collect(&:path)
+      nodes.map(&:path)
     end
 
     sig do
@@ -77,15 +77,6 @@ module Spoom
         indent_level: indent_level,
       )
       printer.print_tree
-    end
-
-    private
-
-    sig { params(node: FileTree::Node, collected_nodes: T::Array[Node]).returns(T::Array[Node]) }
-    def collect_nodes(node, collected_nodes = [])
-      collected_nodes << node
-      node.children.values.each { |child| collect_nodes(child, collected_nodes) }
-      collected_nodes
     end
 
     # A node representing either a file or a directory inside a FileTree
@@ -108,6 +99,49 @@ module Spoom
         return name unless parent
 
         "#{parent.path}/#{name}"
+      end
+    end
+
+    # An abstract visitor for FileTree
+    class Visitor
+      extend T::Sig
+      extend T::Helpers
+
+      abstract!
+
+      sig { params(tree: FileTree).void }
+      def visit_tree(tree)
+        visit_nodes(tree.roots)
+      end
+
+      sig { params(node: FileTree::Node).void}
+      def visit_node(node)
+        visit_nodes(node.children.values)
+      end
+
+      sig { params(nodes: T::Array[FileTree::Node]).void }
+      def visit_nodes(nodes)
+        nodes.each { |node| visit_node(node) }
+      end
+    end
+
+    # A visitor that collects all the nodes in a tree
+    class CollectNodes < Visitor
+      extend T::Sig
+
+      sig { returns(T::Array[FileTree::Node]) }
+      attr_reader :nodes
+
+      sig { void }
+      def initialize
+        super()
+        @nodes = T.let([], T::Array[FileTree::Node])
+      end
+
+      sig { override.params(node: FileTree::Node).void }
+      def visit_node(node)
+        @nodes << node
+        super
       end
     end
 
