@@ -66,30 +66,6 @@ module Spoom
         EXP
       end
 
-      def test_file_tree_printer_strip_prefix
-        project = new_project
-        project.write!("a/b/c/d/e1.rb", "# typed: true")
-        project.write!("a/b/c/d/e2.rb", "# typed: false")
-        project.write!("a/b/c.rb", "# typed: strict")
-        project.write!("a/b.rb")
-        tree = Spoom::FileTree.new(project.glob, strip_prefix: project.absolute_path)
-        out = StringIO.new
-        tree.print_with_strictnesses(project, out: out, colors: false)
-        assert_equal(<<~EXP, out.string)
-          Gemfile
-          a/
-            b/
-              c/
-                d/
-                  e1.rb (true)
-                  e2.rb (false)
-              c.rb (strict)
-            b.rb
-          sorbet/
-            config
-        EXP
-      end
-
       def test_file_tree_strictness_scores
         project = new_project
         project.write!("a/a1.rb", "# typed: true")

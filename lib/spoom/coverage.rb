@@ -105,7 +105,7 @@ module Spoom
         config.ignore += ["test"]
 
         files = context.srb_files(with_config: config, include_rbis: false)
-        FileTree.new(files, strip_prefix: context.absolute_path)
+        FileTree.new(files)
       end
     end
   end

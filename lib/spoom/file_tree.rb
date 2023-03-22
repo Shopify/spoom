@@ -6,13 +6,9 @@ module Spoom
   class FileTree
     extend T::Sig
 
-    sig { returns(T.nilable(String)) }
-    attr_reader :strip_prefix
-
-    sig { params(paths: T::Enumerable[String], strip_prefix: T.nilable(String)).void }
-    def initialize(paths = [], strip_prefix: nil)
+    sig { params(paths: T::Enumerable[String]).void }
+    def initialize(paths = [])
       @roots = T.let({}, T::Hash[String, Node])
-      @strip_prefix = strip_prefix
       add_paths(paths)
     end
 
@@ -27,8 +23,6 @@ module Spoom
     # This will create all nodes until the root of `path`.
     sig { params(path: String).returns(Node) }
     def add_path(path)
-      prefix = @strip_prefix
-      path = path.delete_prefix("#{prefix}/") if prefix
       parts = path.split("/")
       if path.empty? || parts.size == 1
         return @roots[path] ||= Node.new(parent: nil, name: path)

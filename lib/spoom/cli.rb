@@ -50,7 +50,7 @@ module Spoom
         end
 
         if options[:tree]
-          tree = FileTree.new(files, strip_prefix: exec_path)
+          tree = FileTree.new(files)
           tree.print_with_strictnesses(context, colors: options[:color])
         else
           puts files
