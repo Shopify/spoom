@@ -29,7 +29,7 @@ module Spoom
       def test_context_bundle_install!
         context = Context.mktmp!
 
-        res = context.bundle("install")
+        res = context.bundle_install!
         assert_empty(res.out)
         assert_equal("Could not locate Gemfile\n", res.err)
         refute(res.status)
@@ -40,7 +40,7 @@ module Spoom
           gem "ansi"
         GEMFILE
 
-        res = context.bundle("install")
+        res = context.bundle_install!
         assert(res.status)
 
         context.destroy!
