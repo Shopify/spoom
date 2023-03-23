@@ -7,6 +7,7 @@ module Spoom
   module Cli
     class RunTest < TestWithProject
       def setup
+        @project.bundle_install!
         @project.write!("file.rb", "# typed: true")
         @project.write!("errors/errors.rb", <<~RB)
           # typed: true

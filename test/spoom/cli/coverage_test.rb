@@ -48,10 +48,6 @@ module Spoom
         @project.bundle_install!
       end
 
-      def teardown
-        @project.destroy!
-      end
-
       def test_display_metrics
         result = @project.spoom("coverage snapshot")
         out = censor_sorbet_version(result.out)
@@ -179,6 +175,7 @@ module Spoom
 
       def test_display_metrics_with_path_option
         project = new_project("test_display_metrics_with_path_option_2")
+        project.bundle_install!
         result = project.spoom("coverage snapshot -p #{@project.absolute_path}")
         out = censor_sorbet_version(result.out)
         assert_equal(<<~MSG, out)
@@ -439,6 +436,7 @@ module Spoom
       def test_timeline_with_path_option
         create_git_history!
         project = new_project("test_timeline_with_path_option_2")
+        project.bundle_install!
         result = project.spoom("coverage timeline --save -p #{@project.absolute_path}")
         assert(result.status)
         assert_equal("", result.err)

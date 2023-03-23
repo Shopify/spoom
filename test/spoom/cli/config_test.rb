@@ -6,6 +6,10 @@ require "test_with_project"
 module Spoom
   module Cli
     class ConfigTest < TestWithProject
+      def setup
+        @project.bundle_install!
+      end
+
       def test_return_error_if_no_sorbet_config
         @project.remove!("sorbet/config")
         result = @project.spoom("config --no-color")

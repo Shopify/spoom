@@ -15,7 +15,6 @@ module Spoom
     def initialize(*args)
       super
       @project = T.let(new_project, TestProject)
-      @project.bundle_install!
     end
 
     sig { void }
