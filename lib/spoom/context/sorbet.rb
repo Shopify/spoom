@@ -42,7 +42,7 @@ module Spoom
           capture_err: T::Boolean,
         ).returns(T.nilable(T::Hash[String, Integer]))
       end
-      def srb_metrics(*arg, sorbet_bin: nil, capture_err: false)
+      def srb_metrics(*arg, sorbet_bin: nil, capture_err: true)
         metrics_file = "metrics.tmp"
 
         T.unsafe(self).srb_tc(
