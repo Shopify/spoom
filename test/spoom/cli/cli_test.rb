@@ -6,6 +6,10 @@ require "test_with_project"
 module Spoom
   module Cli
     class CliTest < TestWithProject
+      def setup
+        @project.bundle_install!
+      end
+
       def test_display_current_version_short_option
         result = @project.spoom("-v")
         assert_equal("Spoom v#{Spoom::VERSION}", result.out.strip)

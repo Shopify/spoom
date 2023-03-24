@@ -6,6 +6,10 @@ require "test_with_project"
 module Spoom
   module Cli
     class LSPTest < TestWithProject
+      def setup
+        @project.bundle_install!
+      end
+
       # Errors
 
       def test_cant_open_without_config
@@ -280,6 +284,7 @@ module Spoom
           class Test; end
         RB
         project = new_project("test_lsp_with_path_option_2")
+        project.bundle_install!
         result = project.spoom("lsp -p #{@project.absolute_path} --no-color find Test")
         assert_equal(<<~MSG, result.out)
           Symbols matching `Test`:

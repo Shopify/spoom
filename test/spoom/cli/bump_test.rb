@@ -6,6 +6,10 @@ require "test_with_project"
 module Spoom
   module Cli
     class BumpTest < TestWithProject
+      def setup
+        @project.bundle_install!
+      end
+
       def test_bump_outside_sorbet_dir
         @project.remove!("sorbet/config")
         result = @project.spoom("bump --no-color")
