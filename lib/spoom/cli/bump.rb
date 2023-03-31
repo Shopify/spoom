@@ -54,6 +54,7 @@ module Spoom
         dry = options[:dry]
         only = options[:only]
         cmd = options[:suggest_bump_command]
+        directory = File.expand_path(directory)
         exec_path = File.expand_path(self.exec_path)
 
         unless Sorbet::Sigils.valid_strictness?(from)
@@ -73,11 +74,9 @@ module Spoom
 
         say("Checking files...")
 
-        directory = File.expand_path(directory)
-        files_to_bump = Sorbet::Sigils.files_with_sigil_strictness(directory, from)
-
-        files_from_config = context.srb_files.map { |file| File.expand_path(file) }
-        files_to_bump.select! { |file| files_from_config.include?(file) }
+        files_to_bump = context.srb_files_with_strictness(from, include_rbis: false)
+          .map { |file| File.expand_path(file, context.absolute_path) }
+          .select { |file| file.start_with?(directory) }
 
         if only
           list = File.read(only).lines.map { |file| File.expand_path(file.strip) }

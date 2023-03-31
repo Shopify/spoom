@@ -6,13 +6,9 @@ module Spoom
   class FileTree
     extend T::Sig
 
-    sig { returns(T.nilable(String)) }
-    attr_reader :strip_prefix
-
-    sig { params(paths: T::Enumerable[String], strip_prefix: T.nilable(String)).void }
-    def initialize(paths = [], strip_prefix: nil)
+    sig { params(paths: T::Enumerable[String]).void }
+    def initialize(paths = [])
       @roots = T.let({}, T::Hash[String, Node])
-      @strip_prefix = strip_prefix
       add_paths(paths)
     end
 
@@ -27,8 +23,6 @@ module Spoom
     # This will create all nodes until the root of `path`.
     sig { params(path: String).returns(Node) }
     def add_path(path)
-      prefix = @strip_prefix
-      path = path.delete_prefix("#{prefix}/") if prefix
       parts = path.split("/")
       if path.empty? || parts.size == 1
         return @roots[path] ||= Node.new(parent: nil, name: path)
@@ -49,43 +43,51 @@ module Spoom
     # All the nodes in this tree
     sig { returns(T::Array[Node]) }
     def nodes
-      all_nodes = []
-      @roots.values.each { |root| collect_nodes(root, all_nodes) }
-      all_nodes
+      v = CollectNodes.new
+      v.visit_tree(self)
+      v.nodes
     end
 
     # All the paths in this tree
     sig { returns(T::Array[String]) }
     def paths
-      nodes.collect(&:path)
+      nodes.map(&:path)
     end
 
-    sig do
-      params(
-        out: T.any(IO, StringIO),
-        show_strictness: T::Boolean,
-        colors: T::Boolean,
-        indent_level: Integer,
-      ).void
-    end
-    def print(out: $stdout, show_strictness: true, colors: true, indent_level: 0)
-      printer = TreePrinter.new(
-        tree: self,
-        out: out,
-        show_strictness: show_strictness,
-        colors: colors,
-        indent_level: indent_level,
-      )
-      printer.print_tree
+    # Return a map of strictnesses for each node in the tree
+    sig { params(context: Context).returns(T::Hash[Node, T.nilable(String)]) }
+    def nodes_strictnesses(context)
+      v = CollectStrictnesses.new(context)
+      v.visit_tree(self)
+      v.strictnesses
     end
 
-    private
+    # Return a map of typing scores for each node in the tree
+    sig { params(context: Context).returns(T::Hash[Node, Float]) }
+    def nodes_strictness_scores(context)
+      v = CollectScores.new(context)
+      v.visit_tree(self)
+      v.scores
+    end
 
-    sig { params(node: FileTree::Node, collected_nodes: T::Array[Node]).returns(T::Array[Node]) }
-    def collect_nodes(node, collected_nodes = [])
-      collected_nodes << node
-      node.children.values.each { |child| collect_nodes(child, collected_nodes) }
-      collected_nodes
+    # Return a map of typing scores for each path in the tree
+    sig { params(context: Context).returns(T::Hash[String, Float]) }
+    def paths_strictness_scores(context)
+      nodes_strictness_scores(context).map { |node, score| [node.path, score] }.to_h
+    end
+
+    sig { params(out: T.any(IO, StringIO), colors: T::Boolean).void }
+    def print(out: $stdout, colors: true)
+      printer = Printer.new({}, out: out, colors: colors)
+      printer.visit_tree(self)
+    end
+
+    sig { params(context: Context, out: T.any(IO, StringIO), colors: T::Boolean).void }
+    def print_with_strictnesses(context, out: $stdout, colors: true)
+      strictnesses = nodes_strictnesses(context)
+
+      printer = Printer.new(strictnesses, out: out, colors: colors)
+      printer.visit_tree(self)
     end
 
     # A node representing either a file or a directory inside a FileTree
@@ -111,76 +113,159 @@ module Spoom
       end
     end
 
-    # An internal class used to print a FileTree
-    #
-    # See `FileTree#print`
-    class TreePrinter < Spoom::Printer
+    # An abstract visitor for FileTree
+    class Visitor
       extend T::Sig
+      extend T::Helpers
 
-      sig { returns(FileTree) }
-      attr_reader :tree
+      abstract!
 
-      sig do
-        params(
-          tree: FileTree,
-          out: T.any(IO, StringIO),
-          show_strictness: T::Boolean,
-          colors: T::Boolean,
-          indent_level: Integer,
-        ).void
-      end
-      def initialize(tree:, out: $stdout, show_strictness: true, colors: true, indent_level: 0)
-        super(out: out, colors: colors, indent_level: indent_level)
-        @tree = tree
-        @show_strictness = show_strictness
-      end
-
-      sig { void }
-      def print_tree
-        print_nodes(tree.roots)
+      sig { params(tree: FileTree).void }
+      def visit_tree(tree)
+        visit_nodes(tree.roots)
       end
 
       sig { params(node: FileTree::Node).void }
-      def print_node(node)
-        printt
-        if node.children.empty?
-          if @show_strictness
-            strictness = node_strictness(node)
-            if @colors
-              print_colored(node.name, strictness_color(strictness))
-            elsif strictness
-              print("#{node.name} (#{strictness})")
-            else
-              print(node.name.to_s)
-            end
-          else
-            print(node.name.to_s)
-          end
-          print("\n")
-        else
-          print_colored(node.name, Color::BLUE)
-          print("/")
-          printn
-          indent
-          print_nodes(node.children.values)
-          dedent
-        end
+      def visit_node(node)
+        visit_nodes(node.children.values)
       end
 
       sig { params(nodes: T::Array[FileTree::Node]).void }
-      def print_nodes(nodes)
-        nodes.each { |node| print_node(node) }
+      def visit_nodes(nodes)
+        nodes.each { |node| visit_node(node) }
+      end
+    end
+
+    # A visitor that collects all the nodes in a tree
+    class CollectNodes < Visitor
+      extend T::Sig
+
+      sig { returns(T::Array[FileTree::Node]) }
+      attr_reader :nodes
+
+      sig { void }
+      def initialize
+        super()
+        @nodes = T.let([], T::Array[FileTree::Node])
+      end
+
+      sig { override.params(node: FileTree::Node).void }
+      def visit_node(node)
+        @nodes << node
+        super
+      end
+    end
+
+    # A visitor that collects the strictness of each node in a tree
+    class CollectStrictnesses < Visitor
+      extend T::Sig
+
+      sig { returns(T::Hash[Node, T.nilable(String)]) }
+      attr_reader :strictnesses
+
+      sig { params(context: Context).void }
+      def initialize(context)
+        super()
+        @context = context
+        @strictnesses = T.let({}, T::Hash[Node, T.nilable(String)])
+      end
+
+      sig { override.params(node: FileTree::Node).void }
+      def visit_node(node)
+        path = node.path
+        @strictnesses[node] = @context.read_file_strictness(path) if @context.file?(path)
+
+        super
+      end
+    end
+
+    # A visitor that collects the typing score of each node in a tree
+    class CollectScores < CollectStrictnesses
+      extend T::Sig
+
+      sig { returns(T::Hash[Node, Float]) }
+      attr_reader :scores
+
+      sig { params(context: Context).void }
+      def initialize(context)
+        super
+        @context = context
+        @scores = T.let({}, T::Hash[Node, Float])
+      end
+
+      sig { override.params(node: FileTree::Node).void }
+      def visit_node(node)
+        super
+
+        @scores[node] = node_score(node)
       end
 
       private
 
-      sig { params(node: FileTree::Node).returns(T.nilable(String)) }
-      def node_strictness(node)
-        path = node.path
-        prefix = tree.strip_prefix
-        path = "#{prefix}/#{path}" if prefix
-        Spoom::Sorbet::Sigils.file_strictness(path)
+      sig { params(node: Node).returns(Float) }
+      def node_score(node)
+        if @context.file?(node.path)
+          strictness_score(@strictnesses[node])
+        else
+          node.children.values.sum { |child| @scores.fetch(child, 0.0) } / node.children.size.to_f
+        end
       end
+
+      sig { params(strictness: T.nilable(String)).returns(Float) }
+      def strictness_score(strictness)
+        case strictness
+        when "true", "strict", "strong"
+          1.0
+        else
+          0.0
+        end
+      end
+    end
+
+    # An internal class used to print a FileTree
+    #
+    # See `FileTree#print`
+    class Printer < Visitor
+      extend T::Sig
+
+      sig do
+        params(
+          strictnesses: T::Hash[FileTree::Node, T.nilable(String)],
+          out: T.any(IO, StringIO),
+          colors: T::Boolean,
+        ).void
+      end
+      def initialize(strictnesses, out: $stdout, colors: true)
+        super()
+        @strictnesses = strictnesses
+        @colors = colors
+        @printer = T.let(Spoom::Printer.new(out: out, colors: colors), Spoom::Printer)
+      end
+
+      sig { override.params(node: FileTree::Node).void }
+      def visit_node(node)
+        @printer.printt
+        if node.children.empty?
+          strictness = @strictnesses[node]
+          if @colors
+            @printer.print_colored(node.name, strictness_color(strictness))
+          elsif strictness
+            @printer.print("#{node.name} (#{strictness})")
+          else
+            @printer.print(node.name.to_s)
+          end
+          @printer.print("\n")
+        else
+          @printer.print_colored(node.name, Color::BLUE)
+          @printer.print("/")
+          @printer.printn
+          @printer.indent
+          super
+          @printer.dedent
+        end
+      end
+
+      private
 
       sig { params(strictness: T.nilable(String)).returns(Color) }
       def strictness_color(strictness)

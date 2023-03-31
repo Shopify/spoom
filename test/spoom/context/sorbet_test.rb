@@ -258,6 +258,153 @@ module Spoom
 
         context.destroy!
       end
+
+      def test_context_srb_files_with_default_extensions
+        context = Context.mktmp!
+
+        context.write_sorbet_config!(".")
+
+        context.write!("a.rb", "")
+        context.write!("b/c.rb", "")
+        context.write!("d/e/f.rbi", "")
+        context.write!("g.rake", "")
+        context.write!("h.js", "")
+        context.write!("i", "")
+
+        assert_equal(["a.rb", "b/c.rb", "d/e/f.rbi"], context.srb_files)
+
+        context.destroy!
+      end
+
+      def test_context_srb_files_with_custom_extensions
+        context = Context.mktmp!
+
+        context.write_sorbet_config!(<<~CONFIG)
+          .
+          --allowed-extension=.rb
+          --allowed-extension=.rbi
+          --allowed-extension=.rake
+        CONFIG
+
+        context.write!("a.rb", "")
+        context.write!("b/c.rb", "")
+        context.write!("d/e/f.rbi", "")
+        context.write!("g.rake", "")
+        context.write!("h", "")
+
+        assert_equal(["a.rb", "b/c.rb", "d/e/f.rbi", "g.rake"], context.srb_files)
+
+        context.destroy!
+      end
+
+      def test_context_srb_files_with_custom_paths
+        context = Context.mktmp!
+
+        context.write_sorbet_config!(<<~CONFIG)
+          b
+          d
+        CONFIG
+
+        context.write!("a.rb", "")
+        context.write!("b/c.rb", "")
+        context.write!("d/e/f.rbi", "")
+        context.write!("g.rake", "")
+        context.write!("h", "")
+
+        assert_equal(["b/c.rb", "d/e/f.rbi"], context.srb_files)
+
+        context.destroy!
+      end
+
+      def test_context_srb_files_with_custom_ignore
+        context = Context.mktmp!
+
+        context.write_sorbet_config!(<<~CONFIG)
+          .
+          --ignore=foo
+        CONFIG
+
+        context.write!("foo.rb", "")
+        context.write!("foo/bar.rb", "")
+        context.write!("bar/foo/baz.rb", "")
+        context.write!("foo2/bar.rb", "")
+
+        # From Sorbet docs on `--ignore`:
+        # > Ignores input files that contain the given string in their paths (relative to the input path passed to
+        # > Sorbet). Strings beginning with / match against the prefix of these relative paths; others are substring
+        # > matchs. Matches must be against whole folder and file names, so `foo` matches `/foo/bar.rb` and
+        # > `/bar/foo/baz.rb` but not `/foo.rb` or `/foo2/bar.rb`.
+        assert_equal(["foo.rb", "foo2/bar.rb"], context.srb_files)
+
+        context.destroy!
+      end
+
+      def test_context_srb_files_with_custom_config
+        context = Context.mktmp!
+
+        context.write_sorbet_config!(".")
+
+        context.write!("a.rb", "")
+        context.write!("b/c.rb", "")
+        context.write!("d/e/f.rbi", "")
+        context.write!("g.rake", "")
+        context.write!("h.js", "")
+        context.write!("i", "")
+
+        config = Spoom::Sorbet::Config.new
+        config.paths = ["b", "d"]
+
+        assert_equal(["b/c.rb", "d/e/f.rbi"], context.srb_files(with_config: config))
+
+        context.destroy!
+      end
+
+      def test_context_srb_files_without_rbis
+        context = Context.mktmp!
+
+        context.write_sorbet_config!(".")
+
+        context.write!("a.rb", "")
+        context.write!("b.rbi", "")
+
+        assert_equal(["a.rb"], context.srb_files(include_rbis: false))
+
+        context.destroy!
+      end
+
+      def test_context_srb_files_with_strictness
+        context = Context.mktmp!
+        context.write_sorbet_config!(".")
+        context.write!("false.rb", "# typed: false")
+        context.write!("true.rb", "# typed: true")
+        context.write!("nested/false.rb", "# typed: false")
+        context.write!("nested/true.rb", "# typed: true")
+
+        files = context.srb_files_with_strictness("false")
+        assert_equal(["false.rb", "nested/false.rb"], files)
+
+        context.destroy!
+      end
+
+      def test_context_srb_files_with_strictness_with_iso_content
+        string_utf = <<~RB
+          # typed: true
+
+          puts "À coûté 10€"
+        RB
+
+        string_iso = string_utf.encode("ISO-8859-15")
+
+        context = Context.mktmp!
+        context.write_sorbet_config!(".")
+        context.write!("file1.rb", string_utf)
+        context.write!("file2.rb", string_iso)
+
+        files = context.srb_files_with_strictness("true")
+        assert_equal(["file1.rb", "file2.rb"], files)
+
+        context.destroy!
+      end
     end
   end
 end

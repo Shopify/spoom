@@ -12,6 +12,7 @@ module Spoom
   class Error < StandardError; end
 end
 
+require "spoom/file_collector"
 require "spoom/context"
 require "spoom/colors"
 require "spoom/sorbet"
