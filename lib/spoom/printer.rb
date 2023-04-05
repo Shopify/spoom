@@ -10,8 +10,6 @@ module Spoom
 
     include Colorize
 
-    abstract!
-
     sig { returns(T.any(IO, StringIO)) }
     attr_accessor :out
 
