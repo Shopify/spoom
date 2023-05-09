@@ -7,7 +7,6 @@ gemspec
 
 group :development do
   gem "debug"
-  gem "ruby-lsp"
   gem "rubocop-shopify", require: false
   gem "rubocop-sorbet", require: false
   gem "tapioca", require: false
