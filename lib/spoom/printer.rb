@@ -10,9 +10,6 @@ module Spoom
 
     include Colorize
 
-    sig { returns(T.any(IO, StringIO)) }
-    attr_accessor :out
-
     sig { params(out: T.any(IO, StringIO), colors: T::Boolean, indent_level: Integer).void }
     def initialize(out: $stdout, colors: true, indent_level: 0)
       @out = out
