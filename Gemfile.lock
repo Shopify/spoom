@@ -76,7 +76,7 @@ GEM
       spoom (~> 1.2.0, >= 1.2.0)
       thor (>= 1.2.0)
       yard-sorbet
-    thor (1.2.1)
+    thor (1.2.2)
     unicode-display_width (2.4.2)
     unparser (0.6.7)
       diff-lcs (~> 1.3)
