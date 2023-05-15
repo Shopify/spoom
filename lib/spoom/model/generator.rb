@@ -20,6 +20,8 @@ module Spoom
 
       sig { params(context: Context, files: Integer).void }
       def generate_files(context, files)
+        @generated_files += 1
+
         files.times do
           name = generate_file_name
           root = generate_class

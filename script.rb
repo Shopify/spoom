@@ -6,72 +6,60 @@ require "spoom/model/generator"
 require "spoom/model/index"
 require "spoom/model/index_array"
 require "spoom/model/index_list"
+require "spoom/model/index_set"
 
 def time(&block)
   t0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-  res = block.call
+  block.call
   t1 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-  puts "=> #{t1 - t0}s"
-  res
+
+  t1 - t0
 end
 
-context = Spoom::Context.mktmp!
+[10, 100].each do |files|
+  context = Spoom::Context.mktmp!
 
-time do
-  puts "Generating files..."
+  puts "# #{files} files"
   generator = Spoom::Model::Generator.new
-  generator.generate_files(context, 100)
-  puts "Generated #{generator.generated_classes} classes"
-end
+  generator.generate_files(context, files)
 
-puts "\n# With linked lists\n\n"
-
-index = Spoom::Model::IndexList.new
-indexer = Spoom::Model::Indexer.new(index)
-
-time do
-  puts "Indexing files..."
-  context.glob("**/*.rb").each do |file|
+  puts " ## Parsing"
+  parsed = context.glob("**/*.rb").map do |file|
     ruby = context.read(file)
-    indexer.index_string(ruby, path: file)
+    [file, Spoom::Model::Parser.parse_string(ruby)]
   end
-  puts "Indexed #{index.entries.to_a.size} entries (#{index.names.to_a.size} unique names)"
+
+  index_classes = T.let([
+    Spoom::Model::IndexSet,
+    Spoom::Model::IndexList,
+    Spoom::Model::IndexArray,
+  ], T::Array[T.class_of(Spoom::Model::Index)])
+
+  index_classes.each do |index_class|
+    puts " ## #{index_class}"
+
+    index = index_class.new
+    indexer = Spoom::Model::Indexer.new(index)
+
+    puts "    Indexing files..."
+    indexing_time = time do
+      parsed.each do |(file, node)|
+        indexer.index(node, file: file)
+      end
+    end
+    puts "    Indexed #{index.entries.to_a.size} entries (#{index.names.to_a.size} unique names) in #{indexing_time}s"
+
+    puts "    Deleting files..."
+    deleting_time = time do
+      context.glob("**/*.rb").each do |file|
+        index.delete_names_with_path(file)
+      end
+    end
+    puts "    Indexed #{index.entries.to_a.size} entries (#{index.names.to_a.size} unique names) in #{deleting_time}s"
+  end
+
+  context.destroy!
 end
 
-time do
-  puts "Deleting files..."
-  context.glob("**/*.rb").each do |file|
-    index.delete_names_with_path(file)
-  end
-  puts "Indexed #{index.entries.to_a.size} entries (#{index.names.to_a.size} unique names)"
-end
-
-puts "\n# With arrays\n\n"
-
-index = Spoom::Model::IndexArray.new
-indexer = Spoom::Model::Indexer.new(index)
-
-time do
-  puts "Indexing files..."
-  context.glob("**/*.rb").each do |file|
-    ruby = context.read(file)
-    indexer.index_string(ruby, path: file)
-  end
-  puts "Indexed #{index.entries.to_a.size} entries (#{index.names.to_a.size} unique names)"
-end
-
-time do
-  puts "Deleting files..."
-  context.glob("**/*.rb").each do |file|
-    index.delete_names_with_path(file)
-  end
-  puts "Indexed #{index.entries.to_a.size} entries (#{index.names.to_a.size} unique names)"
-end
-
-context.destroy!
-
-# TODO: generate files in context
-# TODO: parse & index model
-# TODO: delete all files
 # TODO: monitor times for each
 # TODO: monitor peak memory

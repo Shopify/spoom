@@ -11,7 +11,7 @@ module Spoom
         super
 
         @names = T.let({}, T::Hash[String, NodesList])
-        @nodes = T.let({}, T::Hash[String, T::Array[IndexNode]])
+        @nodes = T.let({}, T::Hash[String, T::Array[[IndexNode, NodesList]]])
       end
 
       sig { override.params(name: String).returns(T::Array[{ name: String, location: Location }]) }
@@ -25,7 +25,7 @@ module Spoom
         node = names << { name: name, location: location }
 
         nodes = @nodes[location.path] ||= []
-        nodes << node
+        nodes << [node, names]
       end
 
       sig { override.returns(T::Enumerable[String]) }
@@ -42,8 +42,8 @@ module Spoom
 
       sig { override.params(path: String).void }
       def delete_names_with_path(path)
-        @nodes[path]&.each do |node|
-          node.delete!
+        @nodes[path]&.each do |(node, list)|
+          node.delete!(list)
         end
       end
     end
@@ -62,7 +62,7 @@ module Spoom
 
       sig { params(entry: { name: String, location: Location }).returns(IndexNode) }
       def <<(entry)
-        node = IndexNode.new(self, entry[:location])
+        node = IndexNode.new(entry[:location])
 
         @head = node unless @head
 
@@ -101,21 +101,20 @@ module Spoom
       sig { returns(T.nilable(IndexNode)) }
       attr_accessor :prev_node, :next_node
 
-      sig { params(list: NodesList, location: Location).void }
-      def initialize(list, location)
-        @list = list
+      sig { params(location: Location).void }
+      def initialize(location)
         @location = location
         @prev_node = T.let(nil, T.nilable(IndexNode))
         @next_node = T.let(nil, T.nilable(IndexNode))
       end
 
-      sig { void }
-      def delete!
+      sig { params(list: NodesList).void }
+      def delete!(list)
         prev_node&.next_node = next_node
         next_node&.prev_node = prev_node
 
-        @list.head = @next_node if @list.head == self
-        @list.tail = @prev_node if @list.tail == self
+        list.head = @next_node if list.head == self
+        list.tail = @prev_node if list.tail == self
       end
     end
   end

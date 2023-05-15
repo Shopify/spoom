@@ -14,19 +14,10 @@ module Spoom
         @file = T.let(nil, T.nilable(String))
       end
 
-      sig { params(path: String).void }
-      def index_file(path)
-        @file = path
-        ast = SyntaxTree.parse_file(path)
-        visit(ast)
-        @file = nil
-      end
-
-      sig { params(ruby: String, path: String).void }
-      def index_string(ruby, path: "-")
-        @file = path
-        ast = SyntaxTree.parse(ruby)
-        visit(ast)
+      sig { params(node: SyntaxTree::Node, file: String).void }
+      def index(node, file: "-")
+        @file = file
+        visit(node)
         @file = nil
       end
 
