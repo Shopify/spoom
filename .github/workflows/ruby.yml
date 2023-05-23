@@ -25,8 +25,6 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
     - run: ruby -v
-    - name: Install dependencies
-      run: bin/setup
     - name: Run typechecking
       run: bin/typecheck
     - name: Check sigils
