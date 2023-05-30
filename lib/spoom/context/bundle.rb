@@ -10,10 +10,16 @@ module Spoom
 
       requires_ancestor { Context }
 
-      # Read the `contents` of the Gemfile in this context directory
+      # Read the contents of the Gemfile in this context directory
       sig { returns(T.nilable(String)) }
       def read_gemfile
         read("Gemfile")
+      end
+
+      # Read the contents of the Gemfile.lock in this context directory
+      sig { returns(T.nilable(String)) }
+      def read_gemfile_lock
+        read("Gemfile.lock")
       end
 
       # Set the `contents` of the Gemfile in this context directory

@@ -14,6 +14,13 @@ module Spoom
         context.destroy!
       end
 
+      def test_context_gemfile_lock
+        context = Context.mktmp!
+        context.write!("Gemfile.lock", "CONTENTS")
+        assert_equal("CONTENTS", context.read_gemfile_lock)
+        context.destroy!
+      end
+
       def test_context_bundle
         context = Context.mktmp!
 
