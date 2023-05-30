@@ -64,7 +64,7 @@ module Spoom
       end
 
       # Run `git add . && git commit` in this context directory
-      sig { params(message: String, time: Time, allow_empty: T::Boolean).void }
+      sig { params(message: String, time: Time, allow_empty: T::Boolean).returns(ExecResult) }
       def git_commit!(message: "message", time: Time.now.utc, allow_empty: false)
         git("add --all")
 

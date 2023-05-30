@@ -35,13 +35,11 @@ module Spoom
         context.git("config user.email 'john@doe.org'")
 
         context.write!("a", "")
-        context.git("add a")
-        context.git("-c commit.gpgsign=false commit -m 'a'")
+        context.git_commit!
 
         context.git("checkout -b b")
         context.write!("b", "")
-        context.git("add b")
-        context.git("-c commit.gpgsign=false commit -m 'b'")
+        context.git_commit!
 
         res = context.git_checkout!(ref: "a")
         assert(res.status)
@@ -51,6 +49,23 @@ module Spoom
         res = context.git_checkout!(ref: "b")
         assert(res.status)
         assert(context.file?("b"))
+        assert(context.file?("b"))
+
+        context.destroy!
+      end
+
+      def test_context_git_commit!
+        context = Context.mktmp!
+        context.git_init!
+        context.git("config user.name 'John Doe'")
+        context.git("config user.email 'john@doe.org'")
+        context.write!("a", "")
+        context.write!("b", "")
+
+        res = context.git_commit!
+
+        assert(res.status)
+        assert(context.git_workdir_clean?)
         assert(context.file?("b"))
 
         context.destroy!
