@@ -481,7 +481,7 @@ module Spoom
       def test_finish_on_original_branch
         create_git_history!
         assert_equal("main", @project.git_current_branch)
-        @project.create_and_checkout_branch!("fake-branch")
+        @project.git_checkout_new_branch!("fake-branch")
         assert_equal("fake-branch", @project.git_current_branch)
         @project.spoom("coverage timeline --save")
         assert_equal("fake-branch", @project.git_current_branch)

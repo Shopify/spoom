@@ -35,13 +35,11 @@ module Spoom
         context.git("config user.email 'john@doe.org'")
 
         context.write!("a", "")
-        context.git("add a")
-        context.git("-c commit.gpgsign=false commit -m 'a'")
+        context.git_commit!
 
-        context.git("checkout -b b")
+        context.git_checkout_new_branch!("b")
         context.write!("b", "")
-        context.git("add b")
-        context.git("-c commit.gpgsign=false commit -m 'b'")
+        context.git_commit!
 
         res = context.git_checkout!(ref: "a")
         assert(res.status)
@@ -50,7 +48,64 @@ module Spoom
 
         res = context.git_checkout!(ref: "b")
         assert(res.status)
+        assert(context.file?("a"))
         assert(context.file?("b"))
+
+        context.destroy!
+      end
+
+      def test_context_git_checkout_new_branch!
+        context = Context.mktmp!
+        context.git_init!(branch: "a")
+        context.git("config user.name 'John Doe'")
+        context.git("config user.email 'john@doe.org'")
+
+        context.write!("a", "")
+        context.git_commit!
+
+        a_ref = context.git_last_commit&.sha
+
+        context.git_checkout_new_branch!("b")
+        context.write!("b", "")
+        context.git_commit!
+
+        context.git_checkout_new_branch!("c", ref: a_ref)
+        context.write!("c", "")
+        context.git_commit!
+
+        res = context.git_checkout!(ref: "a")
+        assert(res.status)
+        assert(context.file?("a"))
+        refute(context.file?("b"))
+        refute(context.file?("c"))
+
+        res = context.git_checkout!(ref: "b")
+        assert(res.status)
+        assert(context.file?("a"))
+        assert(context.file?("b"))
+        refute(context.file?("c"))
+
+        res = context.git_checkout!(ref: "c")
+        assert(res.status)
+        assert(context.file?("a"))
+        refute(context.file?("b"))
+        assert(context.file?("c"))
+
+        context.destroy!
+      end
+
+      def test_context_git_commit!
+        context = Context.mktmp!
+        context.git_init!
+        context.git("config user.name 'John Doe'")
+        context.git("config user.email 'john@doe.org'")
+        context.write!("a", "")
+        context.write!("b", "")
+
+        res = context.git_commit!
+
+        assert(res.status)
+        assert(context.git_workdir_clean?)
         assert(context.file?("b"))
 
         context.destroy!
@@ -62,7 +117,8 @@ module Spoom
 
         context.git_init!(branch: "main")
         assert_equal("main", context.git_current_branch)
-        context.git("checkout -b other")
+
+        context.git_checkout_new_branch!("other")
         assert_equal("other", context.git_current_branch)
 
         context.destroy!
@@ -141,6 +197,28 @@ module Spoom
         assert_equal("Thu Feb 5 09:00:00 1987 +0000", log)
 
         context.destroy!
+      end
+
+      def test_context_git_push!
+        context1 = Context.mktmp!
+        context1.git_init!(branch: "main")
+        context1.git("config user.name 'John Doe'")
+        context1.git("config user.email 'john@doe.org'")
+
+        context2 = Context.mktmp!
+        context2.git_init!(branch: "foo")
+        context2.git("config user.name 'John Doe'")
+        context2.git("config user.email 'john@doe.org'")
+        context2.write!("b")
+        context2.git_commit!
+
+        context2.git_push!(context1.absolute_path, "foo")
+        context1.git_checkout!(ref: "foo")
+        refute(context1.file?("a"))
+        assert(context1.file?("b"))
+
+        context1.destroy!
+        context2.destroy!
       end
 
       def test_context_git_show

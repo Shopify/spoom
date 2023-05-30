@@ -11,13 +11,6 @@ module Spoom
       bundle_exec("spoom #{command}")
     end
 
-    # Git
-
-    sig { params(name: String).void }
-    def create_and_checkout_branch!(name)
-      exec("git checkout -b #{name}")
-    end
-
     # Misc
 
     sig { params(text: String).returns(String) }

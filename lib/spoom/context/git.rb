@@ -63,8 +63,18 @@ module Spoom
         git("checkout #{ref}")
       end
 
+      # Run `git checkout -b <branch-name> <ref>` in this context directory
+      sig { params(branch_name: String, ref: T.nilable(String)).returns(ExecResult) }
+      def git_checkout_new_branch!(branch_name, ref: nil)
+        if ref
+          git("checkout -b #{branch_name} #{ref}")
+        else
+          git("checkout -b #{branch_name}")
+        end
+      end
+
       # Run `git add . && git commit` in this context directory
-      sig { params(message: String, time: Time, allow_empty: T::Boolean).void }
+      sig { params(message: String, time: Time, allow_empty: T::Boolean).returns(ExecResult) }
       def git_commit!(message: "message", time: Time.now.utc, allow_empty: false)
         git("add --all")
 
@@ -104,6 +114,12 @@ module Spoom
       sig { params(arg: String).returns(ExecResult) }
       def git_log(*arg)
         git("log #{arg.join(" ")}")
+      end
+
+      # Run `git push <remote> <ref>` in this context directory
+      sig { params(remote: String, ref: String, force: T::Boolean).returns(ExecResult) }
+      def git_push!(remote, ref, force: false)
+        git("push #{force ? "-f" : ""} #{remote} #{ref}")
       end
 
       sig { params(arg: String).returns(ExecResult) }
