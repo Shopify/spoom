@@ -71,20 +71,56 @@ module Spoom
         context.destroy!
       end
 
+      def test_collect_files_ignore_mime_types_by_default
+        context = Context.mktmp!
+        context.write!("a", "#! /usr/bin/env ruby\n")
+        context.write!("b", "#! /usr/bin/env ruby\n")
+        context.write!("c", "#! /usr/bin/env ruby\n")
+
+        files = collect_files(context, allow_extensions: [".rb"])
+        assert_empty(files)
+
+        context.destroy!
+      end
+
+      def test_collect_files_with_allowed_mime_types
+        context = Context.mktmp!
+        context.write!("a", "#! /usr/bin/ruby\n")
+        context.write!("b", "#! /usr/bin/env ruby\n")
+        context.write!("c", "#! /bin/bash\n")
+        context.write!("d", "#! /usr/bin/env node\n")
+        context.write!("e", "")
+
+        files = collect_files(
+          context,
+          allow_extensions: [".rb"],
+          allow_mime_types: ["text/x-ruby", "text/x-shellscript"],
+        )
+        assert_equal(["a", "b", "c"], files)
+
+        context.destroy!
+      end
+
       private
 
       sig do
         params(
           context: Context,
           allow_extensions: T::Array[String],
+          allow_mime_types: T::Array[String],
           exclude_patterns: T::Array[String],
         ).returns(T::Array[String])
       end
-      def collect_files(context, allow_extensions: [], exclude_patterns: [])
+      def collect_files(context, allow_extensions: [], allow_mime_types: [], exclude_patterns: [])
         # Since we work in the context directory, we need to prefix the patterns with it
         exclude_patterns = exclude_patterns.map { |p| File.join(context.absolute_path, p) }
 
-        collector = FileCollector.new(allow_extensions: allow_extensions, exclude_patterns: exclude_patterns)
+        collector = FileCollector.new(
+          allow_extensions: allow_extensions,
+          allow_mime_types: allow_mime_types,
+          exclude_patterns: exclude_patterns,
+        )
+
         collector.visit_paths([context.absolute_path])
 
         # Since we work in the context directory, we need to remove it from the paths

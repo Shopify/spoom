@@ -12,15 +12,21 @@ module Spoom
     #
     # If `allow_extensions` is empty, all files are collected.
     # If `allow_extensions` is an array of extensions, only files with one of these extensions are collected.
+    #
+    # If `allow_mime_types` is empty, all files are collected.
+    # If `allow_mime_types` is an array of mimetypes, files without an extension are collected if their mimetype is in
+    # the list.
     sig do
       params(
         allow_extensions: T::Array[String],
+        allow_mime_types: T::Array[String],
         exclude_patterns: T::Array[String],
       ).void
     end
-    def initialize(allow_extensions: [], exclude_patterns: [])
+    def initialize(allow_extensions: [], allow_mime_types: [], exclude_patterns: [])
       @files = T.let([], T::Array[String])
       @allow_extensions = allow_extensions
+      @allow_mime_types = allow_mime_types
       @exclude_patterns = exclude_patterns
     end
 
@@ -68,12 +74,25 @@ module Spoom
       return false if @allow_extensions.empty?
 
       extension = File.extname(path)
-      @allow_extensions.none? { |allowed| extension == allowed }
+      if extension.empty?
+        return true if @allow_mime_types.empty?
+
+        mime = mime_type_for(path)
+        @allow_mime_types.none? { |allowed| mime == allowed }
+      else
+        @allow_extensions.none? { |allowed| extension == allowed }
+      end
     end
 
     sig { params(path: String).returns(T::Boolean) }
     def excluded_path?(path)
       @exclude_patterns.any? { |pattern| File.fnmatch?(pattern, path) }
+    end
+
+    sig { params(path: String).returns(T.nilable(String)) }
+    def mime_type_for(path)
+      # The `file` command appears to be hanging on MacOS for some files so we timeout after 1s.
+      %x{timeout 1s file --mime-type -b '#{path}'}.split("; ").first&.strip
     end
   end
 end
