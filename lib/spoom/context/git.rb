@@ -116,6 +116,12 @@ module Spoom
         git("log #{arg.join(" ")}")
       end
 
+      # Run `git push <remote> <ref>` in this context directory
+      sig { params(remote: String, ref: String, force: T::Boolean).returns(ExecResult) }
+      def git_push!(remote, ref, force: false)
+        git("push #{force ? "-f" : ""} #{remote} #{ref}")
+      end
+
       sig { params(arg: String).returns(ExecResult) }
       def git_show(*arg)
         git("show #{arg.join(" ")}")

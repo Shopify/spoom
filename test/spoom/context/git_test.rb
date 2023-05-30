@@ -199,6 +199,28 @@ module Spoom
         context.destroy!
       end
 
+      def test_context_git_push!
+        context1 = Context.mktmp!
+        context1.git_init!(branch: "main")
+        context1.git("config user.name 'John Doe'")
+        context1.git("config user.email 'john@doe.org'")
+
+        context2 = Context.mktmp!
+        context2.git_init!(branch: "foo")
+        context2.git("config user.name 'John Doe'")
+        context2.git("config user.email 'john@doe.org'")
+        context2.write!("b")
+        context2.git_commit!
+
+        context2.git_push!(context1.absolute_path, "foo")
+        context1.git_checkout!(ref: "foo")
+        refute(context1.file?("a"))
+        assert(context1.file?("b"))
+
+        context1.destroy!
+        context2.destroy!
+      end
+
       def test_context_git_show
         context = Context.mktmp!
         context.git_init!
