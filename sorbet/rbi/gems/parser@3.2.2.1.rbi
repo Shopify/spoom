@@ -876,7 +876,7 @@ class Parser::Builders::Default
   # source://parser//lib/parser/builders/default.rb#243
   def initialize; end
 
-  # source://parser//lib/parser/builders/default.rb#701
+  # source://parser//lib/parser/builders/default.rb#690
   def __ENCODING__(__ENCODING__t); end
 
   # source://parser//lib/parser/builders/default.rb#348
@@ -885,79 +885,79 @@ class Parser::Builders::Default
   # source://parser//lib/parser/builders/default.rb#312
   def __LINE__(__LINE__t); end
 
-  # source://parser//lib/parser/builders/default.rb#627
+  # source://parser//lib/parser/builders/default.rb#616
   def accessible(node); end
 
-  # source://parser//lib/parser/builders/default.rb#876
+  # source://parser//lib/parser/builders/default.rb#865
   def alias(alias_t, to, from); end
 
-  # source://parser//lib/parser/builders/default.rb#915
+  # source://parser//lib/parser/builders/default.rb#904
   def arg(name_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1005
+  # source://parser//lib/parser/builders/default.rb#994
   def arg_expr(expr); end
 
-  # source://parser//lib/parser/builders/default.rb#885
+  # source://parser//lib/parser/builders/default.rb#874
   def args(begin_t, args, end_t, check_args = T.unsafe(nil)); end
 
   # source://parser//lib/parser/builders/default.rb#440
   def array(begin_t, elements, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1588
+  # source://parser//lib/parser/builders/default.rb#1577
   def array_pattern(lbrack_t, elements, rbrack_t); end
 
-  # source://parser//lib/parser/builders/default.rb#765
+  # source://parser//lib/parser/builders/default.rb#754
   def assign(lhs, eql_t, rhs); end
 
-  # source://parser//lib/parser/builders/default.rb#710
+  # source://parser//lib/parser/builders/default.rb#699
   def assignable(node); end
 
   # source://parser//lib/parser/builders/default.rb#540
   def associate(begin_t, pairs, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1169
+  # source://parser//lib/parser/builders/default.rb#1158
   def attr_asgn(receiver, dot_t, selector_t); end
 
-  # source://parser//lib/parser/builders/default.rb#617
+  # source://parser//lib/parser/builders/default.rb#606
   def back_ref(token); end
 
-  # source://parser//lib/parser/builders/default.rb#1433
+  # source://parser//lib/parser/builders/default.rb#1422
   def begin(begin_t, body, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1375
+  # source://parser//lib/parser/builders/default.rb#1364
   def begin_body(compound_stmt, rescue_bodies = T.unsafe(nil), else_t = T.unsafe(nil), else_ = T.unsafe(nil), ensure_t = T.unsafe(nil), ensure_ = T.unsafe(nil)); end
 
-  # source://parser//lib/parser/builders/default.rb#1451
+  # source://parser//lib/parser/builders/default.rb#1440
   def begin_keyword(begin_t, body, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1203
+  # source://parser//lib/parser/builders/default.rb#1192
   def binary_op(receiver, operator_t, arg); end
 
-  # source://parser//lib/parser/builders/default.rb#1120
+  # source://parser//lib/parser/builders/default.rb#1109
   def block(method_call, begin_t, args, body, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1155
+  # source://parser//lib/parser/builders/default.rb#1144
   def block_pass(amper_t, arg); end
 
-  # source://parser//lib/parser/builders/default.rb#980
+  # source://parser//lib/parser/builders/default.rb#969
   def blockarg(amper_t, name_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1025
+  # source://parser//lib/parser/builders/default.rb#1014
   def blockarg_expr(amper_t, expr); end
 
-  # source://parser//lib/parser/builders/default.rb#1111
+  # source://parser//lib/parser/builders/default.rb#1100
   def call_lambda(lambda_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1094
+  # source://parser//lib/parser/builders/default.rb#1083
   def call_method(receiver, dot_t, selector_t, lparen_t = T.unsafe(nil), args = T.unsafe(nil), rparen_t = T.unsafe(nil)); end
 
-  # source://parser//lib/parser/builders/default.rb#1066
+  # source://parser//lib/parser/builders/default.rb#1055
   def call_type_for_dot(dot_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1308
+  # source://parser//lib/parser/builders/default.rb#1297
   def case(case_t, expr, when_bodies, else_t, else_body, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1471
+  # source://parser//lib/parser/builders/default.rb#1460
   def case_match(case_t, expr, in_bodies, else_t, else_body, end_t); end
 
   # source://parser//lib/parser/builders/default.rb#343
@@ -966,55 +966,55 @@ class Parser::Builders::Default
   # source://parser//lib/parser/builders/default.rb#284
   def complex(complex_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1421
+  # source://parser//lib/parser/builders/default.rb#1410
   def compstmt(statements); end
 
-  # source://parser//lib/parser/builders/default.rb#1284
+  # source://parser//lib/parser/builders/default.rb#1273
   def condition(cond_t, cond, then_t, if_true, else_t, if_false, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1290
+  # source://parser//lib/parser/builders/default.rb#1279
   def condition_mod(if_true, if_false, cond_t, cond); end
 
-  # source://parser//lib/parser/builders/default.rb#684
+  # source://parser//lib/parser/builders/default.rb#673
   def const(name_t); end
 
-  # source://parser//lib/parser/builders/default.rb#696
+  # source://parser//lib/parser/builders/default.rb#685
   def const_fetch(scope, t_colon2, name_t); end
 
-  # source://parser//lib/parser/builders/default.rb#689
+  # source://parser//lib/parser/builders/default.rb#678
   def const_global(t_colon3, name_t); end
 
-  # source://parser//lib/parser/builders/default.rb#761
+  # source://parser//lib/parser/builders/default.rb#750
   def const_op_assignable(node); end
 
-  # source://parser//lib/parser/builders/default.rb#1618
+  # source://parser//lib/parser/builders/default.rb#1607
   def const_pattern(const, ldelim_t, pattern, rdelim_t); end
 
-  # source://parser//lib/parser/builders/default.rb#612
+  # source://parser//lib/parser/builders/default.rb#601
   def cvar(token); end
 
   # source://parser//lib/parser/builders/default.rb#388
   def dedent_string(node, dedent_level); end
 
-  # source://parser//lib/parser/builders/default.rb#812
+  # source://parser//lib/parser/builders/default.rb#801
   def def_class(class_t, name, lt_t, superclass, body, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#843
+  # source://parser//lib/parser/builders/default.rb#832
   def def_endless_method(def_t, name_t, args, assignment_t, body); end
 
-  # source://parser//lib/parser/builders/default.rb#861
+  # source://parser//lib/parser/builders/default.rb#850
   def def_endless_singleton(def_t, definee, dot_t, name_t, args, assignment_t, body); end
 
-  # source://parser//lib/parser/builders/default.rb#835
+  # source://parser//lib/parser/builders/default.rb#824
   def def_method(def_t, name_t, args, body, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#825
+  # source://parser//lib/parser/builders/default.rb#814
   def def_module(module_t, name, body, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#819
+  # source://parser//lib/parser/builders/default.rb#808
   def def_sclass(class_t, lshft_t, expr, body, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#851
+  # source://parser//lib/parser/builders/default.rb#840
   def def_singleton(def_t, definee, dot_t, name_t, args, body, end_t); end
 
   # source://parser//lib/parser/builders/default.rb#237
@@ -1026,157 +1026,157 @@ class Parser::Builders::Default
   # source://parser//lib/parser/builders/default.rb#265
   def false(false_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1609
+  # source://parser//lib/parser/builders/default.rb#1598
   def find_pattern(lbrack_t, elements, rbrack_t); end
 
   # source://parser//lib/parser/builders/default.rb#276
   def float(float_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1329
+  # source://parser//lib/parser/builders/default.rb#1318
   def for(for_t, iterator, in_t, iteratee, do_t, body, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#911
+  # source://parser//lib/parser/builders/default.rb#900
   def forward_arg(dots_t); end
 
-  # source://parser//lib/parser/builders/default.rb#901
+  # source://parser//lib/parser/builders/default.rb#890
   def forward_only_args(begin_t, dots_t, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1082
+  # source://parser//lib/parser/builders/default.rb#1071
   def forwarded_args(dots_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1090
+  # source://parser//lib/parser/builders/default.rb#1079
   def forwarded_kwrestarg(dstar_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1086
+  # source://parser//lib/parser/builders/default.rb#1075
   def forwarded_restarg(star_t); end
 
-  # source://parser//lib/parser/builders/default.rb#607
+  # source://parser//lib/parser/builders/default.rb#596
   def gvar(token); end
 
-  # source://parser//lib/parser/builders/default.rb#1582
+  # source://parser//lib/parser/builders/default.rb#1571
   def hash_pattern(lbrace_t, kwargs, rbrace_t); end
 
-  # source://parser//lib/parser/builders/default.rb#597
+  # source://parser//lib/parser/builders/default.rb#586
   def ident(token); end
 
-  # source://parser//lib/parser/builders/default.rb#1498
+  # source://parser//lib/parser/builders/default.rb#1487
   def if_guard(if_t, if_body); end
 
-  # source://parser//lib/parser/builders/default.rb#1477
+  # source://parser//lib/parser/builders/default.rb#1466
   def in_match(lhs, in_t, rhs); end
 
-  # source://parser//lib/parser/builders/default.rb#1492
+  # source://parser//lib/parser/builders/default.rb#1481
   def in_pattern(in_t, pattern, guard, then_t, body); end
 
-  # source://parser//lib/parser/builders/default.rb#1178
+  # source://parser//lib/parser/builders/default.rb#1167
   def index(receiver, lbrack_t, indexes, rbrack_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1192
+  # source://parser//lib/parser/builders/default.rb#1181
   def index_asgn(receiver, lbrack_t, indexes, rbrack_t); end
 
   # source://parser//lib/parser/builders/default.rb#272
   def integer(integer_t); end
 
-  # source://parser//lib/parser/builders/default.rb#602
+  # source://parser//lib/parser/builders/default.rb#591
   def ivar(token); end
 
-  # source://parser//lib/parser/builders/default.rb#1337
+  # source://parser//lib/parser/builders/default.rb#1326
   def keyword_cmd(type, keyword_t, lparen_t = T.unsafe(nil), args = T.unsafe(nil), rparen_t = T.unsafe(nil)); end
 
-  # source://parser//lib/parser/builders/default.rb#942
+  # source://parser//lib/parser/builders/default.rb#931
   def kwarg(name_t); end
 
-  # source://parser//lib/parser/builders/default.rb#968
+  # source://parser//lib/parser/builders/default.rb#957
   def kwnilarg(dstar_t, nil_t); end
 
-  # source://parser//lib/parser/builders/default.rb#949
+  # source://parser//lib/parser/builders/default.rb#938
   def kwoptarg(name_t, value); end
 
-  # source://parser//lib/parser/builders/default.rb#956
+  # source://parser//lib/parser/builders/default.rb#945
   def kwrestarg(dstar_t, name_t = T.unsafe(nil)); end
 
   # source://parser//lib/parser/builders/default.rb#535
   def kwsplat(dstar_t, arg); end
 
-  # source://parser//lib/parser/builders/default.rb#1277
+  # source://parser//lib/parser/builders/default.rb#1266
   def logical_op(type, lhs, op_t, rhs); end
 
-  # source://parser//lib/parser/builders/default.rb#1315
+  # source://parser//lib/parser/builders/default.rb#1304
   def loop(type, keyword_t, cond, do_t, body, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1320
+  # source://parser//lib/parser/builders/default.rb#1309
   def loop_mod(type, body, keyword_t, cond); end
 
-  # source://parser//lib/parser/builders/default.rb#1632
+  # source://parser//lib/parser/builders/default.rb#1621
   def match_alt(left, pipe_t, right); end
 
-  # source://parser//lib/parser/builders/default.rb#1639
+  # source://parser//lib/parser/builders/default.rb#1628
   def match_as(value, assoc_t, as); end
 
-  # source://parser//lib/parser/builders/default.rb#1518
+  # source://parser//lib/parser/builders/default.rb#1507
   def match_hash_var(name_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1532
+  # source://parser//lib/parser/builders/default.rb#1521
   def match_hash_var_from_str(begin_t, strings, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1670
+  # source://parser//lib/parser/builders/default.rb#1659
   def match_label(label_type, label); end
 
-  # source://parser//lib/parser/builders/default.rb#1646
+  # source://parser//lib/parser/builders/default.rb#1635
   def match_nil_pattern(dstar_t, nil_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1225
+  # source://parser//lib/parser/builders/default.rb#1214
   def match_op(receiver, match_t, arg); end
 
-  # source://parser//lib/parser/builders/default.rb#1651
+  # source://parser//lib/parser/builders/default.rb#1640
   def match_pair(label_type, label, value); end
 
-  # source://parser//lib/parser/builders/default.rb#1482
+  # source://parser//lib/parser/builders/default.rb#1471
   def match_pattern(lhs, match_t, rhs); end
 
-  # source://parser//lib/parser/builders/default.rb#1487
+  # source://parser//lib/parser/builders/default.rb#1476
   def match_pattern_p(lhs, match_t, rhs); end
 
-  # source://parser//lib/parser/builders/default.rb#1571
+  # source://parser//lib/parser/builders/default.rb#1560
   def match_rest(star_t, name_t = T.unsafe(nil)); end
 
-  # source://parser//lib/parser/builders/default.rb#1506
+  # source://parser//lib/parser/builders/default.rb#1495
   def match_var(name_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1614
+  # source://parser//lib/parser/builders/default.rb#1603
   def match_with_trailing_comma(match, comma_t); end
 
-  # source://parser//lib/parser/builders/default.rb#803
+  # source://parser//lib/parser/builders/default.rb#792
   def multi_assign(lhs, eql_t, rhs); end
 
-  # source://parser//lib/parser/builders/default.rb#798
+  # source://parser//lib/parser/builders/default.rb#787
   def multi_lhs(begin_t, items, end_t); end
 
   # source://parser//lib/parser/builders/default.rb#255
   def nil(nil_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1253
+  # source://parser//lib/parser/builders/default.rb#1242
   def not_op(not_t, begin_t = T.unsafe(nil), receiver = T.unsafe(nil), end_t = T.unsafe(nil)); end
 
-  # source://parser//lib/parser/builders/default.rb#622
+  # source://parser//lib/parser/builders/default.rb#611
   def nth_ref(token); end
 
-  # source://parser//lib/parser/builders/default.rb#897
+  # source://parser//lib/parser/builders/default.rb#886
   def numargs(max_numparam); end
 
-  # source://parser//lib/parser/builders/default.rb#1036
+  # source://parser//lib/parser/builders/default.rb#1025
   def objc_kwarg(kwname_t, assoc_t, name_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1050
+  # source://parser//lib/parser/builders/default.rb#1039
   def objc_restarg(star_t, name = T.unsafe(nil)); end
 
-  # source://parser//lib/parser/builders/default.rb#1160
+  # source://parser//lib/parser/builders/default.rb#1149
   def objc_varargs(pair, rest_of_varargs); end
 
-  # source://parser//lib/parser/builders/default.rb#772
+  # source://parser//lib/parser/builders/default.rb#761
   def op_assign(lhs, op_t, rhs); end
 
-  # source://parser//lib/parser/builders/default.rb#922
+  # source://parser//lib/parser/builders/default.rb#911
   def optarg(name_t, eql_t, value); end
 
   # source://parser//lib/parser/builders/default.rb#488
@@ -1200,22 +1200,22 @@ class Parser::Builders::Default
   # source://parser//lib/parser/builders/default.rb#225
   def parser=(_arg0); end
 
-  # source://parser//lib/parser/builders/default.rb#1627
+  # source://parser//lib/parser/builders/default.rb#1616
   def pin(pin_t, var); end
 
-  # source://parser//lib/parser/builders/default.rb#1360
+  # source://parser//lib/parser/builders/default.rb#1349
   def postexe(postexe_t, lbrace_t, compstmt, rbrace_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1355
+  # source://parser//lib/parser/builders/default.rb#1344
   def preexe(preexe_t, lbrace_t, compstmt, rbrace_t); end
 
-  # source://parser//lib/parser/builders/default.rb#990
+  # source://parser//lib/parser/builders/default.rb#979
   def procarg0(arg); end
 
-  # source://parser//lib/parser/builders/default.rb#583
+  # source://parser//lib/parser/builders/default.rb#572
   def range_exclusive(lhs, dot3_t, rhs); end
 
-  # source://parser//lib/parser/builders/default.rb#578
+  # source://parser//lib/parser/builders/default.rb#567
   def range_inclusive(lhs, dot2_t, rhs); end
 
   # source://parser//lib/parser/builders/default.rb#280
@@ -1227,19 +1227,19 @@ class Parser::Builders::Default
   # source://parser//lib/parser/builders/default.rb#417
   def regexp_options(regopt_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1367
+  # source://parser//lib/parser/builders/default.rb#1356
   def rescue_body(rescue_t, exc_list, assoc_t, exc_var, then_t, compound_stmt); end
 
-  # source://parser//lib/parser/builders/default.rb#931
+  # source://parser//lib/parser/builders/default.rb#920
   def restarg(star_t, name_t = T.unsafe(nil)); end
 
-  # source://parser//lib/parser/builders/default.rb#1014
+  # source://parser//lib/parser/builders/default.rb#1003
   def restarg_expr(star_t, expr = T.unsafe(nil)); end
 
-  # source://parser//lib/parser/builders/default.rb#592
+  # source://parser//lib/parser/builders/default.rb#581
   def self(token); end
 
-  # source://parser//lib/parser/builders/default.rb#973
+  # source://parser//lib/parser/builders/default.rb#962
   def shadowarg(name_t); end
 
   # source://parser//lib/parser/builders/default.rb#445
@@ -1266,7 +1266,7 @@ class Parser::Builders::Default
   # source://parser//lib/parser/builders/default.rb#469
   def symbols_compose(begin_t, parts, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1295
+  # source://parser//lib/parser/builders/default.rb#1284
   def ternary(cond, question_t, if_true, colon_t, if_false); end
 
   # source://parser//lib/parser/builders/default.rb#260
@@ -1275,16 +1275,16 @@ class Parser::Builders::Default
   # source://parser//lib/parser/builders/default.rb#294
   def unary_num(unary_t, numeric); end
 
-  # source://parser//lib/parser/builders/default.rb#1241
+  # source://parser//lib/parser/builders/default.rb#1230
   def unary_op(op_t, receiver); end
 
-  # source://parser//lib/parser/builders/default.rb#871
+  # source://parser//lib/parser/builders/default.rb#860
   def undef_method(undef_t, names); end
 
-  # source://parser//lib/parser/builders/default.rb#1502
+  # source://parser//lib/parser/builders/default.rb#1491
   def unless_guard(unless_t, unless_body); end
 
-  # source://parser//lib/parser/builders/default.rb#1302
+  # source://parser//lib/parser/builders/default.rb#1291
   def when(when_t, patterns, then_t, body); end
 
   # source://parser//lib/parser/builders/default.rb#455
@@ -1298,184 +1298,184 @@ class Parser::Builders::Default
 
   private
 
-  # source://parser//lib/parser/builders/default.rb#1809
+  # source://parser//lib/parser/builders/default.rb#1798
   def arg_name_collides?(this_name, that_name); end
 
-  # source://parser//lib/parser/builders/default.rb#2005
+  # source://parser//lib/parser/builders/default.rb#1994
   def arg_prefix_map(op_t, name_t = T.unsafe(nil)); end
 
-  # source://parser//lib/parser/builders/default.rb#1979
+  # source://parser//lib/parser/builders/default.rb#1968
   def binary_op_map(left_e, op_t, right_e); end
 
-  # source://parser//lib/parser/builders/default.rb#2107
+  # source://parser//lib/parser/builders/default.rb#2096
   def block_map(receiver_l, begin_t, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1784
+  # source://parser//lib/parser/builders/default.rb#1773
   def check_assignment_to_numparam(name, loc); end
 
-  # source://parser//lib/parser/builders/default.rb#1686
+  # source://parser//lib/parser/builders/default.rb#1675
   def check_condition(cond); end
 
-  # source://parser//lib/parser/builders/default.rb#1755
+  # source://parser//lib/parser/builders/default.rb#1744
   def check_duplicate_arg(this_arg, map = T.unsafe(nil)); end
 
-  # source://parser//lib/parser/builders/default.rb#1730
+  # source://parser//lib/parser/builders/default.rb#1719
   def check_duplicate_args(args, map = T.unsafe(nil)); end
 
-  # source://parser//lib/parser/builders/default.rb#1842
+  # source://parser//lib/parser/builders/default.rb#1831
   def check_duplicate_pattern_key(name, loc); end
 
-  # source://parser//lib/parser/builders/default.rb#1832
+  # source://parser//lib/parser/builders/default.rb#1821
   def check_duplicate_pattern_variable(name, loc); end
 
-  # source://parser//lib/parser/builders/default.rb#1824
+  # source://parser//lib/parser/builders/default.rb#1813
   def check_lvar_name(name, loc); end
 
-  # source://parser//lib/parser/builders/default.rb#1799
+  # source://parser//lib/parser/builders/default.rb#1788
   def check_reserved_for_numparam(name, loc); end
 
-  # source://parser//lib/parser/builders/default.rb#2264
+  # source://parser//lib/parser/builders/default.rb#2253
   def collapse_string_parts?(parts); end
 
-  # source://parser//lib/parser/builders/default.rb#1930
+  # source://parser//lib/parser/builders/default.rb#1919
   def collection_map(begin_t, parts, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#2134
+  # source://parser//lib/parser/builders/default.rb#2123
   def condition_map(keyword_t, cond_e, begin_t, body_e, else_t, else_e, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1965
+  # source://parser//lib/parser/builders/default.rb#1954
   def constant_map(scope, colon2_t, name_t); end
 
-  # source://parser//lib/parser/builders/default.rb#2038
+  # source://parser//lib/parser/builders/default.rb#2027
   def definition_map(keyword_t, operator_t, name_t, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1871
+  # source://parser//lib/parser/builders/default.rb#1860
   def delimited_string_map(string_t); end
 
-  # source://parser//lib/parser/builders/default.rb#2286
+  # source://parser//lib/parser/builders/default.rb#2275
   def diagnostic(type, reason, arguments, location, highlights = T.unsafe(nil)); end
 
-  # source://parser//lib/parser/builders/default.rb#2178
+  # source://parser//lib/parser/builders/default.rb#2167
   def eh_keyword_map(compstmt_e, keyword_t, body_es, else_t, else_e); end
 
-  # source://parser//lib/parser/builders/default.rb#2044
+  # source://parser//lib/parser/builders/default.rb#2033
   def endless_definition_map(keyword_t, operator_t, name_t, assignment_t, body_e); end
 
-  # source://parser//lib/parser/builders/default.rb#1926
+  # source://parser//lib/parser/builders/default.rb#1915
   def expr_map(loc); end
 
-  # source://parser//lib/parser/builders/default.rb#2159
+  # source://parser//lib/parser/builders/default.rb#2148
   def for_map(keyword_t, in_t, begin_t, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#2206
+  # source://parser//lib/parser/builders/default.rb#2195
   def guard_map(keyword_t, guard_body_e); end
 
-  # source://parser//lib/parser/builders/default.rb#2096
+  # source://parser//lib/parser/builders/default.rb#2085
   def index_map(receiver_e, lbrack_t, rbrack_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1862
+  # source://parser//lib/parser/builders/default.rb#1851
   def join_exprs(left_expr, right_expr); end
 
-  # source://parser//lib/parser/builders/default.rb#2112
+  # source://parser//lib/parser/builders/default.rb#2101
   def keyword_map(keyword_t, begin_t, args, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#2129
+  # source://parser//lib/parser/builders/default.rb#2118
   def keyword_mod_map(pre_e, keyword_t, post_e); end
 
-  # source://parser//lib/parser/builders/default.rb#2015
+  # source://parser//lib/parser/builders/default.rb#2004
   def kwarg_map(name_t, value_e = T.unsafe(nil)); end
 
-  # source://parser//lib/parser/builders/default.rb#2317
+  # source://parser//lib/parser/builders/default.rb#2306
   def kwargs?(node); end
 
-  # source://parser//lib/parser/builders/default.rb#2281
+  # source://parser//lib/parser/builders/default.rb#2270
   def loc(token); end
 
-  # source://parser//lib/parser/builders/default.rb#2028
+  # source://parser//lib/parser/builders/default.rb#2017
   def module_definition_map(keyword_t, name_e, operator_t, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#1854
+  # source://parser//lib/parser/builders/default.rb#1843
   def n(type, children, source_map); end
 
-  # source://parser//lib/parser/builders/default.rb#1858
+  # source://parser//lib/parser/builders/default.rb#1847
   def n0(type, source_map); end
 
   # source://parser//lib/parser/builders/default.rb#288
   def numeric(kind, token); end
 
-  # source://parser//lib/parser/builders/default.rb#1896
+  # source://parser//lib/parser/builders/default.rb#1885
   def pair_keyword_map(key_t, value_e); end
 
-  # source://parser//lib/parser/builders/default.rb#1911
+  # source://parser//lib/parser/builders/default.rb#1900
   def pair_quoted_map(begin_t, end_t, value_e); end
 
-  # source://parser//lib/parser/builders/default.rb#1882
+  # source://parser//lib/parser/builders/default.rb#1871
   def prefix_string_map(symbol); end
 
-  # source://parser//lib/parser/builders/default.rb#1993
+  # source://parser//lib/parser/builders/default.rb#1982
   def range_map(start_e, op_t, end_e); end
 
-  # source://parser//lib/parser/builders/default.rb#1960
+  # source://parser//lib/parser/builders/default.rb#1949
   def regexp_map(begin_t, end_t, options_e); end
 
-  # source://parser//lib/parser/builders/default.rb#2165
+  # source://parser//lib/parser/builders/default.rb#2154
   def rescue_body_map(keyword_t, exc_list_e, assoc_t, exc_var_e, then_t, compstmt_e); end
 
-  # source://parser//lib/parser/builders/default.rb#2307
+  # source://parser//lib/parser/builders/default.rb#2296
   def rewrite_hash_args_to_kwargs(args); end
 
-  # source://parser//lib/parser/builders/default.rb#2078
+  # source://parser//lib/parser/builders/default.rb#2067
   def send_binary_op_map(lhs_e, selector_t, rhs_e); end
 
-  # source://parser//lib/parser/builders/default.rb#2101
+  # source://parser//lib/parser/builders/default.rb#2090
   def send_index_map(receiver_e, lbrack_t, rbrack_t); end
 
-  # source://parser//lib/parser/builders/default.rb#2052
+  # source://parser//lib/parser/builders/default.rb#2041
   def send_map(receiver_e, dot_t, selector_t, begin_t = T.unsafe(nil), args = T.unsafe(nil), end_t = T.unsafe(nil)); end
 
-  # source://parser//lib/parser/builders/default.rb#2084
+  # source://parser//lib/parser/builders/default.rb#2073
   def send_unary_op_map(selector_t, arg_e); end
 
-  # source://parser//lib/parser/builders/default.rb#2237
+  # source://parser//lib/parser/builders/default.rb#2226
   def static_regexp(parts, options); end
 
-  # source://parser//lib/parser/builders/default.rb#2257
+  # source://parser//lib/parser/builders/default.rb#2246
   def static_regexp_node(node); end
 
-  # source://parser//lib/parser/builders/default.rb#2220
+  # source://parser//lib/parser/builders/default.rb#2209
   def static_string(nodes); end
 
-  # source://parser//lib/parser/builders/default.rb#1946
+  # source://parser//lib/parser/builders/default.rb#1935
   def string_map(begin_t, parts, end_t); end
 
-  # source://parser//lib/parser/builders/default.rb#2273
+  # source://parser//lib/parser/builders/default.rb#2262
   def string_value(token); end
 
-  # source://parser//lib/parser/builders/default.rb#2154
+  # source://parser//lib/parser/builders/default.rb#2143
   def ternary_map(begin_e, question_t, mid_e, colon_t, end_e); end
 
-  # source://parser//lib/parser/builders/default.rb#1867
+  # source://parser//lib/parser/builders/default.rb#1856
   def token_map(token); end
 
-  # source://parser//lib/parser/builders/default.rb#1983
+  # source://parser//lib/parser/builders/default.rb#1972
   def unary_op_map(op_t, arg_e = T.unsafe(nil)); end
 
-  # source://parser//lib/parser/builders/default.rb#1891
+  # source://parser//lib/parser/builders/default.rb#1880
   def unquoted_map(token); end
 
-  # source://parser//lib/parser/builders/default.rb#2295
+  # source://parser//lib/parser/builders/default.rb#2284
   def validate_definee(definee); end
 
-  # source://parser//lib/parser/builders/default.rb#1769
+  # source://parser//lib/parser/builders/default.rb#1758
   def validate_no_forward_arg_after_restarg(args); end
 
-  # source://parser//lib/parser/builders/default.rb#2269
+  # source://parser//lib/parser/builders/default.rb#2258
   def value(token); end
 
-  # source://parser//lib/parser/builders/default.rb#2072
+  # source://parser//lib/parser/builders/default.rb#2061
   def var_send_map(variable_e); end
 
-  # source://parser//lib/parser/builders/default.rb#1975
+  # source://parser//lib/parser/builders/default.rb#1964
   def variable_map(name_t); end
 
   class << self

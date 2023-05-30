@@ -185,7 +185,7 @@ class RBI::TypedParam < ::T::Struct
   const :type, ::String
 
   class << self
-    # source://sorbet-runtime/0.5.10736/lib/types/struct.rb#13
+    # source://sorbet-runtime/0.5.10847/lib/types/struct.rb#13
     def inherited(s); end
   end
 end
@@ -564,7 +564,7 @@ class Tapioca::Commands::Command
   sig { abstract.void }
   def execute; end
 
-  # source://thor/1.2.1/lib/thor/base.rb#139
+  # source://thor/1.2.2/lib/thor/base.rb#139
   sig { returns(::Thor::Actions) }
   def file_writer; end
 
@@ -589,6 +589,11 @@ class Tapioca::Commands::Command
   # source://tapioca//lib/tapioca/commands/command.rb#56
   sig { params(path: T.any(::Pathname, ::String), verbose: T::Boolean).void }
   def remove_file(path, verbose: T.unsafe(nil)); end
+
+  class << self
+    # source://sorbet-runtime/0.5.10847/lib/types/private/abstract/declare.rb#37
+    def new(*args, **_arg1, &blk); end
+  end
 end
 
 # source://tapioca//lib/tapioca/commands/command.rb#10
@@ -606,6 +611,11 @@ class Tapioca::Commands::CommandWithoutTracker < ::Tapioca::Commands::Command
   # source://tapioca//lib/tapioca/commands/command_without_tracker.rb#12
   sig { void }
   def initialize; end
+
+  class << self
+    # source://sorbet-runtime/0.5.10847/lib/types/private/abstract/declare.rb#37
+    def new(*args, **_arg1, &blk); end
+  end
 end
 
 # source://tapioca//lib/tapioca/commands/configure.rb#6
@@ -967,7 +977,7 @@ class Tapioca::ConfigHelper::ConfigError < ::T::Struct
   const :message_parts, T::Array[::Tapioca::ConfigHelper::ConfigErrorMessagePart]
 
   class << self
-    # source://sorbet-runtime/0.5.10736/lib/types/struct.rb#13
+    # source://sorbet-runtime/0.5.10847/lib/types/struct.rb#13
     def inherited(s); end
   end
 end
@@ -978,7 +988,7 @@ class Tapioca::ConfigHelper::ConfigErrorMessagePart < ::T::Struct
   const :colors, T::Array[::Symbol]
 
   class << self
-    # source://sorbet-runtime/0.5.10736/lib/types/struct.rb#13
+    # source://sorbet-runtime/0.5.10847/lib/types/struct.rb#13
     def inherited(s); end
   end
 end
@@ -1093,6 +1103,9 @@ class Tapioca::Dsl::Compiler
     # source://tapioca//lib/tapioca/dsl/compiler.rb#29
     sig { params(constant: ::Module).returns(T::Boolean) }
     def handles?(constant); end
+
+    # source://sorbet-runtime/0.5.10847/lib/types/private/abstract/declare.rb#37
+    def new(*args, **_arg1, &blk); end
 
     # source://tapioca//lib/tapioca/dsl/compiler.rb#37
     sig { returns(T::Set[::Module]) }
@@ -1241,6 +1254,12 @@ class Tapioca::Executor
       ).returns(T::Array[T.type_parameter(:T)])
   end
   def run_in_parallel(&block); end
+
+  private
+
+  # source://tapioca//lib/tapioca/executor.rb#37
+  sig { returns(::Integer) }
+  def max_processors; end
 end
 
 # source://tapioca//lib/tapioca/executor.rb#8
@@ -1281,8 +1300,10 @@ end
 class Tapioca::Gem::Event
   abstract!
 
-  # source://sorbet-runtime/0.5.10736/lib/types/private/abstract/declare.rb#37
-  def initialize(*args, **_arg1, &blk); end
+  class << self
+    # source://sorbet-runtime/0.5.10847/lib/types/private/abstract/declare.rb#37
+    def new(*args, **_arg1, &blk); end
+  end
 end
 
 # source://tapioca//lib/tapioca/gem/events.rb#43
@@ -1333,6 +1354,11 @@ class Tapioca::Gem::Listeners::Base
   # source://tapioca//lib/tapioca/gem/listeners/base.rb#41
   sig { params(event: ::Tapioca::Gem::ScopeNodeAdded).void }
   def on_scope(event); end
+
+  class << self
+    # source://sorbet-runtime/0.5.10847/lib/types/private/abstract/declare.rb#37
+    def new(*args, **_arg1, &blk); end
+  end
 end
 
 # source://tapioca//lib/tapioca/gem/listeners/dynamic_mixins.rb#7
@@ -1713,6 +1739,11 @@ class Tapioca::Gem::NodeAdded < ::Tapioca::Gem::Event
   # source://tapioca//lib/tapioca/gem/events.rb#64
   sig { returns(::String) }
   def symbol; end
+
+  class << self
+    # source://sorbet-runtime/0.5.10847/lib/types/private/abstract/declare.rb#37
+    def new(*args, **_arg1, &blk); end
+  end
 end
 
 # source://tapioca//lib/tapioca/gem/pipeline.rb#6
@@ -2196,9 +2227,6 @@ class Tapioca::Loaders::Loader
 
   abstract!
 
-  # source://sorbet-runtime/0.5.10736/lib/types/private/abstract/declare.rb#37
-  def initialize(*args, **_arg1, &blk); end
-
   # @abstract
   #
   # source://tapioca//lib/tapioca/loaders/loader.rb#17
@@ -2264,6 +2292,11 @@ class Tapioca::Loaders::Loader
   # source://tapioca//lib/tapioca/loaders/loader.rb#129
   sig { returns(T::Boolean) }
   def zeitwerk_mode?; end
+
+  class << self
+    # source://sorbet-runtime/0.5.10847/lib/types/private/abstract/declare.rb#37
+    def new(*args, **_arg1, &blk); end
+  end
 end
 
 # source://tapioca//lib/tapioca/helpers/rbi_files_helper.rb#5
@@ -3088,7 +3121,7 @@ module Tapioca::Static::SymbolLoader
 
     # @return [Array<T.class_of(Rails::Engine)>]
     #
-    # source://sorbet-runtime/0.5.10736/lib/types/private/methods/_methods.rb#255
+    # source://sorbet-runtime/0.5.10847/lib/types/private/methods/_methods.rb#255
     def engines(*args, **_arg1, &blk); end
 
     # source://tapioca//lib/tapioca/static/symbol_loader.rb#73
@@ -3230,14 +3263,14 @@ class URI::Source < ::URI::File
   sig { params(v: T.nilable(::String)).returns(T::Boolean) }
   def check_host(v); end
 
-  # source://uri/0.12.0/uri/generic.rb#243
+  # source://uri/0.12.1/uri/generic.rb#243
   def gem_name; end
 
   # source://tapioca//lib/tapioca/helpers/source_uri.rb#25
   sig { returns(T.nilable(::String)) }
   def gem_version; end
 
-  # source://uri/0.12.0/uri/generic.rb#283
+  # source://uri/0.12.1/uri/generic.rb#283
   def line_number; end
 
   # source://tapioca//lib/tapioca/helpers/source_uri.rb#51
