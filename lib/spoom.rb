@@ -15,6 +15,7 @@ end
 require "spoom/file_collector"
 require "spoom/context"
 require "spoom/colors"
+require "spoom/deadcode"
 require "spoom/sorbet"
 require "spoom/cli"
 require "spoom/version"
