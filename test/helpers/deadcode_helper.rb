@@ -25,7 +25,11 @@ module Spoom
 
           files.each do |file|
             content = project.read(file)
-            Spoom::Deadcode.index_ruby(index, content, file: file)
+            if file.end_with?(".erb")
+              Spoom::Deadcode.index_erb(index, content, file: file)
+            else
+              Spoom::Deadcode.index_ruby(index, content, file: file)
+            end
           end
 
           index.finalize!
