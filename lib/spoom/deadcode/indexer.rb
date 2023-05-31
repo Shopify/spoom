@@ -12,14 +12,15 @@ module Spoom
       sig { returns(Index) }
       attr_reader :index
 
-      sig { params(path: String, source: String, index: Index).void }
-      def initialize(path, source, index)
+      sig { params(path: String, source: String, index: Index, plugins: T::Array[Plugins::Base]).void }
+      def initialize(path, source, index, plugins: [])
         super()
 
         @path = path
         @file_name = T.let(File.basename(path), String)
         @source = source
         @index = index
+        @plugins = plugins
         @previous_node = T.let(nil, T.nilable(SyntaxTree::Node))
         @names_nesting = T.let([], T::Array[String])
         @nodes_nesting = T.let([], T::Array[SyntaxTree::Node])
@@ -228,6 +229,10 @@ module Spoom
             define_attr_writer("#{name}=", "#{full_name}=", arg)
           end
         else
+          @plugins.each do |plugin|
+            plugin.on_send(self, send)
+          end
+
           reference_method(send.name, send.node)
           visit_all(send.args)
           visit(send.block)
@@ -270,8 +275,6 @@ module Spoom
         visit_send(Send.new(node: node, name: node_string(node.value)))
       end
 
-      private
-
       # Definition indexing
 
       sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
@@ -283,6 +286,7 @@ module Spoom
           location: node_location(node),
         )
         @index.define(definition)
+        @plugins.each { |plugin| plugin.on_define_accessor(self, definition) }
       end
 
       sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
@@ -294,6 +298,7 @@ module Spoom
           location: node_location(node),
         )
         @index.define(definition)
+        @plugins.each { |plugin| plugin.on_define_accessor(self, definition) }
       end
 
       sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
@@ -305,6 +310,7 @@ module Spoom
           location: node_location(node),
         )
         @index.define(definition)
+        @plugins.each { |plugin| plugin.on_define_class(self, definition) }
       end
 
       sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
@@ -316,6 +322,7 @@ module Spoom
           location: node_location(node),
         )
         @index.define(definition)
+        @plugins.each { |plugin| plugin.on_define_constant(self, definition) }
       end
 
       sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
@@ -327,6 +334,7 @@ module Spoom
           location: node_location(node),
         )
         @index.define(definition)
+        @plugins.each { |plugin| plugin.on_define_method(self, definition) }
       end
 
       sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
@@ -338,6 +346,7 @@ module Spoom
           location: node_location(node),
         )
         @index.define(definition)
+        @plugins.each { |plugin| plugin.on_define_module(self, definition) }
       end
 
       # Reference indexing
@@ -350,6 +359,77 @@ module Spoom
       sig { params(name: String, node: SyntaxTree::Node).void }
       def reference_method(name, node)
         @index.reference(Reference.new(name: name, kind: Reference::Kind::Method, location: node_location(node)))
+      end
+
+      # Context
+
+      sig { returns(SyntaxTree::Node) }
+      def current_node
+        T.must(@nodes_nesting.last)
+      end
+
+      sig { params(type: T.class_of(SyntaxTree::Node)).returns(T.nilable(SyntaxTree::Node)) }
+      def nesting_node(type)
+        @nodes_nesting.reverse_each do |node|
+          return node if node.is_a?(type)
+        end
+
+        nil
+      end
+
+      sig { returns(T.nilable(SyntaxTree::BlockNode)) }
+      def nesting_block
+        T.cast(nesting_node(SyntaxTree::BlockNode), T.nilable(SyntaxTree::BlockNode))
+      end
+
+      sig { returns(T.nilable(SyntaxTree::MethodAddBlock)) }
+      def nesting_block_call
+        T.cast(nesting_node(SyntaxTree::MethodAddBlock), T.nilable(SyntaxTree::MethodAddBlock))
+      end
+
+      sig { returns(T.nilable(String)) }
+      def nesting_block_call_name
+        block = nesting_block_call
+        return unless block.is_a?(SyntaxTree::MethodAddBlock)
+
+        call = block.call
+        case call
+        when SyntaxTree::ARef
+          node_string(call.collection)
+        when SyntaxTree::CallNode, SyntaxTree::Command, SyntaxTree::CommandCall
+          node_string(call.message)
+        end
+      end
+
+      sig { returns(T.nilable(SyntaxTree::ClassDeclaration)) }
+      def nesting_class
+        T.cast(nesting_node(SyntaxTree::ClassDeclaration), T.nilable(SyntaxTree::ClassDeclaration))
+      end
+
+      sig { returns(T.nilable(String)) }
+      def nesting_class_name
+        nesting_class = self.nesting_class
+        return unless nesting_class
+
+        node_string(nesting_class.constant)
+      end
+
+      sig { returns(T.nilable(String)) }
+      def nesting_class_superclass_name
+        nesting_class = nesting_node(SyntaxTree::ClassDeclaration)
+        return unless nesting_class.is_a?(SyntaxTree::ClassDeclaration)
+
+        nesting_class_superclass = nesting_class.superclass
+        return unless nesting_class_superclass
+
+        node_string(nesting_class_superclass)
+      end
+
+      sig { returns(T.nilable(String)) }
+      def last_sig
+        return unless @previous_node.is_a?(SyntaxTree::MethodAddBlock)
+
+        node_string(@previous_node)
       end
 
       # Node utils
