@@ -43,6 +43,23 @@ module Spoom
         glob("*")
       end
 
+      sig do
+        params(
+          allow_extensions: T::Array[String],
+          allow_mime_types: T::Array[String],
+          exclude_patterns: T::Array[String],
+        ).returns(T::Array[String])
+      end
+      def collect_files(allow_extensions: [], allow_mime_types: [], exclude_patterns: [])
+        collector = FileCollector.new(
+          allow_extensions: allow_extensions,
+          allow_mime_types: allow_mime_types,
+          exclude_patterns: exclude_patterns,
+        )
+        collector.visit_path(absolute_path)
+        collector.files.map { |file| file.delete_prefix("#{absolute_path}/") }
+      end
+
       # Does `relative_path` point to an existing file in this context directory?
       sig { params(relative_path: String).returns(T::Boolean) }
       def file?(relative_path)
