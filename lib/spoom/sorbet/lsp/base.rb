@@ -12,9 +12,6 @@ module Spoom
     class Message
       extend T::Sig
 
-      sig { returns(String) }
-      attr_reader :jsonrpc
-
       sig { void }
       def initialize
         @jsonrpc = T.let("2.0", String)
