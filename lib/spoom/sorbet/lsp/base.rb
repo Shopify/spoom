@@ -40,9 +40,6 @@ module Spoom
       sig { returns(Integer) }
       attr_reader :id
 
-      sig { returns(String) }
-      attr_reader :method
-
       sig { returns(T::Hash[T.untyped, T.untyped]) }
       attr_reader :params
 
