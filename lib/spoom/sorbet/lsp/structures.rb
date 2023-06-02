@@ -310,7 +310,7 @@ module Spoom
       extend T::Sig
 
       sig { returns(T::Set[Integer]) }
-      attr_accessor :seen
+      attr_reader :seen
 
       sig { returns(T.nilable(String)) }
       attr_accessor :prefix
