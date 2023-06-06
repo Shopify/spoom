@@ -65,7 +65,7 @@ module Spoom
         context.write!("f/g/h.rb", "")
         context.write!("f/g/h.rbi", "")
 
-        files = collect_files(context, exclude_patterns: ["b/**", "c/c/*", "*.rb"])
+        files = collect_files(context, exclude_patterns: ["b/**", "c/c/*", "**/*.rb"])
         assert_equal(["a/a", "c/d/e", "f/g/h.rbi"], files)
 
         context.destroy!
