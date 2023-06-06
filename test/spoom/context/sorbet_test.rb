@@ -36,6 +36,7 @@ module Spoom
 
           gem "sorbet"
         GEMFILE
+        context.bundle("config set --local path $GEM_HOME")
         context.bundle_install!
 
         res = context.srb("tc")

@@ -19,6 +19,7 @@ module Spoom
       project = TestProject.mktmp!(name || self.name)
       project.write_gemfile!(spoom_gemfile)
       project.write_sorbet_config!(".")
+      project.bundle("config set --local path $GEM_HOME")
       project
     end
 
