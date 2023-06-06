@@ -37,25 +37,25 @@ module Spoom
         sig { params(index: Deadcode::Index, name: String).void }
         def assert_alive(index, name)
           defs = definitions_for_name(index, name)
-          assert(defs.all?(&:alive?))
+          assert(defs.all?(&:alive?), "Expected all definitions for `#{name}` to be alive")
         end
 
         sig { params(index: Deadcode::Index, name: String).void }
         def assert_dead(index, name)
           defs = definitions_for_name(index, name)
-          assert(defs.all?(&:dead?))
+          assert(defs.all?(&:dead?), "Expected all definitions for `#{name}` to be dead")
         end
 
         sig { params(index: Deadcode::Index, name: String).void }
         def assert_ignored(index, name)
           defs = definitions_for_name(index, name)
-          assert(defs.all?(&:ignored?))
+          assert(defs.all?(&:ignored?), "Expected all definitions for `#{name}` to be ignored")
         end
 
         sig { params(index: Deadcode::Index, name: String).void }
         def refute_ignored(index, name)
           defs = definitions_for_name(index, name)
-          assert(defs.none?(&:ignored?))
+          assert(defs.none?(&:ignored?), "Expected all definitions for `#{name}` to not be ignored")
         end
 
         private
@@ -63,7 +63,7 @@ module Spoom
         sig { params(index: Deadcode::Index, name: String).returns(T::Array[Deadcode::Definition]) }
         def definitions_for_name(index, name)
           defs = index.definitions_for_name(name)
-          refute_empty(defs)
+          refute_empty(defs, "No indexed definition found for `#{name}`")
           defs
         end
       end
