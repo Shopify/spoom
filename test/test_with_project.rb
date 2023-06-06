@@ -11,6 +11,9 @@ module Spoom
 
     abstract!
 
+    sig { returns(TestProject) }
+    attr_reader :project
+
     sig { params(args: T.untyped).void }
     def initialize(*args)
       super
