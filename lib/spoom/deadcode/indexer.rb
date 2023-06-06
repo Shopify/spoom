@@ -106,8 +106,11 @@ module Spoom
         const_name = node_string(node.constant)
         @names_nesting << const_name
         define_class(T.must(const_name.split("::").last), @names_nesting.join("::"), node)
+
+        # We do not call `super` here because we don't want to visit the `constant` again
         visit(node.superclass) if node.superclass
         visit(node.bodystmt)
+
         @names_nesting.pop
       end
 
@@ -143,7 +146,9 @@ module Spoom
 
       sig { override.params(node: SyntaxTree::ConstPathField).void }
       def visit_const_path_field(node)
+        # We do not call `super` here because we don't want to visit the `constant` again
         visit(node.parent)
+
         name = node.constant.value
         full_name = [*@names_nesting, node_string(node.parent), name].join("::")
         define_constant(name, full_name, node)
@@ -178,7 +183,10 @@ module Spoom
         const_name = node_string(node.constant)
         @names_nesting << const_name
         define_module(T.must(const_name.split("::").last), @names_nesting.join("::"), node)
+
+        # We do not call `super` here because we don't want to visit the `constant` again
         visit(node.bodystmt)
+
         @names_nesting.pop
       end
 
