@@ -69,7 +69,24 @@ module Spoom
         allowed_extensions = Spoom::Sorbet::Config::DEFAULT_ALLOWED_EXTENSIONS if allowed_extensions.empty?
         allowed_extensions -= [".rbi"] unless include_rbis
 
-        excluded_patterns = config.ignore.map { |string| File.join("**", string, "**") }
+        excluded_patterns = config.ignore.map do |string|
+          # We need to simulate the behavior of Sorbet's `--ignore` flag.
+          #
+          # From Sorbet docs on `--ignore`:
+          # > Ignores input files that contain the given string in their paths (relative to the input path passed to
+          # > Sorbet). Strings beginning with / match against the prefix of these relative paths; others are substring
+          # > matchs. Matches must be against whole folder and file names, so `foo` matches `/foo/bar.rb` and
+          # > `/bar/foo/baz.rb` but not `/foo.rb` or `/foo2/bar.rb`.
+          string = if string.start_with?("/")
+            # Strings beginning with / match against the prefix of these relative paths
+            File.join(absolute_path, string)
+          else
+            # Others are substring matchs
+            File.join(absolute_path, "**", string)
+          end
+          # Matches must be against whole folder and file names
+          "#{string.delete_suffix("/")}{,/**}"
+        end
 
         collector = FileCollector.new(allow_extensions: allowed_extensions, exclude_patterns: excluded_patterns)
         collector.visit_paths(config.paths.map { |path| absolute_path_to(path) })
