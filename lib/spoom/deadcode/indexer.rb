@@ -69,7 +69,7 @@ module Spoom
           reference_method(symbol_string(value), node)
         when SyntaxTree::VCall
           # If the block call is something like `x.select { ... }`, we need to visit the block
-          visit(value)
+          super
         end
       end
 
