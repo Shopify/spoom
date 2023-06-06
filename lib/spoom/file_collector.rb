@@ -86,7 +86,11 @@ module Spoom
 
     sig { params(path: String).returns(T::Boolean) }
     def excluded_path?(path)
-      @exclude_patterns.any? { |pattern| File.fnmatch?(pattern, path) }
+      @exclude_patterns.any? do |pattern|
+        # Use `FNM_PATHNAME` so patterns do not match directory separators
+        # Use `FNM_EXTGLOB` to allow file globbing through `{a,b}`
+        File.fnmatch?(pattern, path, File::FNM_PATHNAME | File::FNM_EXTGLOB)
+      end
     end
 
     sig { params(path: String).returns(T.nilable(String)) }

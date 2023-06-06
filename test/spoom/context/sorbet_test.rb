@@ -322,12 +322,14 @@ module Spoom
         context.write_sorbet_config!(<<~CONFIG)
           .
           --ignore=foo
+          --ignore=baz
         CONFIG
 
         context.write!("foo.rb", "")
         context.write!("foo/bar.rb", "")
         context.write!("bar/foo/baz.rb", "")
         context.write!("foo2/bar.rb", "")
+        context.write!("baz", "")
 
         # From Sorbet docs on `--ignore`:
         # > Ignores input files that contain the given string in their paths (relative to the input path passed to
@@ -335,6 +337,26 @@ module Spoom
         # > matchs. Matches must be against whole folder and file names, so `foo` matches `/foo/bar.rb` and
         # > `/bar/foo/baz.rb` but not `/foo.rb` or `/foo2/bar.rb`.
         assert_equal(["foo.rb", "foo2/bar.rb"], context.srb_files)
+
+        context.destroy!
+      end
+
+      def test_context_srb_files_with_custom_ignore_prefixed_with_slash
+        context = Context.mktmp!
+
+        context.write_sorbet_config!(<<~CONFIG)
+          .
+          --ignore=/config/routes.rb
+          --ignore=/lib/generators/
+        CONFIG
+
+        context.write!("foo.rb", "")
+        context.write!("config/routes.rb", "")
+        context.write!("lib/generators/generator1.rb", "")
+        context.write!("lib/generators/generator2.rb", "")
+        context.write!("foo/lib/generators/generator.rb", "")
+
+        assert_equal(["foo.rb", "foo/lib/generators/generator.rb"], context.srb_files)
 
         context.destroy!
       end

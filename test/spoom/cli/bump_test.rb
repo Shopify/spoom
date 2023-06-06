@@ -427,6 +427,39 @@ module Spoom
         assert_equal("false", @project.read_file_strictness("vendor/file2.rb"))
       end
 
+      def test_bump_files_handle_ignored_paths_in_config
+        @project.write_sorbet_config!(<<~CONFIG)
+          .
+          --ignore=/config/routes.rb
+          --ignore=/test/lib/generators
+        CONFIG
+        @project.write!("file1.rb", <<~RB)
+          # typed: false
+          class A; end
+        RB
+        @project.write!("config/routes.rb", <<~RB)
+          # typed: false
+          class B; end
+        RB
+        @project.write!("test/lib/generators/generator.rb", <<~RB)
+          # typed: false
+          class C; end
+        RB
+
+        result = @project.spoom("bump --no-color")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
+          Checking files...
+
+          Bumped `1` file from `false` to `true`:
+           + file1.rb
+        OUT
+        refute(result.status)
+
+        assert_equal("false", @project.read_file_strictness("config/routes.rb"))
+        assert_equal("false", @project.read_file_strictness("/test/lib/generators/generator.rb"))
+      end
+
       def test_count_errors_without_dry
         @project.write!("file1.rb", <<~RB)
           # typed: false
