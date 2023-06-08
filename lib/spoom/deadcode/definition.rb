@@ -88,11 +88,6 @@ module Spoom
       def ignored?
         status == Status::IGNORED
       end
-
-      sig { void }
-      def ignored!
-        @status = Status::IGNORED
-      end
     end
   end
 end
