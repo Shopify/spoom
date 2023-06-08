@@ -8,8 +8,6 @@ module Spoom
 
       include Comparable
 
-      class LocationError < Spoom::Error; end
-
       class << self
         extend T::Sig
 
