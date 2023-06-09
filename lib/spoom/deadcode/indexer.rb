@@ -8,10 +8,6 @@ module Spoom
 
       sig { returns(String) }
       attr_reader :path, :file_name
-
-      sig { returns(Index) }
-      attr_reader :index
-
       sig { params(path: String, source: String, index: Index).void }
       def initialize(path, source, index)
         super()
