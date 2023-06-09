@@ -47,12 +47,6 @@ module Spoom
         end
 
         sig { params(index: Deadcode::Index, name: String).void }
-        def assert_ignored(index, name)
-          defs = definitions_for_name(index, name)
-          assert(defs.all?(&:ignored?), "Expected all definitions for `#{name}` to be ignored")
-        end
-
-        sig { params(index: Deadcode::Index, name: String).void }
         def refute_ignored(index, name)
           defs = definitions_for_name(index, name)
           assert(defs.none?(&:ignored?), "Expected all definitions for `#{name}` to not be ignored")
