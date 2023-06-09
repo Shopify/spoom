@@ -59,6 +59,17 @@ module Spoom
         @end_column = end_column
       end
 
+      sig { params(other: Location).returns(T::Boolean) }
+      def include?(other)
+        return false unless @file == other.file
+        return false if @start_line > other.start_line
+        return false if @start_line == other.start_line && @start_column > other.start_column
+        return false if @end_line < other.end_line
+        return false if @end_line == other.end_line && @end_column < other.end_column
+
+        true
+      end
+
       sig { override.params(other: BasicObject).returns(T.nilable(Integer)) }
       def <=>(other)
         return nil unless Location === other

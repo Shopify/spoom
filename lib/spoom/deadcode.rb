@@ -13,6 +13,7 @@ require_relative "deadcode/definition"
 require_relative "deadcode/reference"
 require_relative "deadcode/send"
 require_relative "deadcode/plugins"
+require_relative "deadcode/remover"
 
 module Spoom
   module Deadcode
