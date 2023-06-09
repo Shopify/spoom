@@ -13,7 +13,7 @@ module Spoom
         @context = context
       end
 
-      sig { params(kind: Definition::Kind, location: Location).void }
+      sig { params(kind: T.nilable(Definition::Kind), location: Location).void }
       def remove_location(kind, location)
         file = location.file
 
@@ -32,7 +32,7 @@ module Spoom
         sig { returns(String) }
         attr_reader :new_source
 
-        sig { params(source: String, kind: Definition::Kind, location: Location).void }
+        sig { params(source: String, kind: T.nilable(Definition::Kind), location: Location).void }
         def initialize(source, kind, location)
           @old_source = source
           @new_source = T.let(source.dup, String)
@@ -296,7 +296,13 @@ module Spoom
           @new_source[start_char...end_char] = replacement
         end
 
-        sig { params(node: SyntaxTree::MethodAddBlock, name: String, kind: Definition::Kind).returns(String) }
+        sig do
+          params(
+            node: SyntaxTree::MethodAddBlock,
+            name: String,
+            kind: T.nilable(Definition::Kind),
+          ).returns(String)
+        end
         def transform_sig(node, name:, kind:)
           type = T.let(nil, T.nilable(String))
 
@@ -493,7 +499,7 @@ module Spoom
         class << self
           extend T::Sig
 
-          sig { params(source: String, location: Location, kind: Definition::Kind).returns(NodeContext) }
+          sig { params(source: String, location: Location, kind: T.nilable(Definition::Kind)).returns(NodeContext) }
           def find(source, location, kind)
             tree = SyntaxTree.parse(source)
 
@@ -505,7 +511,7 @@ module Spoom
               raise Error, "Can't find node at #{location}"
             end
 
-            unless node_match_kind?(node, kind)
+            if kind && !node_match_kind?(node, kind)
               raise Error, "Can't find node at #{location}, expected #{kind} but got #{node.class}"
             end
 
