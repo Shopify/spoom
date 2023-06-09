@@ -34,5 +34,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency("syntax_tree", ">= 6.1.1")
   spec.add_dependency("thor", ">= 0.19.2")
 
-  spec.required_ruby_version = ">= 2.7.0"
+  spec.required_ruby_version = ">= 3.0.0"
 end
