@@ -1,8 +1,10 @@
 # typed: strict
 # frozen_string_literal: true
 
+require "erubi"
 require "syntax_tree"
 
+require_relative "deadcode/erb"
 require_relative "deadcode/index"
 require_relative "deadcode/indexer"
 
@@ -41,6 +43,12 @@ module Spoom
         raise ParserError.new("Error while parsing #{file} (#{e.message} at #{e.lineno}:#{e.column})", parent: e)
       rescue => e
         raise IndexerError.new("Error while indexing #{file} (#{e.message})", parent: e)
+      end
+
+      sig { params(index: Index, erb: String, file: String).void }
+      def index_erb(index, erb, file:)
+        ruby = ERB.new(erb).src
+        index_ruby(index, ruby, file: file)
       end
     end
   end
