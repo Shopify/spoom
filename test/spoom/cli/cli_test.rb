@@ -28,6 +28,7 @@ module Spoom
             spoom bump            # Bump Sorbet sigils from `false` to `true` when no e...
             spoom config          # Manage Sorbet config
             spoom coverage        # Collect metrics related to Sorbet coverage
+            spoom deadcode        # Analyze code to find deadcode
             spoom files           # List all the files typechecked by Sorbet
             spoom help [COMMAND]  # Describe available commands or one specific command
             spoom lsp             # Send LSP requests to Sorbet

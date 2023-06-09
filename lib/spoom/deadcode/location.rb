@@ -13,6 +13,23 @@ module Spoom
       class << self
         extend T::Sig
 
+        sig { params(location_string: String).returns(Location) }
+        def from_string(location_string)
+          file, rest = location_string.split(":", 2)
+          raise LocationError, "Invalid location string: #{location_string}" unless file && rest
+
+          start_line, rest = rest.split(":", 2)
+          raise LocationError, "Invalid location string: #{location_string}" unless start_line && rest
+
+          start_column, rest = rest.split("-", 2)
+          raise LocationError, "Invalid location string: #{location_string}" unless start_column && rest
+
+          end_line, end_column = rest.split(":", 2)
+          raise LocationError, "Invalid location string: #{location_string}" unless end_line && end_column
+
+          new(file, start_line.to_i, start_column.to_i, end_line.to_i, end_column.to_i)
+        end
+
         sig { params(file: String, location: SyntaxTree::Location).returns(Location) }
         def from_syntax_tree(file, location)
           new(file, location.start_line, location.start_column, location.end_line, location.end_column)
