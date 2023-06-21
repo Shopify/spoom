@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    spoom (1.2.1)
+    spoom (1.2.2)
       erubi (>= 1.10.0)
       sorbet (>= 0.5.10187)
       sorbet-runtime (>= 0.5.9204)
