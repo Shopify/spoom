@@ -244,8 +244,8 @@ module Spoom
           Symbols from `lib/symbols.rb`:
             module Symbols (2:0-17:3)
               class A (3:2-11:5)
-                def a (4:4-4:22)
-                def b (4:4-4:22)
+                property a (4:4-4:22)
+                property b (4:4-4:22)
                 def bar (8:4-8:16)
                 def foo (6:4-6:16)
                 def self.baz (10:4-10:21)
