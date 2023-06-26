@@ -30,7 +30,7 @@ module Spoom
         source("https://rubygems.org")
 
         gemspec name: "spoom", path: "#{SPOOM_PATH}"
-        gem "sorbet-static-and-runtime", "#{Gem::Specification.find_by_name("sorbet-static-and-runtime").version}"
+        gem "sorbet-static-and-runtime", "#{Sorbet::GEM_VERSION}"
       GEMFILE
     end
 
