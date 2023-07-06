@@ -22,6 +22,8 @@ module Spoom
         sig { override.params(indexer: Indexer, send: Send).void }
         def on_send(indexer, send)
           case send.name
+          when "const_defined?", "const_get", "const_source_location"
+            reference_symbol_as_constant(indexer, send, T.must(send.args.first))
           when "send", "__send__", "try"
             reference_send_first_symbol_as_method(indexer, send)
           when "alias_method"
@@ -37,6 +39,22 @@ module Spoom
             return unless name
 
             indexer.reference_method(name, send.node)
+          end
+        end
+
+        private
+
+        sig { params(indexer: Indexer, send: Send, node: SyntaxTree::Node).void }
+        def reference_symbol_as_constant(indexer, send, node)
+          case node
+          when SyntaxTree::SymbolLiteral
+            name = indexer.node_string(node.value)
+            indexer.reference_constant(name, send.node)
+          when SyntaxTree::StringLiteral
+            string = T.must(indexer.node_string(node)[1..-2])
+            string.split("::").each do |name|
+              indexer.reference_constant(name, send.node) unless name.empty?
+            end
           end
         end
       end

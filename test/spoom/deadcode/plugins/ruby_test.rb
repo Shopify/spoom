@@ -87,6 +87,67 @@ module Spoom
           assert_dead(index, "dead2")
         end
 
+        def test_alive_constants_with_const_defined?
+          @project.write!("foo.rb", <<~RB)
+            ALIVE1 = 1
+            ALIVE2 = 2
+
+            DEAD = 42
+
+            Object.const_defined?(:ALIVE1)
+            Object.const_defined?("ALIVE2")
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "ALIVE1")
+          assert_alive(index, "ALIVE2")
+          assert_dead(index, "DEAD")
+        end
+
+        def test_alive_constants_with_const_get
+          @project.write!("foo.rb", <<~RB)
+            ALIVE1 = 1
+            ALIVE2 = 2
+            ALIVE3 = 3
+            ALIVE4 = 4
+            ALIVE5 = 5
+            ALIVE6 = 6
+
+            DEAD = 42
+
+            Object.const_get(:ALIVE1)
+            Object.const_get("ALIVE2")
+            Object.const_get("::ALIVE3")
+            Object.const_get("::ALIVE4::ALIVE5::ALIVE6")
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "ALIVE1")
+          assert_alive(index, "ALIVE2")
+          assert_alive(index, "ALIVE3")
+          assert_alive(index, "ALIVE4")
+          assert_alive(index, "ALIVE5")
+          assert_alive(index, "ALIVE6")
+          assert_dead(index, "DEAD")
+        end
+
+        def test_alive_constants_with_const_source_location
+          @project.write!("foo.rb", <<~RB)
+            ALIVE1 = 1
+            ALIVE2 = 2
+
+            DEAD = 42
+
+            Object.const_source_location('ALIVE1')
+            Object.const_source_location("ALIVE2")
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "ALIVE1")
+          assert_alive(index, "ALIVE2")
+          assert_dead(index, "DEAD")
+        end
+
         private
 
         sig { returns(Deadcode::Index) }
