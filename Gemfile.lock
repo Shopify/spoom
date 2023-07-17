@@ -38,11 +38,11 @@ GEM
     racc (1.7.1)
     rainbow (3.1.1)
     rake (13.0.6)
-    rbi (0.0.16)
+    rbi (0.0.17)
       ast
-      parser (>= 2.6.4.0)
+      parser (>= 3.0.0)
       sorbet-runtime (>= 0.5.9204)
-      unparser
+      unparser (>= 0.5.6)
     regexp_parser (2.8.0)
     reline (0.3.4)
       io-console (~> 0.5)
@@ -75,7 +75,7 @@ GEM
       sorbet-runtime (= 0.5.10914)
     syntax_tree (6.1.1)
       prettier_print (>= 1.2.0)
-    tapioca (0.11.7)
+    tapioca (0.11.8)
       bundler (>= 2.2.25)
       netrc (>= 0.11.0)
       parallel (>= 1.21.0)
