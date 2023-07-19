@@ -14,8 +14,8 @@ module Spoom
 
         # Indexing
 
-        sig { returns(Deadcode::Index) }
-        def deadcode_index
+        sig { params(plugins: T::Array[Deadcode::Plugins::Base]).returns(Deadcode::Index) }
+        def deadcode_index(plugins: [])
           files = project.collect_files(
             allow_extensions: [".rb", ".erb", ".rake", ".rakefile", ".gemspec"],
             allow_mime_types: ["text/x-ruby", "text/x-ruby-script"],
@@ -26,9 +26,9 @@ module Spoom
           files.each do |file|
             content = project.read(file)
             if file.end_with?(".erb")
-              Spoom::Deadcode.index_erb(index, content, file: file)
+              Spoom::Deadcode.index_erb(index, content, file: file, plugins: plugins)
             else
-              Spoom::Deadcode.index_ruby(index, content, file: file)
+              Spoom::Deadcode.index_ruby(index, content, file: file, plugins: plugins)
             end
           end
 
