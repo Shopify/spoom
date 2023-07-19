@@ -1,4 +1,12 @@
 PATH
+  remote: ../ruby-lsp
+  specs:
+    ruby-lsp (0.7.0)
+      language_server-protocol (~> 3.17.0)
+      sorbet-runtime
+      syntax_tree (>= 6.1.1, < 7)
+
+PATH
   remote: .
   specs:
     spoom (1.2.2)
@@ -23,6 +31,7 @@ GEM
     irb (1.6.4)
       reline (>= 0.3.0)
     json (2.6.3)
+    language_server-protocol (3.17.0.3)
     minitest (5.18.1)
     minitest-reporters (1.6.0)
       ansi
@@ -107,6 +116,7 @@ DEPENDENCIES
   rake (~> 13.0.1)
   rubocop-shopify
   rubocop-sorbet
+  ruby-lsp!
   spoom!
   tapioca
 

@@ -1,4 +1,4 @@
-# typed: strict
+# typed: ignore
 # frozen_string_literal: true
 
 source "https://rubygems.org"
@@ -9,5 +9,6 @@ group :development do
   gem "debug"
   gem "rubocop-shopify", require: false
   gem "rubocop-sorbet", require: false
+  gem "ruby-lsp", path: "../ruby-lsp", require: false
   gem "tapioca", require: false
 end
