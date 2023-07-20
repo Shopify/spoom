@@ -12,14 +12,15 @@ module Spoom
       sig { returns(Index) }
       attr_reader :index
 
-      sig { params(path: String, source: String, index: Index).void }
-      def initialize(path, source, index)
+      sig { params(path: String, source: String, index: Index, plugins: T::Array[Plugins::Base]).void }
+      def initialize(path, source, index, plugins: [])
         super()
 
         @path = path
         @file_name = T.let(File.basename(path), String)
         @source = source
         @index = index
+        @plugins = plugins
         @previous_node = T.let(nil, T.nilable(SyntaxTree::Node))
         @names_nesting = T.let([], T::Array[String])
         @nodes_nesting = T.let([], T::Array[SyntaxTree::Node])
@@ -228,6 +229,10 @@ module Spoom
             define_attr_writer("#{name}=", "#{full_name}=", arg)
           end
         else
+          @plugins.each do |plugin|
+            plugin.on_send(self, send)
+          end
+
           reference_method(send.name, send.node)
           visit_all(send.args)
           visit(send.block)
@@ -270,8 +275,6 @@ module Spoom
         visit_send(Send.new(node: node, name: node_string(node.value)))
       end
 
-      private
-
       # Definition indexing
 
       sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
@@ -283,6 +286,7 @@ module Spoom
           location: node_location(node),
         )
         @index.define(definition)
+        @plugins.each { |plugin| plugin.on_define_accessor(self, definition) }
       end
 
       sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
@@ -294,6 +298,7 @@ module Spoom
           location: node_location(node),
         )
         @index.define(definition)
+        @plugins.each { |plugin| plugin.on_define_accessor(self, definition) }
       end
 
       sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
@@ -305,6 +310,7 @@ module Spoom
           location: node_location(node),
         )
         @index.define(definition)
+        @plugins.each { |plugin| plugin.on_define_class(self, definition) }
       end
 
       sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
@@ -316,6 +322,7 @@ module Spoom
           location: node_location(node),
         )
         @index.define(definition)
+        @plugins.each { |plugin| plugin.on_define_constant(self, definition) }
       end
 
       sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
@@ -327,6 +334,7 @@ module Spoom
           location: node_location(node),
         )
         @index.define(definition)
+        @plugins.each { |plugin| plugin.on_define_method(self, definition) }
       end
 
       sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
@@ -338,6 +346,7 @@ module Spoom
           location: node_location(node),
         )
         @index.define(definition)
+        @plugins.each { |plugin| plugin.on_define_module(self, definition) }
       end
 
       # Reference indexing
