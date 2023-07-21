@@ -5,6 +5,7 @@ require "thor"
 
 require_relative "cli/helper"
 require_relative "cli/deadcode"
+require_relative "cli/model"
 require_relative "cli/srb"
 
 module Spoom
@@ -17,6 +18,9 @@ module Spoom
       class_option :path, type: :string, default: ".", aliases: :p, desc: "Run spoom in a specific path"
 
       map T.unsafe(["--version", "-v"] => :__print_version)
+
+      desc "model", "tmp"
+      subcommand "model", Spoom::Cli::Model
 
       desc "srb", "Sorbet related commands"
       subcommand "srb", Spoom::Cli::Srb::Main
