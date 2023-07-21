@@ -12,6 +12,11 @@ module Spoom
     class << self
       extend T::Sig
 
+      sig { returns(Location) }
+      def none
+        new("-", 0, 0, 0, 0)
+      end
+
       sig { params(file: String, location: SyntaxTree::Location).returns(Location) }
       def from_syntax_tree(file, location)
         new(file, location.start_line, location.start_column, location.end_line, location.end_column)

@@ -1,0 +1,67 @@
+{
+ "repo": "none",
+ "sha": "none",
+ "status": "Success",
+ "branch": "none",
+ "timestamp": "1691097760",
+ "uuid": "0x93d79f967d24dac6-0x85ee64b5-0x44ed-0x8993-0x8a18ebb8c1eac2ac0x41a7",
+ "metrics": [
+  {
+   "name": "ruby_typer.unknown..run.utilization.oublock"
+  },
+  {
+   "name": "ruby_typer.unknown..release.build_timestamp",
+   "value": 1689368669
+  },
+  {
+   "name": "ruby_typer.unknown..run.utilization.system_time.us",
+   "value": 4270
+  },
+  {
+   "name": "ruby_typer.unknown..run.utilization.major_faults",
+   "value": 1
+  },
+  {
+   "name": "ruby_typer.unknown..types.input.foundmethods.total"
+  },
+  {
+   "name": "ruby_typer.unknown..run.utilization.max_rss",
+   "value": 8859648
+  },
+  {
+   "name": "ruby_typer.unknown..run.utilization.inblock"
+  },
+  {
+   "name": "ruby_typer.unknown..types.input.methods.total"
+  },
+  {
+   "name": "ruby_typer.unknown..run.utilization.user_time.us",
+   "value": 13211
+  },
+  {
+   "name": "ruby_typer.unknown..run.utilization.context_switch.involuntary",
+   "value": 47
+  },
+  {
+   "name": "ruby_typer.unknown..types.input.singleton_classes.total",
+   "value": 111
+  },
+  {
+   "name": "ruby_typer.unknown..release.build_scm_commit_count",
+   "value": 10914
+  },
+  {
+   "name": "ruby_typer.unknown..run.utilization.context_switch.voluntary"
+  },
+  {
+   "name": "ruby_typer.unknown..types.input.modules.total"
+  },
+  {
+   "name": "ruby_typer.unknown..types.input.classes.total"
+  },
+  {
+   "name": "ruby_typer.unknown..run.utilization.minor_faults",
+   "value": 2352
+  }
+ ]
+}
