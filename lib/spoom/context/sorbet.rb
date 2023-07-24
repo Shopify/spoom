@@ -52,7 +52,7 @@ module Spoom
           sorbet_bin: sorbet_bin,
           capture_err: capture_err,
         )
-        return nil unless file?(metrics_file)
+        return unless file?(metrics_file)
 
         metrics_path = absolute_path_to(metrics_file)
         metrics = Spoom::Sorbet::MetricsParser.parse_file(metrics_path)
@@ -109,7 +109,7 @@ module Spoom
       sig { params(arg: String, sorbet_bin: T.nilable(String), capture_err: T::Boolean).returns(T.nilable(String)) }
       def srb_version(*arg, sorbet_bin: nil, capture_err: true)
         res = T.unsafe(self).srb_tc("--no-config", "--version", *arg, sorbet_bin: sorbet_bin, capture_err: capture_err)
-        return nil unless res.status
+        return unless res.status
 
         res.out.split(" ")[2]
       end
@@ -147,10 +147,10 @@ module Spoom
       sig { returns(T.nilable(Spoom::Git::Commit)) }
       def sorbet_intro_commit
         res = git_log("--diff-filter=A --format='%h %at' -1 -- sorbet/config")
-        return nil unless res.status
+        return unless res.status
 
         out = res.out.strip
-        return nil if out.empty?
+        return if out.empty?
 
         Spoom::Git::Commit.parse_line(out)
       end
@@ -159,10 +159,10 @@ module Spoom
       sig { returns(T.nilable(Spoom::Git::Commit)) }
       def sorbet_removal_commit
         res = git_log("--diff-filter=D --format='%h %at' -1 -- sorbet/config")
-        return nil unless res.status
+        return unless res.status
 
         out = res.out.strip
-        return nil if out.empty?
+        return if out.empty?
 
         Spoom::Git::Commit.parse_line(out)
       end

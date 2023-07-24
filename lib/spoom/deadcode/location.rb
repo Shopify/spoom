@@ -44,7 +44,7 @@ module Spoom
 
       sig { override.params(other: BasicObject).returns(T.nilable(Integer)) }
       def <=>(other)
-        return nil unless Location === other
+        return unless Location === other
 
         to_s <=> other.to_s
       end
