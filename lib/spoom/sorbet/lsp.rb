@@ -53,7 +53,7 @@ module Spoom
       sig { returns(T.nilable(T::Hash[T.untyped, T.untyped])) }
       def read
         raw_string = read_raw
-        return nil unless raw_string
+        return unless raw_string
 
         json = JSON.parse(raw_string)
 
@@ -101,7 +101,7 @@ module Spoom
           },
         ))
 
-        return nil unless json && json["result"]
+        return unless json && json["result"]
 
         Hover.from_json(json["result"])
       end

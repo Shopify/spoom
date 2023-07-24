@@ -187,7 +187,7 @@ module Spoom
 
       no_commands do
         def parse_time(string, option)
-          return nil unless string
+          return unless string
 
           Time.parse(string)
         rescue ArgumentError

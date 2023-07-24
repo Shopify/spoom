@@ -13,7 +13,7 @@ module Spoom
         sig { params(string: String).returns(T.nilable(Commit)) }
         def parse_line(string)
           sha, epoch = string.split(" ", 2)
-          return nil unless sha && epoch
+          return unless sha && epoch
 
           time = Time.strptime(epoch, "%s")
           Commit.new(sha: sha, time: time)
@@ -88,7 +88,7 @@ module Spoom
       sig { returns(T.nilable(String)) }
       def git_current_branch
         res = git("branch --show-current")
-        return nil unless res.status
+        return unless res.status
 
         res.out.strip
       end
@@ -103,10 +103,10 @@ module Spoom
       sig { params(short_sha: T::Boolean).returns(T.nilable(Spoom::Git::Commit)) }
       def git_last_commit(short_sha: true)
         res = git_log("HEAD --format='%#{short_sha ? "h" : "H"} %at' -1")
-        return nil unless res.status
+        return unless res.status
 
         out = res.out.strip
-        return nil if out.empty?
+        return if out.empty?
 
         Spoom::Git::Commit.parse_line(out)
       end
