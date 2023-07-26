@@ -184,13 +184,25 @@ module Spoom
       sig { returns(T::Boolean) }
       attr_reader :read_only
 
-      sig { params(location: Location, name: String, type: String, read_only: T::Boolean).void }
-      def initialize(location, name, type, read_only: false)
+      sig { returns(T::Boolean) }
+      attr_reader :has_default
+
+      sig do
+        params(
+          location: Location,
+          name: String,
+          type: String,
+          read_only: T::Boolean,
+          has_default: T::Boolean,
+        ).void
+      end
+      def initialize(location, name, type, read_only:, has_default:)
         super(location)
 
         @name = name
         @type = type
         @read_only = read_only
+        @has_default = has_default
       end
 
       sig { returns(String) }
@@ -318,22 +330,6 @@ module Spoom
       end
 
       classes
-    end
-
-    sig { returns(T::Array[Class]) }
-    def structs
-      structs = []
-
-      @scopes.each do |_full_name, scopes|
-        scopes.each do |scope|
-          next unless scope.is_a?(Class)
-
-          superclass = scope.superclass
-          structs << scope if superclass && superclass.full_name =~ /^(::)?T::Struct$/
-        end
-      end
-
-      structs
     end
 
     sig { params(class_name: String).returns(T::Array[Class]) }

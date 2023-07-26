@@ -64,14 +64,12 @@ module Spoom
         printl("# #{symbol.location}")
         printt("class #{symbol.full_name}")
         superclass = symbol.superclass
-        case superclass
-        when Ref
-          print(" < Ref[#{superclass.full_name}]")
-        when Class
-          print(" < #{superclass.full_name}")
-        end
+        print(" < #{superclass.full_name}") if superclass
         printn
         indent
+        symbol.includes.each do |mod|
+          printl("include #{mod.full_name}")
+        end
         super
         dedent
         printl("end")
@@ -82,6 +80,9 @@ module Spoom
         printl("# #{symbol.location}")
         printl("module #{symbol.full_name}")
         indent
+        symbol.includes.each do |mod|
+          printl("include #{mod.full_name}")
+        end
         super
         dedent
         printl("end")
@@ -110,7 +111,7 @@ module Spoom
         else
           print("prop")
         end
-        printn(" #{symbol.name}, type: #{symbol.type}")
+        printn(" #{symbol.name}, type: \"#{symbol.type}\"")
       end
     end
   end

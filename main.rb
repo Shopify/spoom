@@ -4,48 +4,24 @@
 require "spoom"
 require "parallel"
 
-# model = Model.new
-# files = Dir.glob("test.rb")
-# files = Dir.glob("../shopify/**/*.rb")
-files = Dir.glob("lib/**/*.rb")
-# files = Dir.glob("lib/spoom/coverage/report.rb")
+unless ARGV.size == 1
+  warn "Usage: ruby main.rb <glob>"
+  exit 1
+end
+
+files = Dir.glob(ARGV[0])
 warn "Files: #{files.size}"
-# files.each do |file|
-#   source = File.read(file)
-#   indexer = Model::Indexer.new(model, file, source)
-#   tree = SyntaxTree.parse(source)
-#   indexer.visit(tree)
-# end
 
 models = Parallel.map(files, in_processes: 10) do |file|
-  model = Spoom::Model.new
-  source = File.read(file)
-  indexer = Spoom::Model::Builder.new(model, file, source)
-  tree = SyntaxTree.parse(source)
-  indexer.visit(tree)
-  model
+  Spoom::Model.from_file(file)
 end
 
 model = Spoom::Model.merge(models)
 warn "Classes: #{model.classes.keys.size}"
 warn "Modules: #{model.modules.keys.size}"
 warn "Total: #{model.classes.keys.size + model.modules.keys.size}"
-model.resolve_ancestors!
 
-# model.classes.keys.sort.each do |full_name|
-#   T.must(model.classes[full_name]).each do |klass|
-#     puts klass
-#     klass.includes.each do |mod|
-#       puts "  include #{mod.full_name}"
-#     end
-#     klass.attrs.each do |attr|
-#       puts "  #{attr}"
-#     end
-#     # klass.defs.each do |defn|
-#     #   puts "  #{defn}"
-#     # end
-#   end
-# end
+model.resolve_ancestors!
 
 # unresolved_count = 0
 # model.scopes.keys.sort.each do |full_name|
@@ -59,58 +35,132 @@ model.resolve_ancestors!
 # end
 # puts "Unresolved: #{unresolved_count}"
 
-# model.structs.each do |klass|
-  # klass.props.each do |prop|
-  #   puts "  #{prop}"
-  # end
-  # klass.defs.each do |defn|
-  #   puts "  #{defn}"
-  # end
+# Print the whole model
+# printer = Spoom::Model::Printer.new
+# printer.printl("# typed: ignore")
+# printer.visit(model)
+# puts printer.out
+
+structs = model.subclasses_of("T::Struct")
+warn "Structs: #{structs.size}"
+
+# Print code for structs
+# printer = Spoom::Model::Printer.new
+# printer.printl("# typed: ignore")
+# structs.each do |struct|
+#   printer.visit(struct)
+# end
+# puts printer.out
+
+# structs.each do |struct|
+#   puts "#{struct.full_name}\t#{struct.location.file}\t#{struct.props.select(&:read_only).size}\t#{struct.props.reject(&:read_only).size}"
 # end
 
-printer = Spoom::Model::Printer.new
-printer.printl("# typed: ignore")
-printer.visit(model)
-puts printer.out
+# groups = {
+#   "all_consts" => 0,
+#   "all_props" => 0,
+#   "mixed" => 0,
+# }
+# structs.each do |struct|
+#   if struct.props.all?(&:read_only)
+#     groups["all_consts"] += 1
+#   elsif struct.props.none?(&:read_only)
+#     groups["all_props"] += 1
+#   else
+#     groups["mixed"] += 1
+#   end
+# end
+# puts groups
 
-# puts "T::Structs"
-# model.subclasses_of("T::Struct").each do |klass|
-#   puts klass
+# structs.each do |struct|
+#   puts "#{struct.full_name}\t#{struct.location.file}\t#{struct.props.select(&:read_only).size}\t#{struct.props.reject(&:read_only).size}\t#{struct.defs.size}"
 # end
 
-# model.subclasses_of("C1").each do |scope|
-#   puts scope
+# groups = {
+#   "pure_struct" => 0,
+#   "with_defs" => 0,
+# }
+# structs.each do |struct|
+#   if struct.defs.empty?
+#     groups["pure_struct"] += 1
+#   else
+#     groups["with_defs"] += 1
+#   end
 # end
+# puts groups
 
 # model.descendants_of("T::Props").each do |scope|
 #   puts scope
 # end
 
+# methods = {}
+# structs.each do |struct|
+#   struct.defs.each do |defn|
+#     (methods[defn.name] ||= []) << defn.name
+#   end
+# end
+# methods.each do |name, defn|
+#   puts "#{name}\t#{defn.size}"
+# end
+
+# structs.each do |struct|
+#   if struct.defs.any? { |defn| defn.name == "initialize" }
+#     puts "#{struct.full_name}\t#{struct.location.file}"
+#   end
+# end
+
+# kinds = {
+#   "const" => 0,
+#   "const + default" => 0,
+#   "prop" => 0,
+#   "prop + default" => 0,
+# }
+# structs.each do |struct|
+#   struct.props.each do |prop|
+#     if prop.read_only && prop.has_default
+#       kinds["const + default"] += 1
+#     elsif prop.read_only
+#       kinds["const"] += 1
+#     elsif prop.has_default
+#       kinds["prop + default"] += 1
+#     else
+#       kinds["prop"] += 1
+#     end
+#   end
+# end
+
+# kinds.each do |kind, count|
+#   puts "#{kind}\t#{count}"
+# end
+
+# structs.each do |struct|
+#   puts "#{struct.full_name}\t#{struct.location.file}\t#{struct.includes.size}"
+# end
+
+includes = {}
+structs.each do |struct|
+  struct.includes.each do |inc|
+    (includes[inc.full_name] ||= []) << inc.full_name
+  end
+end
+includes.each do |name, inc|
+  puts "#{name}\t#{inc.size}"
+end
+
+# TODO: write tests for the model
 # TODO: unify class defs into locs?
 # TODO: unify prop/attr defs into props?
-# TODO: search by ref?
+# TODO: search by ref? ref equality?
 # TODO: linearize model
 # TODO: ancestors, descendants, parents, children
 
-# Categorize
-#  Pure ValueObject
-#  ValueObject
-#  Pure Struct
-#  Struct
-#
-#  Other behavior
-#  Serialization?
-#  Inehrited objects => used for the build DSL
-
 # Find the inherited T::Props
+#  Inehrited objects => used for the build DSL
+#  Serialization?
+#  Validation
+#  InexactStruct
+#  Abstract?
+#  Implement interface?
+
 # Are Structs passed around? constructor, methods, attributs?
 # Prop nesting, a prop containing a prop?
-# Default values?
-
-# Write report
-#  Explain problem
-#  Explain audit strategy
-#  Count structs
-#  Categorize
-#  Observations
-#  Recommendations

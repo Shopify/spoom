@@ -108,7 +108,11 @@ module Spoom
           loc = node_loc(send.node)
           name = node_string(T.must(send.args[0]))
           type = node_string(T.must(send.args[1]))
-          current_scope.props << Prop.new(loc, name, type, read_only: send.name == "const")
+          read_only = send.name == "const"
+          has_default = send.args.any? do |arg|
+            arg.is_a?(SyntaxTree::BareAssocHash) && node_string(arg) =~ /default:/
+          end
+          current_scope.props << Prop.new(loc, name, type, read_only: read_only, has_default: has_default)
         when "include", "prepend"
           send.args.each do |arg|
             current_scope.includes << Ref.new(node_string(arg))
@@ -166,6 +170,22 @@ module Spoom
       const :recv, T.nilable(SyntaxTree::Node), default: nil
       const :args, T::Array[SyntaxTree::Node], default: []
       const :block, T.nilable(SyntaxTree::Node), default: nil
+    end
+
+    class << self
+      extend T::Sig
+
+      sig { params(file: String).returns(Model) }
+      def from_file(file)
+        model = Model.new
+        source = File.read(file)
+        indexer = Builder.new(model, file, source)
+        tree = SyntaxTree.parse(source)
+        indexer.visit(tree)
+        model
+      rescue SyntaxTree::Parser::ParseError => e
+        raise "Error parsing `#{file}`: #{e.message} at line #{e.lineno}"
+      end
     end
   end
 end
