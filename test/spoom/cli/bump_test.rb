@@ -613,6 +613,47 @@ module Spoom
         OUT
         assert(result.status)
       end
+
+      def test_invalid_bump_with_rubocop_on_sigil
+        @project.write!("file1.rb", <<~CONTENTS)
+          # typed: false # rubocop:todo Sorbet/StrictSigil
+          class FailsTypeChecking; end
+          FailsTypeChecking.this_method_fails
+        CONTENTS
+
+        result = @project.bundle_exec("spoom bump --no-color --from false --to true")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
+          Checking files...
+
+          No files to bump from `false` to `true`
+        OUT
+        assert(result.status)
+      end
+
+      def test_valid_bump_with_rubocop_on_sigil
+        @project.write!("file1.rb", <<~CONTENTS)
+          # typed: false # rubocop:todo Sorbet/StrictSigil
+          class PassesTypeChecking; end
+          PassesTypeChecking
+        CONTENTS
+
+        result = @project.bundle_exec("spoom bump --no-color --from false --to true")
+        assert_empty(result.err)
+        assert_equal(<<~OUT, result.out)
+          Checking files...
+
+          Bumped `1` file from `false` to `true`:
+           + file1.rb
+        OUT
+        refute(result.status)
+
+        assert_equal(<<~RB, @project.read("file1.rb"))
+          # typed: true # rubocop:todo Sorbet/StrictSigil
+          class PassesTypeChecking; end
+          PassesTypeChecking
+        RB
+      end
     end
   end
 end
