@@ -28,7 +28,7 @@ module Spoom
         T::Array[String],
       )
 
-      SIGIL_REGEXP = T.let(/^#[\ t]*typed[\ t]*:[ \t]*(\S*)/, Regexp)
+      SIGIL_REGEXP = T.let(/^#[[:blank:]]*typed:[[:blank:]]*(\S*)/, Regexp)
 
       class << self
         extend T::Sig
