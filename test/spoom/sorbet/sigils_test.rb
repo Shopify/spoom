@@ -74,6 +74,17 @@ module Spoom
         assert_equal("no", strictness)
       end
 
+      def test_strictness_invalid_string
+        content = <<~STR
+          # typed: true# rubocop:todo Sorbet/StrictSigil
+          class A; end
+        STR
+
+        strictness = Sigils.strictness_in_content(content)
+        assert_equal("true#", strictness)
+        refute(Sigils.valid_strictness?(T.must(strictness)))
+      end
+
       def test_update_sigil_to_use_valid_strictness
         content = <<~STR
           # typed: ignore
