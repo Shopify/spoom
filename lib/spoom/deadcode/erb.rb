@@ -62,23 +62,6 @@ module Spoom
 
       BLOCK_EXPR = /\s*((\s+|\))do|\{)(\s*\|[^|]*\|)?\s*\Z/
 
-      sig { params(indicator: T.untyped, code: T.untyped).void }
-      def add_expression(indicator, code)
-        flush_newline_if_pending(src)
-
-        src << bufvar << if (indicator == "==") || @escape
-          ".safe_expr_append="
-        else
-          ".append="
-        end
-
-        if BLOCK_EXPR.match?(code)
-          src << " " << code
-        else
-          src << "(" << code << ");"
-        end
-      end
-
       sig { params(code: T.untyped).void }
       def add_code(code)
         flush_newline_if_pending(src)
