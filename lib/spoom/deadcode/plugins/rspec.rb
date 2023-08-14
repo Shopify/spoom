@@ -1,0 +1,17 @@
+# typed: strict
+# frozen_string_literal: true
+
+module Spoom
+  module Deadcode
+    module Plugins
+      class RSpec < Base
+        ignore_method_names(
+          "after_setup",
+          "after_teardown",
+          "before_setup",
+          "before_teardown",
+        )
+      end
+    end
+  end
+end
