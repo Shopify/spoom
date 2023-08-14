@@ -5,6 +5,8 @@ module Spoom
   module Deadcode
     module Plugins
       class ActiveSupport < Base
+        ignore_subclasses_of(/^(::)?ActiveSupport::TestCase$/)
+
         ignore_method_names(
           "after_all",
           "after_setup",
