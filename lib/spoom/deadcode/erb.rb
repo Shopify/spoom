@@ -44,7 +44,7 @@ module Spoom
 
       private
 
-      sig { params(text: T.untyped).void }
+      sig { override.params(text: T.untyped).void }
       def add_text(text)
         return if text.empty?
 
@@ -62,7 +62,7 @@ module Spoom
 
       BLOCK_EXPR = /\s*((\s+|\))do|\{)(\s*\|[^|]*\|)?\s*\Z/
 
-      sig { params(indicator: T.untyped, code: T.untyped).void }
+      sig { override.params(indicator: T.untyped, code: T.untyped).void }
       def add_expression(indicator, code)
         flush_newline_if_pending(src)
 
@@ -79,13 +79,13 @@ module Spoom
         end
       end
 
-      sig { params(code: T.untyped).void }
+      sig { override.params(code: T.untyped).void }
       def add_code(code)
         flush_newline_if_pending(src)
         super
       end
 
-      sig { params(_: T.untyped).void }
+      sig { override.params(_: T.untyped).void }
       def add_postamble(_)
         flush_newline_if_pending(src)
         super
