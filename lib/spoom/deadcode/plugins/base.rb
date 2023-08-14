@@ -53,6 +53,13 @@ module Spoom
             save_names_and_patterns(names, :@ignored_subclasses_of_names, :@ignored_subclasses_of_patterns)
           end
 
+          sig do
+            params(block: T.proc.bind(T.attached_class).params(indexer: Indexer, definition: Definition).void).void
+          end
+          def ignore_classes_if(&block)
+            instance_variable_set(:@ignore_classes_if, block)
+          end
+
           # Mark constants matching `names` as ignored.
           #
           # Names can be either strings or regexps:
@@ -69,6 +76,13 @@ module Spoom
           sig { params(names: T.any(String, Regexp)).void }
           def ignore_constant_names(*names)
             save_names_and_patterns(names, :@ignored_constant_names, :@ignored_constant_patterns)
+          end
+
+          sig do
+            params(block: T.proc.bind(T.attached_class).params(indexer: Indexer, definition: Definition).void).void
+          end
+          def ignore_constants_if(&block)
+            instance_variable_set(:@ignore_constants_if, block)
           end
 
           # Mark methods matching `names` as ignored.
@@ -89,6 +103,13 @@ module Spoom
             save_names_and_patterns(names, :@ignored_method_names, :@ignored_method_patterns)
           end
 
+          sig do
+            params(block: T.proc.bind(T.attached_class).params(indexer: Indexer, definition: Definition).void).void
+          end
+          def ignore_methods_if(&block)
+            instance_variable_set(:@ignore_methods_if, block)
+          end
+
           # Mark modules matching `names` as ignored.
           #
           # Names can be either strings or regexps:
@@ -105,6 +126,13 @@ module Spoom
           sig { params(names: T.any(String, Regexp)).void }
           def ignore_module_names(*names)
             save_names_and_patterns(names, :@ignored_module_names, :@ignored_module_patterns)
+          end
+
+          sig do
+            params(block: T.proc.bind(T.attached_class).params(indexer: Indexer, definition: Definition).void).void
+          end
+          def ignore_modules_if(&block)
+            instance_variable_set(:@ignore_modules_if, block)
           end
 
           private
@@ -160,6 +188,12 @@ module Spoom
         # ~~~
         sig { params(indexer: Indexer, definition: Definition).void }
         def on_define_class(indexer, definition)
+          block = self.class.instance_variable_get(:@ignore_classes_if)
+          if block && instance_exec(indexer, definition, &block)
+            definition.ignored!
+            return
+          end
+
           if ignored_class_name?(definition.name)
             definition.ignored!
             return
@@ -185,6 +219,12 @@ module Spoom
         # ~~~
         sig { params(indexer: Indexer, definition: Definition).void }
         def on_define_constant(indexer, definition)
+          block = self.class.instance_variable_get(:@ignore_constants_if)
+          if block && instance_exec(indexer, definition, &block)
+            definition.ignored!
+            return
+          end
+
           definition.ignored! if ignored_constant_name?(definition.name)
         end
 
@@ -205,6 +245,12 @@ module Spoom
         # ~~~
         sig { params(indexer: Indexer, definition: Definition).void }
         def on_define_method(indexer, definition)
+          block = self.class.instance_variable_get(:@ignore_methods_if)
+          if block && instance_exec(indexer, definition, &block)
+            definition.ignored!
+            return
+          end
+
           definition.ignored! if ignored_method_name?(definition.name)
         end
 
@@ -223,6 +269,12 @@ module Spoom
         # ~~~
         sig { params(indexer: Indexer, definition: Definition).void }
         def on_define_module(indexer, definition)
+          block = self.class.instance_variable_get(:@ignore_modules_if)
+          if block && instance_exec(indexer, definition, &block)
+            definition.ignored!
+            return
+          end
+
           definition.ignored! if ignored_module_name?(definition.name)
         end
 
