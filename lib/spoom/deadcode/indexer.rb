@@ -157,10 +157,10 @@ module Spoom
 
       sig { override.params(node: SyntaxTree::DefNode).void }
       def visit_def(node)
-        super
-
         name = node_string(node.name)
         define_method(name, [*@names_nesting, name].join("::"), node)
+
+        super
       end
 
       sig { override.params(node: SyntaxTree::Field).void }
