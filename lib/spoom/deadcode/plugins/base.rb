@@ -35,6 +35,24 @@ module Spoom
             save_names_and_patterns(names, :@ignored_class_names, :@ignored_class_patterns)
           end
 
+          # Mark classes directly subclassing a class matching `names` as ignored.
+          #
+          # Names can be either strings or regexps:
+          #
+          # ~~~rb
+          # class MyPlugin < Spoom::Deadcode::Plugins::Base
+          #   ignore_subclasses_of(
+          #     "Foo",
+          #     "Bar",
+          #     /Baz.*/,
+          #   )
+          # end
+          # ~~~
+          sig { params(names: T.any(String, Regexp)).void }
+          def ignore_subclasses_of(*names)
+            save_names_and_patterns(names, :@ignored_subclasses_of_names, :@ignored_subclasses_of_patterns)
+          end
+
           # Mark constants matching `names` as ignored.
           #
           # Names can be either strings or regexps:
@@ -142,7 +160,14 @@ module Spoom
         # ~~~
         sig { params(indexer: Indexer, definition: Definition).void }
         def on_define_class(indexer, definition)
-          definition.ignored! if ignored_class_name?(definition.name)
+          if ignored_class_name?(definition.name)
+            definition.ignored!
+            return
+          end
+
+          if ignored_subclass?(indexer.nesting_class_superclass_name)
+            definition.ignored!
+          end
         end
 
         # Called when a constant is defined.
@@ -226,6 +251,13 @@ module Spoom
           return false unless name
 
           ignored_name?(name, :@ignored_class_names, :@ignored_class_patterns)
+        end
+
+        sig { params(superclass_name: T.nilable(String)).returns(T::Boolean) }
+        def ignored_subclass?(superclass_name)
+          return false unless superclass_name
+
+          ignored_name?(superclass_name, :@ignored_subclasses_of_names, :@ignored_subclasses_of_patterns)
         end
 
         sig { params(name: String).returns(T::Boolean) }

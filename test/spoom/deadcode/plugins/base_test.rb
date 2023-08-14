@@ -11,6 +11,16 @@ module Spoom
         include Test::Helpers::DeadcodeHelper
 
         class TestPlugin < Spoom::Deadcode::Plugins::Base
+          ignore_class_names(
+            "Class2",
+            /^ClassRE.*/,
+          )
+
+          ignore_subclasses_of(
+            "SuperClass1",
+            /^SuperClassRE.*/,
+          )
+
           ignore_method_names(
             "name1",
             "name2",
@@ -22,6 +32,8 @@ module Spoom
           end
 
           def on_define_class(indexer, definition)
+            super
+
             definition.ignored! if definition.name == "Class1"
           end
 
@@ -46,6 +58,38 @@ module Spoom
             method_name = indexer.node_string(send.args.first).delete_prefix(":")
             indexer.reference_method(method_name, send.node)
           end
+        end
+
+        def test_ignore_classes_by_names
+          @project.write!("foo.rb", <<~RB)
+            class Class1; end
+            class Class2; end
+            class Class3; end
+            class ClassRE1; end
+            class ClassRE2; end
+          RB
+
+          index = index_with_plugins
+          assert_ignored(index, "Class1")
+          assert_ignored(index, "Class2")
+          refute_ignored(index, "Class3")
+          assert_ignored(index, "ClassRE1")
+          assert_ignored(index, "ClassRE2")
+        end
+
+        def test_ignore_classes_by_superclass
+          @project.write!("foo.rb", <<~RB)
+            class SubClass1 < SuperClass1; end
+            class SubClass2 < SuperClass2; end
+            class SubClass3 < SuperClassRE1; end
+            class SubClass4 < SuperClassRE2; end
+          RB
+
+          index = index_with_plugins
+          assert_ignored(index, "SubClass1")
+          refute_ignored(index, "SubClass2")
+          assert_ignored(index, "SubClass3")
+          assert_ignored(index, "SubClass4")
         end
 
         def test_ignore_method_by_names
@@ -80,11 +124,13 @@ module Spoom
           @project.write!("foo.rb", <<~RB)
             class Class1; end
             class Class2; end
+            class Class3; end
           RB
 
           index = index_with_plugins
           assert_ignored(index, "Class1")
-          refute_ignored(index, "Class2")
+          assert_ignored(index, "Class2")
+          refute_ignored(index, "Class3")
         end
 
         def test_on_define_constant
