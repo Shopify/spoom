@@ -361,6 +361,30 @@ module Spoom
         @index.reference(Reference.new(name: name, kind: Reference::Kind::Method, location: node_location(node)))
       end
 
+      # Context
+
+      sig { type_parameters(:N).params(type: T::Class[T.type_parameter(:N)]).returns(T.nilable(T.type_parameter(:N))) }
+      def nesting_node(type)
+        @nodes_nesting.reverse_each do |node|
+          return T.unsafe(node) if node.is_a?(type)
+        end
+
+        nil
+      end
+
+      sig { returns(T.nilable(SyntaxTree::ClassDeclaration)) }
+      def nesting_class
+        nesting_node(SyntaxTree::ClassDeclaration)
+      end
+
+      sig { returns(T.nilable(String)) }
+      def nesting_class_superclass_name
+        nesting_class_superclass = nesting_class&.superclass
+        return unless nesting_class_superclass
+
+        node_string(nesting_class_superclass).delete_prefix("::")
+      end
+
       # Node utils
 
       sig { params(node: T.any(Symbol, SyntaxTree::Node)).returns(String) }
