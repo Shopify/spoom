@@ -10,6 +10,15 @@ module Spoom
       class ActiveJobTest < TestWithProject
         include Test::Helpers::DeadcodeHelper
 
+        def test_ignore_active_job_application_job_class
+          @project.write!("app/jobs/application_job.rb", <<~RB)
+            class ApplicationJob; end
+          RB
+
+          index = index_with_plugins
+          assert_ignored(index, "ApplicationJob")
+        end
+
         def test_ignore_active_job_methods_based_on_class_name
           @project.write!("foo.rb", <<~RB)
             class Foo
