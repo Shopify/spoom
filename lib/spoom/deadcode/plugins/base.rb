@@ -17,6 +17,42 @@ module Spoom
 
           # Plugins DSL
 
+          # Mark classes matching `names` as ignored.
+          #
+          # Names can be either strings or regexps:
+          #
+          # ~~~rb
+          # class MyPlugin < Spoom::Deadcode::Plugins::Base
+          #   ignore_class_names(
+          #     "Foo",
+          #     "Bar",
+          #     /Baz.*/,
+          #   )
+          # end
+          # ~~~
+          sig { params(names: T.any(String, Regexp)).void }
+          def ignore_class_names(*names)
+            save_names_and_patterns(names, :@ignored_class_names, :@ignored_class_patterns)
+          end
+
+          # Mark constants matching `names` as ignored.
+          #
+          # Names can be either strings or regexps:
+          #
+          # ~~~rb
+          # class MyPlugin < Spoom::Deadcode::Plugins::Base
+          #   ignore_class_names(
+          #     "FOO",
+          #     "BAR",
+          #     /BAZ.*/,
+          #   )
+          # end
+          # ~~~
+          sig { params(names: T.any(String, Regexp)).void }
+          def ignore_constant_names(*names)
+            save_names_and_patterns(names, :@ignored_constant_names, :@ignored_constant_patterns)
+          end
+
           # Mark methods matching `names` as ignored.
           #
           # Names can be either strings or regexps:
@@ -33,6 +69,24 @@ module Spoom
           sig { params(names: T.any(String, Regexp)).void }
           def ignore_method_names(*names)
             save_names_and_patterns(names, :@ignored_method_names, :@ignored_method_patterns)
+          end
+
+          # Mark modules matching `names` as ignored.
+          #
+          # Names can be either strings or regexps:
+          #
+          # ~~~rb
+          # class MyPlugin < Spoom::Deadcode::Plugins::Base
+          #   ignore_class_names(
+          #     "Foo",
+          #     "Bar",
+          #     /Baz.*/,
+          #   )
+          # end
+          # ~~~
+          sig { params(names: T.any(String, Regexp)).void }
+          def ignore_module_names(*names)
+            save_names_and_patterns(names, :@ignored_module_names, :@ignored_module_patterns)
           end
 
           private
@@ -88,7 +142,7 @@ module Spoom
         # ~~~
         sig { params(indexer: Indexer, definition: Definition).void }
         def on_define_class(indexer, definition)
-          # no-op
+          definition.ignored! if ignored_class_name?(definition.name)
         end
 
         # Called when a constant is defined.
@@ -106,7 +160,7 @@ module Spoom
         # ~~~
         sig { params(indexer: Indexer, definition: Definition).void }
         def on_define_constant(indexer, definition)
-          # no-op
+          definition.ignored! if ignored_constant_name?(definition.name)
         end
 
         # Called when a method is defined.
@@ -144,7 +198,7 @@ module Spoom
         # ~~~
         sig { params(indexer: Indexer, definition: Definition).void }
         def on_define_module(indexer, definition)
-          # no-op
+          definition.ignored! if ignored_module_name?(definition.name)
         end
 
         # Called when a send is being processed
@@ -167,19 +221,36 @@ module Spoom
 
         private
 
+        sig { params(name: T.nilable(String)).returns(T::Boolean) }
+        def ignored_class_name?(name)
+          return false unless name
+
+          ignored_name?(name, :@ignored_class_names, :@ignored_class_patterns)
+        end
+
+        sig { params(name: String).returns(T::Boolean) }
+        def ignored_constant_name?(name)
+          ignored_name?(name, :@ignored_constant_names, :@ignored_constant_patterns)
+        end
+
         sig { params(name: String).returns(T::Boolean) }
         def ignored_method_name?(name)
           ignored_name?(name, :@ignored_method_names, :@ignored_method_patterns)
         end
 
-        sig { params(const: Symbol).returns(T::Set[String]) }
-        def names(const)
-          self.class.instance_variable_get(const) || Set.new
+        sig { params(name: String).returns(T::Boolean) }
+        def ignored_module_name?(name)
+          ignored_name?(name, :@ignored_module_names, :@ignored_pattern_names)
         end
 
         sig { params(name: String, names_variable: Symbol, patterns_variable: Symbol).returns(T::Boolean) }
         def ignored_name?(name, names_variable, patterns_variable)
           names(names_variable).include?(name) || patterns(patterns_variable).any? { |pattern| pattern.match?(name) }
+        end
+
+        sig { params(const: Symbol).returns(T::Set[String]) }
+        def names(const)
+          self.class.instance_variable_get(const) || Set.new
         end
 
         sig { params(const: Symbol).returns(T::Array[Regexp]) }
