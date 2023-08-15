@@ -31,7 +31,7 @@ module Spoom
           # end
           # ~~~
           sig { params(names: T.any(String, Regexp)).void }
-          def ignore_class_names(*names)
+          def ignore_classes_named(*names)
             save_names_and_patterns(names, :@ignored_class_names, :@ignored_class_patterns)
           end
 
@@ -49,7 +49,7 @@ module Spoom
           # end
           # ~~~
           sig { params(names: T.any(String, Regexp)).void }
-          def ignore_constant_names(*names)
+          def ignore_constants_named(*names)
             save_names_and_patterns(names, :@ignored_constant_names, :@ignored_constant_patterns)
           end
 
@@ -67,7 +67,7 @@ module Spoom
           # end
           # ~~~
           sig { params(names: T.any(String, Regexp)).void }
-          def ignore_method_names(*names)
+          def ignore_methods_named(*names)
             save_names_and_patterns(names, :@ignored_method_names, :@ignored_method_patterns)
           end
 
@@ -85,7 +85,7 @@ module Spoom
           # end
           # ~~~
           sig { params(names: T.any(String, Regexp)).void }
-          def ignore_module_names(*names)
+          def ignore_modules_named(*names)
             save_names_and_patterns(names, :@ignored_module_names, :@ignored_module_patterns)
           end
 

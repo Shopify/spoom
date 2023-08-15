@@ -5,7 +5,7 @@ module Spoom
   module Deadcode
     module Plugins
       class ActiveSupport < Base
-        ignore_method_names(
+        ignore_methods_named(
           "after_all",
           "after_setup",
           "after_teardown",

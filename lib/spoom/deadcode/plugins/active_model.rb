@@ -5,7 +5,7 @@ module Spoom
   module Deadcode
     module Plugins
       class ActiveModel < Base
-        ignore_method_names("validate_each")
+        ignore_methods_named("validate_each")
       end
     end
   end

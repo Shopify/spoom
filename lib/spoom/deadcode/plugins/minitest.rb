@@ -5,9 +5,9 @@ module Spoom
   module Deadcode
     module Plugins
       class Minitest < Base
-        ignore_class_names(/Test$/)
+        ignore_classes_named(/Test$/)
 
-        ignore_method_names(
+        ignore_methods_named(
           "after_all",
           "around",
           "around_all",

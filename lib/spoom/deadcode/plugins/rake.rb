@@ -5,7 +5,7 @@ module Spoom
   module Deadcode
     module Plugins
       class Rake < Base
-        ignore_constant_names("APP_RAKEFILE")
+        ignore_constants_named("APP_RAKEFILE")
       end
     end
   end

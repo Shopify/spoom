@@ -5,7 +5,7 @@ module Spoom
   module Deadcode
     module Plugins
       class ActionPack < Base
-        ignore_class_names(/Controller$/)
+        ignore_classes_named(/Controller$/)
       end
     end
   end
