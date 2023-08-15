@@ -5,7 +5,7 @@ module Spoom
   module Deadcode
     module Plugins
       class ActiveRecord < Base
-        ignore_method_names(
+        ignore_methods_named(
           "change",
           "down",
           "up",

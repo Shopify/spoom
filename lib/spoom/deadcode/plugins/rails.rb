@@ -5,7 +5,7 @@ module Spoom
   module Deadcode
     module Plugins
       class Rails < Base
-        ignore_constant_names("APP_PATH", "ENGINE_PATH", "ENGINE_ROOT")
+        ignore_constants_named("APP_PATH", "ENGINE_PATH", "ENGINE_ROOT")
       end
     end
   end

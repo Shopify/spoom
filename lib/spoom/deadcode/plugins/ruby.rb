@@ -7,7 +7,7 @@ module Spoom
       class Ruby < Base
         extend T::Sig
 
-        ignore_method_names(
+        ignore_methods_named(
           "==",
           "extended",
           "included",

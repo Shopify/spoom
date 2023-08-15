@@ -5,8 +5,8 @@ module Spoom
   module Deadcode
     module Plugins
       class ActiveJob < Base
-        ignore_class_names("ApplicationJob")
-        ignore_method_names("perform", "build_enumerator", "each_iteration")
+        ignore_classes_named("ApplicationJob")
+        ignore_methods_named("perform", "build_enumerator", "each_iteration")
       end
     end
   end

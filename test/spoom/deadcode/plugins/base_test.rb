@@ -11,7 +11,7 @@ module Spoom
         include Test::Helpers::DeadcodeHelper
 
         class TestPlugin < Spoom::Deadcode::Plugins::Base
-          ignore_method_names(
+          ignore_methods_named(
             "name1",
             "name2",
             /^name_re.*/,

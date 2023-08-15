@@ -5,7 +5,7 @@ module Spoom
   module Deadcode
     module Plugins
       class Thor < Base
-        ignore_method_names("exit_on_failure?")
+        ignore_methods_named("exit_on_failure?")
       end
     end
   end
