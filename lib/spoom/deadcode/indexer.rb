@@ -230,7 +230,7 @@ module Spoom
           end
         else
           @plugins.each do |plugin|
-            plugin.on_send(self, send)
+            plugin.internal_on_send(self, send)
           end
 
           reference_method(send.name, send.node)
@@ -286,7 +286,7 @@ module Spoom
           location: node_location(node),
         )
         @index.define(definition)
-        @plugins.each { |plugin| plugin.on_define_accessor(self, definition) }
+        @plugins.each { |plugin| plugin.internal_on_define_accessor(self, definition) }
       end
 
       sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
@@ -298,7 +298,7 @@ module Spoom
           location: node_location(node),
         )
         @index.define(definition)
-        @plugins.each { |plugin| plugin.on_define_accessor(self, definition) }
+        @plugins.each { |plugin| plugin.internal_on_define_accessor(self, definition) }
       end
 
       sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
@@ -310,7 +310,7 @@ module Spoom
           location: node_location(node),
         )
         @index.define(definition)
-        @plugins.each { |plugin| plugin.on_define_class(self, definition) }
+        @plugins.each { |plugin| plugin.internal_on_define_class(self, definition) }
       end
 
       sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
@@ -322,7 +322,7 @@ module Spoom
           location: node_location(node),
         )
         @index.define(definition)
-        @plugins.each { |plugin| plugin.on_define_constant(self, definition) }
+        @plugins.each { |plugin| plugin.internal_on_define_constant(self, definition) }
       end
 
       sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
@@ -334,7 +334,7 @@ module Spoom
           location: node_location(node),
         )
         @index.define(definition)
-        @plugins.each { |plugin| plugin.on_define_method(self, definition) }
+        @plugins.each { |plugin| plugin.internal_on_define_method(self, definition) }
       end
 
       sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
@@ -346,7 +346,7 @@ module Spoom
           location: node_location(node),
         )
         @index.define(definition)
-        @plugins.each { |plugin| plugin.on_define_module(self, definition) }
+        @plugins.each { |plugin| plugin.internal_on_define_module(self, definition) }
       end
 
       # Reference indexing

@@ -127,6 +127,12 @@ module Spoom
           # no-op
         end
 
+        # Do not override this method, use `on_define_accessor` instead.
+        sig { params(indexer: Indexer, definition: Definition).void }
+        def internal_on_define_accessor(indexer, definition)
+          on_define_accessor(indexer, definition)
+        end
+
         # Called when a class is defined.
         #
         # Will be called when the indexer processes a `class` node.
@@ -142,7 +148,15 @@ module Spoom
         # ~~~
         sig { params(indexer: Indexer, definition: Definition).void }
         def on_define_class(indexer, definition)
+          # no-op
+        end
+
+        # Do not override this method, use `on_define_class` instead.
+        sig { params(indexer: Indexer, definition: Definition).void }
+        def internal_on_define_class(indexer, definition)
           definition.ignored! if ignored_class_name?(definition.name)
+
+          on_define_class(indexer, definition)
         end
 
         # Called when a constant is defined.
@@ -160,7 +174,15 @@ module Spoom
         # ~~~
         sig { params(indexer: Indexer, definition: Definition).void }
         def on_define_constant(indexer, definition)
+          # no-op
+        end
+
+        # Do not override this method, use `on_define_constant` instead.
+        sig { params(indexer: Indexer, definition: Definition).void }
+        def internal_on_define_constant(indexer, definition)
           definition.ignored! if ignored_constant_name?(definition.name)
+
+          on_define_constant(indexer, definition)
         end
 
         # Called when a method is defined.
@@ -180,7 +202,15 @@ module Spoom
         # ~~~
         sig { params(indexer: Indexer, definition: Definition).void }
         def on_define_method(indexer, definition)
+          # no-op
+        end
+
+        # Do not override this method, use `on_define_method` instead.
+        sig { params(indexer: Indexer, definition: Definition).void }
+        def internal_on_define_method(indexer, definition)
           definition.ignored! if ignored_method_name?(definition.name)
+
+          on_define_method(indexer, definition)
         end
 
         # Called when a module is defined.
@@ -198,7 +228,15 @@ module Spoom
         # ~~~
         sig { params(indexer: Indexer, definition: Definition).void }
         def on_define_module(indexer, definition)
+          # no-op
+        end
+
+        # Do not override this method, use `on_define_module` instead.
+        sig { params(indexer: Indexer, definition: Definition).void }
+        def internal_on_define_module(indexer, definition)
           definition.ignored! if ignored_module_name?(definition.name)
+
+          on_define_module(indexer, definition)
         end
 
         # Called when a send is being processed
@@ -217,6 +255,12 @@ module Spoom
         sig { params(indexer: Indexer, send: Send).void }
         def on_send(indexer, send)
           # no-op
+        end
+
+        # Do not override this method, use `on_send` instead.
+        sig { params(indexer: Indexer, send: Send).void }
+        def internal_on_send(indexer, send)
+          on_send(indexer, send)
         end
 
         private
