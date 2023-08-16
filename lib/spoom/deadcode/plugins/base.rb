@@ -71,24 +71,6 @@ module Spoom
             save_names_and_patterns(names, :@ignored_method_names, :@ignored_method_patterns)
           end
 
-          # Mark modules matching `names` as ignored.
-          #
-          # Names can be either strings or regexps:
-          #
-          # ~~~rb
-          # class MyPlugin < Spoom::Deadcode::Plugins::Base
-          #   ignore_class_names(
-          #     "Foo",
-          #     "Bar",
-          #     /Baz.*/,
-          #   )
-          # end
-          # ~~~
-          sig { params(names: T.any(String, Regexp)).void }
-          def ignore_module_names(*names)
-            save_names_and_patterns(names, :@ignored_module_names, :@ignored_module_patterns)
-          end
-
           private
 
           sig { params(names: T::Array[T.any(String, Regexp)], names_variable: Symbol, patterns_variable: Symbol).void }
