@@ -125,6 +125,31 @@ module Spoom
 
         # ignore_*_named DSL
 
+        def test_ignore_classes_named
+          plugin = Class.new(Base) do
+            ignore_classes_named(
+              "Class1",
+              "Class2",
+              /^ClassRE.*/,
+            )
+          end
+
+          @project.write!("foo.rb", <<~RB)
+            class Class1; end
+            class Class2; end
+            class Class3; end
+            class ClassRE1; end
+            class ClassRE2; end
+          RB
+
+          index = deadcode_index(plugins: [plugin.new])
+          assert_ignored(index, "Class1")
+          assert_ignored(index, "Class2")
+          refute_ignored(index, "Class3")
+          assert_ignored(index, "ClassRE1")
+          assert_ignored(index, "ClassRE2")
+        end
+
         def test_ignore_methods_named
           plugin = Class.new(Base) do
             ignore_methods_named(
