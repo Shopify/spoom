@@ -199,6 +199,31 @@ module Spoom
           assert_ignored(index, "name_regexp1")
           assert_ignored(index, "name_regexp2")
         end
+
+        def test_ignore_modules_named
+          plugin = Class.new(Base) do
+            ignore_modules_named(
+              "Module1",
+              "Module2",
+              /^ModuleRE.*/,
+            )
+          end
+
+          @project.write!("foo.rb", <<~RB)
+            module Module1; end
+            module Module2; end
+            module Module3; end
+            module ModuleRE1; end
+            module ModuleRE2; end
+          RB
+
+          index = deadcode_index(plugins: [plugin.new])
+          assert_ignored(index, "Module1")
+          assert_ignored(index, "Module2")
+          refute_ignored(index, "Module3")
+          assert_ignored(index, "ModuleRE1")
+          assert_ignored(index, "ModuleRE2")
+        end
       end
     end
   end
