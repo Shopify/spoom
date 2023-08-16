@@ -10,6 +10,19 @@ module Spoom
       class RSpecTest < TestWithProject
         include Test::Helpers::DeadcodeHelper
 
+        def test_ignore_rspec_classes_based_on_name_suffix
+          @project.write!("foo.rb", <<~RB)
+            class C1Spec; end
+            class C2Spec; end
+            class C3SpecHelper; end
+          RB
+
+          index = index_with_plugins
+          assert_ignored(index, "C1Spec")
+          assert_ignored(index, "C2Spec")
+          refute_ignored(index, "C3SpecHelper")
+        end
+
         def test_ignore_rspec_methods
           @project.write!("spec/foo_spec.rb", <<~RB)
             class FooSpec

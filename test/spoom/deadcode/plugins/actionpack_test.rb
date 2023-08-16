@@ -13,11 +13,19 @@ module Spoom
         def test_ignore_actionpack_controllers
           @project.write!("app/controllers/foo.rb", <<~RB)
             class FooController
+              def foo; end
+            end
+
+            module Bar
+              def bar; end
             end
           RB
 
           index = index_with_plugins
           assert_ignored(index, "FooController")
+          assert_ignored(index, "foo")
+          refute_ignored(index, "Bar")
+          refute_ignored(index, "bar")
         end
 
         private

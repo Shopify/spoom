@@ -27,6 +27,26 @@ module Spoom
           refute_ignored(index, "FOO")
         end
 
+        def test_ignore_rails_helpers
+          @project.write!("foo.rb", <<~RB)
+            class SomeHelper; end
+          RB
+
+          @project.write!("app/helpers/foo.rb", <<~RB)
+            class Foo
+              def foo; end
+            end
+
+            module Bar; end
+          RB
+
+          index = index_with_plugins
+          refute_ignored(index, "SomeHelper")
+          assert_ignored(index, "Foo")
+          refute_ignored(index, "foo")
+          assert_ignored(index, "Bar")
+        end
+
         private
 
         sig { returns(Deadcode::Index) }
