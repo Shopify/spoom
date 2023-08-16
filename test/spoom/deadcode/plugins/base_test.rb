@@ -150,6 +150,31 @@ module Spoom
           assert_ignored(index, "ClassRE2")
         end
 
+        def test_ignore_constants_named
+          plugin = Class.new(Base) do
+            ignore_constants_named(
+              "CONST1",
+              "CONST2",
+              /^CONSTRE.*/,
+            )
+          end
+
+          @project.write!("foo.rb", <<~RB)
+            CONST1 = 42
+            CONST2 = 42
+            CONST3 = 42
+            CONSTRE1 = 42
+            CONSTRE2 = 42
+          RB
+
+          index = deadcode_index(plugins: [plugin.new])
+          assert_ignored(index, "CONST1")
+          assert_ignored(index, "CONST2")
+          refute_ignored(index, "CONST3")
+          assert_ignored(index, "CONSTRE1")
+          assert_ignored(index, "CONSTRE2")
+        end
+
         def test_ignore_methods_named
           plugin = Class.new(Base) do
             ignore_methods_named(
