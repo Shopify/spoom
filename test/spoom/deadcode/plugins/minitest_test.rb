@@ -40,6 +40,9 @@ module Spoom
               def before_all; end
               def setup; end
               def teardown; end
+              def test_something; end
+
+              def some_other_test; end
             end
           RB
 
@@ -50,6 +53,8 @@ module Spoom
           assert_ignored(index, "before_all")
           assert_ignored(index, "setup")
           assert_ignored(index, "teardown")
+          assert_ignored(index, "test_something")
+          refute_ignored(index, "some_other_test")
         end
 
         private

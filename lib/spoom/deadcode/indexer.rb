@@ -363,6 +363,11 @@ module Spoom
 
       # Context
 
+      sig { returns(SyntaxTree::Node) }
+      def current_node
+        T.must(@nodes_nesting.last)
+      end
+
       sig { type_parameters(:N).params(type: T::Class[T.type_parameter(:N)]).returns(T.nilable(T.type_parameter(:N))) }
       def nesting_node(type)
         @nodes_nesting.reverse_each do |node|
@@ -377,12 +382,51 @@ module Spoom
         nesting_node(SyntaxTree::ClassDeclaration)
       end
 
+      sig { returns(T.nilable(SyntaxTree::BlockNode)) }
+      def nesting_block
+        nesting_node(SyntaxTree::BlockNode)
+      end
+
+      sig { returns(T.nilable(SyntaxTree::MethodAddBlock)) }
+      def nesting_block_call
+        nesting_node(SyntaxTree::MethodAddBlock)
+      end
+
+      sig { returns(T.nilable(String)) }
+      def nesting_block_call_name
+        block = nesting_block_call
+        return unless block.is_a?(SyntaxTree::MethodAddBlock)
+
+        call = block.call
+        case call
+        when SyntaxTree::ARef
+          node_string(call.collection)
+        when SyntaxTree::CallNode, SyntaxTree::Command, SyntaxTree::CommandCall
+          node_string(call.message)
+        end
+      end
+
+      sig { returns(T.nilable(String)) }
+      def nesting_class_name
+        nesting_class = self.nesting_class
+        return unless nesting_class
+
+        node_string(nesting_class.constant)
+      end
+
       sig { returns(T.nilable(String)) }
       def nesting_class_superclass_name
         nesting_class_superclass = nesting_class&.superclass
         return unless nesting_class_superclass
 
         node_string(nesting_class_superclass).delete_prefix("::")
+      end
+
+      sig { returns(T.nilable(String)) }
+      def last_sig
+        return unless @previous_node.is_a?(SyntaxTree::MethodAddBlock)
+
+        node_string(@previous_node)
       end
 
       # Node utils
