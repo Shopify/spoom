@@ -284,7 +284,7 @@ module Spoom
 
         sig { params(name: String).returns(T::Boolean) }
         def ignored_module_name?(name)
-          ignored_name?(name, :@ignored_module_names, :@ignored_pattern_names)
+          ignored_name?(name, :@ignored_module_names, :@ignored_module_patterns)
         end
 
         sig { params(name: String, names_variable: Symbol, patterns_variable: Symbol).returns(T::Boolean) }
