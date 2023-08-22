@@ -33,6 +33,89 @@ module Spoom
           refute_ignored(index, "some_method")
         end
 
+        def test_dead_record_callbacks
+          @project.write!("app/models/my_model.rb", <<~RB)
+            class MyModel
+              after_commit :method1
+              after_find :method2, if: Proc.new { medthod3 }
+
+              def method1; end
+              def method2; end
+              def method3; end
+            end
+
+            class SomeClass; end
+            class SomeOtherClass < SomeClass; end
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "method1")
+          assert_alive(index, "method2")
+          assert_dead(index, "method3")
+        end
+
+        def test_dead_record_assign_attributes_assoc
+          ActiveRecord::CRUD_METHODS.each do |method|
+            @project.write!("app/models/my_model.rb", <<~RB)
+              class MyModel
+                def method1=; end
+                def method2=; end
+                def method3=; end
+              end
+
+              MyModel.#{method}(
+                method1: "foo",
+                method2: "bar",
+              )
+            RB
+
+            index = index_with_plugins
+            assert_alive(index, "method1=")
+            assert_alive(index, "method2=")
+            assert_dead(index, "method3=")
+          end
+        end
+
+        def test_dead_record_assign_attributes_assoc_hash
+          ActiveRecord::CRUD_METHODS.each do |method|
+            @project.write!("app/models/my_model.rb", <<~RB)
+              class MyModel
+                def method1=; end
+                def method2=; end
+                def method3=; end
+              end
+
+              MyModel.#{method}({ method1: "foo", method2: "bar" })
+            RB
+
+            index = index_with_plugins
+            assert_alive(index, "method1=")
+            assert_alive(index, "method2=")
+            assert_dead(index, "method3=")
+          end
+        end
+
+        def test_dead_record_insert_all
+          ["insert_all", "insert_all!", "upsert_all"].each do |method|
+            @project.write!("app/models/my_model.rb", <<~RB)
+              class MyModel
+                def method1=; end
+                def method2=; end
+                def method3=; end
+              end
+
+              MyModel.#{method}([
+                { method1: "foo", method2: "bar" }
+              ])
+            RB
+
+            index = index_with_plugins
+            assert_alive(index, "method1=")
+            assert_alive(index, "method2=")
+            assert_dead(index, "method3=")
+          end
+        end
+
         private
 
         sig { returns(Index) }
