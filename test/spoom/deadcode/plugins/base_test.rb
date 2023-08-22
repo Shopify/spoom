@@ -224,6 +224,33 @@ module Spoom
           assert_ignored(index, "ModuleRE1")
           assert_ignored(index, "ModuleRE2")
         end
+
+        # ignore_classes_inheriting_from DSL
+
+        def test_ignore_classes_inheriting_from
+          plugin = Class.new(Base) do
+            ignore_classes_inheriting_from(
+              "Superclass1",
+              "::Superclass2",
+              /^(::)?SuperclassRE.*/,
+            )
+          end
+
+          @project.write!("foo.rb", <<~RB)
+            class Subclass1 < ::Superclass1; end
+            class Subclass2 < Superclass2; end
+            class Subclass3 < Superclass3; end
+            class SubclassRE1 < SuperclassRE1; end
+            class SubclassRE2 < SuperclassRE2; end
+          RB
+
+          index = deadcode_index(plugins: [plugin.new])
+          assert_ignored(index, "Subclass1")
+          assert_ignored(index, "Subclass2")
+          refute_ignored(index, "Subclass3")
+          assert_ignored(index, "SubclassRE1")
+          assert_ignored(index, "SubclassRE2")
+        end
       end
     end
   end

@@ -5,6 +5,8 @@ module Spoom
   module Deadcode
     module Plugins
       class ActiveRecord < Base
+        ignore_classes_inheriting_from(/^(::)?ActiveRecord::Migration/)
+
         ignore_methods_named(
           "change",
           "down",

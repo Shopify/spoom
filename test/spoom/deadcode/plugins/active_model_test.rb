@@ -19,7 +19,9 @@ module Spoom
           RB
 
           index = index_with_plugins
+          assert_ignored(index, "MyValidator")
           assert_ignored(index, "validate_each")
+          refute_ignored(index, "another_method")
         end
 
         private

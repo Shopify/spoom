@@ -4,26 +4,29 @@
 module Spoom
   module Deadcode
     module Plugins
-      class Rails < Base
+      class Namespaces < Base
         extend T::Sig
-
-        ignore_constants_named("APP_PATH", "ENGINE_PATH", "ENGINE_ROOT")
 
         sig { override.params(indexer: Indexer, definition: Definition).void }
         def on_define_class(indexer, definition)
-          definition.ignored! if file_is_helper?(indexer)
+          definition.ignored! if used_as_namespace?(indexer)
         end
 
         sig { override.params(indexer: Indexer, definition: Definition).void }
         def on_define_module(indexer, definition)
-          definition.ignored! if file_is_helper?(indexer)
+          definition.ignored! if used_as_namespace?(indexer)
         end
 
         private
 
         sig { params(indexer: Indexer).returns(T::Boolean) }
-        def file_is_helper?(indexer)
-          indexer.path.match?(%r{app/helpers/.*\.rb$})
+        def used_as_namespace?(indexer)
+          node = indexer.current_node
+          return false unless node.is_a?(SyntaxTree::ClassDeclaration) || node.is_a?(SyntaxTree::ModuleDeclaration)
+
+          node.bodystmt.statements.body.any? do |stmt|
+            !stmt.is_a?(SyntaxTree::VoidStmt)
+          end
         end
       end
     end

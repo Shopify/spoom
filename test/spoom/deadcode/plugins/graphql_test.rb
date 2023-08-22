@@ -10,6 +10,19 @@ module Spoom
       class GraphQLTest < TestWithProject
         include Test::Helpers::DeadcodeHelper
 
+        def test_ignore_graphql_classes
+          @project.write!("foo.rb", <<~RB)
+            class Class1 < GraphQL::Schema::Object; end
+            class Class2 < ::GraphQL::Schema::Enum; end
+            class Class3; end
+          RB
+
+          index = index_with_plugins
+          assert_ignored(index, "Class1")
+          assert_ignored(index, "Class2")
+          refute_ignored(index, "Class3")
+        end
+
         def test_ignore_graphql_methods
           @project.write!("foo.rb", <<~RB)
             class SomeClass

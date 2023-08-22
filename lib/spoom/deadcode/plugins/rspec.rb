@@ -5,6 +5,8 @@ module Spoom
   module Deadcode
     module Plugins
       class RSpec < Base
+        ignore_classes_named(/Spec$/)
+
         ignore_methods_named(
           "after_setup",
           "after_teardown",
