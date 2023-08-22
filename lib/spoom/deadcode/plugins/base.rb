@@ -330,15 +330,6 @@ module Spoom
         def patterns(const)
           self.class.instance_variable_get(const) || []
         end
-
-        sig { params(indexer: Indexer, send: Send).void }
-        def reference_send_first_symbol_as_method(indexer, send)
-          first_arg = send.args.first
-          return unless first_arg.is_a?(SyntaxTree::SymbolLiteral)
-
-          name = indexer.node_string(first_arg.value)
-          indexer.reference_method(name, send.node)
-        end
       end
     end
   end
