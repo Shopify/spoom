@@ -129,13 +129,13 @@ module Spoom
           plugin = Class.new(Base) do
             ignore_classes_named(
               "Class1",
-              "Class2",
+              "::Class2",
               /^ClassRE.*/,
             )
           end
 
           @project.write!("foo.rb", <<~RB)
-            class Class1; end
+            class ::Class1; end
             class Class2; end
             class Class3; end
             class ClassRE1; end
@@ -154,13 +154,13 @@ module Spoom
           plugin = Class.new(Base) do
             ignore_constants_named(
               "CONST1",
-              "CONST2",
+              "::CONST2",
               /^CONSTRE.*/,
             )
           end
 
           @project.write!("foo.rb", <<~RB)
-            CONST1 = 42
+            ::CONST1 = 42
             CONST2 = 42
             CONST3 = 42
             CONSTRE1 = 42
@@ -204,17 +204,17 @@ module Spoom
           plugin = Class.new(Base) do
             ignore_modules_named(
               "Module1",
-              "Module2",
-              /^ModuleRE.*/,
+              "::Module2",
+              /^(::)?ModuleRE.*/,
             )
           end
 
           @project.write!("foo.rb", <<~RB)
-            module Module1; end
+            module ::Module1; end
             module Module2; end
             module Module3; end
             module ModuleRE1; end
-            module ModuleRE2; end
+            module ::ModuleRE2; end
           RB
 
           index = deadcode_index(plugins: [plugin.new])

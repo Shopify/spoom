@@ -99,7 +99,7 @@ module Spoom
             names.each do |name|
               case name
               when String
-                ignored_names << name
+                ignored_names << name.delete_prefix("::")
               when Regexp
                 ignored_patterns << name
               end
