@@ -287,6 +287,8 @@ module Spoom
 
         private
 
+        # DSL support
+
         sig { params(name: T.nilable(String)).returns(T::Boolean) }
         def ignored_class_name?(name)
           return false unless name
@@ -331,13 +333,20 @@ module Spoom
           self.class.instance_variable_get(const) || []
         end
 
-        sig { params(indexer: Indexer, send: Send).void }
-        def reference_send_first_symbol_as_method(indexer, send)
-          first_arg = send.args.first
-          return unless first_arg.is_a?(SyntaxTree::SymbolLiteral)
+        # Plugin utils
 
-          name = indexer.node_string(first_arg.value)
-          indexer.reference_method(name, send.node)
+        sig { params(name: String).returns(String) }
+        def camelize(name)
+          name = T.must(name.split("::").last)
+          name = T.must(name.split("/").last)
+          name = name.gsub(/[^a-zA-Z0-9_]/, "")
+          name = name.sub(/^[a-z\d]*/, &:capitalize)
+          name = name.gsub(%r{(?:_|(/))([a-z\d]*)}) do
+            s1 = Regexp.last_match(1)
+            s2 = Regexp.last_match(2)
+            "#{s1}#{s2&.capitalize}"
+          end
+          name
         end
       end
     end

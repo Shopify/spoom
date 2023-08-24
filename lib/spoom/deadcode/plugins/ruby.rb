@@ -26,7 +26,8 @@ module Spoom
           when "const_defined?", "const_get", "const_source_location"
             reference_symbol_as_constant(indexer, send, T.must(send.args.first))
           when "send", "__send__", "try"
-            reference_send_first_symbol_as_method(indexer, send)
+            arg = send.args.first
+            indexer.reference_method(indexer.node_string(arg.value), send.node) if arg.is_a?(SyntaxTree::SymbolLiteral)
           when "alias_method"
             last_arg = send.args.last
 
