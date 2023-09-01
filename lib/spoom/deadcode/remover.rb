@@ -296,21 +296,6 @@ module Spoom
           @new_source[start_char...end_char] = replacement
         end
 
-        sig { params(line_number: Integer, start_column: Integer, end_column: Integer).void }
-        def delete_line_part(line_number, start_column, end_column)
-          lines = []
-          @new_source.lines.each_with_index do |line, index|
-            current_line = index + 1
-
-            lines << if line_number == current_line
-              T.must(line[0...start_column]) + T.must(line[end_column..-1])
-            else
-              line
-            end
-          end
-          @new_source = lines.join
-        end
-
         sig { params(node: SyntaxTree::MethodAddBlock, name: String, kind: Definition::Kind).returns(String) }
         def transform_sig(node, name:, kind:)
           type = T.let(nil, T.nilable(String))
