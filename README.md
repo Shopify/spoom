@@ -348,6 +348,16 @@ Find all the symbols for a file:
 puts client.document_symbols("file://path/to/my/file.rb")
 ```
 
+### Backtrace Filtering
+
+Spoom provides a backtrace filter for Minitest to remove the Sorbet frames from test failures, giving a more readable output. To enable it:
+
+```ruby
+# test/test_helper.rb
+require "spoom/backtrace_filter/minitest"
+Minitest.backtrace_filter = Spoom::BacktraceFilter::Minitest.new
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `bin/test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment. Don't forget to run `bin/sanity` before pushing your changes.
