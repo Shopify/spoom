@@ -102,7 +102,7 @@ module Spoom
         result = @project.spoom("lsp --no-color hover lib/hover.rb 6 8")
         assert_equal(<<~MSG, result.out)
           Hovering `lib/hover.rb:6:8`:
-          sig {params(a: Integer).returns(String)}
+          sig { params(a: Integer).returns(String) }
           def foo(a); end
         MSG
       end
@@ -146,7 +146,7 @@ module Spoom
         result = @project.spoom("lsp --no-color hover lib/hover.rb 12 4")
         assert_equal(<<~MSG, result.out)
           Hovering `lib/hover.rb:12:4`:
-          sig {params(a: Integer).returns(String)}
+          sig { params(a: Integer).returns(String) }
           def foo(a); end
         MSG
       end
