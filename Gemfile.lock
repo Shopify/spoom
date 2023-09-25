@@ -72,7 +72,7 @@ GEM
     sorbet-static-and-runtime (0.5.11026)
       sorbet (= 0.5.11026)
       sorbet-runtime (= 0.5.11026)
-    syntax_tree (6.1.1)
+    syntax_tree (6.2.0)
       prettier_print (>= 1.2.0)
     tapioca (0.11.9)
       bundler (>= 2.2.25)
