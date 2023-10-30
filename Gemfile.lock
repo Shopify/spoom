@@ -37,7 +37,7 @@ GEM
     prettier_print (1.2.1)
     racc (1.7.1)
     rainbow (3.1.1)
-    rake (13.0.6)
+    rake (13.1.0)
     rbi (0.1.1)
       sorbet-runtime (>= 0.5.9204)
       yarp (>= 0.11.0)
@@ -64,14 +64,14 @@ GEM
     rubocop-sorbet (0.7.4)
       rubocop (>= 0.90.0)
     ruby-progressbar (1.13.0)
-    sorbet (0.5.11074)
-      sorbet-static (= 0.5.11074)
-    sorbet-runtime (0.5.11074)
-    sorbet-static (0.5.11074-universal-darwin)
-    sorbet-static (0.5.11074-x86_64-linux)
-    sorbet-static-and-runtime (0.5.11074)
-      sorbet (= 0.5.11074)
-      sorbet-runtime (= 0.5.11074)
+    sorbet (0.5.11105)
+      sorbet-static (= 0.5.11105)
+    sorbet-runtime (0.5.11105)
+    sorbet-static (0.5.11105-universal-darwin)
+    sorbet-static (0.5.11105-x86_64-linux)
+    sorbet-static-and-runtime (0.5.11105)
+      sorbet (= 0.5.11105)
+      sorbet-runtime (= 0.5.11105)
     syntax_tree (6.2.0)
       prettier_print (>= 1.2.0)
     tapioca (0.11.9)
@@ -83,7 +83,7 @@ GEM
       spoom (~> 1.2.0, >= 1.2.0)
       thor (>= 1.2.0)
       yard-sorbet
-    thor (1.2.2)
+    thor (1.3.0)
     unicode-display_width (2.4.2)
     yard (0.9.34)
     yard-sorbet (0.8.1)
@@ -101,7 +101,7 @@ DEPENDENCIES
   debug
   minitest (~> 5.0)
   minitest-reporters
-  rake (~> 13.0.1)
+  rake (~> 13.1.0)
   rubocop-shopify
   rubocop-sorbet
   spoom!
