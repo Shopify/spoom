@@ -37,7 +37,7 @@ GEM
     prettier_print (1.2.1)
     racc (1.7.1)
     rainbow (3.1.1)
-    rake (13.0.6)
+    rake (13.1.0)
     rbi (0.1.1)
       sorbet-runtime (>= 0.5.9204)
       yarp (>= 0.11.0)
@@ -101,7 +101,7 @@ DEPENDENCIES
   debug
   minitest (~> 5.0)
   minitest-reporters
-  rake (~> 13.0.1)
+  rake (~> 13.1.0)
   rubocop-shopify
   rubocop-sorbet
   spoom!
