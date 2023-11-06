@@ -27,7 +27,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency("bundler", ">= 2.2.10")
   spec.add_development_dependency("minitest", "~> 5.0")
   spec.add_development_dependency("minitest-reporters")
-  spec.add_development_dependency("rake", "~> 13.0.1")
+  spec.add_development_dependency("rake", "~> 13.1.0")
 
   spec.add_dependency("erubi", ">= 1.10.0")
   spec.add_dependency("sorbet-static-and-runtime", ">= 0.5.10187")
