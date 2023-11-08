@@ -25,7 +25,7 @@ module Spoom
         assert_equal(<<~OUT, result.out)
           Commands:
             spoom --version       # Show version
-            spoom bump            # Bump Sorbet sigils from `false` to `true` when no e...
+            spoom bump            # Bump Sorbet sigils from `false` to `true` when no errors
             spoom config          # Manage Sorbet config
             spoom coverage        # Collect metrics related to Sorbet coverage
             spoom files           # List all the files typechecked by Sorbet
@@ -34,10 +34,10 @@ module Spoom
             spoom tc              # Run Sorbet and parses its output
 
           Options:
-               [--color], [--no-color]  # Use colors
-                                        # Default: true
-            p, [--path=PATH]            # Run spoom in a specific path
-                                        # Default: .
+                [--color], [--no-color]  # Use colors
+                                         # Default: true
+            -p, [--path=PATH]            # Run spoom in a specific path
+                                         # Default: .
 
         OUT
       end
