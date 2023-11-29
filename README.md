@@ -220,7 +220,8 @@ Bump the strictness from a list of files (one file by line):
 $ spoom bump --from false --to true -o list.txt
 ```
 
-Check if files can be bumped without applying any change:
+Check if files can be bumped without applying any change and show the list of files that can be bumped without errors.
+Will exit with a non-zero status if some files can be bumped without errors (useful to check for bumpable files on CI for example):
 
 ```
 $ spoom bump --from false --to true --dry
