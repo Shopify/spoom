@@ -69,7 +69,7 @@ module Spoom
         assert_equal(<<~MSG, result.out)
           Hovering `lib/hover.rb:0:0`:
           This file is `# typed: false`.
-          Hover, Go To Definition, and other features are disabled in this file.
+          Most Hover results will not appear until the file is `# typed: true` or higher.
         MSG
       end
 
