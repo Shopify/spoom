@@ -19,7 +19,8 @@ module Spoom
         end
 
         assert_equal(
-          "Error while parsing foo.rb (syntax error, unexpected end-of-input, expecting ')' at 1:9)",
+          "Error while parsing foo.rb: expected a `)` to close the parameters (at 1:8). " \
+            "cannot parse the expression (at 1:8). expected an `end` to close the `def` statement (at 1:8).",
           exception.message,
         )
       end

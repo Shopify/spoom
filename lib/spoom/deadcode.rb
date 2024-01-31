@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 require "erubi"
-require "syntax_tree"
+require "prism"
 
 require_relative "deadcode/erb"
 require_relative "deadcode/index"
@@ -18,10 +18,15 @@ require_relative "deadcode/remover"
 module Spoom
   module Deadcode
     class Error < Spoom::Error
-      extend T::Sig
       extend T::Helpers
 
       abstract!
+    end
+
+    class ParserError < Error; end
+
+    class IndexerError < Error
+      extend T::Sig
 
       sig { params(message: String, parent: Exception).void }
       def initialize(message, parent:)
@@ -30,17 +35,21 @@ module Spoom
       end
     end
 
-    class ParserError < Error; end
-    class IndexerError < Error; end
-
     class << self
       extend T::Sig
 
       sig { params(ruby: String, file: String).returns(SyntaxTree::Node) }
       def parse_ruby(ruby, file:)
-        SyntaxTree.parse(ruby)
-      rescue SyntaxTree::Parser::ParseError => e
-        raise ParserError.new("Error while parsing #{file} (#{e.message} at #{e.lineno}:#{e.column})", parent: e)
+        result = Prism.parse(ruby)
+        unless result.success?
+          message = result.errors.map do |e|
+            "#{e.message} (at #{e.location.start_line}:#{e.location.start_column})."
+          end.join(" ")
+
+          raise ParserError, "Error while parsing #{file}: #{message}"
+        end
+
+        result.value
       end
 
       sig do

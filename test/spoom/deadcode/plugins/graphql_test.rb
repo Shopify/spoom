@@ -68,7 +68,7 @@ module Spoom
         def test_ignore_method_splats
           @project.write!("foo.rb", <<~RB)
             field(:field1)
-            field(*args, **kwargs, &block) {}
+            field(*args, **kwargs) {}
 
             def field1; end
           RB
