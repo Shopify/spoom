@@ -3,6 +3,7 @@ PATH
   specs:
     spoom (1.2.4)
       erubi (>= 1.10.0)
+      prism (>= 0.19.0)
       sorbet-static-and-runtime (>= 0.5.10187)
       syntax_tree (>= 6.1.1)
       thor (>= 0.19.2)
