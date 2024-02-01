@@ -7,8 +7,7 @@
 # source://erubi//lib/erubi.rb#3
 module Erubi
   class << self
-    # source://erubi//lib/erubi.rb#35
-    def h(value); end
+    def h(_arg0); end
   end
 end
 
@@ -140,7 +139,7 @@ Erubi::RANGE_FIRST = T.let(T.unsafe(nil), Integer)
 Erubi::RANGE_LAST = T.let(T.unsafe(nil), Integer)
 
 # source://erubi//lib/erubi.rb#16
-Erubi::SKIP_DEFINED_FOR_INSTANCE_VARIABLE = T.let(T.unsafe(nil), FalseClass)
+Erubi::SKIP_DEFINED_FOR_INSTANCE_VARIABLE = T.let(T.unsafe(nil), TrueClass)
 
 # source://erubi//lib/erubi.rb#4
 Erubi::VERSION = T.let(T.unsafe(nil), String)
