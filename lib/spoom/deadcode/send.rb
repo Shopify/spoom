@@ -8,11 +8,11 @@ module Spoom
     class Send < T::Struct
       extend T::Sig
 
-      const :node, SyntaxTree::Node
+      const :node, Prism::Node
       const :name, String
-      const :recv, T.nilable(SyntaxTree::Node), default: nil
-      const :args, T::Array[SyntaxTree::Node], default: []
-      const :block, T.nilable(SyntaxTree::Node), default: nil
+      const :recv, T.nilable(Prism::Node), default: nil
+      const :args, T::Array[Prism::Node], default: []
+      const :block, T.nilable(Prism::Node), default: nil
 
       sig do
         type_parameters(:T)

@@ -3,7 +3,7 @@
 
 module Spoom
   module Deadcode
-    class Indexer < SyntaxTree::Visitor
+    class Indexer < Visitor
       extend T::Sig
 
       sig { returns(String) }
@@ -21,9 +21,9 @@ module Spoom
         @source = source
         @index = index
         @plugins = plugins
-        @previous_node = T.let(nil, T.nilable(SyntaxTree::Node))
+        @previous_node = T.let(nil, T.nilable(Prism::Node))
         @names_nesting = T.let([], T::Array[String])
-        @nodes_nesting = T.let([], T::Array[SyntaxTree::Node])
+        @nodes_nesting = T.let([], T::Array[Prism::Node])
         @in_const_field = T.let(false, T::Boolean)
         @in_opassign = T.let(false, T::Boolean)
         @in_symbol_literal = T.let(false, T::Boolean)
@@ -31,7 +31,7 @@ module Spoom
 
       # Visit
 
-      sig { override.params(node: T.nilable(SyntaxTree::Node)).void }
+      sig { override.params(node: T.nilable(Prism::Node)).void }
       def visit(node)
         return unless node
 
@@ -41,163 +41,233 @@ module Spoom
         @previous_node = node
       end
 
-      sig { override.params(node: SyntaxTree::AliasNode).void }
-      def visit_alias(node)
-        reference_method(node_string(node.right), node)
+      sig { override.params(node: Prism::AliasMethodNode).void }
+      def visit_alias_method_node(node)
+        reference_method(node.old_name.slice, node)
       end
 
-      sig { override.params(node: SyntaxTree::ARef).void }
-      def visit_aref(node)
+      sig { override.params(node: Prism::AndNode).void }
+      def visit_and_node(node)
+        reference_method(node.operator_loc.slice, node)
         super
-
-        reference_method("[]", node)
       end
 
-      sig { override.params(node: SyntaxTree::ARefField).void }
-      def visit_aref_field(node)
-        super
-
-        reference_method("[]=", node)
-      end
-
-      sig { override.params(node: SyntaxTree::ArgBlock).void }
-      def visit_arg_block(node)
-        value = node.value
-
-        case value
-        when SyntaxTree::SymbolLiteral
-          # If the block call is something like `x.select(&:foo)`, we need to reference the `foo` method
-          reference_method(symbol_string(value), node)
-        when SyntaxTree::VCall
-          # If the block call is something like `x.select { ... }`, we need to visit the block
-          super
+      sig { override.params(node: Prism::BlockArgumentNode).void }
+      def visit_block_argument_node(node)
+        expression = node.expression
+        case expression
+        when Prism::SymbolNode
+          reference_method(expression.unescaped, expression)
+        else
+          visit(expression)
         end
       end
 
-      sig { override.params(node: SyntaxTree::Binary).void }
-      def visit_binary(node)
-        super
-
-        op = node.operator
-
-        # Reference the operator itself
-        reference_method(op.to_s, node)
-
-        case op
-        when :<, :>, :<=, :>=
-          # For comparison operators, we also reference the `<=>` method
-          reference_method("<=>", node)
-        end
+      sig { override.params(node: Prism::CallAndWriteNode).void }
+      def visit_call_and_write_node(node)
+        visit(node.receiver)
+        reference_method(node.read_name.to_s, node)
+        reference_method(node.write_name.to_s, node)
+        visit(node.value)
       end
 
-      sig { override.params(node: SyntaxTree::CallNode).void }
-      def visit_call(node)
+      sig { override.params(node: Prism::CallOperatorWriteNode).void }
+      def visit_call_operator_write_node(node)
+        visit(node.receiver)
+        reference_method(node.read_name.to_s, node)
+        reference_method(node.write_name.to_s, node)
+        visit(node.value)
+      end
+
+      sig { override.params(node: Prism::CallOrWriteNode).void }
+      def visit_call_or_write_node(node)
+        visit(node.receiver)
+        reference_method(node.read_name.to_s, node)
+        reference_method(node.write_name.to_s, node)
+        visit(node.value)
+      end
+
+      sig { override.params(node: Prism::CallNode).void }
+      def visit_call_node(node)
         visit_send(
           Send.new(
             node: node,
-            name: node_string(node.message),
+            name: node.name.to_s,
             recv: node.receiver,
-            args: call_args(node.arguments),
-          ),
-        )
-      end
-
-      sig { override.params(node: SyntaxTree::ClassDeclaration).void }
-      def visit_class(node)
-        const_name = node_string(node.constant)
-        @names_nesting << const_name
-        define_class(T.must(const_name.split("::").last), @names_nesting.join("::"), node)
-
-        # We do not call `super` here because we don't want to visit the `constant` again
-        visit(node.superclass) if node.superclass
-        visit(node.bodystmt)
-
-        @names_nesting.pop
-      end
-
-      sig { override.params(node: SyntaxTree::Command).void }
-      def visit_command(node)
-        visit_send(
-          Send.new(
-            node: node,
-            name: node_string(node.message),
-            args: call_args(node.arguments),
+            args: node.arguments&.arguments || [],
             block: node.block,
           ),
         )
       end
 
-      sig { override.params(node: SyntaxTree::CommandCall).void }
-      def visit_command_call(node)
-        visit_send(
-          Send.new(
-            node: node,
-            name: node_string(node.message),
-            recv: node.receiver,
-            args: call_args(node.arguments),
-            block: node.block,
-          ),
-        )
+      sig { override.params(node: Prism::ClassNode).void }
+      def visit_class_node(node)
+        constant_path = node.constant_path.slice
+
+        if constant_path.start_with?("::")
+          full_name = constant_path.delete_prefix("::")
+
+          # We found a top level definition such as `class ::A; end`, we need to reset the name nesting
+          old_nesting = @names_nesting.dup
+          @names_nesting.clear
+          @names_nesting << full_name
+
+          define_class(T.must(constant_path.split("::").last), full_name, node)
+
+          # We do not call `super` here because we don't want to visit the `constant` again
+          visit(node.superclass) if node.superclass
+          visit(node.body)
+
+          # Restore the name nesting once we finished visited the class
+          @names_nesting.clear
+          @names_nesting = old_nesting
+        else
+          @names_nesting << constant_path
+          define_class(T.must(constant_path.split("::").last), @names_nesting.join("::"), node)
+
+          # We do not call `super` here because we don't want to visit the `constant` again
+          visit(node.superclass) if node.superclass
+          visit(node.body)
+
+          @names_nesting.pop
+        end
       end
 
-      sig { override.params(node: SyntaxTree::Const).void }
-      def visit_const(node)
-        reference_constant(node.value, node) unless @in_symbol_literal
+      sig { override.params(node: Prism::ConstantAndWriteNode).void }
+      def visit_constant_and_write_node(node)
+        reference_constant(node.name.to_s, node)
+        visit(node.value)
       end
 
-      sig { override.params(node: SyntaxTree::ConstPathField).void }
-      def visit_const_path_field(node)
-        # We do not call `super` here because we don't want to visit the `constant` again
-        visit(node.parent)
+      sig { override.params(node: Prism::ConstantOperatorWriteNode).void }
+      def visit_constant_operator_write_node(node)
+        reference_constant(node.name.to_s, node)
+        visit(node.value)
+      end
 
-        name = node.constant.value
-        full_name = [*@names_nesting, node_string(node.parent), name].join("::")
+      sig { override.params(node: Prism::ConstantOrWriteNode).void }
+      def visit_constant_or_write_node(node)
+        reference_constant(node.name.to_s, node)
+        visit(node.value)
+      end
+
+      sig { override.params(node: Prism::ConstantPathWriteNode).void }
+      def visit_constant_path_write_node(node)
+        parent = node.target.parent
+        name = node.target.child.slice
+
+        if parent
+          visit(parent)
+
+          parent_name = parent.slice
+          full_name = [*@names_nesting, parent_name, name].compact.join("::")
+          define_constant(name, full_name, node)
+        else
+          define_constant(name, name, node)
+        end
+
+        visit(node.value)
+      end
+
+      sig { override.params(node: Prism::ConstantReadNode).void }
+      def visit_constant_read_node(node)
+        reference_constant(node.name.to_s, node)
+      end
+
+      sig { override.params(node: Prism::ConstantWriteNode).void }
+      def visit_constant_write_node(node)
+        name = node.name.to_s
+        full_name = [*@names_nesting, name].join("::")
         define_constant(name, full_name, node)
+        visit(node.value)
       end
 
-      sig { override.params(node: SyntaxTree::DefNode).void }
-      def visit_def(node)
-        name = node_string(node.name)
+      sig { override.params(node: Prism::DefNode).void }
+      def visit_def_node(node)
+        name = node.name.to_s
         define_method(name, [*@names_nesting, name].join("::"), node)
 
         super
       end
 
-      sig { override.params(node: SyntaxTree::Field).void }
-      def visit_field(node)
-        visit(node.parent)
+      sig { override.params(node: Prism::LocalVariableAndWriteNode).void }
+      def visit_local_variable_and_write_node(node)
+        name = node.name.to_s
+        reference_method(name, node)
+        reference_method("#{name}=", node)
+        visit(node.value)
+      end
 
-        name = node.name
-        case name
-        when SyntaxTree::Const
-          name = name.value
-          full_name = [*@names_nesting, node_string(node.parent), name].join("::")
-          define_constant(name, full_name, node)
-        when SyntaxTree::Ident
-          reference_method(name.value, node) if @in_opassign
-          reference_method("#{name.value}=", node)
+      sig { override.params(node: Prism::LocalVariableOperatorWriteNode).void }
+      def visit_local_variable_operator_write_node(node)
+        name = node.name.to_s
+        reference_method(name, node)
+        reference_method("#{name}=", node)
+        visit(node.value)
+      end
+
+      sig { override.params(node: Prism::LocalVariableOrWriteNode).void }
+      def visit_local_variable_or_write_node(node)
+        name = node.name.to_s
+        reference_method(name, node)
+        reference_method("#{name}=", node)
+        visit(node.value)
+      end
+
+      sig { override.params(node: Prism::LocalVariableWriteNode).void }
+      def visit_local_variable_write_node(node)
+        visit(node.value)
+        reference_method("#{node.name}=", node)
+      end
+
+      sig { override.params(node: Prism::ModuleNode).void }
+      def visit_module_node(node)
+        constant_path = node.constant_path.slice
+
+        if constant_path.start_with?("::")
+          full_name = constant_path.delete_prefix("::")
+
+          # We found a top level definition such as `class ::A; end`, we need to reset the name nesting
+          old_nesting = @names_nesting.dup
+          @names_nesting.clear
+          @names_nesting << full_name
+
+          define_module(T.must(constant_path.split("::").last), full_name, node)
+
+          visit(node.body)
+
+          # Restore the name nesting once we finished visited the class
+          @names_nesting.clear
+          @names_nesting = old_nesting
+        else
+          @names_nesting << constant_path
+          define_module(T.must(constant_path.split("::").last), @names_nesting.join("::"), node)
+
+          # We do not call `super` here because we don't want to visit the `constant` again
+          visit(node.body)
+
+          @names_nesting.pop
         end
       end
 
-      sig { override.params(node: SyntaxTree::ModuleDeclaration).void }
-      def visit_module(node)
-        const_name = node_string(node.constant)
-        @names_nesting << const_name
-        define_module(T.must(const_name.split("::").last), @names_nesting.join("::"), node)
-
-        # We do not call `super` here because we don't want to visit the `constant` again
-        visit(node.bodystmt)
-
-        @names_nesting.pop
+      sig { override.params(node: Prism::MultiWriteNode).void }
+      def visit_multi_write_node(node)
+        node.lefts.each do |const|
+          case const
+          when Prism::ConstantTargetNode, Prism::ConstantPathTargetNode
+            name = const.slice
+            define_constant(T.must(name.split("::").last), [*@names_nesting, name].join("::"), const)
+          when Prism::LocalVariableTargetNode
+            reference_method("#{const.name}=", node)
+          end
+        end
+        visit(node.value)
       end
 
-      sig { override.params(node: SyntaxTree::OpAssign).void }
-      def visit_opassign(node)
-        # Both `FOO = x` and `FOO += x` yield a VarField node, but the former is a constant definition and the latter is
-        # a constant reference. We need to distinguish between the two cases.
-        @in_opassign = true
+      sig { override.params(node: Prism::OrNode).void }
+      def visit_or_node(node)
+        reference_method(node.operator_loc.slice, node)
         super
-        @in_opassign = false
       end
 
       sig { params(send: Send).void }
@@ -207,23 +277,23 @@ module Spoom
         case send.name
         when "attr_reader"
           send.args.each do |arg|
-            next unless arg.is_a?(SyntaxTree::SymbolLiteral)
+            next unless arg.is_a?(Prism::SymbolNode)
 
-            name = symbol_string(arg)
+            name = arg.unescaped
             define_attr_reader(name, [*@names_nesting, name].join("::"), arg)
           end
         when "attr_writer"
           send.args.each do |arg|
-            next unless arg.is_a?(SyntaxTree::SymbolLiteral)
+            next unless arg.is_a?(Prism::SymbolNode)
 
-            name = symbol_string(arg)
+            name = arg.unescaped
             define_attr_writer("#{name}=", "#{[*@names_nesting, name].join("::")}=", arg)
           end
         when "attr_accessor"
           send.args.each do |arg|
-            next unless arg.is_a?(SyntaxTree::SymbolLiteral)
+            next unless arg.is_a?(Prism::SymbolNode)
 
-            name = symbol_string(arg)
+            name = arg.unescaped
             full_name = [*@names_nesting, name].join("::")
             define_attr_reader(name, full_name, arg)
             define_attr_writer("#{name}=", "#{full_name}=", arg)
@@ -234,50 +304,21 @@ module Spoom
           end
 
           reference_method(send.name, send.node)
+
+          case send.name
+          when "<", ">", "<=", ">="
+            # For comparison operators, we also reference the `<=>` method
+            reference_method("<=>", send.node)
+          end
+
           visit_all(send.args)
           visit(send.block)
         end
       end
 
-      sig { override.params(node: SyntaxTree::SymbolLiteral).void }
-      def visit_symbol_literal(node)
-        # Something like `:FOO` will yield a Const node but we do not want to treat it as a constant reference.
-        # So we need to distinguish between the two cases.
-        @in_symbol_literal = true
-        super
-        @in_symbol_literal = false
-      end
-
-      sig { override.params(node: SyntaxTree::TopConstField).void }
-      def visit_top_const_field(node)
-        define_constant(node.constant.value, node.constant.value, node)
-      end
-
-      sig { override.params(node: SyntaxTree::VarField).void }
-      def visit_var_field(node)
-        value = node.value
-        case value
-        when SyntaxTree::Const
-          if @in_opassign
-            reference_constant(value.value, node)
-          else
-            name = value.value
-            define_constant(name, [*@names_nesting, name].join("::"), node)
-          end
-        when SyntaxTree::Ident
-          reference_method(value.value, node) if @in_opassign
-          reference_method("#{value.value}=", node)
-        end
-      end
-
-      sig { override.params(node: SyntaxTree::VCall).void }
-      def visit_vcall(node)
-        visit_send(Send.new(node: node, name: node_string(node.value)))
-      end
-
       # Definition indexing
 
-      sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
+      sig { params(name: String, full_name: String, node: Prism::Node).void }
       def define_attr_reader(name, full_name, node)
         definition = Definition.new(
           kind: Definition::Kind::AttrReader,
@@ -289,7 +330,7 @@ module Spoom
         @plugins.each { |plugin| plugin.internal_on_define_accessor(self, definition) }
       end
 
-      sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
+      sig { params(name: String, full_name: String, node: Prism::Node).void }
       def define_attr_writer(name, full_name, node)
         definition = Definition.new(
           kind: Definition::Kind::AttrWriter,
@@ -301,7 +342,7 @@ module Spoom
         @plugins.each { |plugin| plugin.internal_on_define_accessor(self, definition) }
       end
 
-      sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
+      sig { params(name: String, full_name: String, node: Prism::Node).void }
       def define_class(name, full_name, node)
         definition = Definition.new(
           kind: Definition::Kind::Class,
@@ -313,7 +354,7 @@ module Spoom
         @plugins.each { |plugin| plugin.internal_on_define_class(self, definition) }
       end
 
-      sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
+      sig { params(name: String, full_name: String, node: Prism::Node).void }
       def define_constant(name, full_name, node)
         definition = Definition.new(
           kind: Definition::Kind::Constant,
@@ -325,7 +366,7 @@ module Spoom
         @plugins.each { |plugin| plugin.internal_on_define_constant(self, definition) }
       end
 
-      sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
+      sig { params(name: String, full_name: String, node: Prism::Node).void }
       def define_method(name, full_name, node)
         definition = Definition.new(
           kind: Definition::Kind::Method,
@@ -337,7 +378,7 @@ module Spoom
         @plugins.each { |plugin| plugin.internal_on_define_method(self, definition) }
       end
 
-      sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
+      sig { params(name: String, full_name: String, node: Prism::Node).void }
       def define_module(name, full_name, node)
         definition = Definition.new(
           kind: Definition::Kind::Module,
@@ -351,19 +392,19 @@ module Spoom
 
       # Reference indexing
 
-      sig { params(name: String, node: SyntaxTree::Node).void }
+      sig { params(name: String, node: Prism::Node).void }
       def reference_constant(name, node)
         @index.reference(Reference.new(name: name, kind: Reference::Kind::Constant, location: node_location(node)))
       end
 
-      sig { params(name: String, node: SyntaxTree::Node).void }
+      sig { params(name: String, node: Prism::Node).void }
       def reference_method(name, node)
         @index.reference(Reference.new(name: name, kind: Reference::Kind::Method, location: node_location(node)))
       end
 
       # Context
 
-      sig { returns(SyntaxTree::Node) }
+      sig { returns(Prism::Node) }
       def current_node
         T.must(@nodes_nesting.last)
       end
@@ -377,33 +418,19 @@ module Spoom
         nil
       end
 
-      sig { returns(T.nilable(SyntaxTree::ClassDeclaration)) }
+      sig { returns(T.nilable(Prism::ClassNode)) }
       def nesting_class
-        nesting_node(SyntaxTree::ClassDeclaration)
+        nesting_node(Prism::ClassNode)
       end
 
-      sig { returns(T.nilable(SyntaxTree::BlockNode)) }
+      sig { returns(T.nilable(Prism::BlockNode)) }
       def nesting_block
-        nesting_node(SyntaxTree::BlockNode)
+        nesting_node(Prism::BlockNode)
       end
 
-      sig { returns(T.nilable(SyntaxTree::MethodAddBlock)) }
-      def nesting_block_call
-        nesting_node(SyntaxTree::MethodAddBlock)
-      end
-
-      sig { returns(T.nilable(String)) }
-      def nesting_block_call_name
-        block = nesting_block_call
-        return unless block.is_a?(SyntaxTree::MethodAddBlock)
-
-        call = block.call
-        case call
-        when SyntaxTree::ARef
-          node_string(call.collection)
-        when SyntaxTree::CallNode, SyntaxTree::Command, SyntaxTree::CommandCall
-          node_string(call.message)
-        end
+      sig { returns(T.nilable(Prism::CallNode)) }
+      def nesting_call
+        nesting_node(Prism::CallNode)
       end
 
       sig { returns(T.nilable(String)) }
@@ -411,7 +438,7 @@ module Spoom
         nesting_class = self.nesting_class
         return unless nesting_class
 
-        node_string(nesting_class.constant)
+        nesting_class.name.to_s
       end
 
       sig { returns(T.nilable(String)) }
@@ -419,52 +446,23 @@ module Spoom
         nesting_class_superclass = nesting_class&.superclass
         return unless nesting_class_superclass
 
-        node_string(nesting_class_superclass).delete_prefix("::")
+        nesting_class_superclass.slice.delete_prefix("::")
       end
 
       sig { returns(T.nilable(String)) }
       def last_sig
-        return unless @previous_node.is_a?(SyntaxTree::MethodAddBlock)
+        previous_call = @previous_node
+        return unless previous_call.is_a?(Prism::CallNode)
+        return unless previous_call.name == :sig
 
-        node_string(@previous_node)
+        previous_call.slice
       end
 
       # Node utils
 
-      sig { params(node: T.any(Symbol, SyntaxTree::Node)).returns(String) }
-      def node_string(node)
-        case node
-        when Symbol
-          node.to_s
-        else
-          T.must(@source[node.location.start_char...node.location.end_char])
-        end
-      end
-
-      sig { params(node: SyntaxTree::Node).returns(Location) }
+      sig { params(node: Prism::Node).returns(Location) }
       def node_location(node)
-        Location.from_syntax_tree(@path, node.location)
-      end
-
-      sig { params(node: SyntaxTree::Node).returns(String) }
-      def symbol_string(node)
-        node_string(node).delete_prefix(":")
-      end
-
-      sig do
-        params(
-          node: T.any(SyntaxTree::Args, SyntaxTree::ArgParen, SyntaxTree::ArgsForward, NilClass),
-        ).returns(T::Array[SyntaxTree::Node])
-      end
-      def call_args(node)
-        case node
-        when SyntaxTree::ArgParen
-          call_args(node.arguments)
-        when SyntaxTree::Args
-          node.parts
-        else
-          []
-        end
+        Location.from_prism(@path, node.location)
       end
     end
   end
