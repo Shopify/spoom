@@ -11,8 +11,8 @@ module Spoom
         def on_send(indexer, send)
           return unless send.recv.nil? && ActionPack::CALLBACKS.include?(send.name)
 
-          send.each_arg(SyntaxTree::SymbolLiteral) do |arg|
-            indexer.reference_method(indexer.node_string(arg.value), send.node)
+          send.each_arg(Prism::SymbolNode) do |arg|
+            indexer.reference_method(arg.unescaped, send.node)
           end
         end
       end

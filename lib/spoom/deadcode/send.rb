@@ -3,12 +3,11 @@
 
 module Spoom
   module Deadcode
-    # An abstraction to simplify handling of SyntaxTree::CallNode, SyntaxTree::Command, SyntaxTree::CommandCall and
-    # SyntaxTree::VCall nodes.
+    # An abstraction to simplify handling of Prism::CallNode nodes.
     class Send < T::Struct
       extend T::Sig
 
-      const :node, Prism::Node
+      const :node, Prism::CallNode
       const :name, String
       const :recv, T.nilable(Prism::Node), default: nil
       const :args, T::Array[Prism::Node], default: []
@@ -25,13 +24,13 @@ module Spoom
         end
       end
 
-      sig { params(block: T.proc.params(key: SyntaxTree::Node, value: T.nilable(SyntaxTree::Node)).void).void }
+      sig { params(block: T.proc.params(key: Prism::Node, value: T.nilable(Prism::Node)).void).void }
       def each_arg_assoc(&block)
         args.each do |arg|
-          next unless arg.is_a?(SyntaxTree::BareAssocHash) || arg.is_a?(SyntaxTree::HashLiteral)
+          next unless arg.is_a?(Prism::KeywordHashNode) || arg.is_a?(Prism::HashNode)
 
-          arg.assocs.each do |assoc|
-            yield(assoc.key, assoc.value) if assoc.is_a?(SyntaxTree::Assoc)
+          arg.elements.each do |assoc|
+            yield(assoc.key, assoc.value) if assoc.is_a?(Prism::AssocNode)
           end
         end
       end

@@ -38,18 +38,16 @@ module Spoom
 
           arg = send.args.first
           case arg
-          when SyntaxTree::SymbolLiteral
-            indexer.reference_method(indexer.node_string(arg.value), send.node)
-          when SyntaxTree::VarRef
-            indexer.reference_constant(indexer.node_string(arg), send.node)
+          when Prism::SymbolNode
+            indexer.reference_method(arg.unescaped, send.node)
           end
 
           send.each_arg_assoc do |key, value|
-            key = indexer.node_string(key).delete_suffix(":")
+            key = key.slice.delete_suffix(":")
 
             case key
             when "if", "unless"
-              indexer.reference_method(indexer.symbol_string(value), send.node) if value
+              indexer.reference_method(value.slice.delete_prefix(":"), send.node) if value
             else
               indexer.reference_constant(camelize(key), send.node)
             end

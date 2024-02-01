@@ -22,11 +22,9 @@ module Spoom
         sig { params(indexer: Indexer).returns(T::Boolean) }
         def used_as_namespace?(indexer)
           node = indexer.current_node
-          return false unless node.is_a?(SyntaxTree::ClassDeclaration) || node.is_a?(SyntaxTree::ModuleDeclaration)
+          return false unless node.is_a?(Prism::ClassNode) || node.is_a?(Prism::ModuleNode)
 
-          node.bodystmt.statements.body.any? do |stmt|
-            !stmt.is_a?(SyntaxTree::VoidStmt)
-          end
+          !!node.body
         end
       end
     end

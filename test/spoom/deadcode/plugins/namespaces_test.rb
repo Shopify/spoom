@@ -14,6 +14,18 @@ module Spoom
           @project.write!("foo.rb", <<~RB)
             class Dead1; end
 
+            class Dead2
+              # Comment
+            end
+
+            class Dead3
+              # Comment
+
+              # Comment
+
+              # Comment
+            end
+
             class Alive1
               class SomeClass; end
             end
@@ -49,6 +61,8 @@ module Spoom
 
           index = index_with_plugins
           refute_ignored(index, "Dead1")
+          refute_ignored(index, "Dead2")
+          refute_ignored(index, "Dead3")
           assert_ignored(index, "Alive1")
           assert_ignored(index, "Alive2")
           assert_ignored(index, "Alive3")

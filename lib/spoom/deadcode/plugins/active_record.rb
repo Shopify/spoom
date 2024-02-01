@@ -73,8 +73,8 @@ module Spoom
         sig { override.params(indexer: Indexer, send: Send).void }
         def on_send(indexer, send)
           if send.recv.nil? && CALLBACKS.include?(send.name)
-            send.each_arg(SyntaxTree::SymbolLiteral) do |arg|
-              indexer.reference_method(indexer.node_string(arg.value), send.node)
+            send.each_arg(Prism::SymbolNode) do |arg|
+              indexer.reference_method(arg.unescaped, send.node)
             end
             return
           end
@@ -84,21 +84,18 @@ module Spoom
           case send.name
           when *CRUD_METHODS
             send.each_arg_assoc do |key, _value|
-              key = indexer.symbol_string(key).delete_suffix(":")
+              key = key.slice.delete_suffix(":")
               indexer.reference_method("#{key}=", send.node)
             end
           when *ARRAY_METHODS
-            send.each_arg(SyntaxTree::ArrayLiteral) do |arg|
-              args = arg.contents
-              next unless args.is_a?(SyntaxTree::Args)
+            send.each_arg(Prism::ArrayNode) do |arg|
+              arg.elements.each do |part|
+                next unless part.is_a?(Prism::HashNode)
 
-              args.parts.each do |part|
-                next unless part.is_a?(SyntaxTree::HashLiteral)
+                part.elements.each do |assoc|
+                  next unless assoc.is_a?(Prism::AssocNode)
 
-                part.assocs.each do |assoc|
-                  next unless assoc.is_a?(SyntaxTree::Assoc)
-
-                  key = indexer.symbol_string(assoc.key).delete_suffix(":")
+                  key = assoc.key.slice.delete_suffix(":")
                   indexer.reference_method("#{key}=", send.node)
                 end
               end
