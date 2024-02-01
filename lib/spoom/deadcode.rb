@@ -4,6 +4,7 @@
 require "erubi"
 require "prism"
 
+require_relative "deadcode/visitor"
 require_relative "deadcode/erb"
 require_relative "deadcode/index"
 require_relative "deadcode/indexer"
@@ -38,7 +39,7 @@ module Spoom
     class << self
       extend T::Sig
 
-      sig { params(ruby: String, file: String).returns(SyntaxTree::Node) }
+      sig { params(ruby: String, file: String).returns(Prism::Node) }
       def parse_ruby(ruby, file:)
         result = Prism.parse(ruby)
         unless result.success?
@@ -55,7 +56,7 @@ module Spoom
       sig do
         params(
           index: Index,
-          node: SyntaxTree::Node,
+          node: Prism::Node,
           ruby: String,
           file: String,
           plugins: T::Array[Deadcode::Plugins::Base],
