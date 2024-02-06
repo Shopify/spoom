@@ -5,6 +5,7 @@ require_relative "plugins/base"
 
 require_relative "plugins/actionpack"
 require_relative "plugins/active_job"
+require_relative "plugins/action_mailer_preview"
 require_relative "plugins/action_mailer"
 require_relative "plugins/active_model"
 require_relative "plugins/active_record"
