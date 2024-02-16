@@ -182,7 +182,7 @@ module Spoom
       const :range, LSP::Range
       const :code, Integer
       const :message, String
-      const :informations, Object
+      const :information, Object
 
       class << self
         extend T::Sig
@@ -193,7 +193,7 @@ module Spoom
             range: Range.from_json(json["range"]),
             code: json["code"].to_i,
             message: json["message"],
-            informations: json["relatedInformation"],
+            information: json["relatedInformation"],
           )
         end
       end

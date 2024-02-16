@@ -76,7 +76,7 @@ module Spoom
             ^         # match beginning of line
             (\S[^:]*) # capture filename as something that starts with a non-space character
                       # followed by anything that is not a colon character
-            :         # match the filename - line number seperator
+            :         # match the filename - line number separator
             (\d+)     # capture the line number
             :\s       # match the line number - error message separator
             (.*)      # capture the error message
