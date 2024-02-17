@@ -151,6 +151,37 @@ module Spoom
         assert_alive(index, "alive")
         assert_dead(index, "dead")
       end
+
+      def test_with_sig_metadata
+        @project.write!("foo_with_sigs.rb", <<~RB)
+          class ALIVE1
+            sig { void }
+            def initialize
+              @x = ALIVE1.new
+            end
+
+            sig { T::Boolean }
+            def present?
+              true
+            end
+
+            def missing
+            end
+
+            sig { T.untyped }
+            def untyped
+            end
+          end
+
+          ALIVE1.new
+        RB
+
+        index = deadcode_index
+        assert_typed(index, "initialize")
+        assert_typed(index, "present?")
+        assert_untyped(index, "missing")
+        assert_untyped(index, "untyped")
+      end
     end
   end
 end

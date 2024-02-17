@@ -57,6 +57,18 @@ module Spoom
         end
 
         sig { params(index: Deadcode::Index, name: String).void }
+        def assert_typed(index, name)
+          defs = definitions_for_name(index, name)
+          assert(defs.all?(&:typed?), "Expected all definitions for `#{name}` to be typed")
+        end
+
+        sig { params(index: Deadcode::Index, name: String).void }
+        def assert_untyped(index, name)
+          defs = definitions_for_name(index, name)
+          assert(defs.none?(&:typed?), "Expected all definitions for `#{name}` to be untyped")
+        end
+
+        sig { params(index: Deadcode::Index, name: String).void }
         def refute_ignored(index, name)
           defs = definitions_for_name(index, name)
           assert(defs.none?(&:ignored?), "Expected all definitions for `#{name}` to not be ignored")

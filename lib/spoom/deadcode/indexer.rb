@@ -1,6 +1,8 @@
 # typed: strict
 # frozen_string_literal: true
 
+require "debug"
+
 module Spoom
   module Deadcode
     class Indexer < SyntaxTree::Visitor
@@ -327,11 +329,13 @@ module Spoom
 
       sig { params(name: String, full_name: String, node: SyntaxTree::Node).void }
       def define_method(name, full_name, node)
+        typed = !!(last_sig && last_sig !~ /T.untyped/)
         definition = Definition.new(
           kind: Definition::Kind::Method,
           name: name,
           full_name: full_name,
           location: node_location(node),
+          typed: typed,
         )
         @index.define(definition)
         @plugins.each { |plugin| plugin.internal_on_define_method(self, definition) }

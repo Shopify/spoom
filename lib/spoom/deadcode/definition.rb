@@ -34,6 +34,7 @@ module Spoom
       const :full_name, String
       const :location, Location
       const :status, Status, default: Status::DEAD
+      const :typed, T::Boolean, default: false
 
       # Kind
 
@@ -92,6 +93,13 @@ module Spoom
       sig { void }
       def ignored!
         @status = Status::IGNORED
+      end
+
+      sig { returns(T.nilable(T::Boolean)) }
+      def typed?
+        if method?
+          @typed
+        end
       end
     end
   end
