@@ -53,7 +53,7 @@ module Spoom
         end
 
         unless context.git_workdir_clean?
-          say_error("Uncommited changes")
+          say_error("Uncommitted changes")
           say_error(<<~ERR, status: nil)
 
             Spoom needs to checkout into your previous commits to build the timeline."

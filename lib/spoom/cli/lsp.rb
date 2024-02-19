@@ -36,7 +36,7 @@ module Spoom
         end
       end
 
-      desc "hover", "Request hover informations"
+      desc "hover", "Request hover information"
       # TODO: options, filter, limit, kind etc.. filter rbi
       def hover(file, line, col)
         run do |client|

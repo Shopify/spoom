@@ -65,7 +65,7 @@ module Spoom
           assert_dead(index, "dead")
         end
 
-        def test_alive_trys
+        def test_alive_tries
           @project.write!("foo.rb", <<~RB)
             try(:alive1)
             try :alive2, :dead, nil

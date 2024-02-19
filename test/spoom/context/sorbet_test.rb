@@ -335,7 +335,7 @@ module Spoom
         # From Sorbet docs on `--ignore`:
         # > Ignores input files that contain the given string in their paths (relative to the input path passed to
         # > Sorbet). Strings beginning with / match against the prefix of these relative paths; others are substring
-        # > matchs. Matches must be against whole folder and file names, so `foo` matches `/foo/bar.rb` and
+        # > matches. Matches must be against whole folder and file names, so `foo` matches `/foo/bar.rb` and
         # > `/bar/foo/baz.rb` but not `/foo.rb` or `/foo2/bar.rb`.
         assert_equal(["foo.rb", "foo2/bar.rb"], context.srb_files)
 

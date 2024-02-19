@@ -9,7 +9,7 @@ module Spoom
       class << self
         extend T::Sig
 
-        # Parse a line formated as `%h %at` into a `Commit`
+        # Parse a line formatted as `%h %at` into a `Commit`
         sig { params(string: String).returns(T.nilable(Commit)) }
         def parse_line(string)
           sha, epoch = string.split(" ", 2)
@@ -127,7 +127,7 @@ module Spoom
         git("show #{arg.join(" ")}")
       end
 
-      # Is there uncommited changes in this context directory?
+      # Is there uncommitted changes in this context directory?
       sig { params(path: String).returns(T::Boolean) }
       def git_workdir_clean?(path: ".")
         git_diff("HEAD").out.empty?
