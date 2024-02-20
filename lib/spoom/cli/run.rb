@@ -121,10 +121,10 @@ module Spoom
       no_commands do
         def format_error(error, format)
           line = format
-          line = line.gsub(/%C/, yellow(error.code.to_s))
-          line = line.gsub(/%F/, error.file)
-          line = line.gsub(/%L/, error.line.to_s)
-          line = line.gsub(/%M/, colorize_message(error.message))
+          line = line.gsub("%C", yellow(error.code.to_s))
+          line = line.gsub("%F", error.file)
+          line = line.gsub("%L", error.line.to_s)
+          line = line.gsub("%M", colorize_message(error.message))
           line
         end
 
