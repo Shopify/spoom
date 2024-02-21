@@ -3,7 +3,7 @@
 
 require "spoom/sorbet/config"
 require "spoom/sorbet/errors"
-require "spoom/sorbet/lsp"
+# require "spoom/sorbet/lsp"
 require "spoom/sorbet/metrics"
 require "spoom/sorbet/sigils"
 
@@ -33,9 +33,10 @@ module Spoom
       end
     end
 
+
     CONFIG_PATH = "sorbet/config"
-    GEM_PATH = T.let(Gem::Specification.find_by_name("sorbet-static").full_gem_path, String)
-    GEM_VERSION = T.let(Gem::Specification.find_by_name("sorbet-static-and-runtime").version.to_s, String)
+    GEM_PATH = T.let("sorbet-static", String)
+    GEM_VERSION = T.let("sorbet-static-and-runtime", String)
     BIN_PATH = T.let((Pathname.new(GEM_PATH) / "libexec" / "sorbet").to_s, String)
 
     KILLED_CODE = 137

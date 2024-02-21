@@ -13,14 +13,7 @@ GEM
     ansi (1.5.0)
     ast (2.4.2)
     builder (3.2.4)
-    debug (1.9.1)
-      irb (~> 1.10)
-      reline (>= 0.3.8)
     erubi (1.12.0)
-    io-console (0.7.1)
-    irb (1.11.0)
-      rdoc
-      reline (>= 0.3.8)
     json (2.7.0)
     language_server-protocol (3.17.0.3)
     minitest (5.22.0)
@@ -36,19 +29,13 @@ GEM
       racc
     prettier_print (1.2.1)
     prism (0.19.0)
-    psych (5.1.2)
-      stringio
     racc (1.7.3)
     rainbow (3.1.1)
     rake (13.1.0)
     rbi (0.1.6)
       prism (>= 0.18.0, < 0.20)
       sorbet-runtime (>= 0.5.9204)
-    rdoc (6.6.2)
-      psych (>= 4.0.0)
     regexp_parser (2.8.3)
-    reline (0.4.1)
-      io-console (~> 0.5)
     rexml (3.2.6)
     rubocop (1.58.0)
       json (~> 2.3)
@@ -72,11 +59,9 @@ GEM
       sorbet-static (= 0.5.11226)
     sorbet-runtime (0.5.11226)
     sorbet-static (0.5.11226-universal-darwin)
-    sorbet-static (0.5.11226-x86_64-linux)
     sorbet-static-and-runtime (0.5.11226)
       sorbet (= 0.5.11226)
       sorbet-runtime (= 0.5.11226)
-    stringio (3.1.0)
     syntax_tree (6.2.0)
       prettier_print (>= 1.2.0)
     tapioca (0.12.0)
@@ -98,16 +83,16 @@ GEM
 PLATFORMS
   arm64-darwin-21
   universal-darwin-22
-  x86_64-linux
 
 DEPENDENCIES
   bundler (>= 2.2.10)
-  debug
   minitest (~> 5.0)
   minitest-reporters
   rake (~> 13.1.0)
   rubocop-shopify
   rubocop-sorbet
+  sorbet-static
+  sorbet-static-and-runtime
   spoom!
   tapioca
 
