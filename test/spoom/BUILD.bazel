@@ -1,0 +1,14 @@
+load(
+    "@bazelruby_rules_ruby//ruby:defs.bzl",
+    "ruby_test",
+)
+
+package(default_visibility = ["//:__subpackages__"])
+
+ruby_test(
+    name = "context_test",
+    main = "@bundle//:bin/rake",
+    deps = [
+        "//test/spoom/context:file_system_test",
+    ],
+)

@@ -1,6 +1,9 @@
 # typed: strict
 # frozen_string_literal: true
 
+puts "TIMELINE"
+puts __FILE__
+
 module Spoom
   class Timeline
     extend T::Sig
@@ -30,6 +33,8 @@ module Spoom
       end
       res
     end
+
+    puts `pwd`
 
     # Return one commit for each date in `dates`
     sig { params(dates: T::Array[Time]).returns(T::Array[Git::Commit]) }

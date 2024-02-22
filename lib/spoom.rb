@@ -1,8 +1,9 @@
 # typed: strict
 # frozen_string_literal: true
 
+puts Gem::Specification.find_by_name("thor")
 
-require "bundler"
+#require "bundler"
 require "sorbet-runtime"
 require "pathname"
 

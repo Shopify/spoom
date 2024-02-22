@@ -1,0 +1,22 @@
+load(
+    "@bazelruby_rules_ruby//ruby:defs.bzl",
+    "ruby_library",
+)
+
+package(default_visibility = ["//:__subpackages__"])
+
+ruby_library(
+    name = "spoom",
+    srcs = ["spoom.rb"],
+    deps = [
+        "//lib/spoom:cli",
+        "//lib/spoom:colors",
+        "//lib/spoom:context",
+        "//lib/spoom:coverage",
+        "//lib/spoom:deadcode",
+        "//lib/spoom:file_collector",
+        "//lib/spoom:sorbet",
+        "//lib/spoom:timeline",
+        "//lib/spoom:version",
+    ],
+)

@@ -1,8 +1,8 @@
 # typed: true
 # frozen_string_literal: true
 
-require_relative "../coverage"
-require_relative "../timeline"
+require "spoom/coverage"
+require "spoom/timeline"
 
 module Spoom
   module Cli

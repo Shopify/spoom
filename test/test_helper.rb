@@ -3,9 +3,11 @@
 
 $LOAD_PATH.unshift(File.expand_path("../../lib", __FILE__))
 
+require "bundler"
+require "sorbet-runtime"
 require "minitest/mock"
-require "spoom"
-require "test_project"
+# require "spoom"
+require "test/test_project"
 
 module Spoom
   module TestHelper

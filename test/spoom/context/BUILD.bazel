@@ -1,0 +1,23 @@
+load(
+    "@bazelruby_rules_ruby//ruby:defs.bzl",
+    "ruby_test",
+)
+
+package(default_visibility = ["//:__subpackages__"])
+
+ruby_test(
+    name = "file_system_test",
+    srcs = [
+        "file_system_test.rb"
+    ],
+    main = "file_system_test.rb",
+    deps = [
+        "//lib/spoom:context",
+        "//test:test_helper",
+        "//test:test_project",
+        "//test:test_with_project",
+        #"@bundle//:minitest",
+        #"@bundle//:rake",
+        "@bundle//:gems",
+    ],
+)

@@ -4,14 +4,18 @@ load(
     "ruby_library",
     "ruby_test",
     "ruby_rspec",
+    "ruby_rubocop",
 )
 
 package(default_visibility = ["//:__subpackages__"])
 
 ruby_library(
     name = "lib",
-    srcs = glob(["lib/**/*.rb"]),
+    srcs = [],
     includes = ["lib"],
+    deps = [
+        "//lib:spoom"
+    ],
 )
 
 ruby_binary(
@@ -19,12 +23,49 @@ ruby_binary(
     main = "exe/spoom",
     srcs = [
         "exe/spoom",
-        "spoom.gemspec",
         "Gemfile",
         "Gemfile.lock",
+        "spoom.gemspec",
+    ] + glob(["lib/**/*.rb"]),
+    includes = ["lib"],
+    deps = [
+        # ":lib",
+        # "@bundle//:thor",
+        # "@bundle//:sorbet-runtime",
+        # "@bundle//:sorbet-static",
+        "@bundle//:gems",
     ],
+)
+
+ruby_rubocop(
+    name = "rubocop",
+    bin = "@bundle//:bin/rubocop",
+    deps = [
+        "@bundle//:rubocop",
+        "@bundle//:rubocop-sorbet",
+        "@bundle//:rubocop-shopify",
+    ],
+)
+
+ruby_binary(
+    name = "srb",
+    srcs = [
+        "sorbet/config",
+    ],
+    args = [],
+    main = "@bundle//:bin/srb",
     deps = [
         ":lib",
-        "@bundle//:gems"
+        "@bundle//:gems",
+        "@bundle//:bin",
+    ],
+)
+
+ruby_binary(
+    name = "tapioca",
+    args = [],
+    main = "@bundle//:bin/tapioca",
+    deps = [
+        "@bundle//:bin",
     ],
 )

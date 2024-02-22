@@ -1,0 +1,14 @@
+load(
+    "@bazelruby_rules_ruby//ruby:defs.bzl",
+    "ruby_library",
+)
+
+package(default_visibility = ["//:__subpackages__"])
+
+ruby_library(
+    name = "context",
+    srcs = glob(["**/*.rb"]),
+    #deps = [
+    #    "//lib/spoom:spoom",
+    #],
+)

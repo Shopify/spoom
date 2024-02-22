@@ -1,6 +1,8 @@
 # typed: strict
 # frozen_string_literal: true
 
+require "spoom/context"
+
 module Spoom
   class TestProject < Context
     extend T::Sig

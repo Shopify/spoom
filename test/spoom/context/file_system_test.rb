@@ -1,7 +1,7 @@
 # typed: true
 # frozen_string_literal: true
 
-require "test_helper"
+require "test/test_helper"
 
 module Spoom
   class Context

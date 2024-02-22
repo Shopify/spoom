@@ -1,0 +1,47 @@
+load(
+    "@bazelruby_rules_ruby//ruby:defs.bzl",
+    "ruby_library",
+)
+
+package(default_visibility = ["//:__subpackages__"])
+
+ruby_library(
+    name = "test_project",
+    srcs = ["test_project.rb"],
+    deps = [
+        "//lib/spoom:context",
+    ],
+)
+
+ruby_library(
+    name = "test_helper",
+    srcs = ["test_helper.rb"],
+    deps = [
+        "//test:test_project",
+    ],
+)
+
+ruby_library(
+    name = "test_with_project",
+    srcs = ["test_helper.rb"],
+    deps = [
+        "//test:test_helper",
+    ],
+)
+
+# ruby_test(
+#     name = "file_system_test",
+#     srcs = [
+#         "file_system_test.rb"
+#     ],# + glob(["test/spoom/context/*_test.rb"]),
+#     main = "@bundle//:bin/rake",
+#     deps = [
+#         "//lib/spoom:context",
+#         "//test:test_helper",
+#         "//test:test_project",
+#         "//test:test_with_project",
+#         #"@bundle//:minitest",
+#         #"@bundle//:rake",
+#         "@bundle//:gems",
+#     ],
+# )

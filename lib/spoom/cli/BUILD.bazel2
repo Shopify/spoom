@@ -1,0 +1,19 @@
+load(
+    "@bazelruby_rules_ruby//ruby:defs.bzl",
+    "ruby_library",
+)
+
+package(default_visibility = ["//:__subpackages__"])
+
+ruby_library(
+    name = "cli",
+    srcs = glob(["**/*.rb"]),
+    deps = [
+        "//lib/spoom:context",
+        "//lib/spoom:coverage",
+        "//lib/spoom:deadcode",
+        "//lib/spoom:file_collector",
+        "//lib/spoom:sorbet",
+        "//lib/spoom:colors",
+    ],
+)
