@@ -27,13 +27,13 @@ ruby_binary(
         "Gemfile.lock",
         "spoom.gemspec",
     ] + glob(["lib/**/*.rb"]),
-    includes = ["lib"],
+    # includes = ["lib"],
     deps = [
         # ":lib",
-        # "@bundle//:thor",
-        # "@bundle//:sorbet-runtime",
+        "@bundle//:thor",
+        "@bundle//:sorbet-runtime",
         # "@bundle//:sorbet-static",
-        "@bundle//:gems",
+        # "@bundle//:gems",
     ],
 )
 
