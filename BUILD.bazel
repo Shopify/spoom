@@ -26,10 +26,10 @@ ruby_binary(
         "Gemfile",
         "Gemfile.lock",
         "spoom.gemspec",
-    ] + glob(["lib/**/*.rb"]),
+    ],# + glob(["lib/**/*.rb"]),
     # includes = ["lib"],
     deps = [
-        # ":lib",
+        ":lib",
         "@bundle//:thor",
         "@bundle//:sorbet-runtime",
         # "@bundle//:sorbet-static",
@@ -66,6 +66,7 @@ ruby_binary(
     args = [],
     main = "@bundle//:bin/tapioca",
     deps = [
+        ":lib",
         "@bundle//:bin",
     ],
 )

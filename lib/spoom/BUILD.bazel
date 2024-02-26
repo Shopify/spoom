@@ -1,0 +1,60 @@
+load(
+    "@bazelruby_rules_ruby//ruby:defs.bzl",
+    "ruby_library",
+)
+
+package(default_visibility = ["//:__subpackages__"])
+
+ruby_library(
+    name = "cli",
+    srcs = ["cli.rb"],
+    deps = ["//lib/spoom/cli"],
+)
+
+ruby_library(
+    name = "colors",
+    srcs = ["colors.rb"],
+    deps = [],
+)
+
+ruby_library(
+    name = "context",
+    srcs = ["context.rb"],
+    deps = ["//lib/spoom/context"],
+)
+
+ruby_library(
+    name = "coverage",
+    srcs = ["coverage.rb"],
+    deps = ["//lib/spoom/coverage"],
+)
+
+ruby_library(
+    name = "deadcode",
+    srcs = ["deadcode.rb"],
+    deps = ["//lib/spoom/deadcode"],
+)
+
+ruby_library(
+    name = "sorbet",
+    srcs = ["sorbet.rb"],
+    deps = ["//lib/spoom/sorbet"],
+)
+
+ruby_library(
+    name = "file_collector",
+    srcs = ["file_collector.rb"],
+    deps = [],
+)
+
+ruby_library(
+    name = "timeline",
+    srcs = ["timeline.rb"],
+    deps = [],
+)
+
+ruby_library(
+    name = "version",
+    srcs = ["version.rb"],
+    deps = [],
+)

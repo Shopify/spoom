@@ -16,8 +16,9 @@ ruby_test(
         "//test:test_helper",
         "//test:test_project",
         "//test:test_with_project",
-        #"@bundle//:minitest",
-        #"@bundle//:rake",
-        "@bundle//:gems",
+        "@bundle//:minitest",
+        "@bundle//:rake",
+        "@bundle//:sorbet-runtime",
+        #"@bundle//:gems",
     ],
 )

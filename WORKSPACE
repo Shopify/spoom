@@ -3,10 +3,15 @@ workspace(name = "spoom")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
-git_repository(
+# git_repository(
+#     name = "bazelruby_rules_ruby",
+#     remote = "https://github.com/bazelruby/rules_ruby.git",
+#     branch = "master"
+# )
+
+local_repository(
     name = "bazelruby_rules_ruby",
-    remote = "https://github.com/bazelruby/rules_ruby.git",
-    branch = "master"
+    path = "/Users/at/src/github.com/Morriar/rules_ruby",
 )
 
 load(
