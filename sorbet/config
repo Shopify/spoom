@@ -1,3 +1,4 @@
 .
 --ignore=vendor/
+--ignore=external/
 --enable-experimental-requires-ancestor

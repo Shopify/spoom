@@ -11,6 +11,16 @@ ruby_library(
     srcs = glob(["lib/**/*.rb"]),
 )
 
+ruby_library(
+    name = "test",
+    srcs = glob(["test/**/*.rb"]),
+)
+
+ruby_library(
+    name = "rbi",
+    srcs = glob(["sorbet/rbi/**/*.rbi"]),
+)
+
 ruby_binary(
     name = "spoom",
     main = "exe/spoom",
@@ -25,5 +35,19 @@ ruby_binary(
         ":lib",
         # TODO: list precise dependencies
         "@bundle//:gems",
+    ],
+)
+
+ruby_binary(
+    name = "srb",
+    srcs = [
+        "sorbet/config",
+    ],
+    main = "@bundle//:bin/srb",
+    deps = [
+        ":rbi",
+        ":test",
+        ":lib",
+        "@bundle//:sorbet",
     ],
 )
