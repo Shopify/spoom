@@ -12,6 +12,8 @@ AllCops:
   SuggestExtensions: false
   Exclude:
   - 'vendor/**/*'
+  - 'external/**/*'
+  - 'rubocop'
 
 Sorbet:
   Enabled: true

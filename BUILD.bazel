@@ -51,3 +51,16 @@ ruby_binary(
         "@bundle//:sorbet",
     ],
 )
+
+ruby_binary(
+    name = "rubocop",
+    srcs = [
+        ".rubocop.yml",
+    ],
+    main = "@bundle//:bin/rubocop",
+    deps = [
+        ":lib",
+        ":test",
+        "@bundle//:rubocop",
+    ],
+)
