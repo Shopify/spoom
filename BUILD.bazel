@@ -6,6 +6,11 @@ load(
 
 package(default_visibility = ["//:__subpackages__"])
 
+ruby_library(
+    name = "lib",
+    srcs = glob(["lib/**/*.rb"]),
+)
+
 ruby_binary(
     name = "spoom",
     main = "exe/spoom",
@@ -14,9 +19,10 @@ ruby_binary(
         "Gemfile",
         "Gemfile.lock",
         "spoom.gemspec",
-    ] + glob(["lib/**/*.rb"]),
+    ],
     includes = ["lib"],
     deps = [
+        ":lib",
         # TODO: list precise dependencies
         "@bundle//:gems",
     ],
