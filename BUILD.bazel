@@ -2,6 +2,7 @@ load(
     "@bazelruby_rules_ruby//ruby:defs.bzl",
     "ruby_library",
     "ruby_binary",
+    "ruby_test",
 )
 
 package(default_visibility = ["//:__subpackages__"])
@@ -62,5 +63,34 @@ ruby_binary(
         ":lib",
         ":test",
         "@bundle//:rubocop",
+    ],
+)
+
+# ruby_binary(
+#     name = "all-tests",
+#     srcs = [
+#         "Rakefile",
+#         "spoom.gemspec",
+#     ],
+#     main = "@bundle//:bin/rake",
+#     deps = [
+#         ":lib",
+#         ":test",
+#         "@bundle//:gems",
+#     ],
+# )
+
+ruby_test(
+    name = "all-tests",
+    srcs = [
+        "Rakefile",
+        "spoom.gemspec",
+    ],
+    main = "@bundle//:bin/rake",
+    # includes = ["lib"],
+    deps = [
+        ":lib",
+        ":test",
+        "@bundle//:gems",
     ],
 )
