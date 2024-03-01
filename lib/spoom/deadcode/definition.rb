@@ -93,6 +93,17 @@ module Spoom
       def ignored!
         @status = Status::IGNORED
       end
+
+      # Utils
+
+      sig { params(args: T.untyped).returns(String) }
+      def to_json(*args)
+        {
+          kind: kind,
+          name: name,
+          location: location.to_s,
+        }.to_json
+      end
     end
   end
 end
