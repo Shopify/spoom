@@ -6,7 +6,6 @@ require "thor"
 require_relative "cli/helper"
 
 require_relative "cli/bump"
-require_relative "cli/config"
 require_relative "cli/lsp"
 require_relative "cli/coverage"
 require_relative "cli/run"
@@ -24,9 +23,6 @@ module Spoom
 
       desc "bump", "Bump Sorbet sigils from `false` to `true` when no errors"
       subcommand "bump", Spoom::Cli::Bump
-
-      desc "config", "Manage Sorbet config"
-      subcommand "config", Spoom::Cli::Config
 
       desc "coverage", "Collect metrics related to Sorbet coverage"
       subcommand "coverage", Spoom::Cli::Coverage

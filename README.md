@@ -46,16 +46,6 @@ See all the [Typing Coverage](#typing-coverage) CLI commands for more details.
 
 ### Command Line Interface
 
-#### Sorbet configuration commands
-
-Spoom works with your `sorbet/config` file. No additional configuration is needed.
-
-Show Sorbet config options:
-
-```
-$ spoom config
-```
-
 #### Errors sorting and filtering
 
 List all typechecking errors sorted by location:

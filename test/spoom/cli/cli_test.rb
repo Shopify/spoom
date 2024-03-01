@@ -26,7 +26,6 @@ module Spoom
           Commands:
             spoom --version       # Show version
             spoom bump            # Bump Sorbet sigils from `false` to `true` when no errors
-            spoom config          # Manage Sorbet config
             spoom coverage        # Collect metrics related to Sorbet coverage
             spoom help [COMMAND]  # Describe available commands or one specific command
             spoom lsp             # Send LSP requests to Sorbet
