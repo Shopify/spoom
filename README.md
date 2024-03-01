@@ -341,6 +341,22 @@ require "spoom/backtrace_filter/minitest"
 Minitest.backtrace_filter = Spoom::BacktraceFilter::Minitest.new
 ```
 
+### Dead code removal
+
+Run dead code detection in your project with:
+
+```
+$ spoom deadcode
+```
+
+This will list all the methods and constants that do not appear to be used in your project.
+
+You can remove them with Spoom:
+
+```
+$ spoom deadcode remove path/to/file.rb:42:18-47:23
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `bin/test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment. Don't forget to run `bin/sanity` before pushing your changes.
