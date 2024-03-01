@@ -56,14 +56,6 @@ Show Sorbet config options:
 $ spoom config
 ```
 
-#### Listing files
-
-List the files (and related strictness) that will be typchecked with the current Sorbet config options:
-
-```
-$ spoom files
-```
-
 #### Errors sorting and filtering
 
 List all typechecking errors sorted by location:
