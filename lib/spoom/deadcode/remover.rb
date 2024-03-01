@@ -13,7 +13,7 @@ module Spoom
         @context = context
       end
 
-      sig { params(kind: T.nilable(Definition::Kind), location: Location).void }
+      sig { params(kind: T.nilable(Definition::Kind), location: Location).returns(String) }
       def remove_location(kind, location)
         file = location.file
 
@@ -23,7 +23,7 @@ module Spoom
 
         node_remover = NodeRemover.new(@context.read(file), kind, location)
         node_remover.apply_edit
-        @context.write!(file, node_remover.new_source)
+        node_remover.new_source
       end
 
       class NodeRemover

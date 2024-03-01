@@ -1584,11 +1584,11 @@ module Spoom
         definition = T.must(definitions.first)
 
         remover = Remover.new(context)
-        remover.remove_location(definition.kind, definition.location)
-        res = context.read("file.rb")
+        new_source = remover.remove_location(definition.kind, definition.location)
+
         context.destroy!
 
-        res
+        new_source
       end
     end
   end
