@@ -548,7 +548,7 @@ module Spoom
         attr_reader :node
 
         sig { returns(T::Array[SyntaxTree::Node]) }
-        attr_accessor :nodes_nesting
+        attr_reader :nodes_nesting
 
         sig { params(location: Location).void }
         def initialize(location)
