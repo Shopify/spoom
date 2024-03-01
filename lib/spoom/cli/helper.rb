@@ -46,6 +46,26 @@ module Spoom
         $stderr.flush
       end
 
+      # Print `message` on `$stderr`
+      #
+      # The message is prefixed by a status (default: `Warning`).
+      sig do
+        params(
+          message: String,
+          status: T.nilable(String),
+          nl: T::Boolean,
+        ).void
+      end
+      def say_warning(message, status: "Warning", nl: true)
+        buffer = StringIO.new
+        buffer << "#{yellow(status)}: " if status
+        buffer << highlight(message)
+        buffer << "\n" if nl && !message.end_with?("\n")
+
+        $stderr.print(buffer.string)
+        $stderr.flush
+      end
+
       # Returns the context at `--path` (by default the current working directory)
       sig { returns(Context) }
       def context
