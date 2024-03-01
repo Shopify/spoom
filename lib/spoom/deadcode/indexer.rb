@@ -7,7 +7,7 @@ module Spoom
       extend T::Sig
 
       sig { returns(String) }
-      attr_reader :path, :file_name
+      attr_reader :path
 
       sig { returns(Index) }
       attr_reader :index
