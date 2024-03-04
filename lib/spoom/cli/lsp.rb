@@ -10,17 +10,6 @@ module Spoom
     class LSP < Thor
       include Helper
 
-      default_task :show
-
-      desc "interactive", "Interactive LSP mode"
-      def show
-        context_requiring_sorbet!
-
-        lsp = lsp_client
-        # TODO: run interactive mode
-        puts lsp
-      end
-
       desc "list", "List all known symbols"
       # TODO: options, filter, limit, kind etc.. filter rbi
       def list
