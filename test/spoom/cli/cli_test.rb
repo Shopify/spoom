@@ -27,6 +27,7 @@ module Spoom
             spoom --version       # Show version
             spoom bump            # Bump Sorbet sigils from `false` to `true` when no errors
             spoom coverage        # Collect metrics related to Sorbet coverage
+            spoom deadcode        # Analyze code to find deadcode
             spoom help [COMMAND]  # Describe available commands or one specific command
             spoom lsp             # Send LSP requests to Sorbet
             spoom tc              # Run Sorbet and parses its output

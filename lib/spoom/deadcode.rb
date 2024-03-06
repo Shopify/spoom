@@ -36,15 +36,33 @@ module Spoom
     class << self
       extend T::Sig
 
-      sig { params(index: Index, ruby: String, file: String, plugins: T::Array[Deadcode::Plugins::Base]).void }
-      def index_ruby(index, ruby, file:, plugins: [])
-        node = SyntaxTree.parse(ruby)
-        visitor = Spoom::Deadcode::Indexer.new(file, ruby, index, plugins: plugins)
-        visitor.visit(node)
+      sig { params(ruby: String, file: String).returns(SyntaxTree::Node) }
+      def parse_ruby(ruby, file:)
+        SyntaxTree.parse(ruby)
       rescue SyntaxTree::Parser::ParseError => e
         raise ParserError.new("Error while parsing #{file} (#{e.message} at #{e.lineno}:#{e.column})", parent: e)
+      end
+
+      sig do
+        params(
+          index: Index,
+          node: SyntaxTree::Node,
+          ruby: String,
+          file: String,
+          plugins: T::Array[Deadcode::Plugins::Base],
+        ).void
+      end
+      def index_node(index, node, ruby, file:, plugins: [])
+        visitor = Spoom::Deadcode::Indexer.new(file, ruby, index, plugins: plugins)
+        visitor.visit(node)
       rescue => e
         raise IndexerError.new("Error while indexing #{file} (#{e.message})", parent: e)
+      end
+
+      sig { params(index: Index, ruby: String, file: String, plugins: T::Array[Deadcode::Plugins::Base]).void }
+      def index_ruby(index, ruby, file:, plugins: [])
+        node = parse_ruby(ruby, file: file)
+        index_node(index, node, ruby, file: file, plugins: plugins)
       end
 
       sig { params(index: Index, erb: String, file: String, plugins: T::Array[Deadcode::Plugins::Base]).void }
