@@ -82,14 +82,6 @@ module Spoom
       printer.visit_tree(self)
     end
 
-    sig { params(context: Context, out: T.any(IO, StringIO), colors: T::Boolean).void }
-    def print_with_strictnesses(context, out: $stdout, colors: true)
-      strictnesses = nodes_strictnesses(context)
-
-      printer = Printer.new(strictnesses, out: out, colors: colors)
-      printer.visit_tree(self)
-    end
-
     # A node representing either a file or a directory inside a FileTree
     class Node < T::Struct
       extend T::Sig
