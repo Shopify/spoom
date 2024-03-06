@@ -10,7 +10,5 @@ module Spoom
     def spoom(command)
       bundle_exec("spoom #{command}")
     end
-
-    # Misc
   end
 end
