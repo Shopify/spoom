@@ -54,14 +54,6 @@ module Spoom
       nodes.map(&:path)
     end
 
-    # Return a map of strictnesses for each node in the tree
-    sig { params(context: Context).returns(T::Hash[Node, T.nilable(String)]) }
-    def nodes_strictnesses(context)
-      v = CollectStrictnesses.new(context)
-      v.visit_tree(self)
-      v.strictnesses
-    end
-
     # Return a map of typing scores for each node in the tree
     sig { params(context: Context).returns(T::Hash[Node, Float]) }
     def nodes_strictness_scores(context)
