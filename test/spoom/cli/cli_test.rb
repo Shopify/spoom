@@ -30,6 +30,7 @@ module Spoom
             spoom deadcode        # Analyze code to find deadcode
             spoom help [COMMAND]  # Describe available commands or one specific command
             spoom lsp             # Send LSP requests to Sorbet
+            spoom srb             # Sorbet related commands
             spoom tc              # Run Sorbet and parses its output
 
           Options:

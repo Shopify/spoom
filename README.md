@@ -31,13 +31,13 @@ Spoom can create a typing coverage report from Sorbet and Git data:
 After installing the `spoom` gem, run the `timeline` command to collect the history data:
 
 ```
-$ spoom coverage timeline --save
+$ spoom srb coverage timeline --save
 ```
 
 Then create the HTML page with `report`:
 
 ```
-$ spoom coverage report
+$ spoom srb coverage report
 ```
 
 Your report will be generated under `spoom_report.html`.
@@ -51,43 +51,43 @@ See all the [Typing Coverage](#typing-coverage) CLI commands for more details.
 List all typechecking errors sorted by location:
 
 ```
-$ spoom tc -s loc
+$ spoom srb tc -s loc
 ```
 
 List all typechecking errors sorted by error code first:
 
 ```
-$ spoom tc -s code
+$ spoom srb tc -s code
 ```
 
 List only typechecking errors from a specific error code:
 
 ```
-$ spoom tc -c 7004
+$ spoom srb tc -c 7004
 ```
 
 List only the first 10 typechecking errors
 
 ```
-$ spoom tc -l 10
+$ spoom srb tc -l 10
 ```
 
 These options can be combined:
 
 ```
-$ spoom tc -s -c 7004 -l 10
+$ spoom srb tc -s -c 7004 -l 10
 ```
 
 Remove duplicated error lines:
 
 ```
-$ spoom tc -u
+$ spoom srb tc -u
 ```
 
 Format each error line:
 
 ```
-$ spoom tc -f '%C - %F:%L: %M'
+$ spoom srb tc -f '%C - %F:%L: %M'
 ```
 
 Where:
@@ -100,13 +100,13 @@ Where:
 Hide the `Errors: X` at the end of the list:
 
 ```
-$ spoom tc --no-count
+$ spoom srb tc --no-count
 ```
 
 List only the errors coming from specific directories or files:
 
 ```
-$ spoom tc file1.rb path1/ path2/
+$ spoom srb tc file1.rb path1/ path2/
 ```
 
 #### Typing coverage
@@ -114,61 +114,61 @@ $ spoom tc file1.rb path1/ path2/
 Show metrics about the project contents and the typing coverage:
 
 ```
-$ spoom coverage
+$ spoom srb coverage
 ```
 
 Save coverage data under `spoom_data/`:
 
 ```
-$ spoom coverage --save
+$ spoom srb coverage --save
 ```
 
 Save coverage data under a specific directory:
 
 ```
-$ spoom coverage --save my_data/
+$ spoom srb coverage --save my_data/
 ```
 
 Show typing coverage evolution based on the commits history:
 
 ```
-$ spoom coverage timeline
+$ spoom srb coverage timeline
 ```
 
 Show typing coverage evolution based on the commits history between specific dates:
 
 ```
-$ spoom coverage timeline --from YYYY-MM-DD --to YYYY-MM-DD
+$ spoom srb coverage timeline --from YYYY-MM-DD --to YYYY-MM-DD
 ```
 
 Save the typing coverage evolution as JSON under `spoom_data/`:
 
 ```
-$ spoom coverage timeline --save
+$ spoom srb coverage timeline --save
 ```
 
 Save the typing coverage evolution as JSON in a specific directory:
 
 ```
-$ spoom coverage timeline --save my_data/
+$ spoom srb coverage timeline --save my_data/
 ```
 
 Run `bundle install` for each commit of the timeline (may solve errors due to different Sorbet versions):
 
 ```
-$ spoom coverage timeline --bundle-install
+$ spoom srb coverage timeline --bundle-install
 ```
 
 Generate an HTML typing coverage report:
 
 ```
-$ spoom coverage report
+$ spoom srb coverage report
 ```
 
 Change the colors used for strictnesses (useful for colorblind folks):
 
 ```
-$ spoom coverage report \
+$ spoom srb coverage report \
   --color-true "#648ffe" \
   --color-false "#fe6002" \
   --color-ignore "#feb000" \
@@ -179,7 +179,7 @@ $ spoom coverage report \
 Open the HTML typing coverage report:
 
 ```
-$ spoom coverage open
+$ spoom srb coverage open
 ```
 
 #### Change the sigil used in files
@@ -187,38 +187,38 @@ $ spoom coverage open
 Bump the strictness from all files currently at `typed: false` to `typed: true` where it does not create typechecking errors:
 
 ```
-$ spoom bump --from false --to true
+$ spoom srb bump --from false --to true
 ```
 
 Bump the strictness from all files currently at `typed: false` to `typed: true` even if it creates typechecking errors:
 
 ```
-$ spoom bump --from false --to true -f
+$ spoom srb bump --from false --to true -f
 ```
 
 Bump the strictness from a list of files (one file by line):
 
 ```
-$ spoom bump --from false --to true -o list.txt
+$ spoom srb bump --from false --to true -o list.txt
 ```
 
 Check if files can be bumped without applying any change and show the list of files that can be bumped without errors.
 Will exit with a non-zero status if some files can be bumped without errors (useful to check for bumpable files on CI for example):
 
 ```
-$ spoom bump --from false --to true --dry
+$ spoom srb bump --from false --to true --dry
 ```
 
 Bump files using a custom instance of Sorbet:
 
 ```
-$ spoom bump --from false --to true --sorbet /path/to/sorbet/bin
+$ spoom srb bump --from false --to true --sorbet /path/to/sorbet/bin
 ```
 
 Count the number of type-checking errors if all files were bumped to true:
 
 ```
-$ spoom bump --count-errors --dry
+$ spoom srb bump --count-errors --dry
 ```
 
 #### Interact with Sorbet LSP mode
@@ -228,43 +228,43 @@ $ spoom bump --count-errors --dry
 Find all definitions for `Foo`:
 
 ```
-$ spoom lsp find Foo
+$ spoom srb lsp find Foo
 ```
 
 List all symbols in a file:
 
 ```
-$ spoom lsp symbols <file.rb>
+$ spoom srb lsp symbols <file.rb>
 ```
 
 List all definitions for a specific code location:
 
 ```
-$ spoom lsp defs <file.rb> <line> <column>
+$ spoom srb lsp defs <file.rb> <line> <column>
 ```
 
 List all references for a specific code location:
 
 ```
-$ spoom lsp refs <file.rb> <line> <column>
+$ spoom srb lsp refs <file.rb> <line> <column>
 ```
 
 Show hover information for a specific code location:
 
 ```
-$ spoom lsp hover <file.rb> <line> <column>
+$ spoom srb lsp hover <file.rb> <line> <column>
 ```
 
 Show signature information for a specific code location:
 
 ```
-$ spoom lsp sig <file.rb> <line> <column>
+$ spoom srb lsp sig <file.rb> <line> <column>
 ```
 
 Show type information for a specific code location:
 
 ```
-$ spoom lsp sig <file.rb> <line> <column>
+$ spoom srb lsp sig <file.rb> <line> <column>
 ```
 
 ### API
