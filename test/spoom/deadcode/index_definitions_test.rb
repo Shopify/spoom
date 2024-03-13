@@ -18,11 +18,12 @@ module Spoom
           deadcode_index
         end
 
-        assert_equal(
-          "Error while parsing foo.rb: expected a `)` to close the parameters (at 1:8). " \
-            "cannot parse the expression (at 1:8). expected an `end` to close the `def` statement (at 1:8).",
-          exception.message,
-        )
+        assert_equal(<<~ERRORS, exception.message)
+          Error while parsing foo.rb:
+          - expected a `)` to close the parameters (at 1:8)
+          - cannot parse the expression (at 1:8)
+          - expected an `end` to close the `def` statement (at 1:8)
+        ERRORS
       end
 
       def test_index_constant_definitions

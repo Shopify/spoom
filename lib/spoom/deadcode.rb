@@ -43,11 +43,13 @@ module Spoom
       def parse_ruby(ruby, file:)
         result = Prism.parse(ruby)
         unless result.success?
-          message = result.errors.map do |e|
-            "#{e.message} (at #{e.location.start_line}:#{e.location.start_column})."
-          end.join(" ")
+          message = +"Error while parsing #{file}:\n"
 
-          raise ParserError, "Error while parsing #{file}: #{message}"
+          result.errors.each do |e|
+            message << "- #{e.message} (at #{e.location.start_line}:#{e.location.start_column})\n"
+          end
+
+          raise ParserError, message
         end
 
         result.value
