@@ -148,7 +148,7 @@ module Spoom
 
       desc "remove LOCATION", "Remove dead code at LOCATION"
       def remove(location_string)
-        location = Spoom::Deadcode::Location.from_string(location_string)
+        location = Location.from_string(location_string)
         context = self.context
         remover = Spoom::Deadcode::Remover.new(context)
 
@@ -163,7 +163,7 @@ module Spoom
       rescue Spoom::Deadcode::Remover::Error => e
         say_error("Can't remove code at #{location_string}: #{e.message}")
         exit(1)
-      rescue Spoom::Deadcode::Location::LocationError => e
+      rescue Location::LocationError => e
         say_error(e.message)
         exit(1)
       end
