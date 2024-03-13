@@ -87,9 +87,9 @@ module Spoom
           content = File.read(file)
           content = ERB.new(content).src if file.end_with?(".erb")
 
-          tree = Spoom::Deadcode.parse_ruby(content, file: file)
+          tree = Spoom.parse_ruby(content, file: file)
           Spoom::Deadcode.index_node(index, tree, content, file: file, plugins: plugins)
-        rescue Spoom::Deadcode::ParserError => e
+        rescue ParseError => e
           say_error("Error parsing #{file}: #{e.message}")
           next
         rescue Spoom::Deadcode::IndexerError => e
