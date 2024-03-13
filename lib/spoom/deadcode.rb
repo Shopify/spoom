@@ -4,7 +4,8 @@
 require "erubi"
 require "prism"
 
-require_relative "deadcode/visitor"
+require_relative "visitor"
+
 require_relative "deadcode/erb"
 require_relative "deadcode/index"
 require_relative "deadcode/indexer"
