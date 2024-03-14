@@ -58,6 +58,18 @@ module Spoom
       sig { returns(T::Array[Prop]) }
       attr_reader :props
 
+      sig { returns T::Array[String] }
+      attr_reader :enum_values
+
+      sig { returns T::Array[Case] }
+      attr_reader :cases
+
+      sig { returns T::Array[Send] }
+      attr_reader :calls_to_serialize
+
+      sig { returns T::Array[Send] }
+      attr_reader :calls_to_deserialize
+
       sig { params(location: Location, full_name: String).void }
       def initialize(location, full_name)
         super(location)
@@ -67,6 +79,10 @@ module Spoom
         @props = T.let([], T::Array[Prop])
         @includes = T.let([], T::Array[T.any(Ref, Module)])
         @attrs = T.let([], T::Array[Attr])
+        @enum_values = T.let([], T::Array[String])
+        @cases = T.let([], T::Array[Case])
+        @calls_to_serialize = T.let([], T::Array[Send])
+        @calls_to_deserialize = T.let([], T::Array[Send])
       end
 
       sig { params(full_name: String).returns(T::Boolean) }
@@ -187,6 +203,33 @@ module Spoom
       sig { returns(String) }
       def to_s
         "def #{name} (#{location})"
+      end
+    end
+
+    class Case < Symbol
+      extend T::Sig
+
+      sig { returns(T::Array[String]) }
+      attr_reader :conditions
+
+      sig { returns(T::Boolean) }
+      attr_accessor :absurd
+
+      sig { returns(Scope) }
+      attr_accessor :scope
+
+      sig { params(location: Location, scope: Scope).void }
+      def initialize(location, scope)
+        super(location)
+
+        @conditions = T.let([], T::Array[String])
+        @absurd = T.let(false, T::Boolean)
+        @scope = scope
+      end
+
+      sig { returns(T::Boolean) }
+      def absurd?
+        absurd
       end
     end
 
@@ -348,6 +391,19 @@ module Spoom
       end
 
       classes
+    end
+
+    sig { returns(T::Array[Case]) }
+    def cases
+      cases = T.let([], T::Array[Case])
+
+      @scopes.each do |_full_name, scopes|
+        scopes.each do |scope|
+          cases.concat(scope.cases)
+        end
+      end
+
+      cases
     end
 
     sig { params(class_name: String).returns(T::Array[Class]) }

@@ -45,10 +45,28 @@ module Spoom
         @namespace.pop
       end
 
+      sig { override.params(node: SyntaxTree::Assign).void }
+      def visit_assign(node)
+        parent = @scopes.last
+        return unless parent&.descendant_of?("T::Enum")
+        return if node.child_nodes.empty?
+
+        assign_name = node_string(node.child_nodes.first)
+        return unless assign_name
+
+        # Connect the enum value to the parent in the model scope
+        scope_key = "#{parent.full_name}::#{assign_name}"
+        @model.scopes[scope_key] ||= []
+        @model.scopes[scope_key] << parent
+
+        parent.enum_values << assign_name
+      end
+
       sig { override.params(node: SyntaxTree::DefNode).void }
       def visit_def(node)
         loc = node_loc(node)
         current_scope.defs << Method.new(loc, node_string(node.name))
+        node.child_nodes.each { |child| visit(child) }
       end
 
       sig { override.params(node: SyntaxTree::CallNode).void }
@@ -93,6 +111,40 @@ module Spoom
         visit_send(Send.new(node: node, name: node_string(node.value)))
       end
 
+      sig { override.params(node: SyntaxTree::Case).void }
+      def visit_case(node)
+        kase = Case.new(node_loc(node), current_scope)
+        current_scope.cases << kase
+
+        curr_node = node.consequent
+
+        while curr_node.respond_to?(:consequent)
+          unless curr_node.is_a?(SyntaxTree::When)
+            curr_node = curr_node.consequent
+            next
+          end
+
+          kase.conditions << node_string(curr_node.arguments)
+          curr_node = curr_node.consequent
+        end
+
+        return unless curr_node.is_a?(SyntaxTree::Else)
+
+        statement = curr_node.statements.body.first
+        return if statement.nil? || !statement.respond_to?(:receiver) || !statement.respond_to?(:message)
+
+        receiver = statement.receiver
+        return if !receiver.respond_to?(:value) || !receiver.value.respond_to?(:value)
+
+        message = statement.message
+        return unless message.respond_to?(:value)
+
+        receiver_val = statement.receiver.value.value
+        method_val = statement.message.value
+
+        kase.absurd = true if receiver_val == "T" && method_val == "absurd"
+      end
+
       private
 
       sig { params(send: Send).void }
@@ -105,6 +157,8 @@ module Spoom
             current_scope.attrs << Attr.new(loc, send.name, name)
           end
         when "const", "prop"
+          return unless send.args.size >= 1
+
           loc = node_loc(send.node)
           name = node_string(T.must(send.args[0]))
           type = node_string(T.must(send.args[1]))
@@ -117,6 +171,24 @@ module Spoom
           send.args.each do |arg|
             current_scope.includes << Ref.new(node_string(arg))
           end
+        when "serialize"
+          recv = send.recv
+          return unless recv
+
+          recv_name = node_string(recv)
+          send.recv_name = recv_name
+          send.location = node_loc(send.node)
+
+          current_scope.calls_to_serialize << send
+        when "deserialize"
+          recv = send.recv
+          return unless recv
+
+          recv_name = node_string(recv)
+          send.recv_name = recv_name
+          send.location = node_loc(send.node)
+
+          current_scope.calls_to_deserialize << send
         end
       end
 
@@ -170,6 +242,8 @@ module Spoom
       const :recv, T.nilable(SyntaxTree::Node), default: nil
       const :args, T::Array[SyntaxTree::Node], default: []
       const :block, T.nilable(SyntaxTree::Node), default: nil
+      prop :location, Location, default: Location.none
+      prop :recv_name, T.nilable(String), default: nil
     end
 
     class << self

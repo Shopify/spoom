@@ -58,6 +58,11 @@ module Spoom
       def visit_prop(symbol)
         # no-op
       end
+
+      sig { params(symbol: Case).void }
+      def visit_case(symbol)
+        # no-op
+      end
     end
 
     sig { params(visitor: Visitor).void }
@@ -102,6 +107,13 @@ module Spoom
       sig { override.params(visitor: Visitor).void }
       def accept(visitor)
         visitor.visit_prop(self)
+      end
+    end
+
+    class Case
+      sig { override.params(visitor: Visitor).void }
+      def accept(visitor)
+        visitor.visit_case(self)
       end
     end
   end
