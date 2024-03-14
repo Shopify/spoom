@@ -100,6 +100,7 @@ module Spoom
         )
       end
 
+      # TODO: remove
       sig { override.params(node: Prism::ClassNode).void }
       def visit_class_node(node)
         constant_path = node.constant_path.slice
@@ -148,6 +149,7 @@ module Spoom
         visit(node.value)
       end
 
+      # TODO: remove
       sig { override.params(node: Prism::ConstantPathWriteNode).void }
       def visit_constant_path_write_node(node)
         parent = node.target.parent
@@ -171,6 +173,7 @@ module Spoom
         reference_constant(node.name.to_s, node)
       end
 
+      # TODO: remove
       sig { override.params(node: Prism::ConstantWriteNode).void }
       def visit_constant_write_node(node)
         name = node.name.to_s
@@ -179,6 +182,7 @@ module Spoom
         visit(node.value)
       end
 
+      # TODO: remove
       sig { override.params(node: Prism::DefNode).void }
       def visit_def_node(node)
         name = node.name.to_s
@@ -217,6 +221,7 @@ module Spoom
         reference_method("#{node.name}=", node)
       end
 
+      # TODO: remove
       sig { override.params(node: Prism::ModuleNode).void }
       def visit_module_node(node)
         constant_path = node.constant_path.slice
@@ -244,6 +249,7 @@ module Spoom
         end
       end
 
+      # TODO: remove
       sig { override.params(node: Prism::MultiWriteNode).void }
       def visit_multi_write_node(node)
         node.lefts.each do |const|
@@ -264,6 +270,7 @@ module Spoom
         super
       end
 
+      # TODO: remove
       sig { params(send: Send).void }
       def visit_send(send)
         visit(send.recv)

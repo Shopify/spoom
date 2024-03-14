@@ -33,6 +33,11 @@ module Spoom
       def from_prism(file, location)
         new(file, location.start_line, location.start_column, location.end_line, location.end_column)
       end
+
+      sig { returns(Location) }
+      def none
+        new("-", -1, -1, -1, -1)
+      end
     end
 
     sig { returns(String) }
