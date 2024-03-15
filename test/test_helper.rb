@@ -30,6 +30,7 @@ module Spoom
         source("https://rubygems.org")
 
         gemspec name: "spoom", path: "#{SPOOM_PATH}"
+        gem "tapioca"
         gem "sorbet-static-and-runtime", "#{Sorbet::GEM_VERSION}"
       GEMFILE
     end

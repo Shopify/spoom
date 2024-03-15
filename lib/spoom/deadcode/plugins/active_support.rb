@@ -22,8 +22,8 @@ module Spoom
         def on_send(indexer, send)
           return unless send.recv.nil? && SETUP_AND_TEARDOWN_METHODS.include?(send.name)
 
-          send.each_arg(SyntaxTree::SymbolLiteral) do |arg|
-            indexer.reference_method(indexer.node_string(arg.value), send.node)
+          send.each_arg(Prism::SymbolNode) do |arg|
+            indexer.reference_method(T.must(arg.value), send.node)
           end
         end
       end

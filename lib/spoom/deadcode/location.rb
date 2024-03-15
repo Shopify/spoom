@@ -30,8 +30,8 @@ module Spoom
           new(file, start_line.to_i, start_column.to_i, end_line.to_i, end_column.to_i)
         end
 
-        sig { params(file: String, location: SyntaxTree::Location).returns(Location) }
-        def from_syntax_tree(file, location)
+        sig { params(file: String, location: Prism::Location).returns(Location) }
+        def from_prism(file, location)
           new(file, location.start_line, location.start_column, location.end_line, location.end_column)
         end
       end

@@ -29,16 +29,16 @@ module Spoom
           return unless send.recv.nil? && send.name == "field"
 
           arg = send.args.first
-          return unless arg.is_a?(SyntaxTree::SymbolLiteral)
+          return unless arg.is_a?(Prism::SymbolNode)
 
-          indexer.reference_method(indexer.node_string(arg.value), send.node)
+          indexer.reference_method(arg.unescaped, send.node)
 
           send.each_arg_assoc do |key, value|
-            key = indexer.node_string(key).delete_suffix(":")
+            key = key.slice.delete_suffix(":")
             next unless key == "resolver_method"
             next unless value
 
-            indexer.reference_method(indexer.symbol_string(value), send.node)
+            indexer.reference_method(value.slice.delete_prefix(":"), send.node)
           end
         end
       end

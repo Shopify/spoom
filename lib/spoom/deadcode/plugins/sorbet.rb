@@ -21,24 +21,18 @@ module Spoom
 
         sig { params(indexer: Indexer, definition: Definition).returns(T::Boolean) }
         def sorbet_type_member?(indexer, definition)
-          assign = indexer.nesting_node(SyntaxTree::Assign)
+          assign = indexer.nesting_node(Prism::ConstantWriteNode)
           return false unless assign
 
           value = assign.value
+          return false unless value.is_a?(Prism::CallNode)
 
-          case value
-          when SyntaxTree::MethodAddBlock
-            indexer.node_string(value.call).match?(/^(type_member|type_template)/)
-          when SyntaxTree::VCall
-            indexer.node_string(value.value).match?(/^(type_member|type_template)/)
-          else
-            false
-          end
+          value.name == :type_member || value.name == :type_template
         end
 
         sig { params(indexer: Indexer, definition: Definition).returns(T::Boolean) }
         def sorbet_enum_constant?(indexer, definition)
-          /^(::)?T::Enum$/.match?(indexer.nesting_class_superclass_name) && indexer.nesting_block_call_name == "enums"
+          /^(::)?T::Enum$/.match?(indexer.nesting_class_superclass_name) && indexer.nesting_call&.name == :enums
         end
       end
     end

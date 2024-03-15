@@ -27,34 +27,25 @@ module Spoom
             reference_symbol_as_constant(indexer, send, T.must(send.args.first))
           when "send", "__send__", "try"
             arg = send.args.first
-            indexer.reference_method(indexer.node_string(arg.value), send.node) if arg.is_a?(SyntaxTree::SymbolLiteral)
+            indexer.reference_method(arg.unescaped, send.node) if arg.is_a?(Prism::SymbolNode)
           when "alias_method"
             last_arg = send.args.last
 
-            name = case last_arg
-            when SyntaxTree::SymbolLiteral
-              indexer.node_string(last_arg.value)
-            when SyntaxTree::StringLiteral
-              last_arg.parts.map { |part| indexer.node_string(part) }.join
+            if last_arg.is_a?(Prism::SymbolNode) || last_arg.is_a?(Prism::StringNode)
+              indexer.reference_method(last_arg.unescaped, send.node)
             end
-
-            return unless name
-
-            indexer.reference_method(name, send.node)
           end
         end
 
         private
 
-        sig { params(indexer: Indexer, send: Send, node: SyntaxTree::Node).void }
+        sig { params(indexer: Indexer, send: Send, node: Prism::Node).void }
         def reference_symbol_as_constant(indexer, send, node)
           case node
-          when SyntaxTree::SymbolLiteral
-            name = indexer.node_string(node.value)
-            indexer.reference_constant(name, send.node)
-          when SyntaxTree::StringLiteral
-            string = T.must(indexer.node_string(node)[1..-2])
-            string.split("::").each do |name|
+          when Prism::SymbolNode
+            indexer.reference_constant(node.unescaped, send.node)
+          when Prism::StringNode
+            node.unescaped.split("::").each do |name|
               indexer.reference_constant(name, send.node) unless name.empty?
             end
           end

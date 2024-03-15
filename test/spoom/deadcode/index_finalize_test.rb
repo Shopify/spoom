@@ -139,6 +139,17 @@ module Spoom
         assert_alive(index, "<<")
       end
 
+      def test_index_deadcode_blocks
+        @project.write!("foo.rb", <<~RB)
+          def foo; end
+
+          [].sort_by(&:foo)
+        RB
+
+        index = deadcode_index
+        assert_alive(index, "foo")
+      end
+
       def test_index_deadcode_aliases
         @project.write!("foo.rb", <<~RB)
           def dead; end

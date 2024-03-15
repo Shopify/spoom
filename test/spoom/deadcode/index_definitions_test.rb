@@ -18,10 +18,12 @@ module Spoom
           deadcode_index
         end
 
-        assert_equal(
-          "Error while parsing foo.rb (syntax error, unexpected end-of-input, expecting ')' at 1:9)",
-          exception.message,
-        )
+        assert_equal(<<~ERRORS, exception.message)
+          Error while parsing foo.rb:
+          - expected a `)` to close the parameters (at 1:8)
+          - cannot parse the expression (at 1:8)
+          - expected an `end` to close the `def` statement (at 1:8)
+        ERRORS
       end
 
       def test_index_constant_definitions
@@ -30,8 +32,8 @@ module Spoom
           ::C2 = 42
           NOT_INDEXED::C3 = 42
           not_indexed::C4 = 42
-          not_indexed.C5 = 42
-          C6, C7 = 42
+          C5, C6 = 42
+          ::C7, ::C8 = 42
 
           NOT_INDEXED.foo = 42
 
@@ -42,7 +44,7 @@ module Spoom
         RB
 
         assert_equal(
-          ["C1", "C2", "C3", "C4", "C5", "C6", "C7"],
+          ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8"],
           deadcode_index.all_definitions.select(&:constant?).map(&:name),
         )
       end
@@ -207,7 +209,15 @@ module Spoom
               E = 42
               ::F = 42
               G::H::I = 42
-              E.J = 42
+              class ::J; end
+              class J::K; end
+              class ::L::M
+                class N; end
+              end
+              module O::P; end
+              module ::Q::R
+                module S; end
+              end
 
               attr_accessor :foo
 
@@ -229,14 +239,20 @@ module Spoom
             "A::B",
             "A::B::C::D",
             "A::B::E",
-            "A::B::E::J",
             "A::B::G::H::I",
+            "A::B::J::K",
+            "A::B::O::P",
             "A::B::bar",
             "A::B::baz",
             "A::B::bla",
             "A::B::foo",
             "A::B::foo=",
             "F",
+            "J",
+            "L::M",
+            "L::M::N",
+            "Q::R",
+            "Q::R::S",
             "baz",
           ],
           deadcode_index.all_definitions.map(&:full_name).sort,

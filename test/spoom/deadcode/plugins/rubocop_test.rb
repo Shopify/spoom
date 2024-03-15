@@ -33,8 +33,8 @@ module Spoom
 
           assert_equal(
             [
-              "foo.rb:10:2-10:5",
-              "foo.rb:11:2-11:18",
+              "foo.rb:10:2-10:17",
+              "foo.rb:11:2-11:32",
             ],
             ignored_locations(index_with_plugins).map(&:to_s),
           )

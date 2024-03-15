@@ -110,7 +110,9 @@ module Spoom
       def plugins_classes_for_gemfile(gemfile_string)
         context = Context.mktmp!
         context.write_gemfile!(gemfile_string)
-        context.bundle("lock")
+        result = context.bundle("lock")
+
+        raise "Can't `bundle install`: #{result.err}" unless result.status
 
         plugin_classes = Deadcode.plugins_from_gemfile_lock(context).map(&:class)
         context.destroy!

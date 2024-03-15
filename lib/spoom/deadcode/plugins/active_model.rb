@@ -16,27 +16,27 @@ module Spoom
 
           case send.name
           when "attribute", "attributes"
-            send.each_arg(SyntaxTree::SymbolLiteral) do |arg|
-              indexer.reference_method(indexer.node_string(arg.value), send.node)
+            send.each_arg(Prism::SymbolNode) do |arg|
+              indexer.reference_method(arg.unescaped, send.node)
             end
           when "validate", "validates", "validates!", "validates_each"
-            send.each_arg(SyntaxTree::SymbolLiteral) do |arg|
-              indexer.reference_method(indexer.node_string(arg.value), send.node)
+            send.each_arg(Prism::SymbolNode) do |arg|
+              indexer.reference_method(arg.unescaped, send.node)
             end
             send.each_arg_assoc do |key, value|
-              key = indexer.node_string(key).delete_suffix(":")
+              key = key.slice.delete_suffix(":")
 
               case key
               when "if", "unless"
-                indexer.reference_method(indexer.symbol_string(value), send.node) if value
+                indexer.reference_method(value.slice.delete_prefix(":"), send.node) if value
               else
                 indexer.reference_constant(camelize(key), send.node)
               end
             end
           when "validates_with"
             arg = send.args.first
-            if arg.is_a?(SyntaxTree::SymbolLiteral)
-              indexer.reference_constant(indexer.node_string(arg.value), send.node)
+            if arg.is_a?(Prism::SymbolNode)
+              indexer.reference_constant(arg.unescaped, send.node)
             end
           end
         end

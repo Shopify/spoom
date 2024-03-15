@@ -103,7 +103,7 @@ module Spoom
               return unless send.name == "dsl_method"
               return if send.args.empty?
 
-              method_name = indexer.node_string(send.args.first).delete_prefix(":")
+              method_name = send.args.first.slice.delete_prefix(":")
               indexer.reference_method(method_name, send.node)
             end
           end

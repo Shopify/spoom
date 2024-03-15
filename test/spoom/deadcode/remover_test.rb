@@ -391,7 +391,7 @@ module Spoom
             FOO,
             # Some other comment
             BAR,
-            BAZ
+            BAZ,
           ) = T.let(42, Integer)
         RB
 
@@ -400,7 +400,7 @@ module Spoom
           (
             FOO,
             # Some other comment
-            BAZ
+            BAZ,
           ) = T.let(42, Integer)
         RB
       end
