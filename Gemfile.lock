@@ -17,10 +17,10 @@ GEM
       irb (~> 1.10)
       reline (>= 0.3.8)
     erubi (1.12.0)
-    io-console (0.7.1)
-    irb (1.11.0)
+    io-console (0.7.2)
+    irb (1.12.0)
       rdoc
-      reline (>= 0.3.8)
+      reline (>= 0.4.2)
     json (2.7.1)
     language_server-protocol (3.17.0.3)
     minitest (5.22.3)
@@ -46,7 +46,7 @@ GEM
     rdoc (6.6.2)
       psych (>= 4.0.0)
     regexp_parser (2.9.0)
-    reline (0.4.1)
+    reline (0.4.3)
       io-console (~> 0.5)
     rexml (3.2.6)
     rubocop (1.62.1)
@@ -67,13 +67,13 @@ GEM
     rubocop-sorbet (0.8.0)
       rubocop (>= 0.90.0)
     ruby-progressbar (1.13.0)
-    sorbet (0.5.11294)
-      sorbet-static (= 0.5.11294)
-    sorbet-runtime (0.5.11294)
-    sorbet-static (0.5.11294-x86_64-linux)
-    sorbet-static-and-runtime (0.5.11294)
-      sorbet (= 0.5.11294)
-      sorbet-runtime (= 0.5.11294)
+    sorbet (0.5.11295)
+      sorbet-static (= 0.5.11295)
+    sorbet-runtime (0.5.11295)
+    sorbet-static (0.5.11295-universal-darwin)
+    sorbet-static-and-runtime (0.5.11295)
+      sorbet (= 0.5.11295)
+      sorbet-runtime (= 0.5.11295)
     stringio (3.1.0)
     tapioca (0.12.0)
       bundler (>= 2.2.25)
@@ -92,7 +92,7 @@ GEM
       yard (>= 0.9)
 
 PLATFORMS
-  x86_64-linux
+  arm64-darwin-22
 
 DEPENDENCIES
   bundler (>= 2.2.10)
