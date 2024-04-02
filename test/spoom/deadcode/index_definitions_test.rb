@@ -18,10 +18,11 @@ module Spoom
           deadcode_index
         end
 
+        puts exception.message
         assert_equal(<<~ERRORS, exception.message)
           Error while parsing foo.rb:
           - expected a `)` to close the parameters (at 1:8)
-          - cannot parse the expression (at 1:8)
+          - unexpected end of file, assuming it is closing the parent top level context (at 2:0)
           - expected an `end` to close the `def` statement (at 1:8)
         ERRORS
       end
