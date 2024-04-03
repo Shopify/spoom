@@ -561,7 +561,7 @@ module Spoom
                 "#{e.message} (at #{e.location.start_line}:#{e.location.start_column})."
               end.join(" ")
 
-              raise ParserError, "Error while parsing #{location.file}: #{message}"
+              raise ParseError, "Error while parsing #{location.file}: #{message}"
             end
 
             visitor = new(location)
