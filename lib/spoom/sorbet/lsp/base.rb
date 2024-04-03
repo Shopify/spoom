@@ -58,9 +58,6 @@ module Spoom
     class Notification < Message
       extend T::Sig
 
-      sig { returns(String) }
-      attr_reader :method
-
       sig { returns(T::Hash[T.untyped, T.untyped]) }
       attr_reader :params
 
