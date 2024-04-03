@@ -6,6 +6,7 @@ require "prism"
 
 require_relative "visitor"
 require_relative "location"
+require_relative "parse"
 
 require_relative "deadcode/erb"
 require_relative "deadcode/index"
@@ -25,8 +26,6 @@ module Spoom
       abstract!
     end
 
-    class ParserError < Error; end
-
     class IndexerError < Error
       extend T::Sig
 
@@ -39,22 +38,6 @@ module Spoom
 
     class << self
       extend T::Sig
-
-      sig { params(ruby: String, file: String).returns(Prism::Node) }
-      def parse_ruby(ruby, file:)
-        result = Prism.parse(ruby)
-        unless result.success?
-          message = +"Error while parsing #{file}:\n"
-
-          result.errors.each do |e|
-            message << "- #{e.message} (at #{e.location.start_line}:#{e.location.start_column})\n"
-          end
-
-          raise ParserError, message
-        end
-
-        result.value
-      end
 
       sig do
         params(
@@ -74,7 +57,7 @@ module Spoom
 
       sig { params(index: Index, ruby: String, file: String, plugins: T::Array[Deadcode::Plugins::Base]).void }
       def index_ruby(index, ruby, file:, plugins: [])
-        node = parse_ruby(ruby, file: file)
+        node = Spoom.parse_ruby(ruby, file: file)
         index_node(index, node, ruby, file: file, plugins: plugins)
       end
 
