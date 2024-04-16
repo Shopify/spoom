@@ -821,6 +821,25 @@ module Spoom
         RB
       end
 
+      def test_deadcode_remover_removes_first_node_with_blank_lines
+        res = remove(<<~RB, "foo")
+          class Foo
+            def foo
+            end
+
+            def bar
+            end
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            def bar
+            end
+          end
+        RB
+      end
+
       def test_deadcode_remover_removes_node_with_blank_lines
         res = remove(<<~RB, "bar")
           class Foo
