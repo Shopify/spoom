@@ -312,7 +312,7 @@ module Spoom
           # Adjust the lines to remove to include following blank lines
           after = context.next_node
           if before.nil? && after && after.location.start_line > end_line + 1
-            end_line = after.location.end_line - 1
+            end_line = after.location.start_line - 1
           elsif after.nil? && context.parent_node.location.end_line > end_line + 1
             end_line = context.parent_node.location.end_line - 1
           end
