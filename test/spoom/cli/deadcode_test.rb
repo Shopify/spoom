@@ -6,6 +6,10 @@ require "test_with_project"
 module Spoom
   module Cli
     class DeadcodeTest < TestWithProject
+      def setup
+        @project.bundle_install!
+      end
+
       def test_deadcode_without_deadcode
         @project.write!("lib/foo.rb", <<~RUBY)
           def foo; end
