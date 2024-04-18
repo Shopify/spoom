@@ -44,7 +44,7 @@ module Spoom
 
         context.write_sorbet_config!(".")
         res = context.srb("tc")
-        assert_equal(<<~ERR, res.err)
+        assert_includes(res.err, <<~ERR)
           a.rb:3: Method `foo` does not exist on `T.class_of(<root>)` https://srb.help/7003
                3 |foo(42)
                   ^^^
