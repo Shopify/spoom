@@ -63,7 +63,7 @@ module Spoom
 
       desc "coverage", "Collect metrics related to Sorbet coverage"
       def coverage(*args)
-        say_warning("This command is deprecated. Please use `spoom srb bump` instead.")
+        say_warning("This command is deprecated. Please use `spoom srb coverage` instead.")
 
         invoke(Cli::Srb::Coverage, args, options)
       end
@@ -73,7 +73,7 @@ module Spoom
 
       desc "lsp", "Send LSP requests to Sorbet"
       def lsp(*args)
-        say_warning("This command is deprecated. Please use `spoom srb bump` instead.")
+        say_warning("This command is deprecated. Please use `spoom srb lsp` instead.")
 
         invoke(Cli::Srb::LSP, args, options)
       end
