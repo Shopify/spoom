@@ -190,16 +190,30 @@ RuboCop::Cop::Sorbet::BuggyObsoleteStrictMemoization::MSG = T.let(T.unsafe(nil),
 #   end
 #
 # source://rubocop-sorbet//lib/rubocop/cop/sorbet/callback_conditionals_binding.rb#35
-class RuboCop::Cop::Sorbet::CallbackConditionalsBinding < ::RuboCop::Cop::Cop
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/callback_conditionals_binding.rb#75
-  def autocorrect(node); end
+class RuboCop::Cop::Sorbet::CallbackConditionalsBinding < ::RuboCop::Cop::Base
+  include ::RuboCop::Cop::Alignment
+  extend ::RuboCop::Cop::AutoCorrector
 
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/callback_conditionals_binding.rb#127
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/callback_conditionals_binding.rb#81
+  def argumentless_unbound_callable_callback_conditional?(param0 = T.unsafe(nil)); end
+
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/callback_conditionals_binding.rb#91
   def on_send(node); end
+
+  private
+
+  # Find the immediately enclosing class or module name.
+  # Returns `nil`` if the immediate parent (skipping begin if present) is not a class or module.
+  #
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/callback_conditionals_binding.rb#128
+  def immediately_enclosing_module_name(node); end
 end
 
-# source://rubocop-sorbet//lib/rubocop/cop/sorbet/callback_conditionals_binding.rb#36
-RuboCop::Cop::Sorbet::CallbackConditionalsBinding::CALLBACKS = T.let(T.unsafe(nil), Array)
+# source://rubocop-sorbet//lib/rubocop/cop/sorbet/callback_conditionals_binding.rb#39
+RuboCop::Cop::Sorbet::CallbackConditionalsBinding::MSG = T.let(T.unsafe(nil), String)
+
+# source://rubocop-sorbet//lib/rubocop/cop/sorbet/callback_conditionals_binding.rb#41
+RuboCop::Cop::Sorbet::CallbackConditionalsBinding::RESTRICT_ON_SEND = T.let(T.unsafe(nil), Array)
 
 # Disallows the usage of `checked(true)`. This usage could cause
 # confusion; it could lead some people to believe that a method would be checked
@@ -259,14 +273,17 @@ RuboCop::Cop::Sorbet::CheckedTrueInSignature::MESSAGE = T.let(T.unsafe(nil), Str
 #   # good
 #   { "User" => User }.fetch(class_name)
 #
-# source://rubocop-sorbet//lib/rubocop/cop/sorbet/constants_from_strings.rb#37
-class RuboCop::Cop::Sorbet::ConstantsFromStrings < ::RuboCop::Cop::Cop
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/constants_from_strings.rb#38
-  def constant_from_string?(param0 = T.unsafe(nil)); end
-
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/constants_from_strings.rb#42
+# source://rubocop-sorbet//lib/rubocop/cop/sorbet/constants_from_strings.rb#36
+class RuboCop::Cop::Sorbet::ConstantsFromStrings < ::RuboCop::Cop::Base
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/constants_from_strings.rb#46
   def on_send(node); end
 end
+
+# source://rubocop-sorbet//lib/rubocop/cop/sorbet/constants_from_strings.rb#37
+RuboCop::Cop::Sorbet::ConstantsFromStrings::MSG = T.let(T.unsafe(nil), String)
+
+# source://rubocop-sorbet//lib/rubocop/cop/sorbet/constants_from_strings.rb#40
+RuboCop::Cop::Sorbet::ConstantsFromStrings::RESTRICT_ON_SEND = T.let(T.unsafe(nil), Array)
 
 # Checks for blank lines after signatures.
 #
@@ -505,6 +522,42 @@ class RuboCop::Cop::Sorbet::FalseSigil < ::RuboCop::Cop::Sorbet::HasSigil
   # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/false_sigil.rb#11
   def minimum_strictness; end
 end
+
+# Disallow including the `Comparable` module in `T::Enum`.
+#
+# @example
+#
+#   # bad
+#   class Priority < T::Enum
+#   include Comparable
+#
+#   enums do
+#   High = new(3)
+#   Medium = new(2)
+#   Low = new(1)
+#   end
+#
+#   def <=>(other)
+#   serialize <=> other.serialize
+#   end
+#   end
+#
+# source://rubocop-sorbet//lib/rubocop/cop/sorbet/t_enum/forbid_comparable_t_enum.rb#24
+class RuboCop::Cop::Sorbet::ForbidComparableTEnum < ::RuboCop::Cop::Base
+  include ::RuboCop::Cop::Sorbet::TEnum
+
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/t_enum/forbid_comparable_t_enum.rb#32
+  def mix_in_comparable?(param0 = T.unsafe(nil)); end
+
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/t_enum/forbid_comparable_t_enum.rb#36
+  def on_send(node); end
+end
+
+# source://rubocop-sorbet//lib/rubocop/cop/sorbet/t_enum/forbid_comparable_t_enum.rb#27
+RuboCop::Cop::Sorbet::ForbidComparableTEnum::MSG = T.let(T.unsafe(nil), String)
+
+# source://rubocop-sorbet//lib/rubocop/cop/sorbet/t_enum/forbid_comparable_t_enum.rb#29
+RuboCop::Cop::Sorbet::ForbidComparableTEnum::RESTRICT_ON_SEND = T.let(T.unsafe(nil), Array)
 
 # Ensures RBI shims do not include a call to extend T::Sig
 # or to extend T::Helpers
@@ -1042,6 +1095,42 @@ class RuboCop::Cop::Sorbet::KeywordArgumentOrdering < ::RuboCop::Cop::Cop
   def check_order_for_kwoptargs(parameters); end
 end
 
+# Disallow creating a `T::Enum` with less than two values.
+#
+# @example
+#
+#   # bad
+#   class ErrorMessages < T::Enum
+#   enums do
+#   ServerError = new("There was a server error.")
+#   end
+#   end
+#
+#   # good
+#   class ErrorMessages < T::Enum
+#   enums do
+#   ServerError = new("There was a server error.")
+#   NotFound = new("The resource was not found.")
+#   end
+#   end
+#
+# source://rubocop-sorbet//lib/rubocop/cop/sorbet/t_enum/multiple_t_enum_values.rb#24
+class RuboCop::Cop::Sorbet::MultipleTEnumValues < ::RuboCop::Cop::Base
+  include ::RuboCop::Cop::Sorbet::TEnum
+
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/t_enum/multiple_t_enum_values.rb#30
+  def enums_block?(param0 = T.unsafe(nil)); end
+
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/t_enum/multiple_t_enum_values.rb#40
+  def on_block(node); end
+
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/t_enum/multiple_t_enum_values.rb#34
+  def on_class(node); end
+end
+
+# source://rubocop-sorbet//lib/rubocop/cop/sorbet/t_enum/multiple_t_enum_values.rb#27
+RuboCop::Cop::Sorbet::MultipleTEnumValues::MSG = T.let(T.unsafe(nil), String)
+
 # source://rubocop-sorbet//lib/rubocop/cop/sorbet/mutable_constant_sorbet_aware_behaviour.rb#8
 module RuboCop::Cop::Sorbet::MutableConstantSorbetAwareBehaviour
   # source://rubocop-sorbet//lib/rubocop/cop/sorbet/mutable_constant_sorbet_aware_behaviour.rb#18
@@ -1106,54 +1195,6 @@ end
 # source://rubocop-sorbet//lib/rubocop/cop/sorbet/obsolete_strict_memoization.rb#47
 RuboCop::Cop::Sorbet::ObsoleteStrictMemoization::MSG = T.let(T.unsafe(nil), String)
 
-# Ensures one ancestor per requires_ancestor line
-# rather than chaining them as a comma-separated list.
-#
-# @example
-#
-#   # bad
-#   module SomeModule
-#   requires_ancestor Kernel, Minitest::Assertions
-#   end
-#
-#   # good
-#   module SomeModule
-#   requires_ancestor Kernel
-#   requires_ancestor Minitest::Assertions
-#   end
-#
-# source://rubocop-sorbet//lib/rubocop/cop/sorbet/one_ancestor_per_line.rb#24
-class RuboCop::Cop::Sorbet::OneAncestorPerLine < ::RuboCop::Cop::Cop
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/one_ancestor_per_line.rb#38
-  def abstract?(param0); end
-
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/one_ancestor_per_line.rb#56
-  def autocorrect(node); end
-
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/one_ancestor_per_line.rb#33
-  def more_than_one_ancestor(param0 = T.unsafe(nil)); end
-
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/one_ancestor_per_line.rb#49
-  def on_class(node); end
-
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/one_ancestor_per_line.rb#42
-  def on_module(node); end
-
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/one_ancestor_per_line.rb#28
-  def requires_ancestors(param0); end
-
-  private
-
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/one_ancestor_per_line.rb#72
-  def new_ra_line(indent_count); end
-
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/one_ancestor_per_line.rb#66
-  def process_node(node); end
-end
-
-# source://rubocop-sorbet//lib/rubocop/cop/sorbet/one_ancestor_per_line.rb#25
-RuboCop::Cop::Sorbet::OneAncestorPerLine::MSG = T.let(T.unsafe(nil), String)
-
 # Forbids the use of redundant `extend T::Sig`. Only for use in
 # applications that monkey patch `Module.include(T::Sig)` globally,
 # which would make it redundant.
@@ -1190,12 +1231,11 @@ RuboCop::Cop::Sorbet::RedundantExtendTSig::MSG = T.let(T.unsafe(nil), String)
 # source://rubocop-sorbet//lib/rubocop/cop/sorbet/redundant_extend_t_sig.rb#33
 RuboCop::Cop::Sorbet::RedundantExtendTSig::RESTRICT_ON_SEND = T.let(T.unsafe(nil), Array)
 
-# Checks for the correct order of sig builder methods:
-# - abstract, override, or overridable
-# - type_parameters
-# - params
-# - returns, or void
-# - soft, checked, or on_failure
+# Checks for the correct order of `sig` builder methods.
+#
+# Options:
+#
+# * `Order`: The order in which to enforce the builder methods are called.
 #
 # @example
 #   # bad
@@ -1210,45 +1250,30 @@ RuboCop::Cop::Sorbet::RedundantExtendTSig::RESTRICT_ON_SEND = T.let(T.unsafe(nil
 #   # good
 #   sig { params(x: Integer).returns(Integer) }
 #
-# source://rubocop-sorbet//lib/rubocop/cop/sorbet/signatures/signature_build_order.rb#31
-class RuboCop::Cop::Sorbet::SignatureBuildOrder < ::RuboCop::Cop::Cop
+# source://rubocop-sorbet//lib/rubocop/cop/sorbet/signatures/signature_build_order.rb#24
+class RuboCop::Cop::Sorbet::SignatureBuildOrder < ::RuboCop::Cop::Base
   include ::RuboCop::Cop::Sorbet::SignatureHelp
+  extend ::RuboCop::Cop::AutoCorrector
 
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/signatures/signature_build_order.rb#77
-  def autocorrect(node); end
-
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/signatures/signature_build_order.rb#53
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/signatures/signature_build_order.rb#33
   def on_signature(node); end
 
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/signatures/signature_build_order.rb#49
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/signatures/signature_build_order.rb#29
   def root_call(param0); end
 
   private
 
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/signatures/signature_build_order.rb#119
-  def call_chain(sig_child_node); end
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/signatures/signature_build_order.rb#96
+  def builder_method_indexes; end
 
-  # @return [Boolean]
+  # Split foo.bar.baz into [foo, foo.bar, foo.bar.baz]
   #
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/signatures/signature_build_order.rb#115
-  def can_autocorrect?; end
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/signatures/signature_build_order.rb#83
+  def call_chain(node); end
 
-  # This method exists to reparse the current node with modern features enabled.
-  # Modern features include "index send" emitting, which is necessary to unparse
-  # "index sends" (i.e. `[]` calls) back to index accessors (i.e. as `foo[bar]``).
-  # Otherwise, we would get the unparsed node as `foo.[](bar)`.
-  #
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/signatures/signature_build_order.rb#106
-  def node_reparsed_with_modern_features(node); end
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/signatures/signature_build_order.rb#70
+  def expected_source(expected_calls_and_indexes); end
 end
-
-# Create a subclass of AST Builder that has modern features turned on
-#
-# source://rubocop-sorbet//lib/rubocop/cop/sorbet/signatures/signature_build_order.rb#95
-class RuboCop::Cop::Sorbet::SignatureBuildOrder::ModernBuilder < ::RuboCop::AST::Builder; end
-
-# source://rubocop-sorbet//lib/rubocop/cop/sorbet/signatures/signature_build_order.rb#34
-RuboCop::Cop::Sorbet::SignatureBuildOrder::ORDER = T.let(T.unsafe(nil), Hash)
 
 # Mixin for writing cops for signatures, providing a `signature?` node matcher and an `on_signature` trigger.
 #
@@ -1320,6 +1345,32 @@ end
 class RuboCop::Cop::Sorbet::StrongSigil < ::RuboCop::Cop::Sorbet::HasSigil
   # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/strong_sigil.rb#11
   def minimum_strictness; end
+end
+
+# Mixing for writing cops that deal with `T::Enum`s
+#
+# source://rubocop-sorbet//lib/rubocop/cop/sorbet/mixin/t_enum.rb#7
+module RuboCop::Cop::Sorbet::TEnum
+  extend ::RuboCop::AST::NodePattern::Macros
+
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/mixin/t_enum.rb#9
+  def initialize(*_arg0); end
+
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/mixin/t_enum.rb#23
+  def after_class(node); end
+
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/mixin/t_enum.rb#19
+  def on_class(node); end
+
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/mixin/t_enum.rb#15
+  def t_enum?(param0 = T.unsafe(nil)); end
+
+  private
+
+  # @return [Boolean]
+  #
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/mixin/t_enum.rb#29
+  def in_t_enum_class?; end
 end
 
 # source://rubocop-sorbet//lib/rubocop/cop/sorbet/mixin/target_sorbet_version.rb#6
@@ -1408,7 +1459,7 @@ RuboCop::Cop::Sorbet::TypeAliasName::MSG = T.let(T.unsafe(nil), String)
 #
 # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#20
 class RuboCop::Cop::Sorbet::ValidSigil < ::RuboCop::Cop::Cop
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#35
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#36
   def autocorrect(_node); end
 
   # So we can properly subclass this cop
@@ -1420,56 +1471,56 @@ class RuboCop::Cop::Sorbet::ValidSigil < ::RuboCop::Cop::Cop
 
   # checks
   #
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#70
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#71
   def check_sigil_present(sigil); end
 
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#130
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#131
   def check_strictness_level(sigil, strictness); end
 
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#108
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#109
   def check_strictness_not_empty(sigil, strictness); end
 
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#119
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#120
   def check_strictness_valid(sigil, strictness); end
 
   # Default is `nil`
   #
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#180
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#181
   def exact_strictness; end
 
   # extraction
   #
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#58
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#59
   def extract_sigil(processed_source); end
 
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#64
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#65
   def extract_strictness(sigil); end
 
   # Default is `nil`
   #
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#174
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#175
   def minimum_strictness; end
 
   # Default is `false`
   #
   # @return [Boolean]
   #
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#163
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#164
   def require_sigil_on_all_files?; end
 
   # Default is `'false'`
   #
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#168
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#169
   def suggested_strictness; end
 
-  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#86
+  # source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#87
   def suggested_strictness_level; end
 end
 
-# source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#54
+# source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#55
 RuboCop::Cop::Sorbet::ValidSigil::SIGIL_REGEX = T.let(T.unsafe(nil), Regexp)
 
-# source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#53
+# source://rubocop-sorbet//lib/rubocop/cop/sorbet/sigils/valid_sigil.rb#54
 RuboCop::Cop::Sorbet::ValidSigil::STRICTNESS_LEVELS = T.let(T.unsafe(nil), Array)
 
 # Disallows the usage of `.void.checked(:tests)`.
