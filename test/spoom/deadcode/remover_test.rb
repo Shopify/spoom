@@ -9,7 +9,7 @@ module Spoom
     class RemoverTest < Spoom::TestWithProject
       include Test::Helpers::DeadcodeHelper
 
-      def test_deadcode_remover_raises_if_file_does_not_exist
+      def test_raises_if_file_does_not_exist
         context = Context.mktmp!
         remover = Remover.new(context)
 
@@ -20,7 +20,7 @@ module Spoom
         context.destroy!
       end
 
-      def test_deadcode_remover_raises_if_node_cant_be_found
+      def test_raises_if_node_cant_be_found
         context = Context.mktmp!
         context.write!("foo.rb", "")
         remover = Remover.new(context)
@@ -32,7 +32,7 @@ module Spoom
         context.destroy!
       end
 
-      def test_deadcode_remover_raises_if_node_doesnt_match_kind
+      def test_raises_if_node_doesnt_match_kind
         context = Context.mktmp!
         context.write!("foo.rb", <<~RB)
           class Foo; end
@@ -48,7 +48,7 @@ module Spoom
         context.destroy!
       end
 
-      def test_deadcode_remover_removes_first_const_of_root
+      def test_removes_first_const_of_root
         res = remove(<<~RB, "FOO")
           FOO = 42
           BAR = 42
@@ -61,7 +61,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_middle_const_of_root
+      def test_removes_middle_const_of_root
         res = remove(<<~RB, "BAR")
           FOO = 42
           BAR = 42
@@ -74,7 +74,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_last_const_of_root
+      def test_removes_last_const_of_root
         res = remove(<<~RB, "BAZ")
           FOO = 42
           BAR = 42
@@ -87,7 +87,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_const_path
+      def test_removes_const_path
         res = remove(<<~RB, "BAZ")
           ::FOO::BAR = 42
           ::FOO::BAZ = 42
@@ -98,7 +98,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_first_nested_const
+      def test_removes_first_nested_const
         res = remove(<<~RB, "FOO")
           class Foo
             FOO = 42
@@ -115,7 +115,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_middle_nested_const
+      def test_removes_middle_nested_const
         res = remove(<<~RB, "BAR")
           class Foo
             FOO = 42
@@ -132,7 +132,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_middle_nested_const_with_blank_line_after
+      def test_removes_middle_nested_const_with_blank_line_after
         res = remove(<<~RB, "BAR")
           class Foo
             FOO = 42
@@ -153,7 +153,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_last_nested_const
+      def test_removes_last_nested_const
         res = remove(<<~RB, "BAZ")
           class Foo
             FOO = 42
@@ -170,7 +170,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_multiline_const
+      def test_removes_multiline_const
         res = remove(<<~RB, "BAR")
           class Foo
             FOO = 42
@@ -192,7 +192,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_first_const_from_massign
+      def test_removes_first_const_from_massign
         res = remove(<<~RB, "FOO")
           FOO, BAR, BAZ = 42
         RB
@@ -202,7 +202,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_middle_const_from_massign
+      def test_removes_middle_const_from_massign
         res = remove(<<~RB, "BAR")
           FOO, BAR, BAZ = 42
         RB
@@ -212,7 +212,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_last_const_from_massign
+      def test_removes_last_const_from_massign
         res = remove(<<~RB, "BAZ")
           FOO, BAR, BAZ = 42
         RB
@@ -222,7 +222,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_nested_massign
+      def test_removes_nested_massign
         res = remove(<<~RB, "BAR")
           class Foo
             # Some comment
@@ -238,7 +238,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_first_multiline_massign
+      def test_removes_first_multiline_massign
         res = remove(<<~RB, "FOO")
           # Some comment
           FOO,
@@ -253,7 +253,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_middle_multiline_massign
+      def test_removes_middle_multiline_massign
         res = remove(<<~RB, "BAR")
           # Some comment
           FOO,
@@ -268,7 +268,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_last_multiline_massign
+      def test_removes_last_multiline_massign
         res = remove(<<~RB, "BAZ")
           # Some comment
           FOO,
@@ -283,7 +283,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_last_multiline_massign_with_comment
+      def test_removes_last_multiline_massign_with_comment
         res = remove(<<~RB, "BAR")
           # Some comment
           FOO,
@@ -300,7 +300,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_last_massign_one
+      def test_removes_last_massign_one
         res = remove(<<~RB, "FOO")
           # Some comment
           FOO, = T.let(42, Integer)
@@ -309,7 +309,7 @@ module Spoom
         assert_empty(res)
       end
 
-      def test_deadcode_remover_removes_first_const_from_massign_paren
+      def test_removes_first_const_from_massign_paren
         res = remove(<<~RB, "FOO")
           (FOO, BAR, BAZ) = 42
         RB
@@ -319,7 +319,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_middle_const_from_massign_paren
+      def test_removes_middle_const_from_massign_paren
         res = remove(<<~RB, "BAR")
           (FOO, BAR, BAZ) = 42
         RB
@@ -329,7 +329,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_last_const_from_massign_paren
+      def test_removes_last_const_from_massign_paren
         res = remove(<<~RB, "BAZ")
           (FOO, BAR, BAZ) = 42
         RB
@@ -339,7 +339,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_first_multiline_massign_paren
+      def test_removes_first_multiline_massign_paren
         res = remove(<<~RB, "FOO")
           # Some comment
           (FOO,
@@ -354,7 +354,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_middle_multiline_massign_paren
+      def test_removes_middle_multiline_massign_paren
         res = remove(<<~RB, "BAR")
           # Some comment
           (FOO,
@@ -369,7 +369,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_last_multiline_massign_paren
+      def test_removes_last_multiline_massign_paren
         res = remove(<<~RB, "BAZ")
           # Some comment
           (FOO,
@@ -384,7 +384,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_last_multiline_massign_with_comment_paren
+      def test_removes_last_multiline_massign_with_comment_paren
         res = remove(<<~RB, "BAR")
           # Some comment
           (
@@ -405,7 +405,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_last_massign_one_paren
+      def test_removes_last_massign_one_paren
         res = remove(<<~RB, "FOO")
           (FOO,) = T.let(42, Integer)
         RB
@@ -413,7 +413,7 @@ module Spoom
         assert_empty(res)
       end
 
-      def test_deadcode_remover_removes_first_class_of_root
+      def test_removes_first_class_of_root
         res = remove(<<~RB, "Foo")
           class Foo; end
           class Bar; end
@@ -426,7 +426,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_middle_class_of_root
+      def test_removes_middle_class_of_root
         res = remove(<<~RB, "Bar")
           class Foo; end
           class Bar; end
@@ -439,7 +439,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_last_class_of_root
+      def test_removes_last_class_of_root
         res = remove(<<~RB, "Baz")
           class Foo; end
           class Bar; end
@@ -452,7 +452,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_first_nested_class
+      def test_removes_first_nested_class
         res = remove(<<~RB, "Bar")
           class Foo
             class Bar; end
@@ -469,7 +469,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_first_nested_class_with_blank_line_before
+      def test_removes_first_nested_class_with_blank_line_before
         res = remove(<<~RB, "Bar")
           class Foo
 
@@ -487,7 +487,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_middle_nested_class
+      def test_removes_middle_nested_class
         res = remove(<<~RB, "Baz")
           class Foo
             class Bar; end
@@ -504,7 +504,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_middle_nested_class_with_blank_line_before
+      def test_removes_middle_nested_class_with_blank_line_before
         res = remove(<<~RB, "Baz")
           class Foo
             class Bar; end
@@ -522,7 +522,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_middle_nested_class_with_blank_line_after
+      def test_removes_middle_nested_class_with_blank_line_after
         res = remove(<<~RB, "Baz")
           class Foo
             class Bar; end
@@ -541,7 +541,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_middle_nested_class_with_blank_lines
+      def test_removes_middle_nested_class_with_blank_lines
         res = remove(<<~RB, "Baz")
           class Foo
             class Bar; end
@@ -561,7 +561,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_last_nested_class
+      def test_removes_last_nested_class
         res = remove(<<~RB, "Qux")
           class Foo
             class Bar; end
@@ -578,7 +578,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_last_nested_class_with_blank_lines
+      def test_removes_last_nested_class_with_blank_lines
         res = remove(<<~RB, "Qux")
           class Foo
             class Bar; end
@@ -598,7 +598,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_nested_class_with_comments
+      def test_removes_nested_class_with_comments
         res = remove(<<~RB, "Baz")
           class Foo
             class Bar; end
@@ -622,7 +622,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_first_module_of_root
+      def test_removes_first_module_of_root
         res = remove(<<~RB, "Foo")
           module Foo; end
           module Bar; end
@@ -635,7 +635,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_middle_module_of_root
+      def test_removes_middle_module_of_root
         res = remove(<<~RB, "Bar")
           module Foo; end
           module Bar; end
@@ -648,7 +648,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_last_module_of_root
+      def test_removes_last_module_of_root
         res = remove(<<~RB, "Baz")
           module Foo; end
           module Bar; end
@@ -661,7 +661,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_first_nested_module
+      def test_removes_first_nested_module
         res = remove(<<~RB, "Bar")
           module Foo
             module Bar; end
@@ -678,7 +678,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_middle_nested_module
+      def test_removes_middle_nested_module
         res = remove(<<~RB, "Baz")
           module Foo
             module Bar; end
@@ -695,7 +695,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_last_nested_module
+      def test_removes_last_nested_module
         res = remove(<<~RB, "Qux")
           module Foo
             module Bar; end
@@ -712,7 +712,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_first_def_of_root
+      def test_removes_first_def_of_root
         res = remove(<<~RB, "foo")
           def foo; end
           def bar; end
@@ -725,7 +725,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_middle_def_of_root
+      def test_removes_middle_def_of_root
         res = remove(<<~RB, "bar")
           def foo; end
           def bar; end
@@ -738,7 +738,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_last_def_of_root
+      def test_removes_last_def_of_root
         res = remove(<<~RB, "baz")
           def foo; end
           def bar; end
@@ -751,7 +751,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_first_nested_def
+      def test_removes_first_nested_def
         res = remove(<<~RB, "foo")
           class Foo
             def foo; end
@@ -768,7 +768,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_middle_nested_def
+      def test_removes_middle_nested_def
         res = remove(<<~RB, "bar")
           class Foo
             def foo; end
@@ -785,7 +785,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_last_nested_def
+      def test_removes_last_nested_def
         res = remove(<<~RB, "baz")
           class Foo
             def foo; end
@@ -802,7 +802,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_def_in_module
+      def test_removes_def_in_module
         res = remove(<<~RB, "foo")
           module Foo
             def foo
@@ -821,7 +821,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_first_node_with_blank_lines
+      def test_removes_first_node_with_blank_lines
         res = remove(<<~RB, "foo")
           class Foo
             def foo
@@ -840,7 +840,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_node_with_blank_lines
+      def test_removes_node_with_blank_lines
         res = remove(<<~RB, "bar")
           class Foo
             def foo; end
@@ -862,7 +862,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_node_with_comments
+      def test_removes_node_with_comments
         res = remove(<<~RB, "bar")
           class Foo
             def foo; end
@@ -887,7 +887,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_does_not_remove_unrelated_comments
+      def test_does_not_remove_unrelated_comments
         res = remove(<<~RB, "bar")
           class Foo
             def foo; end
@@ -917,7 +917,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_node_sig
+      def test_removes_node_sig
         res = remove(<<~RB, "bar")
           class Foo
             def foo; end
@@ -940,7 +940,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_node_sig_and_comments
+      def test_removes_node_sig_and_comments
         res = remove(<<~RB, "bar")
           class Foo
             def foo; end
@@ -965,7 +965,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_singleton_class_if_needed
+      def test_removes_singleton_class_if_needed
         res = remove(<<~RB, "foo")
           class Foo
             class << self
@@ -983,7 +983,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_singleton_class_when_it_contains_only_sorbet_related_nodes
+      def test_removes_singleton_class_when_it_contains_only_sorbet_related_nodes
         res = remove(<<~RB, "foo")
           class Foo
             class << self
@@ -1004,7 +1004,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_method_from_singleton_class
+      def test_removes_method_from_singleton_class
         res = remove(<<~RB, "foo")
           class Foo
             class << self
@@ -1027,7 +1027,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_method_with_rescue
+      def test_removes_method_with_rescue
         res = remove(<<~RB, "foo")
           def bar; end
 
@@ -1047,7 +1047,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_does_not_remove_singleton_class_if_more_than_one_node
+      def test_does_not_remove_singleton_class_if_more_than_one_node
         res = remove(<<~RB, "foo")
           class Foo
             class << self
@@ -1070,7 +1070,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_command
+      def test_removes_attr_command
         res = remove(<<~RB, "foo")
           class Foo
             attr_reader :foo
@@ -1083,7 +1083,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_command_with_comment
+      def test_removes_attr_command_with_comment
         res = remove(<<~RB, "bar")
           class Foo
             attr_reader :foo
@@ -1101,7 +1101,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_command_with_sig
+      def test_removes_attr_command_with_sig
         res = remove(<<~RB, "bar")
           class Foo
             attr_reader :foo
@@ -1119,7 +1119,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_command_with_sig_and_blank_lines
+      def test_removes_attr_command_with_sig_and_blank_lines
         res = remove(<<~RB, "foo")
           module Foo
             class Bar
@@ -1144,7 +1144,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_command_with_comment_and_sig
+      def test_removes_attr_command_with_comment_and_sig
         res = remove(<<~RB, "bar")
           class Foo
             attr_reader :foo
@@ -1163,7 +1163,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_call_node
+      def test_removes_attr_call_node
         res = remove(<<~RB, "foo")
           class Foo
             attr_reader(:foo)
@@ -1176,7 +1176,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_call_node_with_comment
+      def test_removes_attr_call_node_with_comment
         res = remove(<<~RB, "bar")
           class Foo
             attr_reader(:foo)
@@ -1194,7 +1194,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_call_node_with_sig
+      def test_removes_attr_call_node_with_sig
         res = remove(<<~RB, "bar")
           class Foo
             attr_reader(:foo)
@@ -1212,7 +1212,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_call_node_with_comment_and_sig
+      def test_removes_attr_call_node_with_comment_and_sig
         res = remove(<<~RB, "bar")
           class Foo
             attr_reader(:foo)
@@ -1231,7 +1231,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_command_multiple_first
+      def test_removes_attr_command_multiple_first
         res = remove(<<~RB, "foo")
           class Foo
             attr_reader :foo, :bar, :baz
@@ -1245,7 +1245,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_command_multiple_middle
+      def test_removes_attr_command_multiple_middle
         res = remove(<<~RB, "bar")
           class Foo
             attr_reader :foo, :bar, :baz
@@ -1259,7 +1259,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_command_multiple_last
+      def test_removes_attr_command_multiple_last
         res = remove(<<~RB, "baz")
           class Foo
             attr_reader :foo, :bar, :baz
@@ -1273,7 +1273,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_call_node_multiple_first
+      def test_removes_attr_call_node_multiple_first
         res = remove(<<~RB, "foo")
           class Foo
             attr_reader(:foo, :bar, :baz)
@@ -1287,7 +1287,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_call_node_multiple_middle
+      def test_removes_attr_call_node_multiple_middle
         res = remove(<<~RB, "bar")
           class Foo
             attr_reader(:foo, :bar, :baz)
@@ -1301,7 +1301,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_call_node_multiple_last
+      def test_removes_attr_call_node_multiple_last
         res = remove(<<~RB, "baz")
           class Foo
             attr_reader(:foo, :bar, :baz)
@@ -1315,7 +1315,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_call_node_multiline_first
+      def test_removes_attr_call_node_multiline_first
         res = remove(<<~RB, "foo")
           class Foo
             attr_reader(
@@ -1336,7 +1336,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_call_node_multiline_middle
+      def test_removes_attr_call_node_multiline_middle
         res = remove(<<~RB, "bar")
           class Foo
             attr_reader(
@@ -1357,7 +1357,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_call_node_multiline_last
+      def test_removes_attr_call_node_multiline_last
         res = remove(<<~RB, "baz")
           class Foo
             attr_reader(
@@ -1378,7 +1378,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_accessor_line_and_adds_reader
+      def test_removes_attr_accessor_line_and_adds_reader
         res = remove(<<~RB, "foo=")
           class Foo
             attr_accessor :foo
@@ -1392,7 +1392,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_accessor_line_and_adds_writer
+      def test_removes_attr_accessor_line_and_adds_writer
         res = remove(<<~RB, "foo")
           class Foo
             attr_reader :bar
@@ -1412,7 +1412,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_accessor_symbol_and_adds_reader
+      def test_removes_attr_accessor_symbol_and_adds_reader
         res = remove(<<~RB, "foo=")
           class Foo
             attr_accessor :foo, :bar
@@ -1428,7 +1428,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_accessor_symbol_and_adds_writer
+      def test_removes_attr_accessor_symbol_and_adds_writer
         res = remove(<<~RB, "baz=")
           class Foo
             attr_reader :foo
@@ -1449,7 +1449,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_accessor_symbol_and_adds_reader_with_sig
+      def test_removes_attr_accessor_symbol_and_adds_reader_with_sig
         res = remove(<<~RB, "foo=")
           class Foo
             sig { returns(Integer) }
@@ -1468,7 +1468,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_accessor_symbol_and_adds_writer_with_sig
+      def test_removes_attr_accessor_symbol_and_adds_writer_with_sig
         res = remove(<<~RB, "foo")
           class Foo
             sig { returns(Integer) }
@@ -1487,7 +1487,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_accessor_symbol_and_adds_reader_with_sig_handles_newlines
+      def test_removes_attr_accessor_symbol_and_adds_reader_with_sig_handles_newlines
         res = remove(<<~RB, "foo=")
           class Foo
             sig { returns(Integer) }
@@ -1512,7 +1512,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_accessor_symbol_and_adds_reader_with_block_sig
+      def test_removes_attr_accessor_symbol_and_adds_reader_with_block_sig
         res = remove(<<~RB, "foo=")
           class Foo
             sig do
@@ -1541,7 +1541,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_accessor_symbol_and_adds_reader_with_other_code_around
+      def test_removes_attr_accessor_symbol_and_adds_reader_with_other_code_around
         res = remove(<<~RB, "foo=")
           class Foo
             extend T::Sig
@@ -1569,7 +1569,7 @@ module Spoom
         RB
       end
 
-      def test_deadcode_remover_removes_attr_accessor_symbol_and_adds_reader_in_private_section
+      def test_removes_attr_accessor_symbol_and_adds_reader_in_private_section
         res = remove(<<~RB, "foo=")
           class Foo
             extend T::Sig
