@@ -1027,6 +1027,26 @@ module Spoom
         RB
       end
 
+      def test_deadcode_remover_removes_method_with_rescue
+        res = remove(<<~RB, "foo")
+          def bar; end
+
+          def foo
+            puts "foo"
+          rescue => error
+            puts error
+          end
+
+          def baz; end
+        RB
+
+        assert_equal(<<~RB, res)
+          def bar; end
+
+          def baz; end
+        RB
+      end
+
       def test_deadcode_remover_does_not_remove_singleton_class_if_more_than_one_node
         res = remove(<<~RB, "foo")
           class Foo

@@ -564,7 +564,7 @@ module Spoom
               raise ParserError, "Error while parsing #{location.file}: #{message}"
             end
 
-            visitor = new(location)
+            visitor = new(location, kind)
             visitor.visit(result.value)
 
             node = visitor.node
@@ -617,10 +617,11 @@ module Spoom
         sig { returns(T::Array[Prism::Node]) }
         attr_reader :nodes_nesting
 
-        sig { params(location: Location).void }
-        def initialize(location)
+        sig { params(location: Location, kind: T.nilable(Definition::Kind)).void }
+        def initialize(location, kind)
           super()
           @location = location
+          @kind = kind
           @node = T.let(nil, T.nilable(Prism::Node))
           @nodes_nesting = T.let([], T::Array[Prism::Node])
         end
@@ -634,6 +635,9 @@ module Spoom
           if location == @location
             # We found the node we're looking for at `@location`
             @node = node
+
+            # The node we found matches the kind we're looking for, we can stop here
+            return if @kind && self.class.node_match_kind?(node, @kind)
 
             # There may be a more precise child inside the node that also matches `@location`, let's visit them
             @nodes_nesting << node
