@@ -151,10 +151,19 @@ module Spoom
         visit(node.value)
       end
 
+      sig { override.params(node: Prism::ConstantPathNode).void }
+      def visit_constant_path_node(node)
+        parent = node.parent
+
+        visit(parent) if parent
+        reference_constant(node.name.to_s, node)
+      end
+
       sig { override.params(node: Prism::ConstantPathWriteNode).void }
       def visit_constant_path_write_node(node)
-        parent = node.target.parent
-        name = node.target.child.slice
+        const_path_node = node.target
+        parent = const_path_node.parent
+        name = const_path_node.name.to_s
 
         if parent
           visit(parent)
