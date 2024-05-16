@@ -8,7 +8,6 @@ require_relative "d3/timeline"
 module Spoom
   module Coverage
     module D3
-      COLOR_IGNORE = "#999"
       COLOR_FALSE = "#db4437"
       COLOR_TRUE = "#0f9d58"
       COLOR_STRICT = "#0a7340"
