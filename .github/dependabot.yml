@@ -13,6 +13,7 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    open-pull-requests-limit: 100
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
