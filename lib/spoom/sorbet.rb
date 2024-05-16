@@ -37,8 +37,6 @@ module Spoom
     GEM_PATH = T.let(Gem::Specification.find_by_name("sorbet-static").full_gem_path, String)
     GEM_VERSION = T.let(Gem::Specification.find_by_name("sorbet-static-and-runtime").version.to_s, String)
     BIN_PATH = T.let((Pathname.new(GEM_PATH) / "libexec" / "sorbet").to_s, String)
-
-    KILLED_CODE = 137
     SEGFAULT_CODE = 139
   end
 end
