@@ -6,6 +6,7 @@ require "spoom/sorbet/errors"
 require "spoom/sorbet/lsp"
 require "spoom/sorbet/metrics"
 require "spoom/sorbet/sigils"
+require "spoom/sorbet/untyped"
 
 require "open3"
 

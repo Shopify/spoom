@@ -106,6 +106,30 @@ module Spoom
           .select { |file| read_file_strictness(file) == strictness }
       end
 
+      sig do
+        params(
+          arg: String,
+          sorbet_bin: T.nilable(String),
+          capture_err: T::Boolean,
+        ).returns(T::Array[T::Hash[String, T.any(String, Integer)]])
+      end
+      def srb_untyped(*arg, sorbet_bin: nil, capture_err: true)
+        untyped_file = "untyped.tmp"
+
+        T.unsafe(self).srb_tc(
+          "--track-untyped",
+          "--print=untyped-blame:#{untyped_file}",
+          *arg,
+          sorbet_bin: sorbet_bin,
+          capture_err: capture_err,
+        )
+
+        metrics_path = absolute_path_to(untyped_file)
+        untyped = Spoom::Sorbet::UntypedParser.parse_file(metrics_path)
+        remove!(untyped_file)
+        untyped
+      end
+
       sig { params(arg: String, sorbet_bin: T.nilable(String), capture_err: T::Boolean).returns(T.nilable(String)) }
       def srb_version(*arg, sorbet_bin: nil, capture_err: true)
         res = T.unsafe(self).srb_tc("--no-config", "--version", *arg, sorbet_bin: sorbet_bin, capture_err: capture_err)
