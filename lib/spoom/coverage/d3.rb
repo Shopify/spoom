@@ -11,7 +11,6 @@ module Spoom
       COLOR_IGNORE = "#999"
       COLOR_FALSE = "#db4437"
       COLOR_TRUE = "#0f9d58"
-      COLOR_STRICT = "#0a7340"
       COLOR_STRONG = "#064828"
 
       class << self
