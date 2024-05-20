@@ -15,7 +15,6 @@ module Spoom
       extend T::Sig
 
       class Killed < Error; end
-      class Segfault < Error; end
 
       sig { returns(ExecResult) }
       attr_reader :result
