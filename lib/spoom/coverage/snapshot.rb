@@ -26,9 +26,6 @@ module Spoom
       prop :methods_without_sig_excluding_rbis, Integer, default: 0
       prop :sigils_excluding_rbis, T::Hash[String, Integer], default: Hash.new(0)
 
-      # The strictness name as found in the Sorbet metrics file
-      STRICTNESSES = T.let(["ignore", "false", "true", "strict", "strong", "stdlib"].freeze, T::Array[String])
-
       sig { params(out: T.any(IO, StringIO), colors: T::Boolean, indent_level: Integer).void }
       def print(out: $stdout, colors: true, indent_level: 0)
         printer = SnapshotPrinter.new(out: out, colors: colors, indent_level: indent_level)
