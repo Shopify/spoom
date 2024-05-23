@@ -26,8 +26,6 @@ module Spoom
     class Config
       extend T::Sig
 
-      DEFAULT_ALLOWED_EXTENSIONS = T.let([".rb", ".rbi"].freeze, T::Array[String])
-
       sig { returns(T::Array[String]) }
       attr_accessor :paths, :ignore, :allowed_extensions
 
