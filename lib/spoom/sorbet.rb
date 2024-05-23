@@ -13,8 +13,6 @@ module Spoom
   module Sorbet
     class Error < StandardError
       extend T::Sig
-
-      class Killed < Error; end
       class Segfault < Error; end
 
       sig { returns(ExecResult) }
