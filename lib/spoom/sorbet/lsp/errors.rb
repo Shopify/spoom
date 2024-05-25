@@ -5,7 +5,6 @@ module Spoom
   module LSP
     class Error < StandardError
       class AlreadyOpen < Error; end
-      class BadHeaders < Error; end
 
       class Diagnostics < Error
         extend T::Sig
