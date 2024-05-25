@@ -39,6 +39,5 @@ module Spoom
     BIN_PATH = T.let((Pathname.new(GEM_PATH) / "libexec" / "sorbet").to_s, String)
 
     KILLED_CODE = 137
-    SEGFAULT_CODE = 139
   end
 end
