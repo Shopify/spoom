@@ -9,8 +9,7 @@ module Spoom
 
         sig { override.params(symbol_def: Model::Constant, definition: Definition).void }
         def on_define_constant(symbol_def, definition)
-          definition.ignored! if sorbet_type_member?(symbol_def)
-          # TODO: || sorbet_enum_constant?(indexer, definition)
+          definition.ignored! if sorbet_type_member?(symbol_def) || sorbet_enum_constant?(symbol_def)
         end
 
         sig { override.params(symbol_def: Model::Method, definition: Definition).void }
@@ -25,9 +24,15 @@ module Spoom
           symbol_def.value.match?(/^(type_member|type_template)/)
         end
 
-        sig { params(indexer: Indexer, definition: Definition).returns(T::Boolean) }
-        def sorbet_enum_constant?(indexer, definition)
-          /^(::)?T::Enum$/.match?(indexer.nesting_class_superclass_name) && indexer.nesting_call&.name == :enums
+        sig { params(symbol_def: Model::Constant).returns(T::Boolean) }
+        def sorbet_enum_constant?(symbol_def)
+          owner = symbol_def.owner
+          return false unless owner.is_a?(Model::Class)
+
+          superclass_name = owner.superclass_name
+          return false unless superclass_name
+
+          superclass_name.match?(/^(::)?T::Enum$/)
         end
       end
     end

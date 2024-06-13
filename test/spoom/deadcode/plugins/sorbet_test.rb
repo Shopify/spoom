@@ -32,22 +32,16 @@ module Spoom
             end
 
             class BadEnum < T::Enum
-              something do
-                DEAD2 = new
-              end
-            end
-
-            class BadEnum < T::Enum
               class BadEnum
                 enums do
-                  DEAD3 = new
+                  DEAD2 = new
                 end
               end
             end
 
             class Foo
               enums do
-                DEAD4 = new
+                DEAD3 = new
               end
             end
 
@@ -66,6 +60,12 @@ module Spoom
                 end
               end
             end
+
+            class SomeEnum < T::Enum
+              something do
+                IGNORED5 = new
+              end
+            end
           RB
 
           index = index_with_plugins
@@ -73,10 +73,10 @@ module Spoom
           assert_ignored(index, "IGNORED2")
           assert_ignored(index, "IGNORED3")
           assert_ignored(index, "IGNORED4")
+          assert_ignored(index, "IGNORED5")
           refute_ignored(index, "DEAD1")
           refute_ignored(index, "DEAD2")
           refute_ignored(index, "DEAD3")
-          refute_ignored(index, "DEAD4")
         end
 
         def test_ignore_sorbet_overrides
