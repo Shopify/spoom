@@ -17,16 +17,11 @@ module Spoom
         super()
 
         @path = path
-        @file_name = T.let(File.basename(path), String)
         @source = source
         @index = index
         @plugins = plugins
         @previous_node = T.let(nil, T.nilable(Prism::Node))
-        @names_nesting = T.let([], T::Array[String])
         @nodes_nesting = T.let([], T::Array[Prism::Node])
-        @in_const_field = T.let(false, T::Boolean)
-        @in_opassign = T.let(false, T::Boolean)
-        @in_symbol_literal = T.let(false, T::Boolean)
       end
 
       # Visit
@@ -100,35 +95,10 @@ module Spoom
         )
       end
 
-      # TODO: remove
       sig { override.params(node: Prism::ClassNode).void }
       def visit_class_node(node)
-        constant_path = node.constant_path.slice
-
-        if constant_path.start_with?("::")
-          full_name = constant_path.delete_prefix("::")
-
-          # We found a top level definition such as `class ::A; end`, we need to reset the name nesting
-          old_nesting = @names_nesting.dup
-          @names_nesting.clear
-          @names_nesting << full_name
-
-          # We do not call `super` here because we don't want to visit the `constant` again
-          visit(node.superclass) if node.superclass
-          visit(node.body)
-
-          # Restore the name nesting once we finished visited the class
-          @names_nesting.clear
-          @names_nesting = old_nesting
-        else
-          @names_nesting << constant_path
-
-          # We do not call `super` here because we don't want to visit the `constant` again
-          visit(node.superclass) if node.superclass
-          visit(node.body)
-
-          @names_nesting.pop
-        end
+        visit(node.superclass)
+        visit(node.body)
       end
 
       sig { override.params(node: Prism::ConstantAndWriteNode).void }
@@ -195,32 +165,9 @@ module Spoom
         reference_method("#{node.name}=", node)
       end
 
-      # TODO: remove
       sig { override.params(node: Prism::ModuleNode).void }
       def visit_module_node(node)
-        constant_path = node.constant_path.slice
-
-        if constant_path.start_with?("::")
-          full_name = constant_path.delete_prefix("::")
-
-          # We found a top level definition such as `class ::A; end`, we need to reset the name nesting
-          old_nesting = @names_nesting.dup
-          @names_nesting.clear
-          @names_nesting << full_name
-
-          visit(node.body)
-
-          # Restore the name nesting once we finished visited the class
-          @names_nesting.clear
-          @names_nesting = old_nesting
-        else
-          @names_nesting << constant_path
-
-          # We do not call `super` here because we don't want to visit the `constant` again
-          visit(node.body)
-
-          @names_nesting.pop
-        end
+        visit(node.body)
       end
 
       sig { override.params(node: Prism::MultiWriteNode).void }
