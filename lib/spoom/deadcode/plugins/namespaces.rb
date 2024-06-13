@@ -7,9 +7,9 @@ module Spoom
       class Namespaces < Base
         extend T::Sig
 
-        sig { override.params(indexer: Indexer, definition: Definition).void }
-        def on_define_class(indexer, definition)
-          definition.ignored! if used_as_namespace?(indexer)
+        sig { override.params(symbol: Model::Class, definition: Definition).void }
+        def on_define_class(symbol, definition)
+          # TODO: definition.ignored! if used_as_namespace?(indexer)
         end
 
         sig { override.params(indexer: Indexer, definition: Definition).void }

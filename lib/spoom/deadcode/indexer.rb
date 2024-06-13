@@ -112,8 +112,6 @@ module Spoom
           @names_nesting.clear
           @names_nesting << full_name
 
-          define_class(T.must(constant_path.split("::").last), full_name, node)
-
           # We do not call `super` here because we don't want to visit the `constant` again
           visit(node.superclass) if node.superclass
           visit(node.body)
@@ -123,7 +121,6 @@ module Spoom
           @names_nesting = old_nesting
         else
           @names_nesting << constant_path
-          define_class(T.must(constant_path.split("::").last), @names_nesting.join("::"), node)
 
           # We do not call `super` here because we don't want to visit the `constant` again
           visit(node.superclass) if node.superclass
@@ -340,18 +337,6 @@ module Spoom
         )
         @index.define(definition)
         @plugins.each { |plugin| plugin.internal_on_define_accessor(self, definition) }
-      end
-
-      sig { params(name: String, full_name: String, node: Prism::Node).void }
-      def define_class(name, full_name, node)
-        definition = Definition.new(
-          kind: Definition::Kind::Class,
-          name: name,
-          full_name: full_name,
-          location: node_location(node),
-        )
-        @index.define(definition)
-        @plugins.each { |plugin| plugin.internal_on_define_class(self, definition) }
       end
 
       sig { params(name: String, full_name: String, node: Prism::Node).void }

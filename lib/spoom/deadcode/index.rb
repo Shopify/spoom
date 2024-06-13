@@ -40,6 +40,21 @@ module Spoom
       # To be called once all the files have been indexed and all the definitions and references discovered.
       sig { void }
       def finalize!
+        @model.symbols.each do |_full_name, symbol|
+          case symbol
+          when Model::Class
+            symbol.locs.each do |loc|
+              definition = Definition.new(
+                kind: Definition::Kind::Class,
+                name: symbol.name,
+                full_name: symbol.full_name,
+                location: loc,
+              )
+              define(definition)
+              @plugins.each { |plugin| plugin.internal_on_define_class(symbol, definition) }
+            end
+          end
+        end
         @references.keys.each do |name|
           definitions_for_name(name).each(&:alive!)
         end

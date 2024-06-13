@@ -31,8 +31,8 @@ module Spoom
 
         def test_on_define_class
           plugin = Class.new(Base) do
-            def on_define_class(indexer, definition)
-              definition.ignored! if definition.name == "Class1"
+            def on_define_class(symbol, definition)
+              definition.ignored! if symbol.name == "Class1"
             end
           end
 

@@ -159,26 +159,26 @@ module Spoom
         #
         # ~~~rb
         # class MyPlugin < Spoom::Deadcode::Plugins::Base
-        #   def on_define_class(indexer, definition)
-        #     definition.ignored! if definition.name == "Foo"
+        #   def on_define_class(symbol, definition)
+        #     definition.ignored! if symbol.name == "Foo"
         #   end
         # end
         # ~~~
-        sig { params(indexer: Indexer, definition: Definition).void }
-        def on_define_class(indexer, definition)
+        sig { params(symbol: Model::Class, definition: Definition).void }
+        def on_define_class(symbol, definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_class` instead.
-        sig { params(indexer: Indexer, definition: Definition).void }
-        def internal_on_define_class(indexer, definition)
-          if ignored_class_name?(definition.name)
+        sig { params(symbol: Model::Class, definition: Definition).void }
+        def internal_on_define_class(symbol, definition)
+          if ignored_class_name?(symbol.name)
             definition.ignored!
-          elsif ignored_subclass?(indexer.nesting_class_superclass_name)
+          elsif ignored_subclass?(symbol.superclass_name&.delete_prefix("::"))
             definition.ignored!
           end
 
-          on_define_class(indexer, definition)
+          on_define_class(symbol, definition)
         end
 
         # Called when a constant is defined.
