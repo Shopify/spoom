@@ -85,7 +85,7 @@ module Spoom
         $stderr.puts "Indexing #{blue(files.size.to_s)} files..."
         files.each do |file|
           content = File.read(file)
-          content = ERB.new(content).src if file.end_with?(".erb")
+          content = Spoom::Deadcode::ERB.new(content).src if file.end_with?(".erb")
 
           tree = Spoom.parse_ruby(content, file: file)
           Spoom::Deadcode.index_node(index, tree, content, file: file, plugins: plugins)
