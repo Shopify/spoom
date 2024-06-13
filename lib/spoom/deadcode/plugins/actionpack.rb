@@ -27,9 +27,12 @@ module Spoom
 
         ignore_classes_named(/Controller$/)
 
-        sig { override.params(indexer: Indexer, definition: Definition).void }
-        def on_define_method(indexer, definition)
-          definition.ignored! if ignored_class_name?(indexer.nesting_class_name)
+        sig { override.params(symbol: Model::Method, definition: Definition).void }
+        def on_define_method(symbol, definition)
+          owner = symbol.owner
+          return unless owner.is_a?(Model::Class)
+
+          definition.ignored! if ignored_class_name?(owner.name)
         end
 
         sig { override.params(indexer: Indexer, send: Send).void }
