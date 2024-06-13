@@ -135,7 +135,18 @@ module Spoom
 
     class Module < Namespace; end
 
-    class Constant < SymbolDef; end
+    class Constant < SymbolDef
+      sig { returns(String) }
+      attr_reader :value
+
+      sig { params(symbol: Symbol, owner: T.nilable(Namespace), location: Location, value: String).void }
+      def initialize(symbol, owner:, location:, value:)
+        super(symbol, owner: owner, location: location)
+
+        @value = value
+      end
+    end
+
     class Property < SymbolDef
       abstract!
 

@@ -74,6 +74,7 @@ module Spoom
           @model.register_symbol(full_name),
           owner: @namespace_nesting.last,
           location: node_location(node),
+          value: node.value.slice,
         )
 
         super
@@ -87,6 +88,7 @@ module Spoom
           @model.register_symbol([*names_nesting, node.name.to_s].join("::")),
           owner: @namespace_nesting.last,
           location: node_location(node),
+          value: node.value.slice,
         )
 
         super
@@ -103,6 +105,7 @@ module Spoom
               @model.register_symbol([*names_nesting, const.slice].join("::")),
               owner: @namespace_nesting.last,
               location: node_location(const),
+              value: node.value.slice,
             )
           end
         end
