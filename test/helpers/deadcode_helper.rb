@@ -30,7 +30,7 @@ module Spoom
             Model::Builder.new(model, file).visit(ast)
           end
 
-          index = Deadcode::Index.new(model)
+          index = Deadcode::Index.new(model, plugins: plugins)
 
           files.each do |file|
             content = project.read(file)

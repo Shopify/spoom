@@ -92,7 +92,7 @@ module Spoom
           next
         end
 
-        index = Spoom::Deadcode::Index.new(model)
+        index = Spoom::Deadcode::Index.new(model, plugins: plugins)
 
         $stderr.puts "Indexing #{blue(files.size.to_s)} files..."
         files.each do |file|

@@ -15,9 +15,10 @@ module Spoom
       sig { returns(T::Hash[String, T::Array[Reference]]) }
       attr_reader :references
 
-      sig { params(model: Model).void }
-      def initialize(model)
+      sig { params(model: Model, plugins: T::Array[Plugins::Base]).void }
+      def initialize(model, plugins: [])
         @model = model
+        @plugins = T.let(plugins, T::Array[Plugins::Base])
         @definitions = T.let({}, T::Hash[String, T::Array[Definition]])
         @references = T.let({}, T::Hash[String, T::Array[Reference]])
       end
