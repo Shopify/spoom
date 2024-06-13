@@ -107,6 +107,8 @@ module Spoom
       end
     end
 
+    class SingletonClass < Namespace; end
+
     class Class < Namespace
       sig { returns(T.nilable(String)) }
       attr_accessor :superclass_name

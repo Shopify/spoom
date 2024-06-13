@@ -29,6 +29,17 @@ module Spoom
         @namespace_nesting.pop
       end
 
+      sig { override.params(node: Prism::SingletonClassNode).void }
+      def visit_singleton_class_node(node)
+        @namespace_nesting << SingletonClass.new(
+          @model.register_symbol(names_nesting.join("::")),
+          owner: @namespace_nesting.last,
+          location: node_location(node),
+        )
+        super
+        @namespace_nesting.pop
+      end
+
       # Modules
 
       sig { override.params(node: Prism::ModuleNode).void }
