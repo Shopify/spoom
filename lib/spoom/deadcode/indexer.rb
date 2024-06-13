@@ -20,21 +20,9 @@ module Spoom
         @source = source
         @index = index
         @plugins = plugins
-        @previous_node = T.let(nil, T.nilable(Prism::Node))
-        @nodes_nesting = T.let([], T::Array[Prism::Node])
       end
 
       # Visit
-
-      sig { override.params(node: T.nilable(Prism::Node)).void }
-      def visit(node)
-        return unless node
-
-        @nodes_nesting << node
-        super
-        @nodes_nesting.pop
-        @previous_node = node
-      end
 
       sig { override.params(node: Prism::AliasMethodNode).void }
       def visit_alias_method_node(node)
@@ -219,63 +207,7 @@ module Spoom
         @index.reference(Reference.new(name: name, kind: Reference::Kind::Method, location: node_location(node)))
       end
 
-      # Context
-
-      sig { returns(Prism::Node) }
-      def current_node
-        T.must(@nodes_nesting.last)
-      end
-
-      sig { type_parameters(:N).params(type: T::Class[T.type_parameter(:N)]).returns(T.nilable(T.type_parameter(:N))) }
-      def nesting_node(type)
-        @nodes_nesting.reverse_each do |node|
-          return T.unsafe(node) if node.is_a?(type)
-        end
-
-        nil
-      end
-
-      sig { returns(T.nilable(Prism::ClassNode)) }
-      def nesting_class
-        nesting_node(Prism::ClassNode)
-      end
-
-      sig { returns(T.nilable(Prism::BlockNode)) }
-      def nesting_block
-        nesting_node(Prism::BlockNode)
-      end
-
-      sig { returns(T.nilable(Prism::CallNode)) }
-      def nesting_call
-        nesting_node(Prism::CallNode)
-      end
-
-      sig { returns(T.nilable(String)) }
-      def nesting_class_name
-        nesting_class = self.nesting_class
-        return unless nesting_class
-
-        nesting_class.name.to_s
-      end
-
-      sig { returns(T.nilable(String)) }
-      def nesting_class_superclass_name
-        nesting_class_superclass = nesting_class&.superclass
-        return unless nesting_class_superclass
-
-        nesting_class_superclass.slice.delete_prefix("::")
-      end
-
-      sig { returns(T.nilable(String)) }
-      def last_sig
-        previous_call = @previous_node
-        return unless previous_call.is_a?(Prism::CallNode)
-        return unless previous_call.name == :sig
-
-        previous_call.slice
-      end
-
-      # Node utils
+      private
 
       sig { params(node: Prism::Node).returns(Location) }
       def node_location(node)
