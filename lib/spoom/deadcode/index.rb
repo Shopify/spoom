@@ -6,14 +6,18 @@ module Spoom
     class Index
       extend T::Sig
 
+      sig { returns(Model) }
+      attr_reader :model
+
       sig { returns(T::Hash[String, T::Array[Definition]]) }
       attr_reader :definitions
 
       sig { returns(T::Hash[String, T::Array[Reference]]) }
       attr_reader :references
 
-      sig { void }
-      def initialize
+      sig { params(model: Model).void }
+      def initialize(model)
+        @model = model
         @definitions = T.let({}, T::Hash[String, T::Array[Definition]])
         @references = T.let({}, T::Hash[String, T::Array[Reference]])
       end

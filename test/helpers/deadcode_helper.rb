@@ -21,7 +21,16 @@ module Spoom
             allow_mime_types: ["text/x-ruby", "text/x-ruby-script"],
           )
 
-          index = Deadcode::Index.new
+          model = Model.new
+          files.each do |file|
+            next if file.end_with?(".erb")
+
+            content = project.read(file)
+            ast = Spoom.parse_ruby(content, file: file)
+            Model::Builder.new(model, file).visit(ast)
+          end
+
+          index = Deadcode::Index.new(model)
 
           files.each do |file|
             content = project.read(file)

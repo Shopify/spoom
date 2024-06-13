@@ -95,9 +95,9 @@ module Spoom
         @project.write!("foo.rb", <<~RB)
           C1.new
 
-          class X < ::C2; end
-          class X < C3; end
-          class X < C4::C5; end
+          class X1 < ::C2; end
+          class X2 < C3; end
+          class X3 < C4::C5; end
         RB
 
         assert_equal(

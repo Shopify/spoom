@@ -58,7 +58,7 @@ module Spoom
               end
             end
 
-            module Foo
+            module Bar
               class OtherEnum < ::T::Enum
                 enums do
                   IGNORED3 = new
