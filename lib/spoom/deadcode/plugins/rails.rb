@@ -11,19 +11,19 @@ module Spoom
 
         sig { override.params(symbol: Model::Class, definition: Definition).void }
         def on_define_class(symbol, definition)
-          definition.ignored! if definition.location.file.match?(%r{app/helpers/.*\.rb$})
+          definition.ignored! if file_is_helper?(definition)
         end
 
-        sig { override.params(indexer: Indexer, definition: Definition).void }
-        def on_define_module(indexer, definition)
-          definition.ignored! if file_is_helper?(indexer)
+        sig { override.params(symbol: Model::Module, definition: Definition).void }
+        def on_define_module(symbol, definition)
+          definition.ignored! if file_is_helper?(definition)
         end
 
         private
 
-        sig { params(indexer: Indexer).returns(T::Boolean) }
-        def file_is_helper?(indexer)
-          indexer.path.match?(%r{app/helpers/.*\.rb$})
+        sig { params(definition: Definition).returns(T::Boolean) }
+        def file_is_helper?(definition)
+          definition.location.file.match?(%r{app/helpers/.*\.rb$})
         end
       end
     end

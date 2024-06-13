@@ -82,8 +82,8 @@ module Spoom
 
         def test_on_define_module
           plugin = Class.new(Base) do
-            def on_define_module(indexer, definition)
-              definition.ignored! if definition.name == "Module1"
+            def on_define_module(symbol, definition)
+              definition.ignored! if symbol.name == "Module1"
             end
           end
 

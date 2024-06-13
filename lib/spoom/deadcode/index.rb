@@ -53,6 +53,17 @@ module Spoom
               define(definition)
               @plugins.each { |plugin| plugin.internal_on_define_class(symbol, definition) }
             end
+          when Model::Module
+            symbol.locs.each do |loc|
+              definition = Definition.new(
+                kind: Definition::Kind::Module,
+                name: symbol.name,
+                full_name: symbol.full_name,
+                location: loc,
+              )
+              define(definition)
+              @plugins.each { |plugin| plugin.internal_on_define_module(symbol, definition) }
+            end
           end
         end
         @references.keys.each do |name|

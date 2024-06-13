@@ -12,9 +12,9 @@ module Spoom
           # TODO: definition.ignored! if used_as_namespace?(indexer)
         end
 
-        sig { override.params(indexer: Indexer, definition: Definition).void }
-        def on_define_module(indexer, definition)
-          definition.ignored! if used_as_namespace?(indexer)
+        sig { override.params(symbol: Model::Module, definition: Definition).void }
+        def on_define_module(symbol, definition)
+          # TODO: definition.ignored! if used_as_namespace?(indexer)
         end
 
         private
