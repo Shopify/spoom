@@ -172,14 +172,6 @@ module Spoom
         visit(node.value)
       end
 
-      sig { override.params(node: Prism::DefNode).void }
-      def visit_def_node(node)
-        name = node.name.to_s
-        define_method(name, [*@names_nesting, name].join("::"), node)
-
-        super
-      end
-
       sig { override.params(node: Prism::LocalVariableAndWriteNode).void }
       def visit_local_variable_and_write_node(node)
         name = node.name.to_s
@@ -324,18 +316,6 @@ module Spoom
         )
         @index.define(definition)
         @plugins.each { |plugin| plugin.internal_on_define_accessor(self, definition) }
-      end
-
-      sig { params(name: String, full_name: String, node: Prism::Node).void }
-      def define_method(name, full_name, node)
-        definition = Definition.new(
-          kind: Definition::Kind::Method,
-          name: name,
-          full_name: full_name,
-          location: node_location(node),
-        )
-        @index.define(definition)
-        @plugins.each { |plugin| plugin.internal_on_define_method(self, definition) }
       end
 
       # Reference indexing

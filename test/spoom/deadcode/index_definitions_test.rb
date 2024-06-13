@@ -90,16 +90,16 @@ module Spoom
         @project.write!("foo.rb", <<~RB)
           def m1; end
           def self.m2; end
-          def NOT_INDEXED::m3; end
-          def not_indexed::m4; end
-          def not_indexed.m5; end
+          def NOT_INDEXED::not_indexed; end
+          def not_indexed::not_indexed; end
+          def not_indexed.not_indexed; end
 
-          def m6(); end
-          def m7(x, y, z); end
+          def m3(); end
+          def m4(x, y, z); end
 
-          def m8 = 42
+          def m5 = 42
 
-          def m9=(x); end
+          def m6=(x); end
 
           def `; end
           def !; end
@@ -108,7 +108,7 @@ module Spoom
         RB
 
         assert_equal(
-          ["m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9=", "`", "!", "<=>", "CONST"],
+          ["m1", "m2", "m3", "m4", "m5", "m6=", "`", "!", "<=>", "CONST"],
           deadcode_index.all_definitions.select(&:method?).map(&:name),
         )
       end
