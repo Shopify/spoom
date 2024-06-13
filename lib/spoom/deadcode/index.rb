@@ -78,6 +78,42 @@ module Spoom
               )
               define(definition)
               plugins.each { |plugin| plugin.internal_on_define_method(symbol_def, definition) }
+            when Model::AttrAccessor
+              definition = Definition.new(
+                kind: Definition::Kind::AttrReader,
+                name: symbol.name,
+                full_name: symbol.full_name,
+                location: symbol_def.location,
+              )
+              define(definition)
+              plugins.each { |plugin| plugin.internal_on_define_accessor(symbol_def, definition) }
+
+              definition = Definition.new(
+                kind: Definition::Kind::AttrWriter,
+                name: "#{symbol.name}=",
+                full_name: "#{symbol.full_name}=",
+                location: symbol_def.location,
+              )
+              define(definition)
+              plugins.each { |plugin| plugin.internal_on_define_accessor(symbol_def, definition) }
+            when Model::AttrReader
+              definition = Definition.new(
+                kind: Definition::Kind::AttrReader,
+                name: symbol.name,
+                full_name: symbol.full_name,
+                location: symbol_def.location,
+              )
+              define(definition)
+              plugins.each { |plugin| plugin.internal_on_define_accessor(symbol_def, definition) }
+            when Model::AttrWriter
+              definition = Definition.new(
+                kind: Definition::Kind::AttrWriter,
+                name: "#{symbol.name}=",
+                full_name: "#{symbol.full_name}=",
+                location: symbol_def.location,
+              )
+              define(definition)
+              plugins.each { |plugin| plugin.internal_on_define_accessor(symbol_def, definition) }
             end
           end
         end
