@@ -41,92 +41,80 @@ module Spoom
       sig { void }
       def finalize!
         @model.symbols.each do |_full_name, symbol|
-          case symbol
-          when Model::Class
-            symbol.locs.each do |loc|
+          symbol.definitions.each do |symbol_def|
+            case symbol_def
+            when Model::Class
               definition = Definition.new(
                 kind: Definition::Kind::Class,
                 name: symbol.name,
                 full_name: symbol.full_name,
-                location: loc,
+                location: symbol_def.location,
               )
               define(definition)
-              @plugins.each { |plugin| plugin.internal_on_define_class(symbol, definition) }
-            end
-          when Model::Module
-            symbol.locs.each do |loc|
+              @plugins.each { |plugin| plugin.internal_on_define_class(symbol_def, definition) }
+            when Model::Module
               definition = Definition.new(
                 kind: Definition::Kind::Module,
                 name: symbol.name,
                 full_name: symbol.full_name,
-                location: loc,
+                location: symbol_def.location,
               )
               define(definition)
-              @plugins.each { |plugin| plugin.internal_on_define_module(symbol, definition) }
-            end
-          when Model::Constant
-            symbol.locs.each do |loc|
+              @plugins.each { |plugin| plugin.internal_on_define_module(symbol_def, definition) }
+            when Model::Constant
               definition = Definition.new(
                 kind: Definition::Kind::Constant,
                 name: symbol.name,
                 full_name: symbol.full_name,
-                location: loc,
+                location: symbol_def.location,
               )
               define(definition)
-              @plugins.each { |plugin| plugin.internal_on_define_constant(symbol, definition) }
-            end
-          when Model::Method
-            symbol.locs.each do |loc|
+              @plugins.each { |plugin| plugin.internal_on_define_constant(symbol_def, definition) }
+            when Model::Method
               definition = Definition.new(
                 kind: Definition::Kind::Method,
                 name: symbol.name,
                 full_name: symbol.full_name,
-                location: loc,
+                location: symbol_def.location,
               )
               define(definition)
-              @plugins.each { |plugin| plugin.internal_on_define_method(symbol, definition) }
-            end
-          when Model::AttrAccessor
-            symbol.locs.each do |loc|
+              @plugins.each { |plugin| plugin.internal_on_define_method(symbol_def, definition) }
+            when Model::AttrAccessor
               definition = Definition.new(
                 kind: Definition::Kind::AttrReader,
                 name: symbol.name,
                 full_name: symbol.full_name,
-                location: loc,
+                location: symbol_def.location,
               )
               define(definition)
-              @plugins.each { |plugin| plugin.internal_on_define_accessor(symbol, definition) }
+              @plugins.each { |plugin| plugin.internal_on_define_accessor(symbol_def, definition) }
 
               definition = Definition.new(
                 kind: Definition::Kind::AttrWriter,
                 name: "#{symbol.name}=",
                 full_name: "#{symbol.full_name}=",
-                location: loc,
+                location: symbol_def.location,
               )
               define(definition)
-              @plugins.each { |plugin| plugin.internal_on_define_accessor(symbol, definition) }
-            end
-          when Model::AttrReader
-            symbol.locs.each do |loc|
+              @plugins.each { |plugin| plugin.internal_on_define_accessor(symbol_def, definition) }
+            when Model::AttrReader
               definition = Definition.new(
                 kind: Definition::Kind::AttrReader,
                 name: symbol.name,
                 full_name: symbol.full_name,
-                location: loc,
+                location: symbol_def.location,
               )
               define(definition)
-              @plugins.each { |plugin| plugin.internal_on_define_accessor(symbol, definition) }
-            end
-          when Model::AttrWriter
-            symbol.locs.each do |loc|
+              @plugins.each { |plugin| plugin.internal_on_define_accessor(symbol_def, definition) }
+            when Model::AttrWriter
               definition = Definition.new(
                 kind: Definition::Kind::AttrWriter,
                 name: symbol.name,
                 full_name: symbol.full_name,
-                location: loc,
+                location: symbol_def.location,
               )
               define(definition)
-              @plugins.each { |plugin| plugin.internal_on_define_accessor(symbol, definition) }
+              @plugins.each { |plugin| plugin.internal_on_define_accessor(symbol_def, definition) }
             end
           end
         end

@@ -7,13 +7,13 @@ module Spoom
       class Sorbet < Base
         extend T::Sig
 
-        sig { override.params(symbol: Model::Constant, definition: Definition).void }
-        def on_define_constant(symbol, definition)
+        sig { override.params(symbol_def: Model::Constant, definition: Definition).void }
+        def on_define_constant(symbol_def, definition)
           # TODO: definition.ignored! if sorbet_type_member?(indexer, definition) || sorbet_enum_constant?(indexer, definition)
         end
 
-        sig { override.params(symbol: Model::Method, definition: Definition).void }
-        def on_define_method(symbol, definition)
+        sig { override.params(symbol_def: Model::Method, definition: Definition).void }
+        def on_define_method(symbol_def, definition)
           # TODO: sigs
           # definition.ignored! if indexer.last_sig =~ /(override|overridable)/
         end

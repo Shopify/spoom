@@ -12,106 +12,95 @@ module Spoom
 
         @model = model
         @file = file
+        @namespace_nesting = T.let([], T::Array[Namespace])
       end
 
       # Classes
 
       sig { override.params(node: Prism::ClassNode).void }
       def visit_class_node(node)
-        full_name = names_nesting.join("::")
-
-        symbol = @model.symbols[full_name]
-        raise Error, "#{full_name} previously defined as a #{symbol.class}" if symbol && !symbol.is_a?(Class)
-
-        unless symbol
-          symbol = @model.symbols[full_name] = Class.new(full_name)
-        end
-
-        symbol.locs << node_location(node)
-
-        superclass_name = node.superclass&.slice
-        if superclass_name
-          other_superclass = symbol.superclass_name
-          if other_superclass && other_superclass.delete_prefix("::") != superclass_name.delete_prefix("::")
-            raise Error, "superclass redefined from #{symbol.superclass_name} to #{superclass_name}\n"
-            #\
-            #  "  previously defined as #{other_superclass} at #{symbol.location}\n" \
-            #  "  redefined as #{superclass_name} at #{node_location(node)}"
-          end
-
-          symbol.superclass_name = superclass_name
-        end
-
-        # @model.register_class_def(names_nesting.join("::"), node_location(node))
-
+        @namespace_nesting << Class.new(
+          @model.register_symbol(names_nesting.join("::")),
+          owner: @namespace_nesting.last,
+          location: node_location(node),
+          superclass_name: node.superclass&.slice,
+        )
         super
+        @namespace_nesting.pop
       end
 
       # Modules
 
       sig { override.params(node: Prism::ModuleNode).void }
       def visit_module_node(node)
-        full_name = names_nesting.join("::")
-
-        symbol = @model.symbols[full_name]
-        raise Error, "#{full_name} previously defined as a #{symbol.class}" if symbol && !symbol.is_a?(Module)
-
-        unless symbol
-          symbol = @model.symbols[full_name] = Module.new(full_name)
-        end
-
-        symbol.locs << node_location(node)
-
-        # @model.register_module_def(names_nesting.join("::"), node_location(node))
-
+        @namespace_nesting << Module.new(
+          @model.register_symbol(names_nesting.join("::")),
+          owner: @namespace_nesting.last,
+          location: node_location(node),
+        )
         super
+        @namespace_nesting.pop
       end
 
       # Constants
 
-      # sig { override.params(node: Prism::ConstantPathWriteNode).void }
-      # def visit_constant_path_write_node(node)
-      #   location = node_location(node)
-      #   name = node.target.slice
+      sig { override.params(node: Prism::ConstantPathWriteNode).void }
+      def visit_constant_path_write_node(node)
+        name = node.target.slice
+        full_name = if name.start_with?("::")
+          name.delete_prefix("::")
+        else
+          [*names_nesting, name].join("::")
+        end
 
-      #   if name.start_with?("::")
-      #     name = name.delete_prefix("::")
+        Constant.new(
+          @model.register_symbol(full_name),
+          owner: @namespace_nesting.last,
+          location: node_location(node),
+        )
 
-      #     @model.register_constant_def(name, location)
-      #   else
-      #     @model.register_constant_def(namespace_with(name), location)
-      #   end
+        super
+      end
 
-      #   super
-      # end
+      sig { override.params(node: Prism::ConstantWriteNode).void }
+      def visit_constant_write_node(node)
+        Constant.new(
+          @model.register_symbol([*names_nesting, node.name.to_s].join("::")),
+          owner: @namespace_nesting.last,
+          location: node_location(node),
+        )
 
-      # sig { override.params(node: Prism::ConstantWriteNode).void }
-      # def visit_constant_write_node(node)
-      #   @model.register_constant_def(namespace_with(node.name.to_s), node_location(node))
+        super
+      end
 
-      #   super
-      # end
+      sig { override.params(node: Prism::MultiWriteNode).void }
+      def visit_multi_write_node(node)
+        node.lefts.each do |const|
+          case const
+          when Prism::ConstantTargetNode, Prism::ConstantPathTargetNode
+            Constant.new(
+              @model.register_symbol([*names_nesting, const.slice].join("::")),
+              owner: @namespace_nesting.last,
+              location: node_location(const),
+            )
+          end
+        end
 
-      # sig { override.params(node: Prism::MultiWriteNode).void }
-      # def visit_multi_write_node(node)
-      #   node.lefts.each do |const|
-      #     case const
-      #     when Prism::ConstantTargetNode, Prism::ConstantPathTargetNode
-      #       @model.register_constant_def(namespace_with(const.slice), node_location(const))
-      #     end
-      #   end
-
-      #   super
-      # end
+        super
+      end
 
       # Methods
 
-      # sig { override.params(node: Prism::DefNode).void }
-      # def visit_def_node(node)
-      #   @model.register_method_def(namespace_with(node.name.to_s), node_location(node))
+      sig { override.params(node: Prism::DefNode).void }
+      def visit_def_node(node)
+        Method.new(
+          @model.register_symbol([*names_nesting, node.name.to_s].join("::")),
+          owner: @namespace_nesting.last,
+          location: node_location(node),
+        )
 
-      #   super
-      # end
+        super
+      end
 
       # Accessors
 
@@ -120,6 +109,36 @@ module Spoom
         return if node.receiver
 
         case node.name
+        when :attr_accessor
+          node.arguments&.arguments&.each do |arg|
+            next unless arg.is_a?(Prism::SymbolNode)
+
+            AttrAccessor.new(
+              @model.register_symbol([*names_nesting, arg.slice.delete_prefix(":")].join("::")),
+              owner: @namespace_nesting.last,
+              location: node_location(arg),
+            )
+          end
+        when :attr_reader
+          node.arguments&.arguments&.each do |arg|
+            next unless arg.is_a?(Prism::SymbolNode)
+
+            AttrReader.new(
+              @model.register_symbol([*names_nesting, arg.slice.delete_prefix(":")].join("::")),
+              owner: @namespace_nesting.last,
+              location: node_location(arg),
+            )
+          end
+        when :attr_writer
+          node.arguments&.arguments&.each do |arg|
+            next unless arg.is_a?(Prism::SymbolNode)
+
+            AttrWriter.new(
+              @model.register_symbol([*names_nesting, "#{arg.slice.delete_prefix(":")}="].join("::")),
+              owner: @namespace_nesting.last,
+              location: node_location(arg),
+            )
+          end
         when :include, :extend, :prepend
           args = node.arguments&.arguments
           kind = Mixin::Kind.deserialize(node.name.to_s)
@@ -127,30 +146,17 @@ module Spoom
           args&.each do |arg|
             next unless arg.is_a?(Prism::ConstantReadNode) || arg.is_a?(Prism::ConstantPathNode)
 
-            current_namespace = @model.symbols[names_nesting.join("::")]
-            next unless current_namespace.is_a?(Namespace)
+            current_namespace = @namespace_nesting.last
+            next unless current_namespace
 
             current_namespace.mixins << Mixin.new(kind, arg.slice)
           end
-        # when :attr_reader, :attr_writer, :attr_accessor
-        #   args = node.arguments&.arguments || []
-
-        #   args.each do |arg|
-        #     next unless arg.is_a?(Prism::SymbolNode)
-
-        #     @model.register_accessor_def(namespace_with(arg.unescaped), node_location(arg))
-          # end
         end
 
         super
       end
 
-      # private
-
-      # sig { params(name: String).returns(String) }
-      # def namespace_with(name)
-      #   [*names_nesting, name].join("::")
-      # end
+      private
 
       sig { params(node: Prism::Node).returns(Location) }
       def node_location(node)

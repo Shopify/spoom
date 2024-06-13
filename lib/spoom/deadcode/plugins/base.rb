@@ -135,20 +135,20 @@ module Spoom
         #
         # ~~~rb
         # class MyPlugin < Spoom::Deadcode::Plugins::Base
-        #   def on_define_accessor(indexer, definition)
-        #     definition.ignored! if definition.name == "foo"
+        #   def on_define_accessor(symbol_def, definition)
+        #     definition.ignored! if symbol_def.name == "foo"
         #   end
         # end
         # ~~~
-        sig { params(symbol: Model::Attr, definition: Definition).void }
-        def on_define_accessor(symbol, definition)
+        sig { params(symbol_def: Model::Attr, definition: Definition).void }
+        def on_define_accessor(symbol_def, definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_accessor` instead.
-        sig { params(symbol: Model::Attr, definition: Definition).void }
-        def internal_on_define_accessor(symbol, definition)
-          on_define_accessor(symbol, definition)
+        sig { params(symbol_def: Model::Attr, definition: Definition).void }
+        def internal_on_define_accessor(symbol_def, definition)
+          on_define_accessor(symbol_def, definition)
         end
 
         # Called when a class is defined.
@@ -159,26 +159,26 @@ module Spoom
         #
         # ~~~rb
         # class MyPlugin < Spoom::Deadcode::Plugins::Base
-        #   def on_define_class(symbol, definition)
-        #     definition.ignored! if symbol.name == "Foo"
+        #   def on_define_class(symbol_def, definition)
+        #     definition.ignored! if symbol_def.name == "Foo"
         #   end
         # end
         # ~~~
-        sig { params(symbol: Model::Class, definition: Definition).void }
-        def on_define_class(symbol, definition)
+        sig { params(symbol_def: Model::Class, definition: Definition).void }
+        def on_define_class(symbol_def, definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_class` instead.
-        sig { params(symbol: Model::Class, definition: Definition).void }
-        def internal_on_define_class(symbol, definition)
-          if ignored_class_name?(symbol.name)
+        sig { params(symbol_def: Model::Class, definition: Definition).void }
+        def internal_on_define_class(symbol_def, definition)
+          if ignored_class_name?(symbol_def.name)
             definition.ignored!
-          elsif ignored_subclass?(symbol.superclass_name&.delete_prefix("::"))
+          elsif ignored_subclass?(symbol_def.superclass_name&.delete_prefix("::"))
             definition.ignored!
           end
 
-          on_define_class(symbol, definition)
+          on_define_class(symbol_def, definition)
         end
 
         # Called when a constant is defined.
@@ -189,22 +189,22 @@ module Spoom
         #
         # ~~~rb
         # class MyPlugin < Spoom::Deadcode::Plugins::Base
-        #   def on_define_constant(indexer, definition)
-        #     definition.ignored! if definition.name == "FOO"
+        #   def on_define_constant(symbol_def, definition)
+        #     definition.ignored! if symbol_def.name == "FOO"
         #   end
         # end
         # ~~~
-        sig { params(symbol: Model::Constant, definition: Definition).void }
-        def on_define_constant(symbol, definition)
+        sig { params(symbol_def: Model::Constant, definition: Definition).void }
+        def on_define_constant(symbol_def, definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_constant` instead.
-        sig { params(symbol: Model::Constant, definition: Definition).void }
-        def internal_on_define_constant(symbol, definition)
-          definition.ignored! if ignored_constant_name?(symbol.name)
+        sig { params(symbol_def: Model::Constant, definition: Definition).void }
+        def internal_on_define_constant(symbol_def, definition)
+          definition.ignored! if ignored_constant_name?(symbol_def.name)
 
-          on_define_constant(symbol, definition)
+          on_define_constant(symbol_def, definition)
         end
 
         # Called when a method is defined.
@@ -215,22 +215,22 @@ module Spoom
         #
         # ~~~rb
         # class MyPlugin < Spoom::Deadcode::Plugins::Base
-        #   def on_define_method(indexer, symbol)
-        #     definition.ignored! if symbol.name == "foo"
+        #   def on_define_method(symbol_def, symbol)
+        #     definition.ignored! if symbol_def.name == "foo"
         #   end
         # end
         # ~~~
-        sig { params(symbol: Model::Method, definition: Definition).void }
-        def on_define_method(symbol, definition)
+        sig { params(symbol_def: Model::Method, definition: Definition).void }
+        def on_define_method(symbol_def, definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_method` instead.
-        sig { params(symbol: Model::Method, definition: Definition).void }
-        def internal_on_define_method(symbol, definition)
-          definition.ignored! if ignored_method_name?(symbol.name)
+        sig { params(symbol_def: Model::Method, definition: Definition).void }
+        def internal_on_define_method(symbol_def, definition)
+          definition.ignored! if ignored_method_name?(symbol_def.name)
 
-          on_define_method(symbol, definition)
+          on_define_method(symbol_def, definition)
         end
 
         # Called when a module is defined.
@@ -241,22 +241,22 @@ module Spoom
         #
         # ~~~rb
         # class MyPlugin < Spoom::Deadcode::Plugins::Base
-        #   def on_define_module(symbol, definition)
-        #     definition.ignored! if symbol.name == "Foo"
+        #   def on_define_module(symbol_def, definition)
+        #     definition.ignored! if symbol_def.name == "Foo"
         #   end
         # end
         # ~~~
-        sig { params(symbol: Model::Module, definition: Definition).void }
-        def on_define_module(symbol, definition)
+        sig { params(symbol_def: Model::Module, definition: Definition).void }
+        def on_define_module(symbol_def, definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_module` instead.
-        sig { params(symbol: Model::Module, definition: Definition).void }
-        def internal_on_define_module(symbol, definition)
-          definition.ignored! if ignored_module_name?(symbol.name)
+        sig { params(symbol_def: Model::Module, definition: Definition).void }
+        def internal_on_define_module(symbol_def, definition)
+          definition.ignored! if ignored_module_name?(symbol_def.name)
 
-          on_define_module(symbol, definition)
+          on_define_module(symbol_def, definition)
         end
 
         # Called when a send is being processed
