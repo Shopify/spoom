@@ -11,9 +11,6 @@ module Spoom
 
         sig { override.params(symbol_def: Model::Method, definition: Definition).void }
         def on_define_method(symbol_def, definition)
-          # TODO?
-          # return if indexer.nesting_block # method defined in `no_commands do ... end`, we don't want to ignore it
-
           owner = symbol_def.owner
           return unless owner.is_a?(Model::Class)
 
