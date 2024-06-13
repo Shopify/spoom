@@ -136,9 +136,23 @@ module Spoom
     class Module < Namespace; end
 
     class Constant < SymbolDef; end
-    class Method < SymbolDef; end
+    class Property < SymbolDef
+      abstract!
 
-    class Attr < SymbolDef
+      sig { returns(T::Array[Sig]) }
+      attr_reader :sigs
+
+      sig { params(symbol: Symbol, owner: T.nilable(Namespace), location: Location, sigs: T::Array[Sig]).void }
+      def initialize(symbol, owner:, location:, sigs: [])
+        super(symbol, owner: owner, location: location)
+
+        @sigs = sigs
+      end
+    end
+
+    class Method < Property; end
+
+    class Attr < Property
       abstract!
     end
 
@@ -167,6 +181,19 @@ module Spoom
       def initialize(kind, name)
         @kind = kind
         @name = name
+      end
+    end
+
+    class Sig
+      extend T::Sig
+
+      # TODO: do something smarter here
+      sig { returns(String) }
+      attr_reader :string
+
+      sig { params(string: String).void }
+      def initialize(string)
+        @string = string
       end
     end
 

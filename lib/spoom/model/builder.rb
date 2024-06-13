@@ -13,6 +13,7 @@ module Spoom
         @model = model
         @file = file
         @namespace_nesting = T.let([], T::Array[Namespace])
+        @last_sigs = T.let([], T::Array[Sig])
       end
 
       # Classes
@@ -27,6 +28,7 @@ module Spoom
         )
         super
         @namespace_nesting.pop
+        @last_sigs.clear
       end
 
       sig { override.params(node: Prism::SingletonClassNode).void }
@@ -38,6 +40,7 @@ module Spoom
         )
         super
         @namespace_nesting.pop
+        @last_sigs.clear
       end
 
       # Modules
@@ -51,12 +54,15 @@ module Spoom
         )
         super
         @namespace_nesting.pop
+        @last_sigs.clear
       end
 
       # Constants
 
       sig { override.params(node: Prism::ConstantPathWriteNode).void }
       def visit_constant_path_write_node(node)
+        @last_sigs.clear
+
         name = node.target.slice
         full_name = if name.start_with?("::")
           name.delete_prefix("::")
@@ -75,6 +81,8 @@ module Spoom
 
       sig { override.params(node: Prism::ConstantWriteNode).void }
       def visit_constant_write_node(node)
+        @last_sigs.clear
+
         Constant.new(
           @model.register_symbol([*names_nesting, node.name.to_s].join("::")),
           owner: @namespace_nesting.last,
@@ -86,6 +94,8 @@ module Spoom
 
       sig { override.params(node: Prism::MultiWriteNode).void }
       def visit_multi_write_node(node)
+        @last_sigs.clear
+
         node.lefts.each do |const|
           case const
           when Prism::ConstantTargetNode, Prism::ConstantPathTargetNode
@@ -108,6 +118,7 @@ module Spoom
           @model.register_symbol([*names_nesting, node.name.to_s].join("::")),
           owner: @namespace_nesting.last,
           location: node_location(node),
+          sigs: collect_sigs,
         )
 
         super
@@ -128,6 +139,7 @@ module Spoom
               @model.register_symbol([*names_nesting, arg.slice.delete_prefix(":")].join("::")),
               owner: @namespace_nesting.last,
               location: node_location(arg),
+              sigs: collect_sigs,
             )
           end
         when :attr_reader
@@ -138,6 +150,7 @@ module Spoom
               @model.register_symbol([*names_nesting, arg.slice.delete_prefix(":")].join("::")),
               owner: @namespace_nesting.last,
               location: node_location(arg),
+              sigs: collect_sigs,
             )
           end
         when :attr_writer
@@ -148,6 +161,7 @@ module Spoom
               @model.register_symbol([*names_nesting, "#{arg.slice.delete_prefix(":")}="].join("::")),
               owner: @namespace_nesting.last,
               location: node_location(arg),
+              sigs: collect_sigs,
             )
           end
         when :include, :extend, :prepend
@@ -162,12 +176,22 @@ module Spoom
 
             current_namespace.mixins << Mixin.new(kind, arg.slice)
           end
+        when :sig
+          @last_sigs << Sig.new(node.slice)
+        else
+          @last_sigs.clear
+          super
         end
-
-        super
       end
 
       private
+
+      sig { returns(T::Array[Sig]) }
+      def collect_sigs
+        sigs = @last_sigs
+        @last_sigs = []
+        sigs
+      end
 
       sig { params(node: Prism::Node).returns(Location) }
       def node_location(node)

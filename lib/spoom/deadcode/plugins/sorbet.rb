@@ -14,8 +14,7 @@ module Spoom
 
         sig { override.params(symbol_def: Model::Method, definition: Definition).void }
         def on_define_method(symbol_def, definition)
-          # TODO: sigs
-          # definition.ignored! if indexer.last_sig =~ /(override|overridable)/
+          definition.ignored! if symbol_def.sigs.any? { |sig| sig.string =~ /(override|overridable)/ }
         end
 
         private
