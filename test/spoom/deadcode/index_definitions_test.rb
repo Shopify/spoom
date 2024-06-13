@@ -14,7 +14,7 @@ module Spoom
           def foo(
         RB
 
-        exception = assert_raises(ParserError) do
+        exception = assert_raises(ParseError) do
           deadcode_index
         end
 
