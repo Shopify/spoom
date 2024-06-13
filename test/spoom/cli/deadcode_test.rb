@@ -161,6 +161,24 @@ module Spoom
         assert(result.status)
       end
 
+      def test_deadcode_parse_erb
+        @project.write!("view.erb", <<~ERB)
+          <%= foo do %>
+          <% end %>
+        ERB
+
+        result = @project.spoom("deadcode --no-color")
+        assert_equal(<<~ERR, result.err)
+          Collecting files...
+          Indexing 1 files...
+          Analyzing 0 definitions against 5 references...
+
+          No dead code found!
+        ERR
+        assert_empty(result.out)
+        assert(result.status)
+      end
+
       def test_remove
         @project.write!("lib/foo.rb", <<~RUBY)
           def foo; end
