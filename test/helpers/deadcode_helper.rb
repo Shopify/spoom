@@ -21,7 +21,8 @@ module Spoom
             allow_mime_types: ["text/x-ruby", "text/x-ruby-script"],
           )
 
-          index = Deadcode::Index.new
+          model = Model.new
+          index = Deadcode::Index.new(model)
 
           files.each do |file|
             content = project.read(file)
@@ -32,7 +33,7 @@ module Spoom
             end
           end
 
-          index.finalize!
+          index.finalize!(plugins: plugins)
           index
         end
 

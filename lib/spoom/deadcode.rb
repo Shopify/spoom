@@ -58,6 +58,7 @@ module Spoom
       sig { params(index: Index, ruby: String, file: String, plugins: T::Array[Deadcode::Plugins::Base]).void }
       def index_ruby(index, ruby, file:, plugins: [])
         node = Spoom.parse_ruby(ruby, file: file)
+        Model::Builder.new(index.model, file).visit(node)
         index_node(index, node, ruby, file: file, plugins: plugins)
       end
 

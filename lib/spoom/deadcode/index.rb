@@ -6,14 +6,18 @@ module Spoom
     class Index
       extend T::Sig
 
+      sig { returns(Model) }
+      attr_reader :model
+
       sig { returns(T::Hash[String, T::Array[Definition]]) }
       attr_reader :definitions
 
       sig { returns(T::Hash[String, T::Array[Reference]]) }
       attr_reader :references
 
-      sig { void }
-      def initialize
+      sig { params(model: Model).void }
+      def initialize(model)
+        @model = model
         @definitions = T.let({}, T::Hash[String, T::Array[Definition]])
         @references = T.let({}, T::Hash[String, T::Array[Reference]])
       end
@@ -33,8 +37,8 @@ module Spoom
       # Mark all definitions having a reference of the same name as `alive`
       #
       # To be called once all the files have been indexed and all the definitions and references discovered.
-      sig { void }
-      def finalize!
+      sig { params(plugins: T::Array[Plugins::Base]).void }
+      def finalize!(plugins: [])
         @references.keys.each do |name|
           definitions_for_name(name).each(&:alive!)
         end
