@@ -194,17 +194,17 @@ module Spoom
         #   end
         # end
         # ~~~
-        sig { params(indexer: Indexer, definition: Definition).void }
-        def on_define_constant(indexer, definition)
+        sig { params(symbol: Model::Constant, definition: Definition).void }
+        def on_define_constant(symbol, definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_constant` instead.
-        sig { params(indexer: Indexer, definition: Definition).void }
-        def internal_on_define_constant(indexer, definition)
-          definition.ignored! if ignored_constant_name?(definition.name)
+        sig { params(symbol: Model::Constant, definition: Definition).void }
+        def internal_on_define_constant(symbol, definition)
+          definition.ignored! if ignored_constant_name?(symbol.name)
 
-          on_define_constant(indexer, definition)
+          on_define_constant(symbol, definition)
         end
 
         # Called when a method is defined.

@@ -14,9 +14,15 @@ module Spoom
           /^(::)?RuboCop::Cop::Base$/,
         )
 
-        sig { override.params(indexer: Indexer, definition: Definition).void }
-        def on_define_constant(indexer, definition)
-          definition.ignored! if rubocop_constant?(indexer, definition)
+        sig { override.params(symbol: Model::Constant, definition: Definition).void }
+        def on_define_constant(symbol, definition)
+          owner = symbol.owner
+          return false unless owner.is_a?(Model::Class)
+
+          superclass_name = owner.superclass_name
+          return false unless superclass_name
+
+          definition.ignored! if ignored_subclass?(superclass_name) && RUBOCOP_CONSTANTS.include?(symbol.name)
         end
 
         sig { override.params(symbol: Model::Method, definition: Definition).void }
@@ -30,13 +36,6 @@ module Spoom
           return unless superclass_name
 
           definition.ignored! if ignored_subclass?(superclass_name)
-        end
-
-        private
-
-        sig { params(indexer: Indexer, definition: Definition).returns(T::Boolean) }
-        def rubocop_constant?(indexer, definition)
-          ignored_subclass?(indexer.nesting_class_superclass_name) && RUBOCOP_CONSTANTS.include?(definition.name)
         end
       end
     end

@@ -7,9 +7,9 @@ module Spoom
       class Sorbet < Base
         extend T::Sig
 
-        sig { override.params(indexer: Indexer, definition: Definition).void }
-        def on_define_constant(indexer, definition)
-          definition.ignored! if sorbet_type_member?(indexer, definition) || sorbet_enum_constant?(indexer, definition)
+        sig { override.params(symbol: Model::Constant, definition: Definition).void }
+        def on_define_constant(symbol, definition)
+          # TODO: definition.ignored! if sorbet_type_member?(indexer, definition) || sorbet_enum_constant?(indexer, definition)
         end
 
         sig { override.params(symbol: Model::Method, definition: Definition).void }

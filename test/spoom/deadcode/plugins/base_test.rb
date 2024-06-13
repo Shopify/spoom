@@ -48,8 +48,8 @@ module Spoom
 
         def test_on_define_constant
           plugin = Class.new(Base) do
-            def on_define_constant(indexer, definition)
-              definition.ignored! if definition.name == "CONST1"
+            def on_define_constant(symbol, definition)
+              definition.ignored! if symbol.name == "CONST1"
             end
           end
 
