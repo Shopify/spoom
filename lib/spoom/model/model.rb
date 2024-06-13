@@ -77,6 +77,7 @@ module Spoom
         @location = location
 
         symbol.definitions << self
+        owner.children << self if owner
       end
 
       # The full name of the symbol this definition belongs to
@@ -96,6 +97,9 @@ module Spoom
     class Namespace < SymbolDef
       abstract!
 
+      sig { returns(T::Array[SymbolDef]) }
+      attr_reader :children
+
       sig { returns(T::Array[Mixin]) }
       attr_reader :mixins
 
@@ -103,6 +107,7 @@ module Spoom
       def initialize(symbol, owner:, location:)
         super(symbol, owner: owner, location: location)
 
+        @children = T.let([], T::Array[SymbolDef])
         @mixins = T.let([], T::Array[Mixin])
       end
     end
