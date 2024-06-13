@@ -14,8 +14,8 @@ module Spoom
 
         def test_on_define_accessor
           plugin = Class.new(Base) do
-            def on_define_accessor(indexer, definition)
-              definition.ignored! if definition.name == "attr_reader1"
+            def on_define_accessor(symbol, definition)
+              definition.ignored! if symbol.name == "attr_reader1"
             end
           end
 

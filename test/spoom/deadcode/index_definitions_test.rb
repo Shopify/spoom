@@ -117,8 +117,8 @@ module Spoom
           attr_reader :r1
           attr_reader :r2, :r3
           attr_reader(:r4, :r5)
-          self.attr_reader :r6
-          self.attr_reader(:r7)
+          self.attr_reader :not_indexed
+          self.attr_reader(:not_indexed)
 
           attr_writer :w1
           attr_writer :w2, :w3
@@ -129,19 +129,19 @@ module Spoom
           attr_accessor :a1
           attr_accessor :a2, :a3
           attr_accessor(:a4, :a5)
-          self.attr_accessor :a6
-          self.attr_accessor(:a7)
+          self.attr_accessor :not_indexed
+          self.attr_accessor(:not_indexed)
         RB
 
         index = deadcode_index
 
         assert_equal(
-          ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "r1", "r2", "r3", "r4", "r5", "r6", "r7"],
+          ["a1", "a2", "a3", "a4", "a5", "r1", "r2", "r3", "r4", "r5"],
           index.all_definitions.select(&:attr_reader?).map(&:name).sort,
         )
 
         assert_equal(
-          ["a1=", "a2=", "a3=", "a4=", "a5=", "a6=", "a7=", "w1=", "w2=", "w3=", "w4=", "w5=", "w6=", "w7="],
+          ["a1=", "a2=", "a3=", "a4=", "a5=", "w1=", "w2=", "w3=", "w4=", "w5="],
           index.all_definitions.select(&:attr_writer?).map(&:name).sort,
         )
       end

@@ -140,15 +140,15 @@ module Spoom
         #   end
         # end
         # ~~~
-        sig { params(indexer: Indexer, definition: Definition).void }
-        def on_define_accessor(indexer, definition)
+        sig { params(symbol: Model::Attr, definition: Definition).void }
+        def on_define_accessor(symbol, definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_accessor` instead.
-        sig { params(indexer: Indexer, definition: Definition).void }
-        def internal_on_define_accessor(indexer, definition)
-          on_define_accessor(indexer, definition)
+        sig { params(symbol: Model::Attr, definition: Definition).void }
+        def internal_on_define_accessor(symbol, definition)
+          on_define_accessor(symbol, definition)
         end
 
         # Called when a class is defined.

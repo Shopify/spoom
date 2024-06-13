@@ -266,73 +266,23 @@ module Spoom
       def visit_send(send)
         visit(send.recv)
 
-        case send.name
-        when "attr_reader"
-          send.args.each do |arg|
-            next unless arg.is_a?(Prism::SymbolNode)
-
-            name = arg.unescaped
-            define_attr_reader(name, [*@names_nesting, name].join("::"), arg)
-          end
-        when "attr_writer"
-          send.args.each do |arg|
-            next unless arg.is_a?(Prism::SymbolNode)
-
-            name = arg.unescaped
-            define_attr_writer("#{name}=", "#{[*@names_nesting, name].join("::")}=", arg)
-          end
-        when "attr_accessor"
-          send.args.each do |arg|
-            next unless arg.is_a?(Prism::SymbolNode)
-
-            name = arg.unescaped
-            full_name = [*@names_nesting, name].join("::")
-            define_attr_reader(name, full_name, arg)
-            define_attr_writer("#{name}=", "#{full_name}=", arg)
-          end
-        else
-          @plugins.each do |plugin|
-            plugin.internal_on_send(self, send)
-          end
-
-          reference_method(send.name, send.node)
-
-          case send.name
-          when "<", ">", "<=", ">="
-            # For comparison operators, we also reference the `<=>` method
-            reference_method("<=>", send.node)
-          end
-
-          visit_all(send.args)
-          visit(send.block)
+        @plugins.each do |plugin|
+          plugin.internal_on_send(self, send)
         end
+
+        reference_method(send.name, send.node)
+
+        case send.name
+        when "<", ">", "<=", ">="
+          # For comparison operators, we also reference the `<=>` method
+          reference_method("<=>", send.node)
+        end
+
+        visit_all(send.args)
+        visit(send.block)
       end
 
       # Definition indexing
-
-      sig { params(name: String, full_name: String, node: Prism::Node).void }
-      def define_attr_reader(name, full_name, node)
-        definition = Definition.new(
-          kind: Definition::Kind::AttrReader,
-          name: name,
-          full_name: full_name,
-          location: node_location(node),
-        )
-        @index.define(definition)
-        @plugins.each { |plugin| plugin.internal_on_define_accessor(self, definition) }
-      end
-
-      sig { params(name: String, full_name: String, node: Prism::Node).void }
-      def define_attr_writer(name, full_name, node)
-        definition = Definition.new(
-          kind: Definition::Kind::AttrWriter,
-          name: name,
-          full_name: full_name,
-          location: node_location(node),
-        )
-        @index.define(definition)
-        @plugins.each { |plugin| plugin.internal_on_define_accessor(self, definition) }
-      end
 
       sig { params(name: String, full_name: String, node: Prism::Node).void }
       def define_constant(name, full_name, node)
