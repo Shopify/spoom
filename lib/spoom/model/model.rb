@@ -41,6 +41,13 @@ module Spoom
       end
     end
 
+    class UnresolvedSymbol < Symbol
+      sig { override.returns(String) }
+      def to_s
+        "<#{@full_name}>"
+      end
+    end
+
     # A SymbolDef is a definition of a Symbol
     #
     # It can be a class, module, constant, method, etc.
@@ -246,6 +253,33 @@ module Spoom
     sig { params(full_name: String).returns(Symbol) }
     def register_symbol(full_name)
       @symbols[full_name] ||= Symbol.new(full_name)
+    end
+
+    sig { params(full_name: String, context: Symbol).returns(Symbol) }
+    def resolve_symbol(full_name, context:)
+      if full_name.start_with?("::")
+        full_name = full_name.delete_prefix("::")
+        return @symbols[full_name] ||= UnresolvedSymbol.new(full_name)
+      end
+
+      target = T.let(@symbols[full_name], T.nilable(Symbol))
+      return target if target
+
+      parts = context.full_name.split("::")
+      until parts.empty?
+        target = @symbols["#{parts.join("::")}::#{full_name}"]
+        return target if target
+
+        parts.pop
+      end
+
+      @symbols[full_name] = UnresolvedSymbol.new(full_name)
+    end
+
+    sig { params(symbol: Symbol).returns(T::Array[Symbol]) }
+    def supertypes(symbol)
+      poe = @symbols_hierarchy[symbol]
+      poe.ancestors
     end
   end
 end
