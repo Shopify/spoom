@@ -26,6 +26,7 @@ module Spoom
           @model.register_symbol(@names_nesting.join("::")),
           owner: @namespace_nesting.last,
           location: node_location(node),
+          name: node.constant_path.slice,
           superclass_name: node.superclass&.slice,
         )
         @visibility_stack << Visibility::Public
@@ -57,6 +58,7 @@ module Spoom
           @model.register_symbol(@names_nesting.join("::")),
           owner: @namespace_nesting.last,
           location: node_location(node),
+          name: node.constant_path.slice,
         )
         @visibility_stack << Visibility::Public
         super

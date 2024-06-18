@@ -110,11 +110,30 @@ module Spoom
         @children = T.let([], T::Array[SymbolDef])
         @mixins = T.let([], T::Array[Mixin])
       end
+
+      sig { returns(T::Array[String]) }
+      def nesting
+        owner = self.owner
+        return [name] unless owner
+
+        [*owner.nesting, name]
+      end
     end
 
-    class SingletonClass < Namespace; end
+    class SingletonClass < Namespace
+      sig { override.returns(String) }
+      def name
+        owner = self.owner
+        return "<Class:Object>" unless owner
+
+        "<Class:#{owner.name}>"
+      end
+    end
 
     class Class < Namespace
+      sig { override.returns(String) }
+      attr_reader :name
+
       sig { returns(T.nilable(String)) }
       attr_accessor :superclass_name
 
@@ -123,17 +142,36 @@ module Spoom
           symbol: Symbol,
           owner: T.nilable(Namespace),
           location: Location,
+          name: String,
           superclass_name: T.nilable(String),
         ).void
       end
-      def initialize(symbol, owner:, location:, superclass_name: nil)
+      def initialize(symbol, owner:, location:, name:, superclass_name: nil)
         super(symbol, owner: owner, location: location)
 
+        @name = name
         @superclass_name = superclass_name
       end
     end
 
-    class Module < Namespace; end
+    class Module < Namespace
+      sig { override.returns(String) }
+      attr_reader :name
+
+      sig do
+        params(
+          symbol: Symbol,
+          owner: T.nilable(Namespace),
+          location: Location,
+          name: String,
+        ).void
+      end
+      def initialize(symbol, owner:, location:, name:)
+        super(symbol, owner: owner, location: location)
+
+        @name = name
+      end
+    end
 
     class Constant < SymbolDef
       sig { returns(String) }
@@ -231,9 +269,13 @@ module Spoom
     sig { returns(T::Hash[String, Symbol]) }
     attr_reader :symbols
 
+    sig { returns(Poset[Symbol]) }
+    attr_reader :symbols_hierarchy
+
     sig { void }
     def initialize
       @symbols = T.let({}, T::Hash[String, Symbol])
+      @symbols_hierarchy = T.let(Poset[Symbol].new, Poset[Symbol])
     end
 
     # Get a symbol by it's full name
@@ -255,23 +297,23 @@ module Spoom
       @symbols[full_name] ||= Symbol.new(full_name)
     end
 
-    sig { params(full_name: String, context: Symbol).returns(Symbol) }
+    sig { params(full_name: String, context: T::Array[String]).returns(Symbol) }
     def resolve_symbol(full_name, context:)
       if full_name.start_with?("::")
         full_name = full_name.delete_prefix("::")
         return @symbols[full_name] ||= UnresolvedSymbol.new(full_name)
       end
 
-      target = T.let(@symbols[full_name], T.nilable(Symbol))
-      return target if target
-
-      parts = context.full_name.split("::")
+      parts = context.dup
       until parts.empty?
         target = @symbols["#{parts.join("::")}::#{full_name}"]
         return target if target
 
         parts.pop
       end
+
+      top_level = @symbols[full_name]
+      return top_level if top_level
 
       @symbols[full_name] = UnresolvedSymbol.new(full_name)
     end
@@ -280,6 +322,45 @@ module Spoom
     def supertypes(symbol)
       poe = @symbols_hierarchy[symbol]
       poe.ancestors
+    end
+
+    sig { params(symbol: Symbol).returns(T::Array[Symbol]) }
+    def subtypes(symbol)
+      poe = @symbols_hierarchy[symbol]
+      poe.descendants
+    end
+
+    sig { void }
+    def finalize!
+      compute_symbols_hierarchy!
+    end
+
+    private
+
+    sig { void }
+    def compute_symbols_hierarchy!
+      @symbols.dup.each do |_full_name, symbol|
+        symbol.definitions.each do |definition|
+          next unless definition.is_a?(Namespace)
+
+          @symbols_hierarchy.add_element(symbol)
+
+          if definition.is_a?(Class)
+            superclass_name = definition.superclass_name
+            if superclass_name
+              superclass = resolve_symbol(superclass_name, context: definition.nesting)
+              @symbols_hierarchy.add_direct_edge(symbol, superclass)
+            end
+          end
+
+          definition.mixins.each do |mixin|
+            next if mixin.is_a?(Extend)
+
+            target = resolve_symbol(mixin.name, context: definition.nesting)
+            @symbols_hierarchy.add_direct_edge(symbol, target)
+          end
+        end
+      end
     end
   end
 end

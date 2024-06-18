@@ -8,7 +8,40 @@ module Spoom
     class ModelTest < Minitest::Test
       extend T::Sig
 
-      def test_resolve_symbol
+      def test_symbol_nesting
+        model = model(<<~RB)
+          module Foo
+            class Bar
+              class Baz; end
+              class Baz::Qux; end
+            end
+          end
+
+          class Bar::Baz
+            class << self; end
+          end
+        RB
+
+        assert_equal(
+          [
+            ["Foo"],
+            ["Foo", "Bar"],
+            ["Foo", "Bar", "Baz"],
+            ["Foo", "Bar", "Baz::Qux"],
+            ["Bar::Baz"],
+            ["Bar::Baz", "<Class:Bar::Baz>"],
+          ],
+          model.symbols.flat_map do |_name, symbol|
+            symbol.definitions.filter_map do |symbol_def|
+              next unless symbol_def.is_a?(Namespace)
+
+              symbol_def.nesting
+            end
+          end,
+        )
+      end
+
+      def test_resolve_symbol_in_nested_namespaces
         model = model(<<~RB)
           module Foo
             class Bar
@@ -17,7 +50,7 @@ module Spoom
           end
         RB
 
-        context = model["Foo"]
+        context = ["Foo"]
         assert_equal(model["Foo"], model.resolve_symbol("::Foo", context: context))
         assert_equal(model["Foo"], model.resolve_symbol("Foo", context: context))
         assert_equal(model["Foo::Bar"], model.resolve_symbol("Bar", context: context))
@@ -25,16 +58,7 @@ module Spoom
         assert_equal(model["Foo::Bar::Baz"], model.resolve_symbol("Bar::Baz", context: context))
         assert_equal(model["Foo::Bar::Baz"], model.resolve_symbol("Foo::Bar::Baz", context: context))
 
-        context = model["Foo::Bar"]
-        assert_equal(model["Foo"], model.resolve_symbol("::Foo", context: context))
-        assert_equal(model["Foo"], model.resolve_symbol("Foo", context: context))
-        assert_equal(model["Foo::Bar"], model.resolve_symbol("Bar", context: context))
-        assert_equal(model["Foo::Bar"], model.resolve_symbol("Foo::Bar", context: context))
-        assert_equal(model["Foo::Bar::Baz"], model.resolve_symbol("Baz", context: context))
-        assert_equal(model["Foo::Bar::Baz"], model.resolve_symbol("Bar::Baz", context: context))
-        assert_equal(model["Foo::Bar::Baz"], model.resolve_symbol("Foo::Bar::Baz", context: context))
-
-        context = model["Foo::Bar::Baz"]
+        context = ["Foo", "Bar"]
         assert_equal(model["Foo"], model.resolve_symbol("::Foo", context: context))
         assert_equal(model["Foo"], model.resolve_symbol("Foo", context: context))
         assert_equal(model["Foo::Bar"], model.resolve_symbol("Bar", context: context))
@@ -43,10 +67,124 @@ module Spoom
         assert_equal(model["Foo::Bar::Baz"], model.resolve_symbol("Bar::Baz", context: context))
         assert_equal(model["Foo::Bar::Baz"], model.resolve_symbol("Foo::Bar::Baz", context: context))
 
-        context = model["Foo"]
+        context = ["Foo", "Bar", "Baz"]
+        assert_equal(model["Foo"], model.resolve_symbol("::Foo", context: context))
+        assert_equal(model["Foo"], model.resolve_symbol("Foo", context: context))
+        assert_equal(model["Foo::Bar"], model.resolve_symbol("Bar", context: context))
+        assert_equal(model["Foo::Bar"], model.resolve_symbol("Foo::Bar", context: context))
+        assert_equal(model["Foo::Bar::Baz"], model.resolve_symbol("Baz", context: context))
+        assert_equal(model["Foo::Bar::Baz"], model.resolve_symbol("Bar::Baz", context: context))
+        assert_equal(model["Foo::Bar::Baz"], model.resolve_symbol("Foo::Bar::Baz", context: context))
+
+        context = ["Foo"]
         assert_instance_of(UnresolvedSymbol, model.resolve_symbol("Qux", context: context))
         assert_instance_of(UnresolvedSymbol, model.resolve_symbol("::Bar", context: context))
         assert_instance_of(UnresolvedSymbol, model.resolve_symbol("::Baz", context: context))
+      end
+
+      def test_resolve_symbol_in_compact_namespaces
+        model = model(<<~RB)
+          module Foo::Bar
+            class Baz; end
+          end
+        RB
+
+        context = ["Foo::Bar"]
+
+        assert_instance_of(UnresolvedSymbol, model.resolve_symbol("::Foo", context: context))
+        assert_instance_of(UnresolvedSymbol, model.resolve_symbol("Foo", context: context))
+        assert_instance_of(UnresolvedSymbol, model.resolve_symbol("Bar", context: context))
+        assert_instance_of(UnresolvedSymbol, model.resolve_symbol("Bar::Baz", context: context))
+
+        assert_equal(model["Foo::Bar"], model.resolve_symbol("Foo::Bar", context: context))
+        assert_equal(model["Foo::Bar::Baz"], model.resolve_symbol("Baz", context: context))
+      end
+
+      def test_resolve_symbol_from_another_namespace
+        model = model(<<~RB)
+          C = 1
+
+          module Foo
+            C = 42
+          end
+
+          class Foo::Bar
+          end
+        RB
+
+        context = ["Foo::Bar"]
+        assert_equal(model["C"], model.resolve_symbol("::C", context: context))
+        assert_equal(model["C"], model.resolve_symbol("C", context: context))
+      end
+
+      def test_resolve_symbol_from_nesting_namespace
+        model = model(<<~RB)
+          C = 1
+
+          module Foo
+            C = 42
+
+            class Bar
+            end
+          end
+        RB
+
+        context = ["Foo", "Bar"]
+        assert_equal(model["C"], model.resolve_symbol("::C", context: context))
+        assert_equal(model["Foo::C"], model.resolve_symbol("C", context: context))
+      end
+
+      def test_symbols_hierarchy_for_classes
+        model = model(<<~RB)
+          class A; end
+          class B < A; end
+          class C < B; end
+          class D; end
+        RB
+
+        assert_equal(
+          ["B", "C"],
+          model.subtypes(model["A"]).map(&:full_name).sort,
+        )
+
+        assert_equal(
+          ["A", "B"],
+          model.supertypes(model["C"]).map(&:full_name).sort,
+        )
+
+        assert_empty(model.supertypes(model["D"]))
+        assert_empty(model.subtypes(model["D"]))
+      end
+
+      def test_symbols_hierarchy_for_modules
+        model = model(<<~RB)
+          module A; end
+
+          module B
+            include A
+          end
+
+          module C
+            include B
+            prepend D
+          end
+
+          module D; end
+          module E; end
+        RB
+
+        assert_equal(
+          ["B", "C"],
+          model.subtypes(model["A"]).map(&:full_name).sort,
+        )
+
+        assert_equal(
+          ["A", "B", "D"],
+          model.supertypes(model["C"]).map(&:full_name).sort,
+        )
+
+        assert_empty(model.supertypes(model["E"]))
+        assert_empty(model.subtypes(model["E"]))
       end
 
       private
