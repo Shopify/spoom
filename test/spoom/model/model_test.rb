@@ -49,6 +49,59 @@ module Spoom
         assert_instance_of(UnresolvedSymbol, model.resolve_symbol("::Baz", context: context))
       end
 
+      def test_symbols_hierarchy_for_classes
+        model = model(<<~RB)
+          class A; end
+          class B < A; end
+          class C < B; end
+          class D; end
+        RB
+
+        assert_equal(
+          ["B", "C"],
+          model.subtypes(model["A"]).map(&:full_name).sort,
+        )
+
+        assert_equal(
+          ["A", "B"],
+          model.supertypes(model["C"]).map(&:full_name).sort,
+        )
+
+        assert_empty(model.supertypes(model["D"]))
+        assert_empty(model.subtypes(model["D"]))
+      end
+
+      def test_symbols_hierarchy_for_modules
+        model = model(<<~RB)
+          module A; end
+
+          module B
+            include A
+          end
+
+          module C
+            include B
+            prepend D
+          end
+
+          module D; end
+          module E; end
+        RB
+
+        assert_equal(
+          ["B", "C"],
+          model.subtypes(model["A"]).map(&:full_name).sort,
+        )
+
+        assert_equal(
+          ["A", "B", "D"],
+          model.supertypes(model["C"]).map(&:full_name).sort,
+        )
+
+        assert_empty(model.supertypes(model["E"]))
+        assert_empty(model.subtypes(model["E"]))
+      end
+
       private
 
       sig { params(rb: String).returns(Model) }
