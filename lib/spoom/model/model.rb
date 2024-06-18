@@ -231,9 +231,13 @@ module Spoom
     sig { returns(T::Hash[String, Symbol]) }
     attr_reader :symbols
 
+    sig { returns(Poset[Symbol]) }
+    attr_reader :symbols_hierarchy
+
     sig { void }
     def initialize
       @symbols = T.let({}, T::Hash[String, Symbol])
+      @symbols_hierarchy = T.let(Poset[Symbol].new, Poset[Symbol])
     end
 
     # Get a symbol by it's full name
@@ -280,6 +284,45 @@ module Spoom
     def supertypes(symbol)
       poe = @symbols_hierarchy[symbol]
       poe.ancestors
+    end
+
+    sig { params(symbol: Symbol).returns(T::Array[Symbol]) }
+    def subtypes(symbol)
+      poe = @symbols_hierarchy[symbol]
+      poe.descendants
+    end
+
+    sig { void }
+    def finalize!
+      compute_symbols_hierarchy!
+    end
+
+    private
+
+    sig { void }
+    def compute_symbols_hierarchy!
+      @symbols.dup.each do |_full_name, symbol|
+        symbol.definitions.each do |definition|
+          next unless definition.is_a?(Namespace)
+
+          @symbols_hierarchy.add_element(symbol)
+
+          if definition.is_a?(Class)
+            superclass_name = definition.superclass_name
+            if superclass_name
+              superclass = resolve_symbol(superclass_name, context: symbol)
+              @symbols_hierarchy.add_direct_edge(symbol, superclass)
+            end
+          end
+
+          definition.mixins.each do |mixin|
+            next if mixin.is_a?(Extend)
+
+            target = resolve_symbol(mixin.name, context: symbol)
+            @symbols_hierarchy.add_direct_edge(symbol, target)
+          end
+        end
+      end
     end
   end
 end
