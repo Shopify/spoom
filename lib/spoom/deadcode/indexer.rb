@@ -238,8 +238,6 @@ module Spoom
           @names_nesting.clear
           @names_nesting << full_name
 
-          define_module(T.must(constant_path.split("::").last), full_name, node)
-
           visit(node.body)
 
           # Restore the name nesting once we finished visited the class
@@ -247,7 +245,6 @@ module Spoom
           @names_nesting = old_nesting
         else
           @names_nesting << constant_path
-          define_module(T.must(constant_path.split("::").last), @names_nesting.join("::"), node)
 
           # We do not call `super` here because we don't want to visit the `constant` again
           visit(node.body)
@@ -370,18 +367,6 @@ module Spoom
         )
         @index.define(definition)
         @plugins.each { |plugin| plugin.internal_on_define_method(self, definition) }
-      end
-
-      sig { params(name: String, full_name: String, node: Prism::Node).void }
-      def define_module(name, full_name, node)
-        definition = Definition.new(
-          kind: Definition::Kind::Module,
-          name: name,
-          full_name: full_name,
-          location: node_location(node),
-        )
-        @index.define(definition)
-        @plugins.each { |plugin| plugin.internal_on_define_module(self, definition) }
       end
 
       # Reference indexing

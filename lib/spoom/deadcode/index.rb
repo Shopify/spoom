@@ -51,6 +51,15 @@ module Spoom
               )
               define(definition)
               plugins.each { |plugin| plugin.internal_on_define_class(symbol_def, definition) }
+            when Model::Module
+              definition = Definition.new(
+                kind: Definition::Kind::Module,
+                name: symbol.name,
+                full_name: symbol.full_name,
+                location: symbol_def.location,
+              )
+              define(definition)
+              plugins.each { |plugin| plugin.internal_on_define_module(symbol_def, definition) }
             end
           end
         end
