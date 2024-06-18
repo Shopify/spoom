@@ -33,7 +33,7 @@ module Spoom
 
         sig { returns(Index) }
         def index_with_plugins
-          deadcode_index(plugins: [ActionMailer.new])
+          deadcode_index(plugin_classes: [ActionMailer])
         end
       end
     end

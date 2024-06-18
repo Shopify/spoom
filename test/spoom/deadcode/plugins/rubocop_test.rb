@@ -70,7 +70,7 @@ module Spoom
 
         sig { returns(Deadcode::Index) }
         def index_with_plugins
-          deadcode_index(plugins: [Plugins::Rubocop.new])
+          deadcode_index(plugin_classes: [Plugins::Rubocop])
         end
 
         sig { params(index: Deadcode::Index).returns(T::Array[Location]) }

@@ -51,7 +51,7 @@ module Spoom
 
         sig { returns(Deadcode::Index) }
         def index_with_plugins
-          deadcode_index(plugins: [Plugins::Rails.new])
+          deadcode_index(plugin_classes: [Plugins::Rails])
         end
       end
     end

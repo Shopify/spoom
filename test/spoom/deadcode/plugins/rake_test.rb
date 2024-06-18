@@ -23,7 +23,7 @@ module Spoom
 
         sig { returns(Deadcode::Index) }
         def index_with_plugins
-          deadcode_index(plugins: [Plugins::Rake.new])
+          deadcode_index(plugin_classes: [Plugins::Rake])
         end
       end
     end

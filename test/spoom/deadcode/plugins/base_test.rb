@@ -24,7 +24,7 @@ module Spoom
             attr_reader :attr_reader2
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "attr_reader1")
           refute_ignored(index, "attr_reader2")
         end
@@ -41,7 +41,7 @@ module Spoom
             class Class2; end
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "Class1")
           refute_ignored(index, "Class2")
         end
@@ -58,7 +58,7 @@ module Spoom
             CONST2 = 2
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "CONST1")
           refute_ignored(index, "CONST2")
         end
@@ -75,7 +75,7 @@ module Spoom
             def method2; end
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "method1")
           refute_ignored(index, "method2")
         end
@@ -92,7 +92,7 @@ module Spoom
             module Module2; end
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "Module1")
           refute_ignored(index, "Module2")
         end
@@ -117,7 +117,7 @@ module Spoom
             def method3; end
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_alive(index, "method1")
           assert_alive(index, "method2")
           assert_dead(index, "method3")
@@ -142,7 +142,7 @@ module Spoom
             class ClassRE2; end
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "Class1")
           assert_ignored(index, "Class2")
           refute_ignored(index, "Class3")
@@ -167,7 +167,7 @@ module Spoom
             CONSTRE2 = 42
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "CONST1")
           assert_ignored(index, "CONST2")
           refute_ignored(index, "CONST3")
@@ -192,7 +192,7 @@ module Spoom
             def name_regexp2; end
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "name1")
           assert_ignored(index, "name2")
           refute_ignored(index, "name3")
@@ -217,7 +217,7 @@ module Spoom
             module ::ModuleRE2; end
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "Module1")
           assert_ignored(index, "Module2")
           refute_ignored(index, "Module3")
@@ -244,7 +244,7 @@ module Spoom
             class SubclassRE2 < SuperclassRE2; end
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "Subclass1")
           assert_ignored(index, "Subclass2")
           refute_ignored(index, "Subclass3")

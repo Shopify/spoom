@@ -87,7 +87,7 @@ module Spoom
 
         plugins = Spoom::Deadcode.load_custom_plugins(context)
 
-        assert_equal(["Plugin1", "Plugin2"], plugins.map(&:class).map(&:name).sort)
+        assert_equal(["Plugin1", "Plugin2"], plugins.map(&:name).sort)
 
         context.destroy!
       end
@@ -99,7 +99,7 @@ module Spoom
         context = Context.mktmp!
         plugins = Spoom::Deadcode.load_custom_plugins(context)
 
-        assert_empty(plugins.map(&:class).map(&:name).sort)
+        assert_empty(plugins)
 
         context.destroy!
       end
@@ -114,9 +114,9 @@ module Spoom
 
         raise "Can't `bundle install`: #{result.err}" unless result.status
 
-        plugin_classes = Deadcode.plugins_from_gemfile_lock(context).map(&:class)
+        plugin_classes = Deadcode.plugins_from_gemfile_lock(context)
         context.destroy!
-        plugin_classes
+        plugin_classes.to_a
       end
     end
   end

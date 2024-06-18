@@ -14,8 +14,8 @@ module Spoom
 
         # Indexing
 
-        sig { params(plugins: T::Array[Deadcode::Plugins::Base]).returns(Deadcode::Index) }
-        def deadcode_index(plugins: [])
+        sig { params(plugin_classes: T::Array[T.class_of(Deadcode::Plugins::Base)]).returns(Deadcode::Index) }
+        def deadcode_index(plugin_classes: [])
           files = project.collect_files(
             allow_extensions: [".rb", ".erb", ".rake", ".rakefile", ".gemspec"],
             allow_mime_types: ["text/x-ruby", "text/x-ruby-script"],
@@ -23,6 +23,7 @@ module Spoom
 
           model = Model.new
           index = Deadcode::Index.new(model)
+          plugins = plugin_classes.map(&:new)
 
           files.each do |file|
             content = project.read(file)

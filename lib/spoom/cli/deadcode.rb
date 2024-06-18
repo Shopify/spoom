@@ -71,17 +71,18 @@ module Spoom
           $stderr.puts
         end
 
-        plugins = Spoom::Deadcode.plugins_from_gemfile_lock(context)
+        plugin_classes = Spoom::Deadcode.plugins_from_gemfile_lock(context)
         if options[:show_plugins]
-          $stderr.puts "\nLoaded #{blue(plugins.size.to_s)} plugins\n"
-          plugins.each do |plugin|
-            $stderr.puts "  #{gray(plugin.class.to_s)}"
+          $stderr.puts "\nLoaded #{blue(plugin_classes.size.to_s)} plugins\n"
+          plugin_classes.each do |plugin|
+            $stderr.puts "  #{gray(plugin.to_s)}"
           end
           $stderr.puts
         end
 
         model = Spoom::Model.new
         index = Spoom::Deadcode::Index.new(model)
+        plugins = plugin_classes.map(&:new)
 
         $stderr.puts "Indexing #{blue(files.size.to_s)} files..."
         files.each do |file|

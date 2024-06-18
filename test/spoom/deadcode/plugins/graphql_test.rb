@@ -81,7 +81,7 @@ module Spoom
 
         sig { returns(Deadcode::Index) }
         def index_with_plugins
-          deadcode_index(plugins: [Plugins::GraphQL.new])
+          deadcode_index(plugin_classes: [Plugins::GraphQL])
         end
       end
     end
