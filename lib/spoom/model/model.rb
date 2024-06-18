@@ -144,13 +144,25 @@ module Spoom
     class Property < SymbolDef
       abstract!
 
+      sig { returns(Visibility) }
+      attr_reader :visibility
+
       sig { returns(T::Array[Sig]) }
       attr_reader :sigs
 
-      sig { params(symbol: Symbol, owner: T.nilable(Namespace), location: Location, sigs: T::Array[Sig]).void }
-      def initialize(symbol, owner:, location:, sigs: [])
+      sig do
+        params(
+          symbol: Symbol,
+          owner: T.nilable(Namespace),
+          location: Location,
+          visibility: Visibility,
+          sigs: T::Array[Sig],
+        ).void
+      end
+      def initialize(symbol, owner:, location:, visibility:, sigs: [])
         super(symbol, owner: owner, location: location)
 
+        @visibility = visibility
         @sigs = sigs
       end
     end
@@ -164,6 +176,14 @@ module Spoom
     class AttrReader < Attr; end
     class AttrWriter < Attr; end
     class AttrAccessor < Attr; end
+
+    class Visibility < T::Enum
+      enums do
+        Public = new("public")
+        Protected = new("protected")
+        Private = new("private")
+      end
+    end
 
     # A mixin (include, prepend, extend) to a namespace
     class Mixin

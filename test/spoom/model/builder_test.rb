@@ -308,6 +308,91 @@ module Spoom
         )
       end
 
+      def test_visibility
+        model = model(<<~RB)
+          def m1; end
+
+          private
+
+          def m2; end
+
+          protected
+
+          def m3; end
+
+          class Foo
+            def m4; end
+
+            private
+
+            def m5; end
+          end
+
+          module Bar
+            def m6; end
+
+            private
+
+            class << self
+              def m7; end
+            end
+          end
+        RB
+
+        assert_equal(
+          [
+            "m1: public",
+            "m2: private",
+            "m3: protected",
+            "Foo::m4: public",
+            "Foo::m5: private",
+            "Bar::m6: public",
+            "Bar::m7: public",
+          ],
+          model.symbols.values
+            .flat_map(&:definitions)
+            .filter { |d| d.is_a?(Method) }
+            .map { |d| "#{d.full_name}: #{T.cast(d, Method).visibility.serialize}" },
+        )
+      end
+
+      def test_inline_visibility
+        model = model(<<~RB)
+          protected def m1; end
+
+          private
+
+          public def m2; end
+
+          protected
+
+          private def m3; end
+
+          class Foo
+            private def m4; end
+
+            def m5; end
+          end
+
+          def m6; end
+        RB
+
+        assert_equal(
+          [
+            "m1: protected",
+            "m2: public",
+            "m3: private",
+            "Foo::m4: private",
+            "Foo::m5: public",
+            "m6: protected",
+          ],
+          model.symbols.values
+            .flat_map(&:definitions)
+            .filter { |d| d.is_a?(Method) }
+            .map { |d| "#{d.full_name}: #{T.cast(d, Method).visibility.serialize}" },
+        )
+      end
+
       def test_sigs
         model = model(<<~RB)
           sig { void }
