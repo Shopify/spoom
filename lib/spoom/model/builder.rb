@@ -14,6 +14,7 @@ module Spoom
         @model = model
         @file = file
         @namespace_nesting = T.let([], T::Array[Namespace])
+        @visibility_stack = T.let([Visibility::Public], T::Array[Visibility])
         @last_sigs = T.let([], T::Array[Sig])
       end
 
@@ -27,7 +28,9 @@ module Spoom
           location: node_location(node),
           superclass_name: node.superclass&.slice,
         )
+        @visibility_stack << Visibility::Public
         super
+        @visibility_stack.pop
         @namespace_nesting.pop
         @last_sigs.clear
       end
@@ -39,7 +42,9 @@ module Spoom
           owner: @namespace_nesting.last,
           location: node_location(node),
         )
+        @visibility_stack << Visibility::Public
         super
+        @visibility_stack.pop
         @namespace_nesting.pop
         @last_sigs.clear
       end
@@ -53,7 +58,9 @@ module Spoom
           owner: @namespace_nesting.last,
           location: node_location(node),
         )
+        @visibility_stack << Visibility::Public
         super
+        @visibility_stack.pop
         @namespace_nesting.pop
         @last_sigs.clear
       end
@@ -125,6 +132,7 @@ module Spoom
             @model.register_symbol([*@names_nesting, node.name.to_s].join("::")),
             owner: @namespace_nesting.last,
             location: node_location(node),
+            visibility: current_visibility,
             sigs: collect_sigs,
           )
         end
@@ -150,6 +158,7 @@ module Spoom
               @model.register_symbol([*@names_nesting, arg.slice.delete_prefix(":")].join("::")),
               owner: current_namespace,
               location: node_location(arg),
+              visibility: current_visibility,
               sigs: sigs,
             )
           end
@@ -162,6 +171,7 @@ module Spoom
               @model.register_symbol([*@names_nesting, arg.slice.delete_prefix(":")].join("::")),
               owner: current_namespace,
               location: node_location(arg),
+              visibility: current_visibility,
               sigs: sigs,
             )
           end
@@ -174,6 +184,7 @@ module Spoom
               @model.register_symbol([*@names_nesting, arg.slice.delete_prefix(":")].join("::")),
               owner: current_namespace,
               location: node_location(arg),
+              visibility: current_visibility,
               sigs: sigs,
             )
           end
@@ -198,6 +209,12 @@ module Spoom
 
             current_namespace.mixins << Extend.new(arg.slice)
           end
+        when :public, :private, :protected
+          @visibility_stack << Visibility.from_serialized(node.name.to_s)
+          if node.arguments
+            super
+            @visibility_stack.pop
+          end
         when :sig
           @last_sigs << Sig.new(node.slice)
         else
@@ -207,6 +224,11 @@ module Spoom
       end
 
       private
+
+      sig { returns(Visibility) }
+      def current_visibility
+        T.must(@visibility_stack.last)
+      end
 
       sig { returns(T::Array[Sig]) }
       def collect_sigs
