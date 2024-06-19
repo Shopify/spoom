@@ -9,22 +9,19 @@ module Spoom
 
         sig { override.params(symbol_def: Model::Class, definition: Definition).void }
         def on_define_class(symbol_def, definition)
-          definition.ignored! unless symbol_def.children.empty?
+          definition.ignored! if used_as_namespace?(symbol_def)
         end
 
-        sig { override.params(indexer: Indexer, definition: Definition).void }
-        def on_define_module(indexer, definition)
-          definition.ignored! if used_as_namespace?(indexer)
+        sig { override.params(symbol_def: Model::Module, definition: Definition).void }
+        def on_define_module(symbol_def, definition)
+          definition.ignored! if used_as_namespace?(symbol_def)
         end
 
         private
 
-        sig { params(indexer: Indexer).returns(T::Boolean) }
-        def used_as_namespace?(indexer)
-          node = indexer.current_node
-          return false unless node.is_a?(Prism::ClassNode) || node.is_a?(Prism::ModuleNode)
-
-          !!node.body
+        sig { params(symbol_def: Model::Namespace).returns(T::Boolean) }
+        def used_as_namespace?(symbol_def)
+          symbol_def.children.any?
         end
       end
     end
