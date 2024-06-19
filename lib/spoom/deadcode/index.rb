@@ -39,6 +39,21 @@ module Spoom
       # To be called once all the files have been indexed and all the definitions and references discovered.
       sig { params(plugins: T::Array[Plugins::Base]).void }
       def finalize!(plugins: [])
+        @model.symbols.each do |_full_name, symbol|
+          symbol.definitions.each do |symbol_def|
+            case symbol_def
+            when Model::Class
+              definition = Definition.new(
+                kind: Definition::Kind::Class,
+                name: symbol.name,
+                full_name: symbol.full_name,
+                location: symbol_def.location,
+              )
+              define(definition)
+              plugins.each { |plugin| plugin.internal_on_define_class(symbol_def, definition) }
+            end
+          end
+        end
         @references.keys.each do |name|
           definitions_for_name(name).each(&:alive!)
         end
