@@ -9,14 +9,14 @@ module Spoom
 
         ignore_constants_named("APP_PATH", "ENGINE_PATH", "ENGINE_ROOT")
 
-        sig { override.params(symbol_def: Model::Class, definition: Definition).void }
-        def on_define_class(symbol_def, definition)
-          definition.ignored! if file_is_helper?(symbol_def)
+        sig { override.params(definition: Model::Class).void }
+        def on_define_class(definition)
+          @index.ignore(definition) if file_is_helper?(definition)
         end
 
-        sig { override.params(symbol_def: Model::Module, definition: Definition).void }
-        def on_define_module(symbol_def, definition)
-          definition.ignored! if file_is_helper?(symbol_def)
+        sig { override.params(definition: Model::Module).void }
+        def on_define_module(definition)
+          @index.ignore(definition) if file_is_helper?(definition)
         end
 
         private

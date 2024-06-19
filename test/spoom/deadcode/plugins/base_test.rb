@@ -14,8 +14,8 @@ module Spoom
 
         def test_on_define_accessor
           plugin = Class.new(Base) do
-            def on_define_accessor(symbol_def, definition)
-              definition.ignored! if symbol_def.name == "attr_reader1"
+            def on_define_accessor(definition)
+              @index.ignore(definition) if definition.name == "attr_reader1"
             end
           end
 
@@ -31,8 +31,8 @@ module Spoom
 
         def test_on_define_class
           plugin = Class.new(Base) do
-            def on_define_class(symbol_def, definition)
-              definition.ignored! if symbol_def.name == "Class1"
+            def on_define_class(definition)
+              @index.ignore(definition) if definition.name == "Class1"
             end
           end
 
@@ -48,8 +48,8 @@ module Spoom
 
         def test_on_define_constant
           plugin = Class.new(Base) do
-            def on_define_constant(symbol_def, definition)
-              definition.ignored! if symbol_def.name == "CONST1"
+            def on_define_constant(definition)
+              @index.ignore(definition) if definition.name == "CONST1"
             end
           end
 
@@ -65,8 +65,8 @@ module Spoom
 
         def test_on_define_method
           plugin = Class.new(Base) do
-            def on_define_method(symbol_def, definition)
-              definition.ignored! if symbol_def.name == "method1"
+            def on_define_method(definition)
+              @index.ignore(definition) if definition.name == "method1"
             end
           end
 
@@ -82,8 +82,8 @@ module Spoom
 
         def test_on_define_module
           plugin = Class.new(Base) do
-            def on_define_module(symbol_def, definition)
-              definition.ignored! if symbol_def.name == "Module1"
+            def on_define_module(definition)
+              @index.ignore(definition) if definition.name == "Module1"
             end
           end
 

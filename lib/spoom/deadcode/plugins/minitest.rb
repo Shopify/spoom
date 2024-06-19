@@ -18,10 +18,10 @@ module Spoom
           "teardown",
         )
 
-        sig { override.params(symbol_def: Model::Method, definition: Definition).void }
-        def on_define_method(symbol_def, definition)
-          file = symbol_def.location.file
-          definition.ignored! if file.match?(%r{test/.*test\.rb$}) && symbol_def.name.match?(/^test_/)
+        sig { override.params(definition: Model::Method).void }
+        def on_define_method(definition)
+          file = definition.location.file
+          @index.ignore(definition) if file.match?(%r{test/.*test\.rb$}) && definition.name.match?(/^test_/)
         end
       end
     end

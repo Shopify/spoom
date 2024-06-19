@@ -100,7 +100,8 @@ module Spoom
           next
         end
 
-        index.finalize!(plugins: plugins)
+        index.apply_plugins!(plugins)
+        index.finalize!
 
         if options[:show_defs]
           $stderr.puts "\nDefinitions:"

@@ -14,28 +14,28 @@ module Spoom
           /^(::)?RuboCop::Cop::Base$/,
         )
 
-        sig { override.params(symbol_def: Model::Constant, definition: Definition).void }
-        def on_define_constant(symbol_def, definition)
-          owner = symbol_def.owner
+        sig { override.params(definition: Model::Constant).void }
+        def on_define_constant(definition)
+          owner = definition.owner
           return false unless owner.is_a?(Model::Class)
 
           superclass_name = owner.superclass_name
           return false unless superclass_name
 
-          definition.ignored! if ignored_subclass?(superclass_name) && RUBOCOP_CONSTANTS.include?(symbol_def.name)
+          @index.ignore(definition) if ignored_subclass?(superclass_name) && RUBOCOP_CONSTANTS.include?(definition.name)
         end
 
-        sig { override.params(symbol_def: Model::Method, definition: Definition).void }
-        def on_define_method(symbol_def, definition)
-          return unless symbol_def.name == "on_send"
+        sig { override.params(definition: Model::Method).void }
+        def on_define_method(definition)
+          return unless definition.name == "on_send"
 
-          owner = symbol_def.owner
+          owner = definition.owner
           return unless owner.is_a?(Model::Class)
 
           superclass_name = owner.superclass_name
           return unless superclass_name
 
-          definition.ignored! if ignored_subclass?(superclass_name)
+          @index.ignore(definition) if ignored_subclass?(superclass_name)
         end
       end
     end

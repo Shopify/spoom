@@ -20,6 +20,7 @@ module Spoom
         @model = model
         @definitions = T.let({}, T::Hash[String, T::Array[Definition]])
         @references = T.let({}, T::Hash[String, T::Array[Reference]])
+        @ignored = T.let(Set.new, T::Set[Model::SymbolDef])
       end
 
       # Indexing
@@ -39,11 +40,36 @@ module Spoom
         (@references[name] ||= []) << Reference.new(name: name, kind: Reference::Kind::Method, location: location)
       end
 
+      sig { params(symbol_def: Model::SymbolDef).void }
+      def ignore(symbol_def)
+        @ignored << symbol_def
+      end
+
+      sig { params(plugins: T::Array[Plugins::Base]).void }
+      def apply_plugins!(plugins)
+        @model.symbols.each do |_full_name, symbol|
+          symbol.definitions.each do |symbol_def|
+            case symbol_def
+            when Model::Class
+              plugins.each { |plugin| plugin.internal_on_define_class(symbol_def) }
+            when Model::Module
+              plugins.each { |plugin| plugin.internal_on_define_module(symbol_def) }
+            when Model::Constant
+              plugins.each { |plugin| plugin.internal_on_define_constant(symbol_def) }
+            when Model::Method
+              plugins.each { |plugin| plugin.internal_on_define_method(symbol_def) }
+            when Model::Attr
+              plugins.each { |plugin| plugin.internal_on_define_accessor(symbol_def) }
+            end
+          end
+        end
+      end
+
       # Mark all definitions having a reference of the same name as `alive`
       #
       # To be called once all the files have been indexed and all the definitions and references discovered.
-      sig { params(plugins: T::Array[Plugins::Base]).void }
-      def finalize!(plugins: [])
+      sig { void }
+      def finalize!
         @model.symbols.each do |_full_name, symbol|
           symbol.definitions.each do |symbol_def|
             case symbol_def
@@ -54,8 +80,9 @@ module Spoom
                 full_name: symbol.full_name,
                 location: symbol_def.location,
               )
+              definition.ignored! if @ignored.include?(symbol_def)
+              definition.alive! if @references.key?(symbol.name)
               define(definition)
-              plugins.each { |plugin| plugin.internal_on_define_class(symbol_def, definition) }
             when Model::Module
               definition = Definition.new(
                 kind: Definition::Kind::Module,
@@ -63,8 +90,9 @@ module Spoom
                 full_name: symbol.full_name,
                 location: symbol_def.location,
               )
+              definition.ignored! if @ignored.include?(symbol_def)
+              definition.alive! if @references.key?(symbol.name)
               define(definition)
-              plugins.each { |plugin| plugin.internal_on_define_module(symbol_def, definition) }
             when Model::Constant
               definition = Definition.new(
                 kind: Definition::Kind::Constant,
@@ -72,8 +100,9 @@ module Spoom
                 full_name: symbol.full_name,
                 location: symbol_def.location,
               )
+              definition.ignored! if @ignored.include?(symbol_def)
+              definition.alive! if @references.key?(symbol.name)
               define(definition)
-              plugins.each { |plugin| plugin.internal_on_define_constant(symbol_def, definition) }
             when Model::Method
               definition = Definition.new(
                 kind: Definition::Kind::Method,
@@ -81,8 +110,9 @@ module Spoom
                 full_name: symbol.full_name,
                 location: symbol_def.location,
               )
+              definition.ignored! if @ignored.include?(symbol_def)
+              definition.alive! if @references.key?(symbol.name)
               define(definition)
-              plugins.each { |plugin| plugin.internal_on_define_method(symbol_def, definition) }
             when Model::AttrAccessor
               definition = Definition.new(
                 kind: Definition::Kind::AttrReader,
@@ -90,8 +120,9 @@ module Spoom
                 full_name: symbol.full_name,
                 location: symbol_def.location,
               )
+              definition.ignored! if @ignored.include?(symbol_def)
+              definition.alive! if @references.key?(symbol.name)
               define(definition)
-              plugins.each { |plugin| plugin.internal_on_define_accessor(symbol_def, definition) }
 
               definition = Definition.new(
                 kind: Definition::Kind::AttrWriter,
@@ -99,8 +130,9 @@ module Spoom
                 full_name: "#{symbol.full_name}=",
                 location: symbol_def.location,
               )
+              definition.ignored! if @ignored.include?(symbol_def)
+              definition.alive! if @references.key?(symbol.name)
               define(definition)
-              plugins.each { |plugin| plugin.internal_on_define_accessor(symbol_def, definition) }
             when Model::AttrReader
               definition = Definition.new(
                 kind: Definition::Kind::AttrReader,
@@ -108,8 +140,9 @@ module Spoom
                 full_name: symbol.full_name,
                 location: symbol_def.location,
               )
+              definition.ignored! if @ignored.include?(symbol_def)
+              definition.alive! if @references.key?(symbol.name)
               define(definition)
-              plugins.each { |plugin| plugin.internal_on_define_accessor(symbol_def, definition) }
             when Model::AttrWriter
               definition = Definition.new(
                 kind: Definition::Kind::AttrWriter,
@@ -117,13 +150,11 @@ module Spoom
                 full_name: "#{symbol.full_name}=",
                 location: symbol_def.location,
               )
+              definition.ignored! if @ignored.include?(symbol_def)
+              definition.alive! if @references.key?(symbol.name)
               define(definition)
-              plugins.each { |plugin| plugin.internal_on_define_accessor(symbol_def, definition) }
             end
           end
-        end
-        @references.keys.each do |name|
-          definitions_for_name(name).each(&:alive!)
         end
       end
 
