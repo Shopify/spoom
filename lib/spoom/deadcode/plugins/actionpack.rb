@@ -42,7 +42,7 @@ module Spoom
           arg = send.args.first
           case arg
           when Prism::SymbolNode
-            indexer.reference_method(arg.unescaped, send.node)
+            @index.reference_method(arg.unescaped, send.location)
           end
 
           send.each_arg_assoc do |key, value|
@@ -50,9 +50,9 @@ module Spoom
 
             case key
             when "if", "unless"
-              indexer.reference_method(value.slice.delete_prefix(":"), send.node) if value
+              @index.reference_method(value.slice.delete_prefix(":"), send.location) if value
             else
-              indexer.reference_constant(camelize(key), send.node)
+              @index.reference_constant(camelize(key), send.location)
             end
           end
         end

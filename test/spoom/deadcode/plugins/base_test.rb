@@ -104,7 +104,7 @@ module Spoom
               return if send.args.empty?
 
               method_name = send.args.first.slice.delete_prefix(":")
-              indexer.reference_method(method_name, send.node)
+              @index.reference_method(method_name, send.location)
             end
           end
 

@@ -29,9 +29,14 @@ module Spoom
         (@definitions[definition.name] ||= []) << definition
       end
 
-      sig { params(reference: Reference).void }
-      def reference(reference)
-        (@references[reference.name] ||= []) << reference
+      sig { params(name: String, location: Location).void }
+      def reference_constant(name, location)
+        (@references[name] ||= []) << Reference.new(name: name, kind: Reference::Kind::Constant, location: location)
+      end
+
+      sig { params(name: String, location: Location).void }
+      def reference_method(name, location)
+        (@references[name] ||= []) << Reference.new(name: name, kind: Reference::Kind::Method, location: location)
       end
 
       # Mark all definitions having a reference of the same name as `alive`

@@ -24,29 +24,29 @@ module Spoom
         def on_send(indexer, send)
           case send.name
           when "const_defined?", "const_get", "const_source_location"
-            reference_symbol_as_constant(indexer, send, T.must(send.args.first))
+            reference_symbol_as_constant(send, T.must(send.args.first))
           when "send", "__send__", "try"
             arg = send.args.first
-            indexer.reference_method(arg.unescaped, send.node) if arg.is_a?(Prism::SymbolNode)
+            @index.reference_method(arg.unescaped, send.location) if arg.is_a?(Prism::SymbolNode)
           when "alias_method"
             last_arg = send.args.last
 
             if last_arg.is_a?(Prism::SymbolNode) || last_arg.is_a?(Prism::StringNode)
-              indexer.reference_method(last_arg.unescaped, send.node)
+              @index.reference_method(last_arg.unescaped, send.location)
             end
           end
         end
 
         private
 
-        sig { params(indexer: Indexer, send: Send, node: Prism::Node).void }
-        def reference_symbol_as_constant(indexer, send, node)
+        sig { params(send: Send, node: Prism::Node).void }
+        def reference_symbol_as_constant(send, node)
           case node
           when Prism::SymbolNode
-            indexer.reference_constant(node.unescaped, send.node)
+            @index.reference_constant(node.unescaped, send.location)
           when Prism::StringNode
             node.unescaped.split("::").each do |name|
-              indexer.reference_constant(name, send.node) unless name.empty?
+              @index.reference_constant(name, send.location) unless name.empty?
             end
           end
         end

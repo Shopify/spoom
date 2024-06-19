@@ -23,7 +23,7 @@ module Spoom
           return unless send.recv.nil? && SETUP_AND_TEARDOWN_METHODS.include?(send.name)
 
           send.each_arg(Prism::SymbolNode) do |arg|
-            indexer.reference_method(T.must(arg.value), send.node)
+            @index.reference_method(T.must(arg.value), send.location)
           end
         end
       end

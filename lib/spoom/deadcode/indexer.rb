@@ -26,12 +26,12 @@ module Spoom
 
       sig { override.params(node: Prism::AliasMethodNode).void }
       def visit_alias_method_node(node)
-        reference_method(node.old_name.slice, node)
+        @index.reference_method(node.old_name.slice, node_location(node))
       end
 
       sig { override.params(node: Prism::AndNode).void }
       def visit_and_node(node)
-        reference_method(node.operator_loc.slice, node)
+        @index.reference_method(node.operator_loc.slice, node_location(node))
         super
       end
 
@@ -40,7 +40,7 @@ module Spoom
         expression = node.expression
         case expression
         when Prism::SymbolNode
-          reference_method(expression.unescaped, expression)
+          @index.reference_method(expression.unescaped, node_location(node))
         else
           visit(expression)
         end
@@ -49,24 +49,24 @@ module Spoom
       sig { override.params(node: Prism::CallAndWriteNode).void }
       def visit_call_and_write_node(node)
         visit(node.receiver)
-        reference_method(node.read_name.to_s, node)
-        reference_method(node.write_name.to_s, node)
+        @index.reference_method(node.read_name.to_s, node_location(node))
+        @index.reference_method(node.write_name.to_s, node_location(node))
         visit(node.value)
       end
 
       sig { override.params(node: Prism::CallOperatorWriteNode).void }
       def visit_call_operator_write_node(node)
         visit(node.receiver)
-        reference_method(node.read_name.to_s, node)
-        reference_method(node.write_name.to_s, node)
+        @index.reference_method(node.read_name.to_s, node_location(node))
+        @index.reference_method(node.write_name.to_s, node_location(node))
         visit(node.value)
       end
 
       sig { override.params(node: Prism::CallOrWriteNode).void }
       def visit_call_or_write_node(node)
         visit(node.receiver)
-        reference_method(node.read_name.to_s, node)
-        reference_method(node.write_name.to_s, node)
+        @index.reference_method(node.read_name.to_s, node_location(node))
+        @index.reference_method(node.write_name.to_s, node_location(node))
         visit(node.value)
       end
 
@@ -79,6 +79,7 @@ module Spoom
             recv: node.receiver,
             args: node.arguments&.arguments || [],
             block: node.block,
+            location: node_location(node),
           ),
         )
       end
@@ -92,19 +93,19 @@ module Spoom
 
       sig { override.params(node: Prism::ConstantAndWriteNode).void }
       def visit_constant_and_write_node(node)
-        reference_constant(node.name.to_s, node)
+        @index.reference_constant(node.name.to_s, node_location(node))
         visit(node.value)
       end
 
       sig { override.params(node: Prism::ConstantOperatorWriteNode).void }
       def visit_constant_operator_write_node(node)
-        reference_constant(node.name.to_s, node)
+        @index.reference_constant(node.name.to_s, node_location(node))
         visit(node.value)
       end
 
       sig { override.params(node: Prism::ConstantOrWriteNode).void }
       def visit_constant_or_write_node(node)
-        reference_constant(node.name.to_s, node)
+        @index.reference_constant(node.name.to_s, node_location(node))
         visit(node.value)
       end
 
@@ -113,7 +114,7 @@ module Spoom
         parent = node.parent
 
         visit(parent) if parent
-        reference_constant(node.name.to_s, node)
+        @index.reference_constant(node.name.to_s, node_location(node))
       end
 
       sig { override.params(node: Prism::ConstantPathWriteNode).void }
@@ -124,7 +125,7 @@ module Spoom
 
       sig { override.params(node: Prism::ConstantReadNode).void }
       def visit_constant_read_node(node)
-        reference_constant(node.name.to_s, node)
+        @index.reference_constant(node.name.to_s, node_location(node))
       end
 
       sig { override.params(node: Prism::ConstantWriteNode).void }
@@ -135,31 +136,31 @@ module Spoom
       sig { override.params(node: Prism::LocalVariableAndWriteNode).void }
       def visit_local_variable_and_write_node(node)
         name = node.name.to_s
-        reference_method(name, node)
-        reference_method("#{name}=", node)
+        @index.reference_method(name, node_location(node))
+        @index.reference_method("#{name}=", node_location(node))
         visit(node.value)
       end
 
       sig { override.params(node: Prism::LocalVariableOperatorWriteNode).void }
       def visit_local_variable_operator_write_node(node)
         name = node.name.to_s
-        reference_method(name, node)
-        reference_method("#{name}=", node)
+        @index.reference_method(name, node_location(node))
+        @index.reference_method("#{name}=", node_location(node))
         visit(node.value)
       end
 
       sig { override.params(node: Prism::LocalVariableOrWriteNode).void }
       def visit_local_variable_or_write_node(node)
         name = node.name.to_s
-        reference_method(name, node)
-        reference_method("#{name}=", node)
+        @index.reference_method(name, node_location(node))
+        @index.reference_method("#{name}=", node_location(node))
         visit(node.value)
       end
 
       sig { override.params(node: Prism::LocalVariableWriteNode).void }
       def visit_local_variable_write_node(node)
         visit(node.value)
-        reference_method("#{node.name}=", node)
+        @index.reference_method("#{node.name}=", node_location(node))
       end
 
       sig { override.params(node: Prism::ModuleNode).void }
@@ -173,7 +174,7 @@ module Spoom
         node.lefts.each do |const|
           case const
           when Prism::LocalVariableTargetNode
-            reference_method("#{const.name}=", node)
+            @index.reference_method("#{const.name}=", node_location(node))
           end
         end
         visit(node.value)
@@ -181,7 +182,7 @@ module Spoom
 
       sig { override.params(node: Prism::OrNode).void }
       def visit_or_node(node)
-        reference_method(node.operator_loc.slice, node)
+        @index.reference_method(node.operator_loc.slice, node_location(node))
         super
       end
 
@@ -193,31 +194,19 @@ module Spoom
           plugin.internal_on_send(self, send)
         end
 
-        reference_method(send.name, send.node)
+        @index.reference_method(send.name, send.location)
 
         case send.name
         when "<", ">", "<=", ">="
           # For comparison operators, we also reference the `<=>` method
-          reference_method("<=>", send.node)
+          @index.reference_method("<=>", send.location)
         end
 
         visit_all(send.args)
         visit(send.block)
       end
 
-      # Reference indexing
-
-      sig { params(name: String, node: Prism::Node).void }
-      def reference_constant(name, node)
-        @index.reference(Reference.new(name: name, kind: Reference::Kind::Constant, location: node_location(node)))
-      end
-
-      sig { params(name: String, node: Prism::Node).void }
-      def reference_method(name, node)
-        @index.reference(Reference.new(name: name, kind: Reference::Kind::Method, location: node_location(node)))
-      end
-
-      # Node utils
+      private
 
       sig { params(node: Prism::Node).returns(Location) }
       def node_location(node)

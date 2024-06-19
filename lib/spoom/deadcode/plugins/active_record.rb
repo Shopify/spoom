@@ -74,7 +74,7 @@ module Spoom
         def on_send(indexer, send)
           if send.recv.nil? && CALLBACKS.include?(send.name)
             send.each_arg(Prism::SymbolNode) do |arg|
-              indexer.reference_method(arg.unescaped, send.node)
+              @index.reference_method(arg.unescaped, send.location)
             end
             return
           end
@@ -85,7 +85,7 @@ module Spoom
           when *CRUD_METHODS
             send.each_arg_assoc do |key, _value|
               key = key.slice.delete_suffix(":")
-              indexer.reference_method("#{key}=", send.node)
+              @index.reference_method("#{key}=", send.location)
             end
           when *ARRAY_METHODS
             send.each_arg(Prism::ArrayNode) do |arg|
@@ -96,7 +96,7 @@ module Spoom
                   next unless assoc.is_a?(Prism::AssocNode)
 
                   key = assoc.key.slice.delete_suffix(":")
-                  indexer.reference_method("#{key}=", send.node)
+                  @index.reference_method("#{key}=", send.location)
                 end
               end
             end
