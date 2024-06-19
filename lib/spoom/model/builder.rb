@@ -144,7 +144,7 @@ module Spoom
 
       sig { override.params(node: Prism::CallNode).void }
       def visit_call_node(node)
-        return if node.receiver
+        return if node.receiver && !node.receiver.is_a?(Prism::SelfNode)
 
         current_namespace = @namespace_nesting.last
 
