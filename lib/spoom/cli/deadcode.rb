@@ -82,7 +82,7 @@ module Spoom
 
         model = Spoom::Model.new
         index = Spoom::Deadcode::Index.new(model)
-        plugins = plugin_classes.map(&:new)
+        plugins = plugin_classes.map { |plugin| plugin.new(index) }
 
         $stderr.puts "Indexing #{blue(files.size.to_s)} files..."
         files.each do |file|

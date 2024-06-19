@@ -23,7 +23,7 @@ module Spoom
 
           model = Model.new
           index = Deadcode::Index.new(model)
-          plugins = plugin_classes.map(&:new)
+          plugins = plugin_classes.map { |plugin| plugin.new(index) }
 
           files.each do |file|
             content = project.read(file)

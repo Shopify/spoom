@@ -125,6 +125,11 @@ module Spoom
           end
         end
 
+        sig { params(index: Index).void }
+        def initialize(index)
+          @index = index
+        end
+
         # Indexing event methods
 
         # Called when an accessor is defined.
