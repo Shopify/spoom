@@ -134,6 +134,55 @@ module Spoom
         assert_equal(model["Foo::C"], model.resolve_symbol("C", context: context))
       end
 
+      def test_resolve_symbol_from_singleton_class
+        model = model(<<~RB)
+          C = 1
+
+          module Foo
+            class << self
+            end
+          end
+
+          class Bar
+            class << self
+              C = 2
+            end
+          end
+        RB
+
+        context = ["<Class:Foo>"]
+        assert_equal(model["C"], model.resolve_symbol("::C", context: context))
+        assert_equal(model["C"], model.resolve_symbol("C", context: context))
+
+        context = ["<Class:Bar>"]
+        assert_equal(model["<Class:Bar>::C"], model.resolve_symbol("C", context: context))
+      end
+
+      def test_resolve_symbol_from_namespaces
+        model = model(<<~RB)
+          C = 1
+
+          module Foo
+            class << self
+            end
+          end
+
+          class Bar
+            class << self
+              C = 2
+            end
+          end
+        RB
+
+        namespace = T.cast(model["<Class:Foo>"].definitions.first, Namespace)
+        assert_equal(model["C"], namespace.resolve_symbol(model, "::C"))
+        assert_equal(model["C"], namespace.resolve_symbol(model, "C"))
+
+        namespace = T.cast(model["<Class:Bar>"].definitions.first, Namespace)
+        assert_equal(model["C"], namespace.resolve_symbol(model, "::C"))
+        assert_equal(model["<Class:Bar>::C"], namespace.resolve_symbol(model, "C"))
+      end
+
       def test_symbols_hierarchy_for_classes
         model = model(<<~RB)
           class A; end
@@ -185,6 +234,56 @@ module Spoom
 
         assert_empty(model.supertypes(model["E"]))
         assert_empty(model.subtypes(model["E"]))
+      end
+
+      def test_symbols_hierarchy_for_singleton_classes
+        model = model(<<~RB)
+          module M1; end
+
+          module M2
+            include M1
+          end
+
+          module M3
+            include M2
+            extend M2
+          end
+
+          module M4
+            include M2
+
+            class << self
+              include M3
+            end
+          end
+        RB
+
+        model.symbols_hierarchy.show_dot(transitive: false)
+
+        assert_equal(
+          ["B", "C"],
+          model.subtypes(model["A"]).map(&:full_name).sort,
+        )
+
+        assert_equal(
+          ["A", "B", "D"],
+          model.supertypes(model["C"]).map(&:full_name).sort,
+        )
+
+        assert_empty(model.supertypes(model["E"]))
+        assert_empty(model.subtypes(model["E"]))
+      end
+
+      def test_linearization
+        model = model(<<~RB)
+          module M1; end
+
+          module M2
+            prepend M1
+          end
+        RB
+
+        p model.linearization_of(model["M2"]).map(&:full_name)
       end
 
       private

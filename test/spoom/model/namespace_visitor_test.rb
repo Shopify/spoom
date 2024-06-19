@@ -24,6 +24,12 @@ module Spoom
           super
         end
 
+        sig { override.params(node: Prism::SingletonClassNode).void }
+        def visit_singleton_class_node(node)
+          @namespaces_for_locs[loc_string(node.location)] = @names_nesting.join("::")
+          super
+        end
+
         sig { override.params(node: Prism::ModuleNode).void }
         def visit_module_node(node)
           @namespaces_for_locs[loc_string(node.location)] = @names_nesting.join("::")
@@ -92,6 +98,52 @@ module Spoom
             "-:7:0-7:16" => "M6",
             "-:8:0-8:18" => "M7::M8",
             "-:9:0-9:21" => "M9::M10",
+          },
+          namespaces,
+        )
+      end
+
+      def test_visit_singleton_classes
+        namespaces = namespaces_for_locs(<<~RB)
+          class << self; end
+
+          module M1
+            class << self
+              class << self; end
+            end
+
+            module M2
+              class << self; end
+
+              module ::M3
+                class << self; end
+              end
+
+              class M4
+                class << self; end
+              end
+            end
+
+            module M5::M6
+              class << self; end
+            end
+          end
+        RB
+
+        assert_equal(
+          {
+            "-:1:0-1:18" => "<Class:Object>",
+            "-:3:0-23:3" => "M1",
+            "-:4:2-6:5" => "<Class:M1>",
+            "-:5:4-5:22" => "<Class:<Class:M1>>",
+            "-:8:2-18:5" => "M1::M2",
+            "-:9:4-9:22" => "<Class:M1::M2>",
+            "-:11:4-13:7" => "M3",
+            "-:12:6-12:24" => "<Class:M3>",
+            "-:15:4-17:7" => "M1::M2::M4",
+            "-:16:6-16:24" => "<Class:M1::M2::M4>",
+            "-:20:2-22:5" => "M1::M5::M6",
+            "-:21:4-21:22" => "<Class:M1::M5::M6>",
           },
           namespaces,
         )

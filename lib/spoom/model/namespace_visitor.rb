@@ -32,7 +32,6 @@ module Spoom
             super
 
             # Restore the name nesting once we finished visited the class
-            @names_nesting.clear
             @names_nesting = old_nesting
           else
             @names_nesting << constant_path
@@ -41,6 +40,16 @@ module Spoom
 
             @names_nesting.pop
           end
+        when Prism::SingletonClassNode
+          old_nesting = @names_nesting.dup
+          @names_nesting.clear
+          @names_nesting << if old_nesting.empty?
+            "<Class:Object>"
+          else
+            "<Class:#{old_nesting.join("::")}>"
+          end
+          super
+          @names_nesting = old_nesting
         else
           super
         end
