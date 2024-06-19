@@ -20,8 +20,8 @@ module Spoom
           "to_s",
         )
 
-        sig { override.params(indexer: Indexer, send: Send).void }
-        def on_send(indexer, send)
+        sig { override.params(send: Send).void }
+        def on_send(send)
           case send.name
           when "const_defined?", "const_get", "const_source_location"
             reference_symbol_as_constant(send, T.must(send.args.first))

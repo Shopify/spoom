@@ -7,8 +7,8 @@ module Spoom
       class ActionMailer < Base
         extend T::Sig
 
-        sig { override.params(indexer: Indexer, send: Send).void }
-        def on_send(indexer, send)
+        sig { override.params(send: Send).void }
+        def on_send(send)
           return unless send.recv.nil? && ActionPack::CALLBACKS.include?(send.name)
 
           send.each_arg(Prism::SymbolNode) do |arg|

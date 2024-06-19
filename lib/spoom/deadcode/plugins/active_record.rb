@@ -70,8 +70,8 @@ module Spoom
           T::Array[String],
         )
 
-        sig { override.params(indexer: Indexer, send: Send).void }
-        def on_send(indexer, send)
+        sig { override.params(send: Send).void }
+        def on_send(send)
           if send.recv.nil? && CALLBACKS.include?(send.name)
             send.each_arg(Prism::SymbolNode) do |arg|
               @index.reference_method(arg.unescaped, send.location)

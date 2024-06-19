@@ -35,8 +35,8 @@ module Spoom
           definition.ignored! if ignored_class_name?(owner.name)
         end
 
-        sig { override.params(indexer: Indexer, send: Send).void }
-        def on_send(indexer, send)
+        sig { override.params(send: Send).void }
+        def on_send(send)
           return unless send.recv.nil? && CALLBACKS.include?(send.name)
 
           arg = send.args.first

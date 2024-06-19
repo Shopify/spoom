@@ -99,7 +99,7 @@ module Spoom
 
         def test_on_send
           plugin = Class.new(Base) do
-            def on_send(indexer, send)
+            def on_send(send)
               return unless send.name == "dsl_method"
               return if send.args.empty?
 

@@ -24,8 +24,8 @@ module Spoom
           "unsubscribed",
         )
 
-        sig { override.params(indexer: Indexer, send: Send).void }
-        def on_send(indexer, send)
+        sig { override.params(send: Send).void }
+        def on_send(send)
           return unless send.recv.nil? && send.name == "field"
 
           arg = send.args.first

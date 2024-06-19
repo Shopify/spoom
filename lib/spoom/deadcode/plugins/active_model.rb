@@ -10,8 +10,8 @@ module Spoom
         ignore_classes_inheriting_from(/^(::)?ActiveModel::EachValidator$/)
         ignore_methods_named("validate_each")
 
-        sig { override.params(indexer: Indexer, send: Send).void }
-        def on_send(indexer, send)
+        sig { override.params(send: Send).void }
+        def on_send(send)
           return if send.recv
 
           case send.name

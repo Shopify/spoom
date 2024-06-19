@@ -277,15 +277,9 @@ module Spoom
         #   end
         # end
         # ~~~
-        sig { params(indexer: Indexer, send: Send).void }
-        def on_send(indexer, send)
+        sig { params(send: Send).void }
+        def on_send(send)
           # no-op
-        end
-
-        # Do not override this method, use `on_send` instead.
-        sig { params(indexer: Indexer, send: Send).void }
-        def internal_on_send(indexer, send)
-          on_send(indexer, send)
         end
 
         private

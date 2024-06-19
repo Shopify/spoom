@@ -191,7 +191,7 @@ module Spoom
         visit(send.recv)
 
         @plugins.each do |plugin|
-          plugin.internal_on_send(self, send)
+          plugin.on_send(send)
         end
 
         @index.reference_method(send.name, send.location)
