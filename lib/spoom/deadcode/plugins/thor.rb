@@ -9,11 +9,15 @@ module Spoom
 
         ignore_methods_named("exit_on_failure?")
 
-        sig { override.params(indexer: Indexer, definition: Definition).void }
-        def on_define_method(indexer, definition)
-          return if indexer.nesting_block # method defined in `no_commands do ... end`, we don't want to ignore it
+        sig { override.params(symbol_def: Model::Method, definition: Definition).void }
+        def on_define_method(symbol_def, definition)
+          owner = symbol_def.owner
+          return unless owner.is_a?(Model::Class)
 
-          definition.ignored! if indexer.nesting_class_superclass_name =~ /^(::)?Thor$/
+          superclass_name = owner.superclass_name
+          return unless superclass_name
+
+          definition.ignored! if superclass_name =~ /^(::)?Thor$/
         end
       end
     end

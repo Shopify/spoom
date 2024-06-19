@@ -12,9 +12,9 @@ module Spoom
           definition.ignored! if sorbet_type_member?(symbol_def) || sorbet_enum_constant?(symbol_def)
         end
 
-        sig { override.params(indexer: Indexer, definition: Definition).void }
-        def on_define_method(indexer, definition)
-          definition.ignored! if indexer.last_sig =~ /(override|overridable)/
+        sig { override.params(symbol_def: Model::Method, definition: Definition).void }
+        def on_define_method(symbol_def, definition)
+          definition.ignored! if symbol_def.sigs.any? { |sig| sig.string =~ /(override|overridable)/ }
         end
 
         private

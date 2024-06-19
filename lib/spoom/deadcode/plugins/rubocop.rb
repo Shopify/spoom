@@ -25,16 +25,17 @@ module Spoom
           definition.ignored! if ignored_subclass?(superclass_name) && RUBOCOP_CONSTANTS.include?(symbol_def.name)
         end
 
-        sig { override.params(indexer: Indexer, definition: Definition).void }
-        def on_define_method(indexer, definition)
-          definition.ignored! if rubocop_method?(indexer, definition)
-        end
+        sig { override.params(symbol_def: Model::Method, definition: Definition).void }
+        def on_define_method(symbol_def, definition)
+          return unless symbol_def.name == "on_send"
 
-        private
+          owner = symbol_def.owner
+          return unless owner.is_a?(Model::Class)
 
-        sig { params(indexer: Indexer, definition: Definition).returns(T::Boolean) }
-        def rubocop_method?(indexer, definition)
-          ignored_subclass?(indexer.nesting_class_superclass_name) && definition.name == "on_send"
+          superclass_name = owner.superclass_name
+          return unless superclass_name
+
+          definition.ignored! if ignored_subclass?(superclass_name)
         end
       end
     end

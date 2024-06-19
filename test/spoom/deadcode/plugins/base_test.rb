@@ -65,8 +65,8 @@ module Spoom
 
         def test_on_define_method
           plugin = Class.new(Base) do
-            def on_define_method(indexer, definition)
-              definition.ignored! if definition.name == "method1"
+            def on_define_method(symbol_def, definition)
+              definition.ignored! if symbol_def.name == "method1"
             end
           end
 

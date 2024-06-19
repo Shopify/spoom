@@ -215,24 +215,22 @@ module Spoom
         #
         # ~~~rb
         # class MyPlugin < Spoom::Deadcode::Plugins::Base
-        #   def on_define_method(indexer, definition)
-        #     super # So the `ignore_method_names` DSL is still applied
-        #
-        #     definition.ignored! if definition.name == "foo"
+        #   def on_define_method(symbol_def, symbol)
+        #     definition.ignored! if symbol_def.name == "foo"
         #   end
         # end
         # ~~~
-        sig { params(indexer: Indexer, definition: Definition).void }
-        def on_define_method(indexer, definition)
+        sig { params(symbol_def: Model::Method, definition: Definition).void }
+        def on_define_method(symbol_def, definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_method` instead.
-        sig { params(indexer: Indexer, definition: Definition).void }
-        def internal_on_define_method(indexer, definition)
-          definition.ignored! if ignored_method_name?(definition.name)
+        sig { params(symbol_def: Model::Method, definition: Definition).void }
+        def internal_on_define_method(symbol_def, definition)
+          definition.ignored! if ignored_method_name?(symbol_def.name)
 
-          on_define_method(indexer, definition)
+          on_define_method(symbol_def, definition)
         end
 
         # Called when a module is defined.
