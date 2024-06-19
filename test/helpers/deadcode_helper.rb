@@ -34,6 +34,7 @@ module Spoom
             end
           end
 
+          model.finalize!
           index.apply_plugins!(plugins)
           index.finalize!
           index
