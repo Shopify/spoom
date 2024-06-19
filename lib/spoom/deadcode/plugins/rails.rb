@@ -9,9 +9,9 @@ module Spoom
 
         ignore_constants_named("APP_PATH", "ENGINE_PATH", "ENGINE_ROOT")
 
-        sig { override.params(indexer: Indexer, definition: Definition).void }
-        def on_define_class(indexer, definition)
-          definition.ignored! if file_is_helper?(indexer)
+        sig { override.params(symbol_def: Model::Class, definition: Definition).void }
+        def on_define_class(symbol_def, definition)
+          definition.ignored! if symbol_def.location.file.match?(%r{app/helpers/.*\.rb$})
         end
 
         sig { override.params(indexer: Indexer, definition: Definition).void }
