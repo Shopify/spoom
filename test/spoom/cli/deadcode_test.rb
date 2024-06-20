@@ -103,6 +103,40 @@ module Spoom
         assert_empty(result.out)
         refute(result.status)
       end
+
+      def test_deadcode_from_path_arguments_with_custom_excludes
+        @project.write!("app/lib/foo.rb", <<~RUBY)
+          def foo; end
+        RUBY
+
+        @project.write!("app/vendor/foo.rb", <<~RUBY)
+          def bar; end
+        RUBY
+
+        @project.write!("app/tmp/foo.rb", <<~RUBY)
+          def ignored1; end
+        RUBY
+
+        @project.write!("app/log/foo.rb", <<~RUBY)
+          def ignored2; end
+        RUBY
+
+        result = @project.spoom("deadcode --no-color app/ --exclude tmp/ log/")
+        assert_equal(<<~ERR, result.err)
+          Collecting files...
+          Indexing 2 files...
+          Analyzing 2 definitions against 0 references...
+
+          Candidates:
+            bar app/vendor/foo.rb:1:0-1:12
+            foo app/lib/foo.rb:1:0-1:12
+
+            Found 2 dead candidates
+        ERR
+        assert_empty(result.out)
+        refute(result.status)
+      end
+
       def test_deadcode_with_deadcode
         @project.write!("lib/foo.rb", <<~RUBY)
           def foo; end
