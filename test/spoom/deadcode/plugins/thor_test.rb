@@ -13,10 +13,10 @@ module Spoom
         def test_ignore_thor_commands
           @project.write!("foo.rb", <<~RB)
             class Foo < Thor
-              def ignored; end
+              def ignored1; end
 
               no_commands do
-                def dead; end
+                def ignored2; end
               end
             end
 
@@ -26,8 +26,8 @@ module Spoom
           index = index_with_plugins
           refute_ignored(index, "Foo")
           refute_ignored(index, "Bar")
-          assert_ignored(index, "ignored")
-          refute_ignored(index, "dead")
+          assert_ignored(index, "ignored1")
+          assert_ignored(index, "ignored2")
         end
 
         def test_ignore_thor_methods
