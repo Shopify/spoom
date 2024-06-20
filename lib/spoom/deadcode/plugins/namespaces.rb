@@ -5,8 +5,6 @@ module Spoom
   module Deadcode
     module Plugins
       class Namespaces < Base
-        extend T::Sig
-
         sig { override.params(definition: Model::Class).void }
         def on_define_class(definition)
           @index.ignore(definition) if used_as_namespace?(definition)

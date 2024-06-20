@@ -5,8 +5,6 @@ module Spoom
   module Deadcode
     module Plugins
       class Rails < Base
-        extend T::Sig
-
         ignore_constants_named("APP_PATH", "ENGINE_PATH", "ENGINE_ROOT")
 
         sig { override.params(definition: Model::Class).void }

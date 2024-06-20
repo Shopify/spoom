@@ -10,8 +10,6 @@ module Spoom
         extend T::Sig
         extend T::Helpers
 
-        include Model::SendsVisitor::Listener
-
         abstract!
 
         class << self
@@ -266,24 +264,6 @@ module Spoom
           on_define_module(definition)
         end
 
-        # Called when a send is being processed
-        #
-        # ~~~rb
-        # class MyPlugin < Spoom::Deadcode::Plugins::Base
-        #   def on_send(send)
-        #     return unless send.name == "dsl_method"
-        #     return if send.args.empty?
-        #
-        #     method_name = send.args.first.slice.delete_prefix(":")
-        #     @index.reference_method(method_name, send.node, send.loc)
-        #   end
-        # end
-        # ~~~
-        sig { override.params(send: Model::Send).void }
-        def on_send(send)
-          # no-op
-        end
-
         private
 
         # DSL support
@@ -343,22 +323,6 @@ module Spoom
         sig { params(const: Symbol).returns(T::Array[Regexp]) }
         def patterns(const)
           self.class.instance_variable_get(const) || []
-        end
-
-        # Plugin utils
-
-        sig { params(name: String).returns(String) }
-        def camelize(name)
-          name = T.must(name.split("::").last)
-          name = T.must(name.split("/").last)
-          name = name.gsub(/[^a-zA-Z0-9_]/, "")
-          name = name.sub(/^[a-z\d]*/, &:capitalize)
-          name = name.gsub(%r{(?:_|(/))([a-z\d]*)}) do
-            s1 = Regexp.last_match(1)
-            s2 = Regexp.last_match(2)
-            "#{s1}#{s2&.capitalize}"
-          end
-          name
         end
       end
     end

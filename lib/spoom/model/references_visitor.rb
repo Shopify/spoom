@@ -10,11 +10,12 @@ module Spoom
       sig { returns(T::Array[Reference]) }
       attr_reader :references
 
-      sig { params(file: String).void }
-      def initialize(file)
+      sig { params(file: String, listeners: T::Array[SendListener]).void }
+      def initialize(file, listeners: [])
         super()
 
         @file = file
+        @listeners = listeners
         @references = T.let([], T::Array[Reference])
       end
 
@@ -76,6 +77,17 @@ module Spoom
           # For comparison operators, we also reference the `<=>` method
           reference_method("<=>", node)
         end
+
+        send = Send.new(
+          node: node,
+          name: node.name.to_s,
+          recv: node.receiver,
+          args: node.arguments&.arguments || [],
+          block: node.block,
+          location: node_location(node),
+        )
+
+        @listeners.each { |listener| listener.on_send(self, send) }
 
         visit(node.arguments)
         visit(node.block)
@@ -179,17 +191,27 @@ module Spoom
         super
       end
 
-      private
-
-      sig { params(name: String, node: Prism::Node).void }
+      sig { params(name: String, node: T.any(Prism::Node, Send)).void }
       def reference_constant(name, node)
-        @references << Reference.constant(name, node_location(node))
+        location = if node.is_a?(Send)
+          node.location
+        else
+          node_location(node)
+        end
+        @references << Reference.constant(name, location)
       end
 
-      sig { params(name: String, node: Prism::Node).void }
+      sig { params(name: String, node: T.any(Prism::Node, Send)).void }
       def reference_method(name, node)
-        @references << Reference.method(name, node_location(node))
+        location = if node.is_a?(Send)
+          node.location
+        else
+          node_location(node)
+        end
+        @references << Reference.method(name, location)
       end
+
+      private
 
       sig { params(node: Prism::Node).returns(Location) }
       def node_location(node)

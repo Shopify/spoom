@@ -5,8 +5,6 @@ module Spoom
   module Deadcode
     module Plugins
       class Sorbet < Base
-        extend T::Sig
-
         sig { override.params(definition: Model::Constant).void }
         def on_define_constant(definition)
           @index.ignore(definition) if sorbet_type_member?(definition) || sorbet_enum_constant?(definition)
