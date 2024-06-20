@@ -17,29 +17,12 @@ module Spoom
         super()
 
         @path = path
-        @file_name = T.let(File.basename(path), String)
         @source = source
         @index = index
         @plugins = plugins
-        @previous_node = T.let(nil, T.nilable(Prism::Node))
-        @names_nesting = T.let([], T::Array[String])
-        @nodes_nesting = T.let([], T::Array[Prism::Node])
-        @in_const_field = T.let(false, T::Boolean)
-        @in_opassign = T.let(false, T::Boolean)
-        @in_symbol_literal = T.let(false, T::Boolean)
       end
 
       # Visit
-
-      sig { override.params(node: T.nilable(Prism::Node)).void }
-      def visit(node)
-        return unless node
-
-        @nodes_nesting << node
-        super
-        @nodes_nesting.pop
-        @previous_node = node
-      end
 
       sig { override.params(node: Prism::AliasMethodNode).void }
       def visit_alias_method_node(node)
@@ -102,32 +85,9 @@ module Spoom
 
       sig { override.params(node: Prism::ClassNode).void }
       def visit_class_node(node)
-        constant_path = node.constant_path.slice
-
-        if constant_path.start_with?("::")
-          full_name = constant_path.delete_prefix("::")
-
-          # We found a top level definition such as `class ::A; end`, we need to reset the name nesting
-          old_nesting = @names_nesting.dup
-          @names_nesting.clear
-          @names_nesting << full_name
-
-          # We do not call `super` here because we don't want to visit the `constant` again
-          visit(node.superclass) if node.superclass
-          visit(node.body)
-
-          # Restore the name nesting once we finished visited the class
-          @names_nesting.clear
-          @names_nesting = old_nesting
-        else
-          @names_nesting << constant_path
-
-          # We do not call `super` here because we don't want to visit the `constant` again
-          visit(node.superclass) if node.superclass
-          visit(node.body)
-
-          @names_nesting.pop
-        end
+        # We do not call `super` here because we don't want to visit the `constant` again
+        visit(node.superclass)
+        visit(node.body)
       end
 
       sig { override.params(node: Prism::ConstantAndWriteNode).void }
@@ -204,29 +164,8 @@ module Spoom
 
       sig { override.params(node: Prism::ModuleNode).void }
       def visit_module_node(node)
-        constant_path = node.constant_path.slice
-
-        if constant_path.start_with?("::")
-          full_name = constant_path.delete_prefix("::")
-
-          # We found a top level definition such as `class ::A; end`, we need to reset the name nesting
-          old_nesting = @names_nesting.dup
-          @names_nesting.clear
-          @names_nesting << full_name
-
-          visit(node.body)
-
-          # Restore the name nesting once we finished visited the class
-          @names_nesting.clear
-          @names_nesting = old_nesting
-        else
-          @names_nesting << constant_path
-
-          # We do not call `super` here because we don't want to visit the `constant` again
-          visit(node.body)
-
-          @names_nesting.pop
-        end
+        # We do not call `super` here because we don't want to visit the `constant` again
+        visit(node.body)
       end
 
       sig { override.params(node: Prism::MultiWriteNode).void }
@@ -250,72 +189,20 @@ module Spoom
       def visit_send(send)
         visit(send.recv)
 
-        case send.name
-        when "attr_reader"
-          send.args.each do |arg|
-            next unless arg.is_a?(Prism::SymbolNode)
-
-            name = arg.unescaped
-            define_attr_reader(name, [*@names_nesting, name].join("::"), arg)
-          end
-        when "attr_writer"
-          send.args.each do |arg|
-            next unless arg.is_a?(Prism::SymbolNode)
-
-            name = arg.unescaped
-            define_attr_writer("#{name}=", "#{[*@names_nesting, name].join("::")}=", arg)
-          end
-        when "attr_accessor"
-          send.args.each do |arg|
-            next unless arg.is_a?(Prism::SymbolNode)
-
-            name = arg.unescaped
-            full_name = [*@names_nesting, name].join("::")
-            define_attr_reader(name, full_name, arg)
-            define_attr_writer("#{name}=", "#{full_name}=", arg)
-          end
-        else
-          @plugins.each do |plugin|
-            plugin.internal_on_send(self, send)
-          end
-
-          reference_method(send.name, send.node)
-
-          case send.name
-          when "<", ">", "<=", ">="
-            # For comparison operators, we also reference the `<=>` method
-            reference_method("<=>", send.node)
-          end
-
-          visit_all(send.args)
-          visit(send.block)
+        @plugins.each do |plugin|
+          plugin.internal_on_send(self, send)
         end
-      end
 
-      # Definition indexing
+        reference_method(send.name, send.node)
 
-      sig { params(name: String, full_name: String, node: Prism::Node).void }
-      def define_attr_reader(name, full_name, node)
-        definition = Definition.new(
-          kind: Definition::Kind::AttrReader,
-          name: name,
-          full_name: full_name,
-          location: node_location(node),
-        )
-        @index.define(definition)
-        @plugins.each { |plugin| plugin.internal_on_define_accessor(self, definition) }
-      end
+        case send.name
+        when "<", ">", "<=", ">="
+          # For comparison operators, we also reference the `<=>` method
+          reference_method("<=>", send.node)
+        end
 
-      sig { params(name: String, full_name: String, node: Prism::Node).void }
-      def define_attr_writer(name, full_name, node)
-        definition = Definition.new(
-          kind: Definition::Kind::AttrWriter,
-          name: name,
-          full_name: full_name,
-          location: node_location(node),
-        )
-        @index.define(definition)
-        @plugins.each { |plugin| plugin.internal_on_define_accessor(self, definition) }
+        visit_all(send.args)
+        visit(send.block)
       end
 
       # Reference indexing
@@ -328,62 +215,6 @@ module Spoom
       sig { params(name: String, node: Prism::Node).void }
       def reference_method(name, node)
         @index.reference(Reference.new(name: name, kind: Reference::Kind::Method, location: node_location(node)))
-      end
-
-      # Context
-
-      sig { returns(Prism::Node) }
-      def current_node
-        T.must(@nodes_nesting.last)
-      end
-
-      sig { type_parameters(:N).params(type: T::Class[T.type_parameter(:N)]).returns(T.nilable(T.type_parameter(:N))) }
-      def nesting_node(type)
-        @nodes_nesting.reverse_each do |node|
-          return T.unsafe(node) if node.is_a?(type)
-        end
-
-        nil
-      end
-
-      sig { returns(T.nilable(Prism::ClassNode)) }
-      def nesting_class
-        nesting_node(Prism::ClassNode)
-      end
-
-      sig { returns(T.nilable(Prism::BlockNode)) }
-      def nesting_block
-        nesting_node(Prism::BlockNode)
-      end
-
-      sig { returns(T.nilable(Prism::CallNode)) }
-      def nesting_call
-        nesting_node(Prism::CallNode)
-      end
-
-      sig { returns(T.nilable(String)) }
-      def nesting_class_name
-        nesting_class = self.nesting_class
-        return unless nesting_class
-
-        nesting_class.name.to_s
-      end
-
-      sig { returns(T.nilable(String)) }
-      def nesting_class_superclass_name
-        nesting_class_superclass = nesting_class&.superclass
-        return unless nesting_class_superclass
-
-        nesting_class_superclass.slice.delete_prefix("::")
-      end
-
-      sig { returns(T.nilable(String)) }
-      def last_sig
-        previous_call = @previous_node
-        return unless previous_call.is_a?(Prism::CallNode)
-        return unless previous_call.name == :sig
-
-        previous_call.slice
       end
 
       # Node utils

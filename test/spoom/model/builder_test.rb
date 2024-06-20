@@ -208,9 +208,9 @@ module Spoom
           end
 
           class C1
-            self.attr_reader :ignored
-            self.attr_writer :ignored
-            self.attr_accessor :ignored
+            self.attr_reader :a7
+            self.attr_writer :a8
+            self.attr_accessor :a9
           end
 
           C1.attr_reader :ignored
@@ -230,6 +230,9 @@ module Spoom
             "AttrAccessor(a4)",
             "AttrReader(C1::a5)",
             "AttrWriter(C1::a6)",
+            "AttrReader(C1::a7)",
+            "AttrWriter(C1::a8)",
+            "AttrAccessor(C1::a9)",
           ],
           model.symbols.values
             .flat_map(&:definitions)

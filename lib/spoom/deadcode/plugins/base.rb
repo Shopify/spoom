@@ -135,20 +135,20 @@ module Spoom
         #
         # ~~~rb
         # class MyPlugin < Spoom::Deadcode::Plugins::Base
-        #   def on_define_accessor(indexer, definition)
-        #     definition.ignored! if definition.name == "foo"
+        #   def on_define_accessor(symbol_def, definition)
+        #     definition.ignored! if symbol_def.name == "foo"
         #   end
         # end
         # ~~~
-        sig { params(indexer: Indexer, definition: Definition).void }
-        def on_define_accessor(indexer, definition)
+        sig { params(symbol_def: Model::Attr, definition: Definition).void }
+        def on_define_accessor(symbol_def, definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_accessor` instead.
-        sig { params(indexer: Indexer, definition: Definition).void }
-        def internal_on_define_accessor(indexer, definition)
-          on_define_accessor(indexer, definition)
+        sig { params(symbol_def: Model::Attr, definition: Definition).void }
+        def internal_on_define_accessor(symbol_def, definition)
+          on_define_accessor(symbol_def, definition)
         end
 
         # Called when a class is defined.
