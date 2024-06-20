@@ -22,14 +22,14 @@ module Spoom
       sig { returns(T::Hash[String, T::Array[Definition]]) }
       attr_reader :definitions
 
-      sig { returns(T::Hash[String, T::Array[Reference]]) }
+      sig { returns(T::Hash[String, T::Array[Model::Reference]]) }
       attr_reader :references
 
       sig { params(model: Model).void }
       def initialize(model)
         @model = model
         @definitions = T.let({}, T::Hash[String, T::Array[Definition]])
-        @references = T.let({}, T::Hash[String, T::Array[Reference]])
+        @references = T.let({}, T::Hash[String, T::Array[Model::Reference]])
         @ignored = T.let(Set.new, T::Set[Model::SymbolDef])
       end
 
@@ -48,7 +48,7 @@ module Spoom
 
       sig { params(erb: String, file: String, plugins: T::Array[Plugins::Base]).void }
       def index_erb(erb, file:, plugins: [])
-        index_ruby(Spoom::Deadcode::ERB.new(erb).src, file: file, plugins: plugins)
+        index_ruby(Deadcode::ERB.new(erb).src, file: file, plugins: plugins)
       end
 
       sig { params(rb: String, file: String, plugins: T::Array[Plugins::Base]).void }
@@ -56,8 +56,15 @@ module Spoom
         node = Spoom.parse_ruby(rb, file: file)
 
         # Index definitions
-        model_builder = Spoom::Model::Builder.new(@model, file)
+        model_builder = Model::Builder.new(@model, file)
         model_builder.visit(node)
+
+        # Index references
+        refs_visitor = Model::ReferencesVisitor.new(file)
+        refs_visitor.visit(node)
+        refs_visitor.references.each do |ref|
+          (@references[ref.name] ||= []) << ref
+        end
 
         # Index references and sends
         indexer = Indexer.new(file, self, plugins: plugins)
@@ -75,12 +82,12 @@ module Spoom
 
       sig { params(name: String, location: Location).void }
       def reference_constant(name, location)
-        (@references[name] ||= []) << Reference.new(name: name, kind: Reference::Kind::Constant, location: location)
+        (@references[name] ||= []) << Model::Reference.constant(name, location)
       end
 
       sig { params(name: String, location: Location).void }
       def reference_method(name, location)
-        (@references[name] ||= []) << Reference.new(name: name, kind: Reference::Kind::Method, location: location)
+        (@references[name] ||= []) << Model::Reference.method(name, location)
       end
 
       sig { params(symbol_def: Model::SymbolDef).void }
@@ -213,7 +220,7 @@ module Spoom
         @definitions.values.flatten
       end
 
-      sig { returns(T::Array[Reference]) }
+      sig { returns(T::Array[Model::Reference]) }
       def all_references
         @references.values.flatten
       end

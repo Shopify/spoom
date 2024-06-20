@@ -13,7 +13,6 @@ require_relative "deadcode/index"
 require_relative "deadcode/indexer"
 
 require_relative "deadcode/definition"
-require_relative "deadcode/reference"
 require_relative "deadcode/send"
 require_relative "deadcode/plugins"
 require_relative "deadcode/remover"
