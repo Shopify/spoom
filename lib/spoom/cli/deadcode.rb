@@ -24,7 +24,7 @@ module Spoom
         desc: "Allowed mime types"
       option :exclude,
         type: :array,
-        default: ["vendor/", "sorbet/"],
+        default: ["vendor/", "sorbet/", "tmp/", "log/", "node_modules/"],
         aliases: :x,
         desc: "Exclude paths"
       option :show_files,

@@ -31,6 +31,78 @@ module Spoom
         assert(result.status)
       end
 
+      def test_deadcode_from_exec_path_with_default_excludes
+        @project.write!("lib/foo.rb", <<~RUBY)
+          def foo; end
+        RUBY
+
+        @project.write!("vendor/foo.rb", <<~RUBY)
+          def ignored1; end
+        RUBY
+
+        @project.write!("sorbet/foo.rb", <<~RUBY)
+          def ignored2; end
+        RUBY
+
+        @project.write!("tmp/foo.rb", <<~RUBY)
+          def ignored3; end
+        RUBY
+
+        @project.write!("log/foo.rb", <<~RUBY)
+          def ignored4; end
+        RUBY
+
+        @project.write!("node_modules/log.rb", <<~RUBY)
+          def ignored5; end
+        RUBY
+
+        result = @project.spoom("deadcode --no-color")
+        assert_equal(<<~ERR, result.err)
+          Collecting files...
+          Indexing 1 files...
+          Analyzing 1 definitions against 0 references...
+
+          Candidates:
+            foo lib/foo.rb:1:0-1:12
+
+            Found 1 dead candidates
+        ERR
+        assert_empty(result.out)
+        refute(result.status)
+      end
+
+      def test_deadcode_from_exec_path_with_custom_excludes
+        @project.write!("lib/foo.rb", <<~RUBY)
+          def foo; end
+        RUBY
+
+        @project.write!("vendor/foo.rb", <<~RUBY)
+          def bar; end
+        RUBY
+
+        @project.write!("tmp/foo.rb", <<~RUBY)
+          def ignored1; end
+        RUBY
+
+        @project.write!("log/foo.rb", <<~RUBY)
+          def ignored2; end
+        RUBY
+
+        result = @project.spoom("deadcode --no-color --exclude tmp/ log/")
+        assert_equal(<<~ERR, result.err)
+          Collecting files...
+          Indexing 2 files...
+          Analyzing 2 definitions against 0 references...
+
+          Candidates:
+            bar vendor/foo.rb:1:0-1:12
+            foo lib/foo.rb:1:0-1:12
+
+            Found 2 dead candidates
+        ERR
+        assert_empty(result.out)
+        refute(result.status)
+      end
       def test_deadcode_with_deadcode
         @project.write!("lib/foo.rb", <<~RUBY)
           def foo; end
