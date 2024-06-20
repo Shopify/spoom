@@ -183,12 +183,12 @@ module Spoom
 
       sig { params(name: String, node: Prism::Node).void }
       def reference_constant(name, node)
-        @references << Reference.new(name: name, kind: Reference::Kind::Constant, location: node_location(node))
+        @references << Reference.constant(name, node_location(node))
       end
 
       sig { params(name: String, node: Prism::Node).void }
       def reference_method(name, node)
-        @references << Reference.new(name: name, kind: Reference::Kind::Method, location: node_location(node))
+        @references << Reference.method(name, node_location(node))
       end
 
       sig { params(node: Prism::Node).returns(Location) }

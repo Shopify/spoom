@@ -17,6 +17,20 @@ module Spoom
         end
       end
 
+      class << self
+        extend T::Sig
+
+        sig { params(name: String, location: Spoom::Location).returns(Reference) }
+        def constant(name, location)
+          new(name: name, kind: Kind::Constant, location: location)
+        end
+
+        sig { params(name: String, location: Spoom::Location).returns(Reference) }
+        def method(name, location)
+          new(name: name, kind: Kind::Method, location: location)
+        end
+      end
+
       const :kind, Kind
       const :name, String
       const :location, Spoom::Location

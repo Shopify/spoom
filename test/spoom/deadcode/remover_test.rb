@@ -1617,7 +1617,7 @@ module Spoom
 
         model = Model.new
         index = Index.new(model)
-        Deadcode.index_ruby(index, ruby_string, file: file)
+        index.index_ruby(ruby_string, file: file)
         index.finalize!
 
         definitions = definitions_for_name(index, def_name)
