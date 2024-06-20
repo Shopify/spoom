@@ -24,7 +24,7 @@ module Spoom
         desc: "Allowed mime types"
       option :exclude,
         type: :array,
-        default: ["vendor/", "sorbet/"],
+        default: ["vendor/", "sorbet/", "tmp/", "log/", "node_modules/"],
         aliases: :x,
         desc: "Exclude paths"
       option :show_files,
@@ -58,7 +58,9 @@ module Spoom
         collector = FileCollector.new(
           allow_extensions: options[:allowed_extensions],
           allow_mime_types: options[:allowed_mime_types],
-          exclude_patterns: options[:exclude].map { |p| Pathname.new(File.join(exec_path, p, "**")).cleanpath.to_s },
+          exclude_patterns: paths.flat_map do |path|
+            options[:exclude].map { |excluded| Pathname.new(File.join(path, excluded, "**")).cleanpath.to_s }
+          end,
         )
         collector.visit_paths(paths)
         files = collector.files.sort
