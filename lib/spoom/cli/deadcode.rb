@@ -80,7 +80,8 @@ module Spoom
           $stderr.puts
         end
 
-        index = Spoom::Deadcode::Index.new
+        model = Spoom::Model.new
+        index = Spoom::Deadcode::Index.new(model)
 
         $stderr.puts "Indexing #{blue(files.size.to_s)} files..."
         files.each do |file|
@@ -88,6 +89,7 @@ module Spoom
           content = Spoom::Deadcode::ERB.new(content).src if file.end_with?(".erb")
 
           tree = Spoom.parse_ruby(content, file: file)
+          Spoom::Model::Builder.new(model, file).visit(tree)
           Spoom::Deadcode.index_node(index, tree, content, file: file, plugins: plugins)
         rescue ParseError => e
           say_error("Error parsing #{file}: #{e.message}")
@@ -96,6 +98,8 @@ module Spoom
           say_error("Error indexing #{file}: #{e.message}")
           next
         end
+
+        index.finalize!(plugins: plugins)
 
         if options[:show_defs]
           $stderr.puts "\nDefinitions:"
@@ -123,7 +127,6 @@ module Spoom
         references_count = index.references.size.to_s
         $stderr.puts "Analyzing #{blue(definitions_count)} definitions against #{blue(references_count)} references..."
 
-        index.finalize!
         dead = index.definitions.values.flatten.select(&:dead?)
 
         if options[:sort] == "name"

@@ -1611,11 +1611,13 @@ module Spoom
 
       sig { params(ruby_string: String, def_name: String).returns(String) }
       def remove(ruby_string, def_name)
+        file = "file.rb"
         context = Context.mktmp!
-        context.write!("file.rb", ruby_string)
+        context.write!(file, ruby_string)
 
-        index = Index.new
-        Deadcode.index_ruby(index, ruby_string, file: "file.rb")
+        model = Model.new
+        index = Index.new(model)
+        Deadcode.index_ruby(index, ruby_string, file: file)
         index.finalize!
 
         definitions = definitions_for_name(index, def_name)
