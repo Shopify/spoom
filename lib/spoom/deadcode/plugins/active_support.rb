@@ -18,7 +18,7 @@ module Spoom
 
         SETUP_AND_TEARDOWN_METHODS = T.let(["setup", "teardown"], T::Array[String])
 
-        sig { override.params(send: Send).void }
+        sig { override.params(send: Model::Send).void }
         def on_send(send)
           return unless send.recv.nil? && SETUP_AND_TEARDOWN_METHODS.include?(send.name)
 

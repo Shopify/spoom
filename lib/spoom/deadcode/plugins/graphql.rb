@@ -24,7 +24,7 @@ module Spoom
           "unsubscribed",
         )
 
-        sig { override.params(send: Send).void }
+        sig { override.params(send: Model::Send).void }
         def on_send(send)
           return unless send.recv.nil? && send.name == "field"
 

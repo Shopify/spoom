@@ -20,7 +20,7 @@ module Spoom
           "to_s",
         )
 
-        sig { override.params(send: Send).void }
+        sig { override.params(send: Model::Send).void }
         def on_send(send)
           case send.name
           when "const_defined?", "const_get", "const_source_location"
@@ -39,7 +39,7 @@ module Spoom
 
         private
 
-        sig { params(send: Send, node: Prism::Node).void }
+        sig { params(send: Model::Send, node: Prism::Node).void }
         def reference_symbol_as_constant(send, node)
           case node
           when Prism::SymbolNode

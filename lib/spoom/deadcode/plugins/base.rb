@@ -10,6 +10,8 @@ module Spoom
         extend T::Sig
         extend T::Helpers
 
+        include Model::SendsVisitor::Listener
+
         abstract!
 
         class << self
@@ -277,7 +279,7 @@ module Spoom
         #   end
         # end
         # ~~~
-        sig { params(send: Send).void }
+        sig { override.params(send: Model::Send).void }
         def on_send(send)
           # no-op
         end

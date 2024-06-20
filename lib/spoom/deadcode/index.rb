@@ -66,9 +66,12 @@ module Spoom
           (@references[ref.name] ||= []) << ref
         end
 
-        # Index references and sends
-        indexer = Indexer.new(file, self, plugins: plugins)
-        indexer.visit(node)
+        # Index sends
+        sends_visitor = Model::SendsVisitor.new(file, plugins)
+        sends_visitor.visit(node)
+        sends_visitor.sends.each do |send|
+          plugins.each { |plugin| plugin.on_send(send) }
+        end
       rescue ParseError => e
         raise e
       rescue => e

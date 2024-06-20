@@ -70,7 +70,7 @@ module Spoom
           T::Array[String],
         )
 
-        sig { override.params(send: Send).void }
+        sig { override.params(send: Model::Send).void }
         def on_send(send)
           if send.recv.nil? && CALLBACKS.include?(send.name)
             send.each_arg(Prism::SymbolNode) do |arg|
