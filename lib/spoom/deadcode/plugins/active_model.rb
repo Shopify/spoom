@@ -7,7 +7,7 @@ module Spoom
       class ActiveModel < Base
         extend T::Sig
 
-        ignore_classes_inheriting_from(/^(::)?ActiveModel::EachValidator$/)
+        ignore_classes_inheriting_from("ActiveModel::EachValidator")
         ignore_methods_named("validate_each")
 
         sig { override.params(send: Send).void }

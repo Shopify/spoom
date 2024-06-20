@@ -14,10 +14,7 @@ module Spoom
           owner = definition.owner
           return unless owner.is_a?(Model::Class)
 
-          superclass_name = owner.superclass_name
-          return unless superclass_name
-
-          @index.ignore(definition) if superclass_name =~ /^(::)?Thor$/
+          @index.ignore(definition) if subclass_of?(owner, "Thor")
         end
       end
     end

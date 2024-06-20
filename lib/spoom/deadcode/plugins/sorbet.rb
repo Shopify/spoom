@@ -29,10 +29,7 @@ module Spoom
           owner = definition.owner
           return false unless owner.is_a?(Model::Class)
 
-          superclass_name = owner.superclass_name
-          return false unless superclass_name
-
-          superclass_name.match?(/^(::)?T::Enum$/)
+          subclass_of?(owner, "T::Enum")
         end
       end
     end
