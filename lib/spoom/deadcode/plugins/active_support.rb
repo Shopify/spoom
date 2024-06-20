@@ -18,12 +18,12 @@ module Spoom
 
         SETUP_AND_TEARDOWN_METHODS = T.let(["setup", "teardown"], T::Array[String])
 
-        sig { override.params(indexer: Indexer, send: Send).void }
-        def on_send(indexer, send)
+        sig { override.params(send: Send).void }
+        def on_send(send)
           return unless send.recv.nil? && SETUP_AND_TEARDOWN_METHODS.include?(send.name)
 
           send.each_arg(Prism::SymbolNode) do |arg|
-            indexer.reference_method(T.must(arg.value), send.node)
+            @index.reference_method(T.must(arg.value), send.location)
           end
         end
       end

@@ -12,6 +12,7 @@ module Spoom
       const :recv, T.nilable(Prism::Node), default: nil
       const :args, T::Array[Prism::Node], default: []
       const :block, T.nilable(Prism::Node), default: nil
+      const :location, Location
 
       sig do
         type_parameters(:T)

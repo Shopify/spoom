@@ -48,7 +48,7 @@ module Spoom
         sig { params(context: Context).returns(Deadcode::Index) }
         def index_with_plugins(context)
           plugins = Deadcode.load_custom_plugins(context)
-          deadcode_index(plugins: plugins)
+          deadcode_index(plugin_classes: plugins)
         end
       end
     end

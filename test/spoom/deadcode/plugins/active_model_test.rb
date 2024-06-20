@@ -113,7 +113,7 @@ module Spoom
 
         sig { returns(Index) }
         def index_with_plugins
-          deadcode_index(plugins: [ActiveModel.new])
+          deadcode_index(plugin_classes: [ActiveModel])
         end
       end
     end

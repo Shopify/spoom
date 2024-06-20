@@ -27,22 +27,22 @@ module Spoom
 
         ignore_classes_named(/Controller$/)
 
-        sig { override.params(symbol_def: Model::Method, definition: Definition).void }
-        def on_define_method(symbol_def, definition)
-          owner = symbol_def.owner
+        sig { override.params(definition: Model::Method).void }
+        def on_define_method(definition)
+          owner = definition.owner
           return unless owner.is_a?(Model::Class)
 
-          definition.ignored! if ignored_class_name?(owner.name)
+          @index.ignore(definition) if ignored_class_name?(owner.name)
         end
 
-        sig { override.params(indexer: Indexer, send: Send).void }
-        def on_send(indexer, send)
+        sig { override.params(send: Send).void }
+        def on_send(send)
           return unless send.recv.nil? && CALLBACKS.include?(send.name)
 
           arg = send.args.first
           case arg
           when Prism::SymbolNode
-            indexer.reference_method(arg.unescaped, send.node)
+            @index.reference_method(arg.unescaped, send.location)
           end
 
           send.each_arg_assoc do |key, value|
@@ -50,9 +50,9 @@ module Spoom
 
             case key
             when "if", "unless"
-              indexer.reference_method(value.slice.delete_prefix(":"), send.node) if value
+              @index.reference_method(value.slice.delete_prefix(":"), send.location) if value
             else
-              indexer.reference_constant(camelize(key), send.node)
+              @index.reference_constant(camelize(key), send.location)
             end
           end
         end

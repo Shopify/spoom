@@ -24,21 +24,21 @@ module Spoom
           "unsubscribed",
         )
 
-        sig { override.params(indexer: Indexer, send: Send).void }
-        def on_send(indexer, send)
+        sig { override.params(send: Send).void }
+        def on_send(send)
           return unless send.recv.nil? && send.name == "field"
 
           arg = send.args.first
           return unless arg.is_a?(Prism::SymbolNode)
 
-          indexer.reference_method(arg.unescaped, send.node)
+          @index.reference_method(arg.unescaped, send.location)
 
           send.each_arg_assoc do |key, value|
             key = key.slice.delete_suffix(":")
             next unless key == "resolver_method"
             next unless value
 
-            indexer.reference_method(value.slice.delete_prefix(":"), send.node)
+            @index.reference_method(value.slice.delete_prefix(":"), send.location)
           end
         end
       end

@@ -14,8 +14,8 @@ module Spoom
 
         def test_on_define_accessor
           plugin = Class.new(Base) do
-            def on_define_accessor(symbol_def, definition)
-              definition.ignored! if symbol_def.name == "attr_reader1"
+            def on_define_accessor(definition)
+              @index.ignore(definition) if definition.name == "attr_reader1"
             end
           end
 
@@ -24,15 +24,15 @@ module Spoom
             attr_reader :attr_reader2
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "attr_reader1")
           refute_ignored(index, "attr_reader2")
         end
 
         def test_on_define_class
           plugin = Class.new(Base) do
-            def on_define_class(symbol_def, definition)
-              definition.ignored! if symbol_def.name == "Class1"
+            def on_define_class(definition)
+              @index.ignore(definition) if definition.name == "Class1"
             end
           end
 
@@ -41,15 +41,15 @@ module Spoom
             class Class2; end
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "Class1")
           refute_ignored(index, "Class2")
         end
 
         def test_on_define_constant
           plugin = Class.new(Base) do
-            def on_define_constant(symbol_def, definition)
-              definition.ignored! if symbol_def.name == "CONST1"
+            def on_define_constant(definition)
+              @index.ignore(definition) if definition.name == "CONST1"
             end
           end
 
@@ -58,15 +58,15 @@ module Spoom
             CONST2 = 2
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "CONST1")
           refute_ignored(index, "CONST2")
         end
 
         def test_on_define_method
           plugin = Class.new(Base) do
-            def on_define_method(symbol_def, definition)
-              definition.ignored! if symbol_def.name == "method1"
+            def on_define_method(definition)
+              @index.ignore(definition) if definition.name == "method1"
             end
           end
 
@@ -75,15 +75,15 @@ module Spoom
             def method2; end
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "method1")
           refute_ignored(index, "method2")
         end
 
         def test_on_define_module
           plugin = Class.new(Base) do
-            def on_define_module(symbol_def, definition)
-              definition.ignored! if symbol_def.name == "Module1"
+            def on_define_module(definition)
+              @index.ignore(definition) if definition.name == "Module1"
             end
           end
 
@@ -92,19 +92,19 @@ module Spoom
             module Module2; end
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "Module1")
           refute_ignored(index, "Module2")
         end
 
         def test_on_send
           plugin = Class.new(Base) do
-            def on_send(indexer, send)
+            def on_send(send)
               return unless send.name == "dsl_method"
               return if send.args.empty?
 
               method_name = send.args.first.slice.delete_prefix(":")
-              indexer.reference_method(method_name, send.node)
+              @index.reference_method(method_name, send.location)
             end
           end
 
@@ -117,7 +117,7 @@ module Spoom
             def method3; end
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_alive(index, "method1")
           assert_alive(index, "method2")
           assert_dead(index, "method3")
@@ -142,7 +142,7 @@ module Spoom
             class ClassRE2; end
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "Class1")
           assert_ignored(index, "Class2")
           refute_ignored(index, "Class3")
@@ -167,7 +167,7 @@ module Spoom
             CONSTRE2 = 42
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "CONST1")
           assert_ignored(index, "CONST2")
           refute_ignored(index, "CONST3")
@@ -192,7 +192,7 @@ module Spoom
             def name_regexp2; end
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "name1")
           assert_ignored(index, "name2")
           refute_ignored(index, "name3")
@@ -217,7 +217,7 @@ module Spoom
             module ::ModuleRE2; end
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "Module1")
           assert_ignored(index, "Module2")
           refute_ignored(index, "Module3")
@@ -244,7 +244,7 @@ module Spoom
             class SubclassRE2 < SuperclassRE2; end
           RB
 
-          index = deadcode_index(plugins: [plugin.new])
+          index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "Subclass1")
           assert_ignored(index, "Subclass2")
           refute_ignored(index, "Subclass3")

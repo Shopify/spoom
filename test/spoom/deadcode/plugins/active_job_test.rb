@@ -53,7 +53,7 @@ module Spoom
 
         sig { returns(Deadcode::Index) }
         def index_with_plugins
-          deadcode_index(plugins: [Plugins::ActiveJob.new])
+          deadcode_index(plugin_classes: [Plugins::ActiveJob])
         end
 
         sig { params(index: Deadcode::Index).returns(T::Array[Location]) }
