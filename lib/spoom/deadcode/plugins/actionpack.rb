@@ -7,6 +7,8 @@ module Spoom
       class ActionPack < Base
         extend T::Sig
 
+        ignore_classes_inheriting_from("ApplicationController")
+
         CALLBACKS = T.let(
           [
             "after_action",
@@ -25,14 +27,12 @@ module Spoom
           T::Array[String],
         )
 
-        ignore_classes_named(/Controller$/)
-
         sig { override.params(definition: Model::Method).void }
         def on_define_method(definition)
           owner = definition.owner
           return unless owner.is_a?(Model::Class)
 
-          @index.ignore(definition) if ignored_class_name?(owner.name)
+          @index.ignore(definition) if ignored_subclass?(owner)
         end
 
         sig { override.params(send: Send).void }

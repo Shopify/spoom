@@ -8,10 +8,10 @@ module Spoom
         extend T::Sig
 
         ignore_classes_inheriting_from(
-          /^(::)?GraphQL::Schema::Enum$/,
-          /^(::)?GraphQL::Schema::Object$/,
-          /^(::)?GraphQL::Schema::Scalar$/,
-          /^(::)?GraphQL::Schema::Union$/,
+          "GraphQL::Schema::Enum",
+          "GraphQL::Schema::Object",
+          "GraphQL::Schema::Scalar",
+          "GraphQL::Schema::Union",
         )
 
         ignore_methods_named(

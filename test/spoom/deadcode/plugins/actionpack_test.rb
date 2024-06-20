@@ -12,7 +12,7 @@ module Spoom
 
         def test_ignore_actionpack_controllers
           @project.write!("app/controllers/foo.rb", <<~RB)
-            class FooController
+            class FooController < ApplicationController
               def foo; end
             end
 

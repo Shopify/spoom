@@ -41,7 +41,7 @@ module Spoom
 
           # Document current less then ideal behavior:
           assert_ignored(index, "some_unused_private_method")
-          refute_ignored(index, "MyIndirectInheritanceMailerPreview")
+          assert_ignored(index, "MyIndirectInheritanceMailerPreview")
         end
 
         private
