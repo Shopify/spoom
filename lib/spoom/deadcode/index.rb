@@ -60,6 +60,15 @@ module Spoom
               )
               define(definition)
               plugins.each { |plugin| plugin.internal_on_define_module(symbol_def, definition) }
+            when Model::Constant
+              definition = Definition.new(
+                kind: Definition::Kind::Constant,
+                name: symbol.name,
+                full_name: symbol.full_name,
+                location: symbol_def.location,
+              )
+              define(definition)
+              plugins.each { |plugin| plugin.internal_on_define_constant(symbol_def, definition) }
             end
           end
         end

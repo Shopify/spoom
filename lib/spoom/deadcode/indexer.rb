@@ -158,20 +158,7 @@ module Spoom
 
       sig { override.params(node: Prism::ConstantPathWriteNode).void }
       def visit_constant_path_write_node(node)
-        const_path_node = node.target
-        parent = const_path_node.parent
-        name = const_path_node.name.to_s
-
-        if parent
-          visit(parent)
-
-          parent_name = parent.slice
-          full_name = [*@names_nesting, parent_name, name].compact.join("::")
-          define_constant(name, full_name, node)
-        else
-          define_constant(name, name, node)
-        end
-
+        visit(node.target.parent)
         visit(node.value)
       end
 
@@ -182,9 +169,6 @@ module Spoom
 
       sig { override.params(node: Prism::ConstantWriteNode).void }
       def visit_constant_write_node(node)
-        name = node.name.to_s
-        full_name = [*@names_nesting, name].join("::")
-        define_constant(name, full_name, node)
         visit(node.value)
       end
 
@@ -257,9 +241,6 @@ module Spoom
       def visit_multi_write_node(node)
         node.lefts.each do |const|
           case const
-          when Prism::ConstantTargetNode, Prism::ConstantPathTargetNode
-            name = const.slice
-            define_constant(T.must(name.split("::").last), [*@names_nesting, name].join("::"), const)
           when Prism::LocalVariableTargetNode
             reference_method("#{const.name}=", node)
           end
@@ -343,18 +324,6 @@ module Spoom
         )
         @index.define(definition)
         @plugins.each { |plugin| plugin.internal_on_define_accessor(self, definition) }
-      end
-
-      sig { params(name: String, full_name: String, node: Prism::Node).void }
-      def define_constant(name, full_name, node)
-        definition = Definition.new(
-          kind: Definition::Kind::Constant,
-          name: name,
-          full_name: full_name,
-          location: node_location(node),
-        )
-        @index.define(definition)
-        @plugins.each { |plugin| plugin.internal_on_define_constant(self, definition) }
       end
 
       sig { params(name: String, full_name: String, node: Prism::Node).void }
