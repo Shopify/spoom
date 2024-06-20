@@ -179,7 +179,7 @@ module Spoom
         def internal_on_define_class(definition)
           if ignored_class_name?(definition.name)
             @index.ignore(definition)
-          elsif ignored_subclass?(definition.superclass_name&.delete_prefix("::"))
+          elsif ignored_subclass?(definition)
             @index.ignore(definition)
           end
 
@@ -286,6 +286,14 @@ module Spoom
 
         # DSL support
 
+        sig { params(definition: Model::Namespace, superclass_name: String).returns(T::Boolean) }
+        def subclass_of?(definition, superclass_name)
+          superclass_symbol = @index.model.symbols[superclass_name]
+          return false unless superclass_symbol
+
+          @index.model.symbols_hierarchy.edge?(definition.symbol, superclass_symbol)
+        end
+
         sig { params(name: T.nilable(String)).returns(T::Boolean) }
         def ignored_class_name?(name)
           return false unless name
@@ -293,11 +301,16 @@ module Spoom
           ignored_name?(name, :@ignored_class_names, :@ignored_class_patterns)
         end
 
-        sig { params(superclass_name: T.nilable(String)).returns(T::Boolean) }
-        def ignored_subclass?(superclass_name)
-          return false unless superclass_name
+        sig { params(definition: Model::Class).returns(T::Boolean) }
+        def ignored_subclass?(definition)
+          superclass_name = definition.superclass_name
+          return true if superclass_name && ignored_name?(
+            superclass_name,
+            :@ignored_subclasses_of_names,
+            :@ignored_subclasses_of_patterns,
+          )
 
-          ignored_name?(superclass_name, :@ignored_subclasses_of_names, :@ignored_subclasses_of_patterns)
+          names(:@ignored_subclasses_of_names).any? { |superclass_name| subclass_of?(definition, superclass_name) }
         end
 
         sig { params(name: String).returns(T::Boolean) }

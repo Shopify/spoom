@@ -240,14 +240,16 @@ module Spoom
             class Subclass1 < ::Superclass1; end
             class Subclass2 < Superclass2; end
             class Subclass3 < Superclass3; end
+            class Subclass4 < Subclass2; end
             class SubclassRE1 < SuperclassRE1; end
             class SubclassRE2 < SuperclassRE2; end
           RB
 
           index = deadcode_index(plugin_classes: [plugin])
           assert_ignored(index, "Subclass1")
-          assert_ignored(index, "Subclass2")
+          assert_alive(index, "Subclass2")
           refute_ignored(index, "Subclass3")
+          assert_ignored(index, "Subclass4")
           assert_ignored(index, "SubclassRE1")
           assert_ignored(index, "SubclassRE2")
         end
