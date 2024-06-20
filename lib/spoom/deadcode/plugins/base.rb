@@ -243,22 +243,22 @@ module Spoom
         #
         # ~~~rb
         # class MyPlugin < Spoom::Deadcode::Plugins::Base
-        #   def on_define_module(indexer, definition)
-        #     definition.ignored! if definition.name == "Foo"
+        #   def on_define_module(symbol_def, definition)
+        #     definition.ignored! if symbol_def.name == "Foo"
         #   end
         # end
         # ~~~
-        sig { params(indexer: Indexer, definition: Definition).void }
-        def on_define_module(indexer, definition)
+        sig { params(symbol_def: Model::Module, definition: Definition).void }
+        def on_define_module(symbol_def, definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_module` instead.
-        sig { params(indexer: Indexer, definition: Definition).void }
-        def internal_on_define_module(indexer, definition)
-          definition.ignored! if ignored_module_name?(definition.name)
+        sig { params(symbol_def: Model::Module, definition: Definition).void }
+        def internal_on_define_module(symbol_def, definition)
+          definition.ignored! if ignored_module_name?(symbol_def.name)
 
-          on_define_module(indexer, definition)
+          on_define_module(symbol_def, definition)
         end
 
         # Called when a send is being processed
