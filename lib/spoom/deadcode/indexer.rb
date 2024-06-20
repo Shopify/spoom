@@ -12,12 +12,11 @@ module Spoom
       sig { returns(Index) }
       attr_reader :index
 
-      sig { params(path: String, source: String, index: Index, plugins: T::Array[Plugins::Base]).void }
-      def initialize(path, source, index, plugins: [])
+      sig { params(path: String, index: Index, plugins: T::Array[Plugins::Base]).void }
+      def initialize(path, index, plugins: [])
         super()
 
         @path = path
-        @source = source
         @index = index
         @plugins = plugins
       end

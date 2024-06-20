@@ -6,6 +6,16 @@ module Spoom
     class Index
       extend T::Sig
 
+      class Error < Spoom::Error
+        extend T::Sig
+
+        sig { params(message: String, parent: Exception).void }
+        def initialize(message, parent:)
+          super(message)
+          set_backtrace(parent.backtrace)
+        end
+      end
+
       sig { returns(Model) }
       attr_reader :model
 
@@ -24,6 +34,39 @@ module Spoom
       end
 
       # Indexing
+
+      sig { params(file: String, plugins: T::Array[Plugins::Base]).void }
+      def index_file(file, plugins: [])
+        if file.end_with?(".erb")
+          erb = File.read(file)
+          index_erb(erb, file: file, plugins: plugins)
+        else
+          rb = File.read(file)
+          index_ruby(rb, file: file, plugins: plugins)
+        end
+      end
+
+      sig { params(erb: String, file: String, plugins: T::Array[Plugins::Base]).void }
+      def index_erb(erb, file:, plugins: [])
+        index_ruby(Spoom::Deadcode::ERB.new(erb).src, file: file, plugins: plugins)
+      end
+
+      sig { params(rb: String, file: String, plugins: T::Array[Plugins::Base]).void }
+      def index_ruby(rb, file:, plugins: [])
+        node = Spoom.parse_ruby(rb, file: file)
+
+        # Index definitions
+        model_builder = Spoom::Model::Builder.new(@model, file)
+        model_builder.visit(node)
+
+        # Index references and sends
+        indexer = Indexer.new(file, self, plugins: plugins)
+        indexer.visit(node)
+      rescue ParseError => e
+        raise e
+      rescue => e
+        raise Error.new("Error while indexing #{file} (#{e.message})", parent: e)
+      end
 
       sig { params(definition: Definition).void }
       def define(definition)
