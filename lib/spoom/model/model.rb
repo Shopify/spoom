@@ -58,10 +58,6 @@ module Spoom
 
       abstract!
 
-      # The symbol this definition belongs to
-      sig { returns(Symbol) }
-      attr_reader :symbol
-
       # The enclosing namespace this definition belongs to
       sig { returns(T.nilable(Namespace)) }
       attr_reader :owner
