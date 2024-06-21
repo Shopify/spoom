@@ -102,15 +102,6 @@ module Spoom
       self[from].parents.include?(to)
     end
 
-    # Show the POSet as a DOT graph using xdot (used for debugging)
-    sig { params(direct: T::Boolean, transitive: T::Boolean).void }
-    def show_dot(direct: true, transitive: true)
-      Open3.popen3("xdot -") do |stdin, _stdout, _stderr, _thread|
-        stdin.write(to_dot(direct: direct, transitive: transitive))
-        stdin.close
-      end
-    end
-
     # Return the POSet as a DOT graph
     sig { params(direct: T::Boolean, transitive: T::Boolean).returns(String) }
     def to_dot(direct: true, transitive: true)
