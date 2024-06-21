@@ -231,9 +231,6 @@ module Spoom
     sig { returns(T::Hash[String, Symbol]) }
     attr_reader :symbols
 
-    sig { returns(Poset[Symbol]) }
-    attr_reader :symbols_hierarchy
-
     sig { void }
     def initialize
       @symbols = T.let({}, T::Hash[String, Symbol])
