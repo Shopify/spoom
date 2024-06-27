@@ -29,6 +29,12 @@ module Spoom
       def method?
         kind == Kind::Method
       end
+
+      def located_in?(paths)
+        paths.any? do |path|
+          location.file_path_match?(path)
+        end
+      end
     end
   end
 end

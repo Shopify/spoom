@@ -80,5 +80,9 @@ module Spoom
     def to_s
       "#{@file}:#{@start_line}:#{@start_column}-#{@end_line}:#{@end_column}"
     end
+
+    def file_path_match?(match)
+      file.match?(match)
+    end
   end
 end

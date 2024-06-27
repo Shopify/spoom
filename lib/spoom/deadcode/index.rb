@@ -68,8 +68,8 @@ module Spoom
       # Mark all definitions having a reference of the same name as `alive`
       #
       # To be called once all the files have been indexed and all the definitions and references discovered.
-      sig { void }
-      def finalize!
+      sig { params(exclude_references_from_paths: T::Array[String]).void }
+      def finalize!(exclude_references_from_paths: [])
         @model.symbols.each do |_full_name, symbol|
           symbol.definitions.each do |symbol_def|
             case symbol_def
@@ -151,7 +151,9 @@ module Spoom
                 location: symbol_def.location,
               )
               definition.ignored! if @ignored.include?(symbol_def)
-              definition.alive! if @references.key?(symbol.name)
+              references = @references[symbol.name]
+
+              definition.alive! if references && references.any? { |ref| !ref.located_in?(exclude_references_from_paths) }
               define(definition)
             end
           end
