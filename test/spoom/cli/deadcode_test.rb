@@ -267,6 +267,46 @@ module Spoom
         assert(result.status)
       end
 
+      def test_deadcode_load_custom_plugins
+        @project.write!("lib/foo.rb", <<~RB)
+          def foo; end
+          def foo_1; end
+          def foo_2; end
+        RB
+
+        @project.write!(".spoom/deadcode/plugins/foo.rb", <<~RB)
+          class Foo < Spoom::Deadcode::Plugins::Base
+            def on_define_method(definition)
+              index.ignore(definition) if definition.name =~ /^foo_/
+            end
+          end
+        RB
+
+        result = @project.spoom("deadcode --show-plugins --no-color")
+        assert_equal(<<~ERR, result.err)
+          Collecting files...
+
+          Loaded 7 plugins
+            Spoom::Deadcode::Plugins::Namespaces
+            Spoom::Deadcode::Plugins::Ruby
+            Spoom::Deadcode::Plugins::Minitest
+            Spoom::Deadcode::Plugins::Rake
+            Spoom::Deadcode::Plugins::Sorbet
+            Spoom::Deadcode::Plugins::Thor
+            Foo
+
+          Indexing 1 files...
+          Analyzing 3 definitions against 0 references...
+
+          Candidates:
+            foo lib/foo.rb:1:0-1:12
+
+            Found 1 dead candidates
+        ERR
+        assert_empty(result.out)
+        refute(result.status)
+      end
+
       def test_deadcode_parse_erb
         @project.write!("view.erb", <<~ERB)
           <%= foo do %>
