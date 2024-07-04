@@ -30,6 +30,16 @@ module Spoom
 
           @index.ignore(definition) if ignored_subclass?(owner)
         end
+
+        sig { override.params(send: Send).void }
+        def on_send(send)
+          case send.name
+          when "assert_predicate", "refute_predicate"
+            name = send.args[1]&.slice
+            return unless name
+
+            @index.reference_method(name.delete_prefix(":"), send.location)
+          end
         end
       end
     end

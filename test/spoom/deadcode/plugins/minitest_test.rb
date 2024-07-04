@@ -84,6 +84,26 @@ module Spoom
           refute_ignored(index, "some_other_test")
         end
 
+        def test_ignore_minitest_predicates
+          @project.write!("test/foo_test.rb", <<~RB)
+            class FooTest
+              def alive1; end
+              def alive2; end
+              def dead; end
+
+              def test_something
+                assert_predicate(foo, :alive1)
+                refute_predicate(foo, :alive2)
+              end
+            end
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "alive1")
+          assert_alive(index, "alive2")
+          assert_dead(index, "dead")
+        end
+
         private
 
         sig { returns(Deadcode::Index) }
