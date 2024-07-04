@@ -74,6 +74,7 @@ module Spoom
         end
 
         plugin_classes = Spoom::Deadcode.plugins_from_gemfile_lock(context)
+        plugin_classes.merge(Spoom::Deadcode.load_custom_plugins(context))
         if options[:show_plugins]
           $stderr.puts "\nLoaded #{blue(plugin_classes.size.to_s)} plugins\n"
           plugin_classes.each do |plugin|
