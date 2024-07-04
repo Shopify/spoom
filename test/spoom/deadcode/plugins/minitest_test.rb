@@ -10,25 +10,27 @@ module Spoom
       class MinitestTest < TestWithProject
         include Test::Helpers::DeadcodeHelper
 
-        def test_ignore_minitest_classes_based_on_name
+        def test_ignore_minitest_classes_based_on_superclasses
           @project.write!("foo.rb", <<~RB)
             class C1Test < Minitest::Test; end
           RB
 
           @project.write!("test/foo.rb", <<~RB)
-            class C2Test < SomeTest; end
+            class C2Test < ::Minitest::Test; end
           RB
 
           @project.write!("test/foo_test.rb", <<~RB)
-            class C3Test; end
-            class C4; end
+            class C3Test < ::Minitest::Test; end
+            class C4Test < C3Test; end
+            class C5Test; end
           RB
 
           index = index_with_plugins
           assert_ignored(index, "C1Test")
           assert_ignored(index, "C2Test")
-          assert_ignored(index, "C3Test")
-          refute_ignored(index, "C4")
+          assert_alive(index, "C3Test")
+          assert_ignored(index, "C4Test")
+          refute_ignored(index, "C5Test")
         end
 
         def test_ignore_minitest_methods
