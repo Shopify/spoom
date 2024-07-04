@@ -125,6 +125,9 @@ module Spoom
           end
         end
 
+        sig { returns(Index) }
+        attr_reader :index
+
         sig { params(index: Index).void }
         def initialize(index)
           @index = index
