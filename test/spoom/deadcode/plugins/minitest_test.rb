@@ -33,9 +33,34 @@ module Spoom
           refute_ignored(index, "C5Test")
         end
 
-        def test_ignore_minitest_methods
+        def test_does_not_ignore_minitest_methods_if_not_in_minitest_test_subclass
           @project.write!("test/foo_test.rb", <<~RB)
-            class FooTest
+            class FooTest < Test
+              def after_all; end
+              def around; end
+              def around_all; end
+              def before_all; end
+              def setup; end
+              def teardown; end
+              def test_something; end
+
+              def some_other_test; end
+            end
+          RB
+
+          index = index_with_plugins
+          refute_ignored(index, "after_all")
+          refute_ignored(index, "around")
+          refute_ignored(index, "around_all")
+          refute_ignored(index, "before_all")
+          refute_ignored(index, "setup")
+          refute_ignored(index, "teardown")
+          refute_ignored(index, "test_something")
+        end
+
+        def test_ignore_minitest_methods_if_in_minitest_test_subclass
+          @project.write!("test/foo_test.rb", <<~RB)
+            class FooTest < Minitest::Test
               def after_all; end
               def around; end
               def around_all; end
