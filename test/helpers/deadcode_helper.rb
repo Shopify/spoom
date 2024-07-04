@@ -28,9 +28,9 @@ module Spoom
           files.each do |file|
             content = project.read(file)
             if file.end_with?(".erb")
-              Spoom::Deadcode.index_erb(index, content, file: file, plugins: plugins)
+              index.index_erb(content, file: file, plugins: plugins)
             else
-              Spoom::Deadcode.index_ruby(index, content, file: file, plugins: plugins)
+              index.index_ruby(content, file: file, plugins: plugins)
             end
           end
 

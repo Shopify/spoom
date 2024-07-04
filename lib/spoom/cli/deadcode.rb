@@ -88,16 +88,11 @@ module Spoom
 
         $stderr.puts "Indexing #{blue(files.size.to_s)} files..."
         files.each do |file|
-          content = File.read(file)
-          content = Spoom::Deadcode::ERB.new(content).src if file.end_with?(".erb")
-
-          tree = Spoom.parse_ruby(content, file: file)
-          Spoom::Model::Builder.new(model, file).visit(tree)
-          Spoom::Deadcode.index_node(index, tree, content, file: file, plugins: plugins)
+          index.index_file(file, plugins: plugins)
         rescue ParseError => e
           say_error("Error parsing #{file}: #{e.message}")
           next
-        rescue Spoom::Deadcode::IndexerError => e
+        rescue Spoom::Deadcode::Index::Error => e
           say_error("Error indexing #{file}: #{e.message}")
           next
         end
