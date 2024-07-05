@@ -11,7 +11,7 @@ require "open3"
 
 module Spoom
   module Sorbet
-    class Error < StandardError
+    class Error < Spoom::Error
       extend T::Sig
 
       class Killed < Error; end

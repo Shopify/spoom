@@ -3,7 +3,7 @@
 
 module Spoom
   module LSP
-    class Error < StandardError
+    class Error < Spoom::Error
       class AlreadyOpen < Error; end
       class BadHeaders < Error; end
 
