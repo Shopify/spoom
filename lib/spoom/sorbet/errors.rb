@@ -18,6 +18,8 @@ module Spoom
       class Parser
         extend T::Sig
 
+        class ParseError < Spoom::Error; end
+
         HEADER = T.let(
           [
             "👋 Hey there! Heads up that this is not a release build of sorbet.",
@@ -97,14 +99,14 @@ module Spoom
 
         sig { params(error: Error).void }
         def open_error(error)
-          raise "Error: Already parsing an error!" if @current_error
+          raise ParseError, "Error: Already parsing an error!" if @current_error
 
           @current_error = error
         end
 
         sig { void }
         def close_error
-          raise "Error: Not already parsing an error!" unless @current_error
+          raise ParseError, "Error: Not already parsing an error!" unless @current_error
 
           @errors << @current_error
           @current_error = nil
@@ -112,7 +114,7 @@ module Spoom
 
         sig { params(line: String).void }
         def append_error(line)
-          raise "Error: Not already parsing an error!" unless @current_error
+          raise ParseError, "Error: Not already parsing an error!" unless @current_error
 
           filepath_match = line.match(/^    (.*?):\d+/)
           if filepath_match && filepath_match[1]
