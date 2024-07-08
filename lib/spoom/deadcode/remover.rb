@@ -145,7 +145,7 @@ module Spoom
             delete_chars(node.location.start_offset, next_node.location.start_offset)
           else
             # Should have been removed as a single MLHS node
-            raise "Unexpected case while removing constant assignment"
+            raise Error, "Unexpected case while removing constant assignment"
           end
         end
 
@@ -202,7 +202,7 @@ module Spoom
             # ~~~
             delete_chars(context.node.location.start_offset, next_node.location.start_offset)
           else
-            raise "Unexpected case while removing attr_accessor"
+            raise Error, "Unexpected case while removing attr_accessor"
           end
 
           insert_accessor(context.node, send_context, was_removed: false) if need_accessor
@@ -399,7 +399,7 @@ module Spoom
         sig { returns(Prism::Node) }
         def parent_node
           parent = @nesting.last
-          raise "No parent for node #{node}" unless parent
+          raise Error, "No parent for node #{node}" unless parent
 
           parent
         end
@@ -408,7 +408,7 @@ module Spoom
         def parent_context
           nesting = @nesting.dup
           parent = nesting.pop
-          raise "No parent context for node #{@node}" unless parent
+          raise Error, "No parent context for node #{@node}" unless parent
 
           NodeContext.new(@source, @comments, parent, nesting)
         end
@@ -419,7 +419,7 @@ module Spoom
           child_nodes = parent.child_nodes.compact
 
           index = child_nodes.index(@node)
-          raise "Node #{@node} not found in parent #{parent}" unless index
+          raise Error, "Node #{@node} not found in parent #{parent}" unless index
 
           T.must(child_nodes[0...index])
         end
@@ -435,7 +435,7 @@ module Spoom
           child_nodes = parent.child_nodes.compact
 
           index = child_nodes.index(node)
-          raise "Node #{@node} not found in nesting node #{parent}" unless index
+          raise Error, "Node #{@node} not found in nesting node #{parent}" unless index
 
           T.must(child_nodes.compact[(index + 1)..-1])
         end
