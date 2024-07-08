@@ -18,7 +18,6 @@ module Spoom
           deadcode_index
         end
 
-        puts exception.message
         assert_equal(<<~ERRORS, exception.message)
           Error while parsing foo.rb:
           - unexpected end-of-input; expected a `)` to close the parameters (at 2:0)
