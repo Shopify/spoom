@@ -8,7 +8,7 @@ module Spoom
         extend T::Sig
 
         ignore_classes_inheriting_from("ActiveModel::EachValidator")
-        ignore_methods_named("validate_each")
+        ignore_methods_named("validate_each", "persisted?")
 
         sig { override.params(send: Send).void }
         def on_send(send)
