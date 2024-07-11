@@ -24,6 +24,17 @@ module Spoom
           refute_ignored(index, "another_method")
         end
 
+        def test_ignore_persisted
+          @project.write!("app/model/validators/my_validator.rb", <<~RB)
+            class MyModel
+              def persisted?; end
+            end
+          RB
+
+          index = index_with_plugins
+          assert_ignored(index, "persisted?")
+        end
+
         def test_dead_validation_callbacks
           @project.write!("app/models/my_model.rb", <<~RB)
             class MyModel
