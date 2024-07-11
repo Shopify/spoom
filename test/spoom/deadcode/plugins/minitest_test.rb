@@ -10,30 +10,57 @@ module Spoom
       class MinitestTest < TestWithProject
         include Test::Helpers::DeadcodeHelper
 
-        def test_ignore_minitest_classes_based_on_name
+        def test_ignore_minitest_classes_based_on_superclasses
           @project.write!("foo.rb", <<~RB)
             class C1Test < Minitest::Test; end
           RB
 
           @project.write!("test/foo.rb", <<~RB)
-            class C2Test < SomeTest; end
+            class C2Test < ::Minitest::Test; end
           RB
 
           @project.write!("test/foo_test.rb", <<~RB)
-            class C3Test; end
-            class C4; end
+            class C3Test < ::Minitest::Test; end
+            class C4Test < C3Test; end
+            class C5Test; end
           RB
 
           index = index_with_plugins
           assert_ignored(index, "C1Test")
           assert_ignored(index, "C2Test")
-          assert_ignored(index, "C3Test")
-          refute_ignored(index, "C4")
+          assert_alive(index, "C3Test")
+          assert_ignored(index, "C4Test")
+          refute_ignored(index, "C5Test")
         end
 
-        def test_ignore_minitest_methods
+        def test_does_not_ignore_minitest_methods_if_not_in_minitest_test_subclass
           @project.write!("test/foo_test.rb", <<~RB)
-            class FooTest
+            class FooTest < Test
+              def after_all; end
+              def around; end
+              def around_all; end
+              def before_all; end
+              def setup; end
+              def teardown; end
+              def test_something; end
+
+              def some_other_test; end
+            end
+          RB
+
+          index = index_with_plugins
+          refute_ignored(index, "after_all")
+          refute_ignored(index, "around")
+          refute_ignored(index, "around_all")
+          refute_ignored(index, "before_all")
+          refute_ignored(index, "setup")
+          refute_ignored(index, "teardown")
+          refute_ignored(index, "test_something")
+        end
+
+        def test_ignore_minitest_methods_if_in_minitest_test_subclass
+          @project.write!("test/foo_test.rb", <<~RB)
+            class FooTest < Minitest::Test
               def after_all; end
               def around; end
               def around_all; end
@@ -55,6 +82,26 @@ module Spoom
           assert_ignored(index, "teardown")
           assert_ignored(index, "test_something")
           refute_ignored(index, "some_other_test")
+        end
+
+        def test_ignore_minitest_predicates
+          @project.write!("test/foo_test.rb", <<~RB)
+            class FooTest
+              def alive1; end
+              def alive2; end
+              def dead; end
+
+              def test_something
+                assert_predicate(foo, :alive1)
+                refute_predicate(foo, :alive2)
+              end
+            end
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "alive1")
+          assert_alive(index, "alive2")
+          assert_dead(index, "dead")
         end
 
         private
