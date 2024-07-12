@@ -34,49 +34,49 @@ module Spoom
       end
 
       def test_include
-        location1 = Location.new("foo.rb", 1, 2, 3, 4)
-        location2 = Location.new("foo.rb", 1, 2, 3, 4)
+        location1 = Location.new("foo.rb", start_line: 1, start_column: 2, end_line: 3, end_column: 4)
+        location2 = Location.new("foo.rb", start_line: 1, start_column: 2, end_line: 3, end_column: 4)
         assert(location1.include?(location2))
 
-        location3 = Location.new("foo.rb", 1, 2, 3, 5)
+        location3 = Location.new("foo.rb", start_line: 1, start_column: 2, end_line: 3, end_column: 5)
         refute(location1.include?(location3))
         assert(location3.include?(location1))
 
-        location4 = Location.new("foo.rb", 1, 2, 4, 4)
+        location4 = Location.new("foo.rb", start_line: 1, start_column: 2, end_line: 4, end_column: 4)
         refute(location1.include?(location4))
         assert(location4.include?(location1))
 
-        location5 = Location.new("foo.rb", 1, 3, 3, 4)
+        location5 = Location.new("foo.rb", start_line: 1, start_column: 3, end_line: 3, end_column: 4)
         assert(location1.include?(location5))
         refute(location5.include?(location1))
 
-        location6 = Location.new("foo.rb", 2, 2, 3, 4)
+        location6 = Location.new("foo.rb", start_line: 2, start_column: 2, end_line: 3, end_column: 4)
         assert(location1.include?(location6))
         refute(location6.include?(location1))
 
-        location7 = Location.new("bar.rb", 1, 2, 3, 4)
+        location7 = Location.new("bar.rb", start_line: 1, start_column: 2, end_line: 3, end_column: 4)
         refute(location1.include?(location7))
         refute(location7.include?(location1))
       end
 
       def test_comparison
-        location1 = Location.new("foo.rb", 1, 2, 3, 4)
-        location2 = Location.new("foo.rb", 1, 2, 3, 4)
+        location1 = Location.new("foo.rb", start_line: 1, start_column: 2, end_line: 3, end_column: 4)
+        location2 = Location.new("foo.rb", start_line: 1, start_column: 2, end_line: 3, end_column: 4)
         assert_equal(0, location1 <=> location2)
 
-        location3 = Location.new("foo.rb", 1, 2, 3, 5)
+        location3 = Location.new("foo.rb", start_line: 1, start_column: 2, end_line: 3, end_column: 5)
         assert_equal(-1, location1 <=> location3)
 
-        location4 = Location.new("foo.rb", 1, 2, 4, 4)
+        location4 = Location.new("foo.rb", start_line: 1, start_column: 2, end_line: 4, end_column: 4)
         assert_equal(-1, location1 <=> location4)
 
-        location5 = Location.new("foo.rb", 1, 3, 3, 4)
+        location5 = Location.new("foo.rb", start_line: 1, start_column: 3, end_line: 3, end_column: 4)
         assert_equal(-1, location1 <=> location5)
 
-        location6 = Location.new("foo.rb", 11, 2, 3, 4)
+        location6 = Location.new("foo.rb", start_line: 11, start_column: 2, end_line: 3, end_column: 4)
         assert_equal(-1, location1 <=> location6)
 
-        location7 = Location.new("bar.rb", 1, 2, 3, 4)
+        location7 = Location.new("bar.rb", start_line: 1, start_column: 2, end_line: 3, end_column: 4)
         assert_equal(1, location1 <=> location7)
 
         not_a_location = 42
@@ -84,7 +84,7 @@ module Spoom
       end
 
       def test_to_s
-        location = Location.new("foo.rb", 1, 2, 3, 4)
+        location = Location.new("foo.rb", start_line: 1, start_column: 2, end_line: 3, end_column: 4)
         assert_equal("foo.rb:1:2-3:4", location.to_s)
       end
     end

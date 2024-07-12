@@ -26,12 +26,24 @@ module Spoom
         end_line, end_column = rest.split(":", 2)
         raise LocationError, "Invalid location string: #{location_string}" unless end_line && end_column
 
-        new(file, start_line.to_i, start_column.to_i, end_line.to_i, end_column.to_i)
+        new(
+          file,
+          start_line: start_line.to_i,
+          start_column: start_column.to_i,
+          end_line: end_line.to_i,
+          end_column: end_column.to_i,
+        )
       end
 
       sig { params(file: String, location: Prism::Location).returns(Location) }
       def from_prism(file, location)
-        new(file, location.start_line, location.start_column, location.end_line, location.end_column)
+        new(
+          file,
+          start_line: location.start_line,
+          start_column: location.start_column,
+          end_line: location.end_line,
+          end_column: location.end_column,
+        )
       end
     end
 
@@ -50,7 +62,7 @@ module Spoom
         end_column: Integer,
       ).void
     end
-    def initialize(file, start_line, start_column, end_line, end_column)
+    def initialize(file, start_line:, start_column:, end_line:, end_column:)
       @file = file
       @start_line = start_line
       @start_column = start_column
