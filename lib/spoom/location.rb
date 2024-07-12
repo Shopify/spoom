@@ -73,7 +73,8 @@ module Spoom
     def <=>(other)
       return unless Location === other
 
-      to_s <=> other.to_s
+      [file, start_line, start_column, end_line, end_column] <=>
+        [other.file, other.start_line, other.start_column, other.end_line, other.end_column]
     end
 
     sig { returns(String) }
