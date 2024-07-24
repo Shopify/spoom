@@ -20,4 +20,8 @@ jobs:
         with:
           bundler-cache: true
 
-      - uses: rubygems/release-gem@v1
+      - uses: rubygems/configure-rubygems-credentials@v1.0.0
+
+      - run: bundle exec rake build
+
+      - run: bundle exec rake release:rubygem_push
