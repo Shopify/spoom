@@ -6,7 +6,7 @@ on:
       - add-push-gem-workflow
 
 jobs:
-  push:
+  push_gem:
     runs-on: ubuntu-latest
 
     permissions:
