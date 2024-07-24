@@ -1,6 +1,9 @@
 name: Push Gem
 
-on: workflow_dispatch
+on:
+  push:
+    branches:
+      - add-push-gem-workflow
 
 jobs:
   push:
