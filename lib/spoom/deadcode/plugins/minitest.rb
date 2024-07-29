@@ -7,6 +7,7 @@ module Spoom
       class Minitest < Base
         extend T::Sig
 
+        ignore_classes_named(/Test$/)
         ignore_classes_inheriting_from("Minitest::Test")
 
         MINITEST_METHODS = T.let(
