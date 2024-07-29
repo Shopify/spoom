@@ -26,4 +26,4 @@ jobs:
 
       - uses: rubygems/configure-rubygems-credentials@v1.0.0
 
-      - run: bundle exec rake release:source_control_push
+      - run: git tag
