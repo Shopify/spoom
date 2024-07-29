@@ -34,6 +34,8 @@ module Spoom
         sig { override.params(send: Send).void }
         def on_send(send)
           case send.name
+          when "test"
+            return # this is a test method definition
           when "assert_predicate", "refute_predicate"
             name = send.args[1]&.slice
             return unless name
