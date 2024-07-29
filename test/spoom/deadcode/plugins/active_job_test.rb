@@ -49,6 +49,15 @@ module Spoom
           )
         end
 
+        def test_ignores_activejob_testcase_class_definition
+          @project.write!("test/foo_test.rb", <<~RB)
+            class FooTest < ActiveJob::TestCase
+            end
+          RB
+
+          assert_ignored(index_with_plugins, "FooTest")
+        end
+
         private
 
         sig { returns(Deadcode::Index) }

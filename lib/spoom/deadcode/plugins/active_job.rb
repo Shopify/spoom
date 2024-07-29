@@ -5,6 +5,7 @@ module Spoom
   module Deadcode
     module Plugins
       class ActiveJob < Base
+        ignore_classes_inheriting_from("ActiveJob::TestCase")
         ignore_classes_named("ApplicationJob")
         ignore_methods_named("perform", "build_enumerator", "each_iteration")
       end
