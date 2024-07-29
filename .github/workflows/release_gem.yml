@@ -26,4 +26,4 @@ jobs:
 
       - uses: rubygems/configure-rubygems-credentials@v1.0.0
 
-      - run: git tag --list
+      - run: git tag --list | cat
