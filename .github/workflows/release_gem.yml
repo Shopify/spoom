@@ -1,12 +1,16 @@
-name: Push Gem
+name: Release Gem
 
 on:
   push:
     branches:
       - add-push-gem-workflow
 
+permissions:
+  contents: read
+
 jobs:
-  push_gem:
+  release_gem:
+    if: github.repository == 'shopify/spoom'
     runs-on: ubuntu-latest
 
     permissions:
@@ -22,6 +26,4 @@ jobs:
 
       - uses: rubygems/configure-rubygems-credentials@v1.0.0
 
-      - run: bundle exec rake build
-
-      - run: bundle exec rake release:rubygem_push
+      - run: bundle exec rake release:source_control_push
