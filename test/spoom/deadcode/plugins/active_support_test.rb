@@ -10,9 +10,9 @@ module Spoom
       class ActiveSupportTest < TestWithProject
         include Test::Helpers::DeadcodeHelper
 
-        def test_ignore_minitest_setup_and_teardown_with_symbols
+        def setup
           @project.write!("test/foo_test.rb", <<~RB)
-            class FooTest
+            class FooTest < ActiveSupport::TestCase
               setup(:alive1, :alive2)
               teardown(:alive3)
 
@@ -22,12 +22,18 @@ module Spoom
               def dead; end
             end
           RB
+        end
 
+        def test_ignore_minitest_setup_and_teardown_with_symbols
           index = index_with_plugins
           assert_alive(index, "alive1")
           assert_alive(index, "alive2")
           assert_alive(index, "alive3")
           assert_dead(index, "dead")
+        end
+
+        def test_ignore_test_class_definition
+          assert_ignored(index_with_plugins, "FooTest")
         end
 
         private
