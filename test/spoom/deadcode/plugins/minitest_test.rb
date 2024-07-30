@@ -10,63 +10,32 @@ module Spoom
       class MinitestTest < TestWithProject
         include Test::Helpers::DeadcodeHelper
 
-        def test_ignores_test_class_based_on_name
-          @project.write!("foo_test.rb", <<~RB)
-            class FooTest < NotAMinitestClass; end
-          RB
-
-          assert_ignored(index_with_plugins, "FooTest")
-        end
-
-        def test_ignore_minitest_classes_based_on_superclasses
+        def test_ignore_minitest_classes_based_on_name
           @project.write!("foo.rb", <<~RB)
             class C1Test < Minitest::Test; end
           RB
 
           @project.write!("test/foo.rb", <<~RB)
-            class C2Test < ::Minitest::Test; end
+            class C2Test < SomeTest; end
           RB
 
           @project.write!("test/foo_test.rb", <<~RB)
             class C3Test < ::Minitest::Test; end
             class C4Test < C3Test; end
+            class C5Test; end
           RB
 
           index = index_with_plugins
           assert_ignored(index, "C1Test")
           assert_ignored(index, "C2Test")
-          assert_alive(index, "C3Test")
+          assert_alive(index, "C3Test") # used as C4Test superclass
           assert_ignored(index, "C4Test")
+          assert_ignored(index, "C5Test")
         end
 
-        def test_does_not_ignore_minitest_methods_if_not_in_minitest_test_subclass
+        def test_ignore_minitest_methods
           @project.write!("test/foo_test.rb", <<~RB)
-            class FooTest < Test
-              def after_all; end
-              def around; end
-              def around_all; end
-              def before_all; end
-              def setup; end
-              def teardown; end
-              def test_something; end
-
-              def some_other_test; end
-            end
-          RB
-
-          index = index_with_plugins
-          refute_ignored(index, "after_all")
-          refute_ignored(index, "around")
-          refute_ignored(index, "around_all")
-          refute_ignored(index, "before_all")
-          refute_ignored(index, "setup")
-          refute_ignored(index, "teardown")
-          refute_ignored(index, "test_something")
-        end
-
-        def test_ignore_minitest_methods_if_in_minitest_test_subclass
-          @project.write!("test/foo_test.rb", <<~RB)
-            class FooTest < Minitest::Test
+            class FooTest
               def after_all; end
               def around; end
               def around_all; end
