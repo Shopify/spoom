@@ -1,0 +1,29 @@
+class <emptyTree><<C <root>>> < (::<todo sym>)
+  def main<<todo method>>(&<blk>)
+    <self>.a()
+  rescue => <rescueTemp>$2
+    <self>.b()
+  else
+    <self>.c()
+  ensure
+    <self>.d()
+  end
+
+  def a<<todo method>>(&<blk>)
+    <emptyTree>
+  end
+
+  def b<<todo method>>(&<blk>)
+    <emptyTree>
+  end
+
+  def c<<todo method>>(&<blk>)
+    <emptyTree>
+  end
+
+  def d<<todo method>>(&<blk>)
+    <emptyTree>
+  end
+
+  <self>.puts(<self>.foo())
+end

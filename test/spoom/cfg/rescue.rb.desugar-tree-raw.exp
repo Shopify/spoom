@@ -1,0 +1,138 @@
+ClassDef{
+  kind = class
+  name = EmptyTree
+  symbol = <C <U <root>>>
+  ancestors = [ConstantLit{
+      symbol = (class ::<todo sym>)
+      orig = nullptr
+    }]
+  rhs = [
+    MethodDef{
+      flags = {}
+      name = <U main><<U <todo method>>>
+      args = [BlockArg{ expr = UnresolvedIdent{
+          kind = Local
+          name = <U <blk>>
+        } }]
+      rhs = Rescue{
+        body = Send{
+          flags = {privateOk}
+          recv = Local{
+            localVariable = <U <self>>
+          }
+          fun = <U a>
+          block = nullptr
+          pos_args = 0
+          args = [
+          ]
+        }
+        rescueCases = [
+          RescueCase{
+            exceptions = [
+            ]
+            var = UnresolvedIdent{
+              kind = Local
+              name = <D <U <rescueTemp>> $2>
+            }
+            body = Send{
+              flags = {privateOk}
+              recv = Local{
+                localVariable = <U <self>>
+              }
+              fun = <U b>
+              block = nullptr
+              pos_args = 0
+              args = [
+              ]
+            }
+          }
+        ]
+        else = Send{
+          flags = {privateOk}
+          recv = Local{
+            localVariable = <U <self>>
+          }
+          fun = <U c>
+          block = nullptr
+          pos_args = 0
+          args = [
+          ]
+        }
+        ensure = Send{
+          flags = {privateOk}
+          recv = Local{
+            localVariable = <U <self>>
+          }
+          fun = <U d>
+          block = nullptr
+          pos_args = 0
+          args = [
+          ]
+        }
+      }
+    }
+
+    MethodDef{
+      flags = {}
+      name = <U a><<U <todo method>>>
+      args = [BlockArg{ expr = UnresolvedIdent{
+          kind = Local
+          name = <U <blk>>
+        } }]
+      rhs = EmptyTree
+    }
+
+    MethodDef{
+      flags = {}
+      name = <U b><<U <todo method>>>
+      args = [BlockArg{ expr = UnresolvedIdent{
+          kind = Local
+          name = <U <blk>>
+        } }]
+      rhs = EmptyTree
+    }
+
+    MethodDef{
+      flags = {}
+      name = <U c><<U <todo method>>>
+      args = [BlockArg{ expr = UnresolvedIdent{
+          kind = Local
+          name = <U <blk>>
+        } }]
+      rhs = EmptyTree
+    }
+
+    MethodDef{
+      flags = {}
+      name = <U d><<U <todo method>>>
+      args = [BlockArg{ expr = UnresolvedIdent{
+          kind = Local
+          name = <U <blk>>
+        } }]
+      rhs = EmptyTree
+    }
+
+    Send{
+      flags = {privateOk}
+      recv = Local{
+        localVariable = <U <self>>
+      }
+      fun = <U puts>
+      block = nullptr
+      pos_args = 1
+      args = [
+        Send{
+          flags = {privateOk}
+          recv = Local{
+            localVariable = <U <self>>
+          }
+          fun = <U foo>
+          block = nullptr
+          pos_args = 0
+          args = [
+          ]
+        }
+      ]
+    }
+  ]
+}

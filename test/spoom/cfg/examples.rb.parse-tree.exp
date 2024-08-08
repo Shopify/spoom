@@ -1,0 +1,317 @@
+Class {
+  name = Const {
+    scope = NULL
+    name = <C <U Examples>>
+  }
+  superclass = NULL
+  body = Begin {
+    stmts = [
+      DefMethod {
+        name = <U i_like_ifs>
+        args = Args {
+          args = [
+          ]
+        }
+        body = If {
+          condition = True {
+          }
+          then_ = Return {
+            exprs = [
+              Integer {
+                val = "1"
+              }
+            ]
+          }
+          else_ = Return {
+            exprs = [
+              Integer {
+                val = "2"
+              }
+            ]
+          }
+        }
+      }
+      DefMethod {
+        name = <U i_like_exps>
+        args = Args {
+          args = [
+          ]
+        }
+        body = If {
+          condition = Begin {
+            stmts = [
+              True {
+              }
+            ]
+          }
+          then_ = Integer {
+            val = "1"
+          }
+          else_ = Integer {
+            val = "2"
+          }
+        }
+      }
+      DefMethod {
+        name = <U return_in_one_branch1>
+        args = Args {
+          args = [
+          ]
+        }
+        body = If {
+          condition = Begin {
+            stmts = [
+              True {
+              }
+            ]
+          }
+          then_ = Return {
+            exprs = [
+              Integer {
+                val = "1"
+              }
+            ]
+          }
+          else_ = Integer {
+            val = "2"
+          }
+        }
+      }
+      DefMethod {
+        name = <U return_in_one_branch2>
+        args = Args {
+          args = [
+          ]
+        }
+        body = If {
+          condition = Begin {
+            stmts = [
+              True {
+              }
+            ]
+          }
+          then_ = Integer {
+            val = "1"
+          }
+          else_ = Return {
+            exprs = [
+              Integer {
+                val = "2"
+              }
+            ]
+          }
+        }
+      }
+      DefMethod {
+        name = <U variables>
+        args = Args {
+          args = [
+          ]
+        }
+        body = Begin {
+          stmts = [
+            If {
+              condition = Begin {
+                stmts = [
+                  True {
+                  }
+                ]
+              }
+              then_ = Assign {
+                lhs = LVarLhs {
+                  name = <U a>
+                }
+                rhs = Integer {
+                  val = "1"
+                }
+              }
+              else_ = Assign {
+                lhs = LVarLhs {
+                  name = <U a>
+                }
+                rhs = Integer {
+                  val = "2"
+                }
+              }
+            }
+            If {
+              condition = Begin {
+                stmts = [
+                  False {
+                  }
+                ]
+              }
+              then_ = Assign {
+                lhs = LVarLhs {
+                  name = <U b>
+                }
+                rhs = Integer {
+                  val = "1"
+                }
+              }
+              else_ = Assign {
+                lhs = LVarLhs {
+                  name = <U b>
+                }
+                rhs = Integer {
+                  val = "2"
+                }
+              }
+            }
+            Send {
+              receiver = LVar {
+                name = <U a>
+              }
+              method = <U +>
+              args = [
+                LVar {
+                  name = <U b>
+                }
+              ]
+            }
+          ]
+        }
+      }
+      DefMethod {
+        name = <U variables_and_loop>
+        args = Args {
+          args = [
+            Arg {
+              name = <U cond>
+            }
+          ]
+        }
+        body = Begin {
+          stmts = [
+            If {
+              condition = Begin {
+                stmts = [
+                  True {
+                  }
+                ]
+              }
+              then_ = Assign {
+                lhs = LVarLhs {
+                  name = <U a>
+                }
+                rhs = Integer {
+                  val = "1"
+                }
+              }
+              else_ = Assign {
+                lhs = LVarLhs {
+                  name = <U a>
+                }
+                rhs = Integer {
+                  val = "2"
+                }
+              }
+            }
+            While {
+              cond = True {
+              }
+              body = If {
+                condition = Begin {
+                  stmts = [
+                    LVar {
+                      name = <U cond>
+                    }
+                  ]
+                }
+                then_ = Assign {
+                  lhs = LVarLhs {
+                    name = <U b>
+                  }
+                  rhs = Integer {
+                    val = "1"
+                  }
+                }
+                else_ = Assign {
+                  lhs = LVarLhs {
+                    name = <U b>
+                  }
+                  rhs = Integer {
+                    val = "2"
+                  }
+                }
+              }
+            }
+            LVar {
+              name = <U b>
+            }
+          ]
+        }
+      }
+      DefMethod {
+        name = <U variables_loop_if>
+        args = Args {
+          args = [
+            Arg {
+              name = <U cond>
+            }
+          ]
+        }
+        body = Begin {
+          stmts = [
+            While {
+              cond = True {
+              }
+              body = If {
+                condition = Begin {
+                  stmts = [
+                    LVar {
+                      name = <U cond>
+                    }
+                  ]
+                }
+                then_ = Assign {
+                  lhs = LVarLhs {
+                    name = <U b>
+                  }
+                  rhs = Integer {
+                    val = "1"
+                  }
+                }
+                else_ = Assign {
+                  lhs = LVarLhs {
+                    name = <U b>
+                  }
+                  rhs = Integer {
+                    val = "2"
+                  }
+                }
+              }
+            }
+            LVar {
+              name = <U b>
+            }
+          ]
+        }
+      }
+      DefMethod {
+        name = <U take_arguments>
+        args = Args {
+          args = [
+            Arg {
+              name = <U i>
+            }
+          ]
+        }
+        body = If {
+          condition = Begin {
+            stmts = [
+              False {
+              }
+            ]
+          }
+          then_ = Integer {
+            val = "2"
+          }
+          else_ = LVar {
+            name = <U i>
+          }
+        }
+      }
+    ]
+  }
+}
