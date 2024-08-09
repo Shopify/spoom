@@ -223,6 +223,12 @@ module Spoom
       def initialize(string)
         @string = string
       end
+
+      sig { returns(RBI::Sig) }
+      def to_rbi
+        node = RBI::Parser.parse_string(string)
+        T.cast(node.nodes.first, RBI::Sig)
+      end
     end
 
     # Model

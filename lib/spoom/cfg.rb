@@ -35,7 +35,7 @@ module Spoom
         next if blocks.include?(block)
 
         blocks << block
-        todo.concat(block.outs.map(&:first))
+        todo.concat(block.outs)
       end
       blocks.to_a
     end
@@ -62,7 +62,7 @@ module Spoom
 
         seen << block
         block.to_dot(dot)
-        block.outs.each do |out, label|
+        block.edges_out.each do |out, label|
           todo << out
           dot << "\"#{block.name}\" -> \"#{out.name}\" [label=\"#{CGI.escape_html(label)}\"];\n"
         end
@@ -85,7 +85,7 @@ module Spoom
       str = String.new
       blocks.sort_by(&:name).each do |block|
         str << "#{block.name}\n"
-        block.outs.map(&:first).sort_by(&:name).each do |out|
+        block.outs.sort_by(&:name).each do |out|
           str << "  -> #{out.name}\n"
         end
       end
@@ -102,18 +102,23 @@ module Spoom
       attr_reader :instructions
 
       sig { returns(T::Array[[BasicBlock, T.nilable(String)]]) }
-      attr_reader :outs
+      attr_reader :edges_out
 
       sig { params(name: String).void }
       def initialize(name)
         @name = name
         @instructions = T.let([], T::Array[Prism::Node])
-        @outs = T.let([], T::Array[[BasicBlock, T.nilable(String)]])
+        @edges_out = T.let([], T::Array[[BasicBlock, T.nilable(String)]])
       end
 
       sig { params(to: BasicBlock, label: T.nilable(String)).void }
       def add_edge(to, label = nil)
-        @outs << [to, label]
+        @edges_out << [to, label]
+      end
+
+      sig { returns(T::Array[BasicBlock]) }
+      def outs
+        @edges_out.map(&:first)
       end
 
       sig { params(out: String).returns(String) }
@@ -180,28 +185,28 @@ module Spoom
         # T.must(@cfg.blocks.last).add_edge(new_block, "exit")
       end
 
-      sig { override.params(node: T.nilable(Prism::Node)).void }
-      def visit(node)
-        return unless node
-
-        case node
-        when Prism::BreakNode,
-              Prism::CaseNode,
-              Prism::DefNode,
-              Prism::ForNode,
-              Prism::NextNode,
-              Prism::ProgramNode,
-              Prism::IfNode,
-              Prism::ReturnNode,
-              Prism::StatementsNode,
-              Prism::UnlessNode,
-              Prism::UntilNode,
-              Prism::WhileNode
-          # we do not store these nodes as instructions
-        else
-          @current_block.instructions << node
+      sig { override.params(node: Prism::StatementsNode).void }
+      def visit_statements_node(node)
+        node.body.each do |stmt|
+          visit(stmt)
+          case stmt
+          when Prism::BreakNode,
+                Prism::CaseNode,
+                Prism::DefNode,
+                Prism::ForNode,
+                Prism::NextNode,
+                Prism::ProgramNode,
+                Prism::IfNode,
+                Prism::ReturnNode,
+                Prism::StatementsNode,
+                Prism::UnlessNode,
+                Prism::UntilNode,
+                Prism::WhileNode
+            # we do not store these nodes as instructions
+          else
+            @current_block.instructions << stmt
+          end
         end
-        super
       end
 
       sig { override.params(node: Prism::BreakNode).void }

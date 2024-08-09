@@ -1,7 +1,23 @@
-puts 0
-for x in [1, 2, 3]
-  puts 1
-  next
-  puts 2
+# typed: true
+# frozen_string_literal: true
+
+class Integer
+  sig { params(x: Integer).returns(String) }
+  def foo(x)
+    x
+    42
+    y = 42
+    # to_s
+    y.to_s
+  end
+
+  sig { returns(String) }
+  def to_s; end
 end
-puts 3
+
+# x = 0
+# y = x
+# z = y.to_s
+# z1 = y.zzz
+# z2 = y.foo
+# z3 = 42 if true

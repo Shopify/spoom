@@ -1,9 +1,19 @@
+GIT
+  remote: https://github.com/Shopify/rbi.git
+  revision: 574748b2346f98353ce97e6d45a6e7d0d1390179
+  branch: main
+  specs:
+    rbi (0.1.14)
+      prism (>= 0.18.0, < 1.0.0)
+      sorbet-runtime (>= 0.5.9204)
+
 PATH
   remote: .
   specs:
     spoom (1.4.2)
       erubi (>= 1.10.0)
       prism (>= 0.28.0)
+      rbi (>= 0.1.14)
       sorbet-static-and-runtime (>= 0.5.10187)
       thor (>= 0.19.2)
 
@@ -40,9 +50,6 @@ GEM
     racc (1.8.0)
     rainbow (3.1.1)
     rake (13.2.1)
-    rbi (0.1.13)
-      prism (>= 0.18.0, < 1.0.0)
-      sorbet-runtime (>= 0.5.9204)
     rdoc (6.6.3.1)
       psych (>= 4.0.0)
     regexp_parser (2.9.2)
@@ -106,6 +113,7 @@ DEPENDENCIES
   minitest (~> 5.0)
   minitest-reporters
   rake (~> 13.2.1)
+  rbi!
   rubocop-shopify
   rubocop-sorbet
   spoom!
