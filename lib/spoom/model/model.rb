@@ -174,7 +174,31 @@ module Spoom
       end
     end
 
-    class Method < Property; end
+    class Method < Property
+      sig { returns(T::Boolean) }
+      attr_accessor :is_singleton
+
+      sig do
+        params(
+          symbol: Symbol,
+          owner: T.nilable(Namespace),
+          location: Location,
+          visibility: Visibility,
+          sigs: T::Array[Sig],
+          is_singleton: T::Boolean,
+        ).void
+      end
+      def initialize(symbol, owner:, location:, visibility:, sigs: [], is_singleton: false)
+        super(symbol, owner: owner, location: location, visibility: visibility, sigs: sigs)
+
+        @is_singleton = is_singleton
+      end
+
+      sig { returns(T::Boolean) }
+      def singleton?
+        @is_singleton
+      end
+    end
 
     class Attr < Property
       abstract!
@@ -307,18 +331,26 @@ module Spoom
 
     sig { void }
     def compute_symbols_hierarchy!
+      object = @symbols["Object"] ||= UnresolvedSymbol.new("Object")
+      mod = @symbols["Module"] ||= UnresolvedSymbol.new("Module")
+
       @symbols.dup.each do |_full_name, symbol|
         symbol.definitions.each do |definition|
           next unless definition.is_a?(Namespace)
 
           @symbols_hierarchy.add_element(symbol)
 
-          if definition.is_a?(Class)
+          case definition
+          when Class
             superclass_name = definition.superclass_name
             if superclass_name
               superclass = resolve_symbol(superclass_name, context: symbol)
               @symbols_hierarchy.add_direct_edge(symbol, superclass)
+            else
+              @symbols_hierarchy.add_direct_edge(symbol, object)
             end
+          when Module
+            # @symbols_hierarchy.add_direct_edge(symbol, mod)
           end
 
           definition.mixins.each do |mixin|

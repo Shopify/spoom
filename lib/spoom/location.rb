@@ -126,6 +126,60 @@ module Spoom
     end
 
     sig { returns(String) }
+    def string
+      content = File.read(@file)
+      unless @start_line && @end_line
+        return content
+      end
+
+      lines = content.lines
+      # TODO: check in constructor if start_line and end_line are valid
+      if (@start_line > lines.size) || (@end_line > lines.size)
+        raise LocationError, "Attempted reading line #{@end_line}, content is #{lines.size} lines"
+      end
+
+      # Locations are in 1-based index, lines in the document are 0-based
+      from_line = [(@start_line - 1), 0].max
+      to_line = [(@end_line - 1), lines.size - 1].min
+      lines = T.must(content.lines[from_line..to_line])
+
+      if @start_column && @end_column
+        lines[-1] = T.must(T.must(lines.last)[0..@end_column - 1])
+        lines[0] = T.must(T.must(lines.first)[@start_column..-1])
+      end
+
+      lines.join
+    end
+
+    sig { params(lines_around: Integer).returns(String) }
+    def snippet(lines_around: 0)
+      raise LocationError, "Negative lines_around" if lines_around < 0
+
+      content = File.read(@file)
+      unless @start_line && @end_line
+        return content
+      end
+
+      lines = content.lines
+      # TODO: check in constructor if start_line and end_line are valid
+      if (@start_line > lines.size) || (@end_line > lines.size)
+        raise LocationError, "Attempted reading line #{@end_line}, content is #{lines.size} lines"
+      end
+
+      # Locations are in 1-based index, lines in the document are 0-based
+      from_line = [
+        (@start_line - 1) - lines_around,
+        0,
+      ].max
+      to_line = [
+        (@end_line - 1) + lines_around,
+        lines.size - 1,
+      ].min
+
+      T.must(content.lines[from_line..to_line]).join
+    end
+
+    sig { returns(String) }
     def to_s
       if @start_line && @start_column
         "#{@file}:#{@start_line}:#{@start_column}-#{@end_line}:#{@end_column}"

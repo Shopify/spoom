@@ -1,3 +1,4 @@
 .
 --ignore=vendor/
+--ignore=test/spoom/tc/fixtures/
 --enable-experimental-requires-ancestor

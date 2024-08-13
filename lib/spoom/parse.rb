@@ -26,3 +26,5 @@ module Spoom
     end
   end
 end
+
+require "spoom/parse/find_node_at_location"

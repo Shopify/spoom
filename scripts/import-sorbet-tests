@@ -1,0 +1,27 @@
+#! /usr/bin/env ruby
+# typed: strict
+# frozen_string_literal: true
+
+require "fileutils"
+require "pathname"
+
+unless ARGV.size == 2
+  puts "Usage: #{$PROGRAM_NAME} <path/to/sorbet/sources> <out-dir>"
+  exit 1
+end
+
+sorbet_path = Pathname.new(ARGV[0])
+sorbet_test_path = sorbet_path / "test" / "testdata"
+sorbet_test_files = Dir.glob("#{sorbet_test_path}/**/*.rb")
+
+out_dir = Pathname.new(ARGV[1])
+FileUtils.mkdir_p(out_dir)
+
+sorbet_test_files.each do |file|
+  puts "Importing #{file}"
+
+  path = Pathname.new(file)
+  name = path.relative_path_from(sorbet_test_path).to_s.gsub("/", "_")
+  out_file = out_dir / "#{name}.rb"
+  FileUtils.cp(file, out_file)
+end

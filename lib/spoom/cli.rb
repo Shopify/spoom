@@ -6,6 +6,8 @@ require "thor"
 require_relative "cli/helper"
 require_relative "cli/deadcode"
 require_relative "cli/srb"
+require_relative "cli/snippet"
+require_relative "cli/typecheck"
 
 module Spoom
   module Cli
@@ -20,6 +22,12 @@ module Spoom
 
       desc "srb", "Sorbet related commands"
       subcommand "srb", Spoom::Cli::Srb::Main
+
+      desc "snippet", "Render a snippet"
+      subcommand "snippet", Spoom::Cli::Snippet
+
+      desc "tc", "Type checke"
+      subcommand "tc", Spoom::Cli::Typecheck
 
       desc "bump", "Bump Sorbet sigils from `false` to `true` when no errors"
       option :from,
@@ -81,21 +89,6 @@ module Spoom
       SORT_CODE = "code"
       SORT_LOC = "loc"
       SORT_ENUM = [SORT_CODE, SORT_LOC]
-
-      desc "tc", "Run Sorbet and parses its output"
-      option :limit, type: :numeric, aliases: :l, desc: "Limit displayed errors"
-      option :code, type: :numeric, aliases: :c, desc: "Filter displayed errors by code"
-      option :sort, type: :string, aliases: :s, desc: "Sort errors", enum: SORT_ENUM, default: SORT_LOC
-      option :format, type: :string, aliases: :f, desc: "Format line output"
-      option :uniq, type: :boolean, aliases: :u, desc: "Remove duplicated lines"
-      option :count, type: :boolean, default: true, desc: "Show errors count"
-      option :sorbet, type: :string, desc: "Path to custom Sorbet bin"
-      option :sorbet_options, type: :string, default: "", desc: "Pass options to Sorbet"
-      def tc(*paths_to_select)
-        say_warning("This command is deprecated. Please use `spoom srb tc` instead.")
-
-        invoke(Cli::Srb::Tc, :tc, paths_to_select, options)
-      end
 
       desc "--version", "Show version"
       def __print_version

@@ -137,6 +137,81 @@ module Spoom
         assert_equal(-1, location8 <=> location10)
       end
 
+      def test_snippet
+        context = Context.mktmp!
+
+        foo_rb = <<~RB
+          def foo; end
+          def bar; end
+          def baz; end
+        RB
+        context.write!("foo.rb", foo_rb)
+        foo_path = context.absolute_path_to("foo.rb")
+
+        location1 = Location.new(foo_path)
+        assert_equal(foo_rb, location1.snippet)
+
+        assert_raises(Location::LocationError) do
+          location1.snippet(lines_around: -1)
+        end
+
+        location2 = Location.new(foo_path, start_line: 1, end_line: 3)
+        assert_equal(foo_rb, location2.snippet)
+
+        location3 = Location.new(foo_path, start_line: 1, end_line: 1)
+        assert_equal(<<~RB, location3.snippet)
+          def foo; end
+        RB
+
+        location4 = Location.new(foo_path, start_line: 2, end_line: 2)
+        assert_equal(<<~RB, location4.snippet)
+          def bar; end
+        RB
+
+        location5 = Location.new(foo_path, start_line: 3, end_line: 3)
+        assert_equal(<<~RB, location5.snippet)
+          def baz; end
+        RB
+
+        location6 = Location.new(foo_path, start_line: 2, end_line: 3)
+        assert_equal(<<~RB, location6.snippet)
+          def bar; end
+          def baz; end
+        RB
+      end
+
+      def test_snippet_lines_around
+        context = Context.mktmp!
+
+        foo_rb = <<~RB
+          def foo; end
+          def bar; end
+          def baz; end
+          def qux; end
+          def quux; end
+          def quuz; end
+        RB
+        context.write!("foo.rb", foo_rb)
+        foo_path = context.absolute_path_to("foo.rb")
+
+        location1 = Location.new(foo_path, start_line: 1, end_line: 6)
+        assert_equal(foo_rb, location1.snippet(lines_around: 0))
+
+        location2 = Location.new(foo_path, start_line: 1, end_line: 6)
+        assert_equal(foo_rb, location2.snippet(lines_around: 1))
+
+        location4 = Location.new(foo_path, start_line: 3, end_line: 3)
+        assert_equal(foo_rb, location4.snippet(lines_around: 20))
+
+        location5 = Location.new(foo_path, start_line: 3, end_line: 4)
+        assert_equal(<<~RB, location5.snippet(lines_around: 1))
+          def bar; end
+          def baz; end
+          def qux; end
+          def quux; end
+        RB
+      end
+
       def test_to_s
         location1 = Location.new("foo.rb", start_line: 1, start_column: 2, end_line: 3, end_column: 4)
         assert_equal("foo.rb:1:2-3:4", location1.to_s)
