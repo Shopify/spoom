@@ -117,7 +117,7 @@ module Spoom
 
       sig { override.params(node: Prism::ConstantWriteNode).void }
       def visit_constant_write_node(node)
-        # @last_sigs.clear
+        @last_sigs.clear
 
         symbol_def = if node.value.is_a?(Prism::ConstantReadNode) || node.value.is_a?(Prism::ConstantPathNode)
           constant_alias = Model::Alias.new(
@@ -240,24 +240,24 @@ module Spoom
             next unless current_namespace
 
             current_namespace.mixins << Model::Include.new(arg.slice)
-            super
           end
+          super
         when :prepend
           node.arguments&.arguments&.each do |arg|
             next unless arg.is_a?(Prism::ConstantReadNode) || arg.is_a?(Prism::ConstantPathNode)
             next unless current_namespace
 
             current_namespace.mixins << Model::Prepend.new(arg.slice)
-            super
           end
+          super
         when :extend
           node.arguments&.arguments&.each do |arg|
             next unless arg.is_a?(Prism::ConstantReadNode) || arg.is_a?(Prism::ConstantPathNode)
             next unless current_namespace
 
             current_namespace.mixins << Model::Extend.new(arg.slice)
-            super
           end
+          super
         when :public, :private, :protected
           @visibility_stack << Model::Visibility.from_serialized(node.name.to_s)
           if node.arguments

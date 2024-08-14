@@ -62,6 +62,8 @@ module Spoom
         end
 
         @scope_stack = T.let([scope], T::Array[Scope])
+
+        @seen = T.let(Set.new, T::Set[Spoom::CFG::BasicBlock])
       end
 
       # CFG
@@ -79,7 +81,14 @@ module Spoom
 
       sig { params(block: Spoom::CFG::BasicBlock).void }
       def visit_basic_block(block)
+        return if @seen.include?(block)
+
+        @seen << block
+
         block.instructions.each do |instr|
+          # puts instr
+          # puts instr.slice
+          # puts instr.inspect
           visit(instr)
         end
 
@@ -90,6 +99,25 @@ module Spoom
 
       # Nodes
 
+      sig { override.params(node: Prism::ArrayNode).void }
+      def visit_array_node(node)
+        super
+
+        node.spoom_type = RBI::Type.simple("Array")
+      end
+
+      sig { override.params(node: Prism::BlockNode).void }
+      def visit_block_node(node)
+        super
+
+        node.spoom_type = RBI::Type.untyped
+      end
+
+      # sig { override.params(node: Prism::BlockArgumentNode).void }
+      # def visit_block_argument_node(node)
+      #   # puts node
+      # end
+
       sig { override.params(node: Prism::CallNode).void }
       def visit_call_node(node)
         receiver = node.receiver
@@ -98,8 +126,11 @@ module Spoom
           visit(receiver)
           type = receiver.spoom_type
 
-          puts receiver.class
-          raise error("Missing type", receiver) unless type
+          unless type
+            # puts receiver.class
+            @errors << error("missing type for `#{receiver.slice}` (#{receiver.class})", receiver)
+            type = RBI::Type.untyped
+          end
 
           type
         else
@@ -124,20 +155,25 @@ module Spoom
         end
       end
 
-      sig { override.params(node: Prism::BlockNode).void }
-      def visit_block_node(node)
+      sig { override.params(node: Prism::CaseNode).void }
+      def visit_case_node(node)
+        super
+
+        # TODO
         node.spoom_type = RBI::Type.untyped
       end
 
       sig { override.params(node: Prism::ClassNode).void }
       def visit_class_node(node)
+        super
+
         node.spoom_type = RBI::Type.simple("NilClass")
       end
 
       sig { override.params(node: Prism::ConstantPathNode).void }
       def visit_constant_path_node(node)
         symbol = node.spoom_symbol
-        raise error("Missing resolved symbol", node) unless symbol
+        raise error("missing resolved symbol", node) unless symbol
 
         node.spoom_type = RBI::Type.class_of(RBI::Type.simple(symbol.full_name))
       end
@@ -145,7 +181,7 @@ module Spoom
       sig { override.params(node: Prism::ConstantReadNode).void }
       def visit_constant_read_node(node)
         symbol = node.spoom_symbol
-        raise error("Missing resolved symbol", node) unless symbol
+        raise error("missing resolved symbol", node) unless symbol
 
         node.spoom_type = RBI::Type.class_of(RBI::Type.simple(symbol.full_name))
       end
@@ -155,6 +191,32 @@ module Spoom
         # no super
 
         node.spoom_type = RBI::Type.simple("Symbol")
+      end
+
+      sig { override.params(node: Prism::FalseNode).void }
+      def visit_false_node(node)
+        node.spoom_type = RBI::Type.simple("FalseClass")
+      end
+
+      sig { override.params(node: Prism::GlobalVariableReadNode).void }
+      def visit_global_variable_read_node(node)
+        # TODO
+        node.spoom_type = RBI::Type.untyped
+      end
+
+      sig { override.params(node: Prism::HashNode).void }
+      def visit_hash_node(node)
+        super
+
+        node.spoom_type = RBI::Type.simple("Hash")
+      end
+
+      sig { override.params(node: Prism::IfNode).void }
+      def visit_if_node(node)
+        super
+
+        # TODO: merge type
+        node.spoom_type = RBI::Type.untyped
       end
 
       sig { override.params(node: Prism::InstanceVariableReadNode).void }
@@ -169,25 +231,68 @@ module Spoom
         )
       end
 
+      sig { override.params(node: Prism::InterpolatedStringNode).void }
+      def visit_interpolated_string_node(node)
+        node.spoom_type = RBI::Type.simple("String")
+      end
+
       sig { override.params(node: Prism::LocalVariableReadNode).void }
       def visit_local_variable_read_node(node)
         super
 
-        node.spoom_type = current_scope.var_types[node.name.to_s]
+        type = current_scope.var_types[node.name.to_s]
+
+        unless type
+          @errors << error("missing type for local variable `#{node.name}`", node)
+          type = RBI::Type.untyped
+        end
+
+        node.spoom_type = type
       end
 
       sig { override.params(node: Prism::LocalVariableWriteNode).void }
       def visit_local_variable_write_node(node)
         super
 
-        assign_type = T.must(node.value.spoom_type)
-        current_scope.var_types[node.name.to_s] = assign_type
-        node.spoom_type = assign_type
+        type = node.value.spoom_type
+        unless type
+          @errors << error("missing type for `#{node.value.slice}` (#{node.value.class})", node.value)
+          type = RBI::Type.untyped
+        end
+
+        current_scope.var_types[node.name.to_s] = type
+        node.spoom_type = type
       end
 
       sig { override.params(node: Prism::ModuleNode).void }
       def visit_module_node(node)
+        super
+
         node.spoom_type = RBI::Type.simple("NilClass")
+      end
+
+      sig { override.params(node: Prism::OrNode).void }
+      def visit_or_node(node)
+        super
+
+        # TODO
+        node.spoom_type = RBI::Type.untyped
+      end
+
+      sig { override.params(node: Prism::SelfNode).void }
+      def visit_self_node(node)
+        node.spoom_type = @self_type
+      end
+
+      sig { override.params(node: Prism::StringNode).void }
+      def visit_string_node(node)
+        node.spoom_type = RBI::Type.simple("String")
+      end
+
+      sig { override.params(node: Prism::SuperNode).void }
+      def visit_super_node(node)
+        # TODO: resolve super method
+        node.spoom_type = RBI::Type.untyped
       end
 
       private
@@ -199,13 +304,14 @@ module Spoom
         return_type = RBI::Type.parse_string(return_type) if return_type.is_a?(String)
 
         if return_type == RBI::Type.self_type
-          sig.return_type = recv_type
+          return_type = recv_type
         end
         if return_type == RBI::Type.attached_class
           raise "unexpected attached_class" unless recv_type.is_a?(RBI::Type::ClassOf)
 
-          sig.return_type = recv_type.type
+          return_type = recv_type.type
         end
+        sig.return_type = return_type
         sig
       end
 
@@ -217,7 +323,9 @@ module Spoom
         when RBI::Type::ClassOf
           inner_type = type.type
           type_symbol = @model.symbols[inner_type.to_rbi]
-          raise "unknown symbol for type #{inner_type.to_rbi}" unless type_symbol
+          return unless type_symbol
+
+          # raise "unknown symbol for type #{inner_type.to_rbi}" unless type_symbol
 
           defs = type_symbol.definitions.grep(Model::Namespace).flat_map(&:children).grep(Model::Method)
           defs.select! { |m| m.name == name }
@@ -237,7 +345,9 @@ module Spoom
           defs
         when RBI::Type::Simple
           type_symbol = @model.symbols[type.to_rbi]
-          raise Error.new("unknown symbol for type #{type.to_rbi}", @method.location) unless type_symbol
+          return unless type_symbol
+
+          # raise Error.new("unknown symbol for type #{type.to_rbi}", @method.location) unless type_symbol
 
           symbols = [type_symbol, *@model.supertypes(type_symbol)]
 
@@ -249,9 +359,21 @@ module Spoom
           defs
         when RBI::Type::Nilable
           # TODO: intersection
-          resolve_method_for_type(type.type, name)
+          # resolve_method_for_type(type.type, name)
+          []
+        when RBI::Type::Generic
+          # resolve_method_for_type(RBI::Type.simple("Array"), name)
+          []
+        when RBI::Type::All, RBI::Type::Any,
+          # candidates = type.types.map { |t| resolve_method_for_type(t, name) }
+          # return [] if candidates.any? { |c| c.nil? || c.empty? }
+
+          # candidates.flatten.compact
+          []
+        when RBI::Type::Boolean
+          []
         else
-          raise "unexpected type: #{type}"
+          raise "unexpected type: #{type} (#{type.class})"
         end
       rescue Poset::Error
         nil

@@ -15,6 +15,7 @@ module Spoom
         @out = out
         @current_indent = T.let(0, Integer)
         @in_visibility_group = T.let(false, T::Boolean)
+        @show_types = T.let(false, T::Boolean)
       end
 
       # Printing
@@ -73,7 +74,7 @@ module Spoom
              Prism::ArgumentsNode
           # no-op
         else
-          print(": #{node.spoom_type || "<NIL>"}")
+          print(": #{node.spoom_type || "<NIL>"}") if @show_types
         end
       end
 
@@ -94,7 +95,9 @@ module Spoom
 
       sig { override.params(node: Prism::AndNode).void }
       def visit_and_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        visit(node.left)
+        print(" #{node.operator} ")
+        visit(node.right)
       end
 
       sig { override.params(node: Prism::ArgumentsNode).void }
@@ -109,7 +112,12 @@ module Spoom
 
       sig { override.params(node: Prism::ArrayNode).void }
       def visit_array_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("[")
+        node.elements.each_with_index do |elem, i|
+          print(", ") if i > 0
+          visit(elem)
+        end
+        print("]")
       end
 
       sig { override.params(node: Prism::ArrayPatternNode).void }
@@ -136,12 +144,15 @@ module Spoom
 
       sig { override.params(node: Prism::BeginNode).void }
       def visit_begin_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("begin")
+        visit(node.statements)
+        print("end")
       end
 
       sig { override.params(node: Prism::BlockArgumentNode).void }
       def visit_block_argument_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("&")
+        visit(node.expression)
       end
 
       sig { override.params(node: Prism::BlockLocalVariableNode).void }
@@ -152,13 +163,17 @@ module Spoom
       sig { override.params(node: Prism::BlockNode).void }
       def visit_block_node(node)
         print(" {")
-
-        body = T.cast(node.body, T.nilable(Prism::StatementsNode))
-        if body
+        body = node.body
+        case body
+        when Prism::StatementsNode
           print(" ")
           body.body.each do |stmt|
             visit(stmt)
           end
+          print(" ")
+        when Prism::BeginNode
+          print(" ")
+          visit(body.statements)
           print(" ")
         end
         print("}")
@@ -166,7 +181,7 @@ module Spoom
 
       sig { override.params(node: Prism::BlockParameterNode).void }
       def visit_block_parameter_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("&#{node.name}")
       end
 
       sig { override.params(node: Prism::BlockParametersNode).void }
@@ -188,7 +203,7 @@ module Spoom
       def visit_call_node(node)
         if node.receiver
           visit(node.receiver)
-          print(".")
+          print(node.call_operator || ".")
         end
 
         method_symbol = node.spoom_method_symbol
@@ -205,7 +220,12 @@ module Spoom
 
       sig { override.params(node: Prism::CallOperatorWriteNode).void }
       def visit_call_operator_write_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        if node.receiver
+          visit(node.receiver)
+        end
+
+        print("#{node.operator} ")
+        visit(node.value)
       end
 
       sig { override.params(node: Prism::CallOrWriteNode).void }
@@ -230,7 +250,12 @@ module Spoom
 
       sig { override.params(node: Prism::CaseNode).void }
       def visit_case_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("case ")
+        visit(node.predicate)
+        printn
+        visit_all(node.conditions)
+        visit(node.consequent)
+        printt("end")
       end
 
       sig { override.params(node: Prism::ClassNode).void }
@@ -375,12 +400,18 @@ module Spoom
 
       sig { override.params(node: Prism::ElseNode).void }
       def visit_else_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("else")
+        visit(node.statements)
+        print("end")
       end
 
       sig { override.params(node: Prism::EmbeddedStatementsNode).void }
       def visit_embedded_statements_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("\#{")
+        node.statements&.body&.each do |stmt|
+          visit(stmt)
+        end
+        print("}")
       end
 
       sig { override.params(node: Prism::EmbeddedVariableNode).void }
@@ -395,7 +426,7 @@ module Spoom
 
       sig { override.params(node: Prism::FalseNode).void }
       def visit_false_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("false")
       end
 
       sig { override.params(node: Prism::FindPatternNode).void }
@@ -410,7 +441,7 @@ module Spoom
 
       sig { override.params(node: Prism::FloatNode).void }
       def visit_float_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print(node.slice)
       end
 
       sig { override.params(node: Prism::ForNode).void }
@@ -430,7 +461,7 @@ module Spoom
 
       sig { override.params(node: Prism::ForwardingSuperNode).void }
       def visit_forwarding_super_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("super")
       end
 
       sig { override.params(node: Prism::GlobalVariableAndWriteNode).void }
@@ -450,7 +481,7 @@ module Spoom
 
       sig { override.params(node: Prism::GlobalVariableReadNode).void }
       def visit_global_variable_read_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print(node.name.to_s) # rubocop:disable Lint/RedundantStringCoercion
       end
 
       sig { override.params(node: Prism::GlobalVariableTargetNode).void }
@@ -465,7 +496,12 @@ module Spoom
 
       sig { override.params(node: Prism::HashNode).void }
       def visit_hash_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("{")
+        node.elements.each_with_index do |elem, i|
+          print(", ") if i > 0
+          visit(elem)
+        end
+        print("}")
       end
 
       sig { override.params(node: Prism::HashPatternNode).void }
@@ -477,7 +513,7 @@ module Spoom
       def visit_if_node(node)
         print("if ")
         visit(node.predicate)
-        print(" #: #{node.spoom_type}") if node.spoom_type
+        print(" #: #{node.spoom_type}") if node.spoom_type && @show_types
         printn
         indent
         visit(node.statements)
@@ -538,17 +574,19 @@ module Spoom
 
       sig { override.params(node: Prism::InstanceVariableOperatorWriteNode).void }
       def visit_instance_variable_operator_write_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("#{node.name} #{node.operator} ")
+        visit(node.value)
       end
 
       sig { override.params(node: Prism::InstanceVariableOrWriteNode).void }
       def visit_instance_variable_or_write_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("#{node.name} ||= ")
+        visit(node.value)
       end
 
       sig { override.params(node: Prism::InstanceVariableReadNode).void }
       def visit_instance_variable_read_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print(node.name.to_s) # rubocop:disable Lint/RedundantStringCoercion
       end
 
       sig { override.params(node: Prism::InstanceVariableTargetNode).void }
@@ -558,7 +596,8 @@ module Spoom
 
       sig { override.params(node: Prism::InstanceVariableWriteNode).void }
       def visit_instance_variable_write_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("#{node.name} = ")
+        visit(node.value)
       end
 
       sig { override.params(node: Prism::IntegerNode).void }
@@ -578,7 +617,16 @@ module Spoom
 
       sig { override.params(node: Prism::InterpolatedStringNode).void }
       def visit_interpolated_string_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("\"")
+        node.parts.each do |elem|
+          case elem
+          when Prism::StringNode
+            print(elem.unescaped)
+          else
+            visit(elem)
+          end
+        end
+        print("\"")
       end
 
       sig { override.params(node: Prism::InterpolatedSymbolNode).void }
@@ -618,7 +666,8 @@ module Spoom
 
       sig { override.params(node: Prism::LocalVariableOperatorWriteNode).void }
       def visit_local_variable_operator_write_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("#{node.name} #{node.operator} ")
+        visit(node.value)
       end
 
       sig { override.params(node: Prism::LocalVariableOrWriteNode).void }
@@ -633,7 +682,7 @@ module Spoom
 
       sig { override.params(node: Prism::LocalVariableTargetNode).void }
       def visit_local_variable_target_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print(node.name.to_s) # rubocop:disable Lint/RedundantStringCoercion
       end
 
       sig { override.params(node: Prism::LocalVariableWriteNode).void }
@@ -690,17 +739,28 @@ module Spoom
 
       sig { override.params(node: Prism::MultiWriteNode).void }
       def visit_multi_write_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        node.lefts.each_with_index do |left, i|
+          print(", ") if i > 0
+          visit(left)
+        end
+        print(" = ")
+        visit(node.value)
       end
 
       sig { override.params(node: Prism::NextNode).void }
       def visit_next_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("next")
+
+        args = node.arguments
+        if args
+          print(" ")
+          visit(node.arguments)
+        end
       end
 
       sig { override.params(node: Prism::NilNode).void }
       def visit_nil_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("nil")
       end
 
       sig { override.params(node: Prism::NoKeywordsParameterNode).void }
@@ -720,17 +780,21 @@ module Spoom
 
       sig { override.params(node: Prism::OptionalKeywordParameterNode).void }
       def visit_optional_keyword_parameter_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("#{node.name}: ")
+        visit(node.value)
       end
 
       sig { override.params(node: Prism::OptionalParameterNode).void }
       def visit_optional_parameter_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("#{node.name} = ")
+        visit(node.value)
       end
 
       sig { override.params(node: Prism::OrNode).void }
       def visit_or_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        visit(node.left)
+        print(" #{node.operator} ")
+        visit(node.right)
       end
 
       sig { override.params(node: Prism::ParametersNode).void }
@@ -752,7 +816,9 @@ module Spoom
 
       sig { override.params(node: Prism::ParenthesesNode).void }
       def visit_parentheses_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("(")
+        visit(node.body)
+        print(")")
       end
 
       sig { override.params(node: Prism::PinnedExpressionNode).void }
@@ -777,7 +843,13 @@ module Spoom
 
       sig { override.params(node: Prism::RangeNode).void }
       def visit_range_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        visit(node.left)
+        if node.exclude_end?
+          print("...")
+        else
+          print("..")
+        end
+        visit(node.right)
       end
 
       sig { override.params(node: Prism::RationalNode).void }
@@ -792,12 +864,12 @@ module Spoom
 
       sig { override.params(node: Prism::RegularExpressionNode).void }
       def visit_regular_expression_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("/#{node.slice}/")
       end
 
       sig { override.params(node: Prism::RequiredKeywordParameterNode).void }
       def visit_required_keyword_parameter_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("#{node.name}: ")
       end
 
       sig { override.params(node: Prism::RequiredParameterNode).void }
@@ -817,7 +889,7 @@ module Spoom
 
       sig { override.params(node: Prism::RestParameterNode).void }
       def visit_rest_parameter_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("*#{node.name}")
       end
 
       sig { override.params(node: Prism::RetryNode).void }
@@ -827,17 +899,34 @@ module Spoom
 
       sig { override.params(node: Prism::ReturnNode).void }
       def visit_return_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("return")
+
+        args = node.arguments
+
+        if args.nil? || args.arguments.empty?
+          return
+        elsif args.arguments.size == 1
+          print(" ")
+          visit(node.arguments)
+        else
+          print(", ")
+        end
+
+        visit(node.arguments)
       end
 
       sig { override.params(node: Prism::SelfNode).void }
       def visit_self_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("self")
       end
 
       sig { override.params(node: Prism::SingletonClassNode).void }
       def visit_singleton_class_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        printn("class << self")
+        indent
+        visit(node.body)
+        dedent
+        printt("end")
       end
 
       sig { override.params(node: Prism::SourceEncodingNode).void }
@@ -857,7 +946,8 @@ module Spoom
 
       sig { override.params(node: Prism::SplatNode).void }
       def visit_splat_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("*")
+        visit(node.expression)
       end
 
       sig { override.params(node: Prism::StatementsNode).void }
@@ -871,12 +961,13 @@ module Spoom
 
       sig { override.params(node: Prism::StringNode).void }
       def visit_string_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("\"#{node.unescaped}\"")
       end
 
       sig { override.params(node: Prism::SuperNode).void }
       def visit_super_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("super")
+        visit(node.arguments)
       end
 
       sig { override.params(node: Prism::SymbolNode).void }
@@ -886,7 +977,7 @@ module Spoom
 
       sig { override.params(node: Prism::TrueNode).void }
       def visit_true_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        "true"
       end
 
       sig { override.params(node: Prism::UndefNode).void }
@@ -896,17 +987,45 @@ module Spoom
 
       sig { override.params(node: Prism::UnlessNode).void }
       def visit_unless_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("unless ")
+        visit(node.predicate)
+        print(" #: #{node.spoom_type}") if node.spoom_type
+        printn
+        indent
+        visit(node.statements)
+        dedent
+        if node.consequent
+          printn("else")
+          indent
+          visit(node.consequent)
+          dedent
+        end
+        printt("end")
       end
 
       sig { override.params(node: Prism::UntilNode).void }
       def visit_until_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("until ")
+        visit(node.predicate)
+        print(" #: #{node.spoom_type}") if node.spoom_type && @show_types
+        printn
+        indent
+        visit(node.statements)
+        dedent
+        printt("end")
       end
 
       sig { override.params(node: Prism::WhenNode).void }
       def visit_when_node(node)
-        raise Error, "Not Yet Implemented node #{node.inspect}"
+        print("when ")
+        node.conditions.each_with_index do |cond, index|
+          print(", ") if index > 0
+          visit(cond)
+        end
+        printn
+        indent
+        visit(node.statements)
+        dedent
       end
 
       sig { override.params(node: Prism::WhileNode).void }

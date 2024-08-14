@@ -214,6 +214,12 @@ module Spoom
         visit_all(node.body)
       end
 
+      sig { override.params(node: Prism::BlockNode).void }
+      def visit_block_node(node)
+        # puts "visit_block_node: #{node}"
+        # TODO: handle blocks
+      end
+
       sig { override.params(node: Prism::BreakNode).void }
       def visit_break_node(node)
         current_loop = @scope_stack.last

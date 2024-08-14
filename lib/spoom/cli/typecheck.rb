@@ -12,9 +12,24 @@ module Spoom
       default_task :typecheck
 
       desc "typecheck PATH...", "Render snippet"
+      option :payload, type: :boolean, default: true, desc: "Include payload"
+      option :stop_after,
+        enum: ["files", "payload", "parser", "namer", "resolver", "cfg", "global_pass", "infer"],
+        desc: "Stop after a specific phase"
+      option :print,
+        enum: ["files", "parser-tree", "parser-prism", "namer-tree"],
+        desc: "Print things"
       def typecheck(*paths)
         files = files_to_typecheck(paths)
 
+        if options[:print] == "files"
+          files.each do |file|
+            puts file
+          end
+        end
+        exit(1) if options[:stop_after] == "files"
+
+        errors = 0
         model = Spoom::Model.new
 
         # Payload
@@ -41,6 +56,8 @@ module Spoom
           end
 
           class ArgumentError < StandardError; end
+          class Array; end
+          class Benchmark; end
           class Binding; end
           class Bundler; end
           class CGI; end
@@ -48,9 +65,11 @@ module Spoom
           class Complex; end
           class Date; end
           class Dir; end
+          class Digest; end
           class ERB; end
           class Encoding; end
           class Errno; end
+          class Etc; end
           class Exception; end
           class FalseClass; end
           class Float < Numeric; end
@@ -59,26 +78,42 @@ module Spoom
           class IRB; end
           class Integer < Nmeric; end
           class Logger; end
+          class MalformattedArgumentError < ArgumentError; end
+          class Marshal; end
           class NoMethodError < StandardError; end
           class NameError < StandardError; end
+          class Net; end
           class NilClass; end
           class Numeric; end
           class ObjectSpace; end
           class Open3; end
+          class OpenSSL; end
           class Pathname; end
           class Proc; end
           class Process; end
           class Range; end
+          class RangeError < StandardError; end
           class Rational < Numeric; end
+          class RbConfig; end
           class Regexp; end
+          class RubyVM; end
+          class RuntimeError < StandardError; end
+          class ScriptError < Exception; end
           class Set; end
+          class SocketError < StandardError; end
           class StandardError; end
           class String; end
           class StringIO; end
           class Symbol; end
+          class SyntaxError < StandardError; end
+          class Tempfile; end
           class Time; end
+          class TracePoint; end
           class TrueClass; end
+          class TypeError < StandardError; end
           class UnboundMethod; end
+          class WEBrick; end
+          class YAML; end
 
           module T
             class Array; end
@@ -94,12 +129,15 @@ module Spoom
           RUBY_VERSION = nil
         RBI
 
-        $stderr.puts "Parsing payload..."
-        namer = Spoom::Typecheck::Namer.new(model, "<payload>")
-        starting = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        namer.visit(Spoom.parse_ruby(payload, file: "<payload>"))
-        ending = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        $stderr.puts "  took #{(ending - starting).round(2)} seconds"
+        if options[:payload]
+          $stderr.puts "Parsing payload..."
+          starting = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+          namer = Spoom::Typecheck::Namer.new(model, "<payload>")
+          namer.visit(Spoom.parse_ruby(payload, file: "<payload>"))
+          ending = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+          $stderr.puts "  took #{(ending - starting).round(2)} seconds"
+        end
+        exit(1) if options[:stop_after] == "payload"
 
         # Equivalent to parser - 2000 phase in Sorbet
         $stderr.puts "Parsing #{files.size} files..."
@@ -110,29 +148,24 @@ module Spoom
           [file, node]
         rescue Spoom::ParseError => e
           puts "Error parsing #{file}: #{e.message}"
+          errors += 1
           nil
         end.compact
         ending = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         $stderr.puts "  took #{(ending - starting).round(2)} seconds"
 
+        if options[:print] == "parser-tree"
+          print_trees(parsed_files)
+        elsif options[:print] == "parser-prism"
+          parsed_files.each do |file, node|
+            puts file
+            puts node.inspect
+          end
+        end
+        exit(1) if options[:stop_after] == "parser"
+
         # TODO: desugar?
         # TODO: rewrite?
-
-        # $stderr.puts "Empty..."
-        # parsed_files.each do |file, node|
-        #   model_builder = Spoom::Typecheck::Empty.new
-        #   model_builder.visit(node)
-        # end
-        # ending = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        # $stderr.puts "  took #{(ending - starting).round(2)} seconds"
-
-        # $stderr.puts "Namespaces..."
-        # parsed_files.each do |file, node|
-        #   model_builder = Spoom::Model::NamespaceVisitor.new
-        #   model_builder.visit(node)
-        # end
-        # ending = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        # $stderr.puts "  took #{(ending - starting).round(2)} seconds"
 
         # Equivalent to namer - 4000 phase in Sorbet
         $stderr.puts "Namer..."
@@ -144,10 +177,10 @@ module Spoom
         ending = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         $stderr.puts "  took #{(ending - starting).round(2)} seconds"
 
-        # TODO: stop after, print tree
-        # print_trees(parsed_files)
-
-        # exit(1)
+        if options[:print] == "namer-tree"
+          print_trees(parsed_files)
+        end
+        exit(1) if options[:stop_after] == "namer"
 
         # Equivalent to resolver - 5000 phase in Sorbet
         $stderr.puts "Resolver..."
@@ -159,12 +192,12 @@ module Spoom
           resolver.errors.each do |error|
             $stderr.puts "#{red("Error")}: #{error.message}"
             $stderr.puts error.location.snippet
+            errors += 1
           end
         end
         ending = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         $stderr.puts "  took #{(ending - starting).round(2)} seconds"
-
-        exit(1)
+        exit(1) if options[:stop_after] == "resolver"
 
         # TODO: stop after, print tree
         # print_trees(parsed_files)
@@ -180,6 +213,7 @@ module Spoom
         end
         ending = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         $stderr.puts "  took #{(ending - starting).round(2)} seconds"
+        exit(1) if options[:stop_after] == "cfg"
 
         # TODO: stop after, print tree
 
@@ -190,20 +224,39 @@ module Spoom
         model.finalize!
         ending = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         $stderr.puts "  took #{(ending - starting).round(2)} seconds"
+        exit(1) if options[:stop_after] == "global_pass"
 
         # Equivalent to infer - 7000 phase in Sorbet
         $stderr.puts "Infer..."
         starting = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         cfgs.each do |method, (node, cfg)|
           # puts "## Infer: " + method.full_name
+          # if method.full_name == "RBI::NodeWithComments::annotations"
+          #   cfg.show_dot
+          # end
           infer = Spoom::Typecheck::Infer.new(model, method, node, cfg)
           infer.infer
+
+          infer.errors.each do |error|
+            $stderr.puts "#{red("Error")}: #{error.message}"
+            $stderr.puts error.location.snippet
+            errors += 1
+          end
         end
         ending = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         $stderr.puts "  took #{(ending - starting).round(2)} seconds"
+        exit(1) if options[:stop_after] == "infer"
 
         # TODO: stop after, print tree
         # print_trees(parsed_files)
+
+        if errors > 0
+          $stderr.puts "#{red("Failure")}: #{errors} errors"
+          exit(1)
+        else
+          $stderr.puts green("Success: No errors")
+          exit(0)
+        end
       end
 
       private
