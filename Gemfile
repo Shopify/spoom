@@ -12,4 +12,5 @@ group :development do
   gem "rubocop-shopify", require: false
   gem "rubocop-sorbet", require: false
   gem "tapioca", require: false
+  gem "vernier", "~> 1.0"
 end

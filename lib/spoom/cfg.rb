@@ -177,17 +177,9 @@ module Spoom
         @scope_stack = T.let([], T::Array[Scope])
       end
 
-      sig { override.params(node: Prism::ProgramNode).void }
-      def visit_program_node(node)
-        super
-
-        # add an edge from the last block to the sync block
-        # T.must(@cfg.blocks.last).add_edge(new_block, "exit")
-      end
-
-      sig { override.params(node: Prism::StatementsNode).void }
-      def visit_statements_node(node)
-        node.body.each do |stmt|
+      sig { params(nodes: T::Array[Prism::Node]).void }
+      def visit_all(nodes)
+        nodes.each do |stmt|
           visit(stmt)
           case stmt
           when Prism::BreakNode,
@@ -207,6 +199,19 @@ module Spoom
             @current_block.instructions << stmt
           end
         end
+      end
+
+      sig { override.params(node: Prism::ProgramNode).void }
+      def visit_program_node(node)
+        super
+
+        # add an edge from the last block to the sync block
+        # T.must(@cfg.blocks.last).add_edge(new_block, "exit")
+      end
+
+      sig { override.params(node: Prism::StatementsNode).void }
+      def visit_statements_node(node)
+        visit_all(node.body)
       end
 
       sig { override.params(node: Prism::BreakNode).void }
@@ -351,7 +356,6 @@ module Spoom
           return_block = new_block
           current_block.add_edge(return_block, "return")
           @current_block = return_block
-          puts "arg:" + arg.inspect
           visit(arg)
           return_block.add_edge(current_def.exit, "exit")
         end

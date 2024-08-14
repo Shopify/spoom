@@ -6,7 +6,7 @@ module Spoom
     class NamespaceVisitor < Visitor
       extend T::Helpers
 
-      abstract!
+      # abstract!
 
       sig { void }
       def initialize

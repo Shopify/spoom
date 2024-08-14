@@ -44,7 +44,24 @@ module Spoom
     class UnresolvedSymbol < Symbol
       sig { override.returns(String) }
       def to_s
-        "<#{@full_name}>"
+        "<todo #{@full_name}>"
+      end
+    end
+
+    class UnresolvedRef < Symbol
+      sig { returns(T.nilable(Namespace)) }
+      attr_accessor :context
+
+      sig { params(full_name: String, context: T.nilable(Namespace)).void }
+      def initialize(full_name, context: nil)
+        super(full_name)
+
+        @context = context
+      end
+
+      sig { override.returns(String) }
+      def to_s
+        "<todo #{@full_name}>"
       end
     end
 
@@ -90,6 +107,11 @@ module Spoom
       sig { returns(String) }
       def name
         @symbol.name
+      end
+
+      sig { override.returns(String) }
+      def to_s
+        "<#{self.class.name&.split("::")&.last} #{name}>"
       end
     end
 
@@ -144,6 +166,26 @@ module Spoom
         super(symbol, owner: owner, location: location)
 
         @value = value
+      end
+    end
+
+    class Alias < Constant
+      sig { returns(Symbol) }
+      attr_accessor :target
+
+      sig do
+        params(
+          symbol: Symbol,
+          owner: T.nilable(Namespace),
+          location: Location,
+          value: String,
+          target: Symbol,
+        ).void
+      end
+      def initialize(symbol, owner:, location:, value:, target:)
+        super(symbol, owner: owner, location: location, value: value)
+
+        @target = target
       end
     end
 
@@ -249,9 +291,14 @@ module Spoom
       end
 
       sig { returns(RBI::Sig) }
-      def to_rbi
-        node = RBI::Parser.parse_string(string)
-        T.cast(node.nodes.first, RBI::Sig)
+      def rbi
+        @rbi ||= T.let(
+          begin
+            tree = RBI::Parser.parse_string(@string)
+            T.cast(tree.nodes.first, RBI::Sig)
+          end,
+          T.nilable(RBI::Sig),
+        )
       end
     end
 
@@ -289,17 +336,17 @@ module Spoom
       @symbols[full_name] ||= Symbol.new(full_name)
     end
 
-    sig { params(full_name: String, context: Symbol).returns(Symbol) }
+    sig { params(full_name: String, context: T.nilable(Symbol)).returns(Symbol) }
     def resolve_symbol(full_name, context:)
       if full_name.start_with?("::")
         full_name = full_name.delete_prefix("::")
-        return @symbols[full_name] ||= UnresolvedSymbol.new(full_name)
+        return @symbols[full_name] || UnresolvedSymbol.new(full_name)
       end
 
       target = T.let(@symbols[full_name], T.nilable(Symbol))
       return target if target
 
-      parts = context.full_name.split("::")
+      parts = context&.full_name&.split("::") || []
       until parts.empty?
         target = @symbols["#{parts.join("::")}::#{full_name}"]
         return target if target
@@ -307,7 +354,7 @@ module Spoom
         parts.pop
       end
 
-      @symbols[full_name] = UnresolvedSymbol.new(full_name)
+      UnresolvedSymbol.new(full_name)
     end
 
     sig { params(symbol: Symbol).returns(T::Array[Symbol]) }

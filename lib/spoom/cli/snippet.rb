@@ -35,10 +35,10 @@ module Spoom
 
           case command.name
           when "type"
+            raise "No target node found" unless target_node
 
             puts command.target_location.string
             puts node_types[target_node]
-            raise "No target node found" unless target_node
           when "typed", "frozen_string_literal"
           else
             puts "Unknown command: #{command.name}"
