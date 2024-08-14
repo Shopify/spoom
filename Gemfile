@@ -5,7 +5,8 @@ source "https://rubygems.org"
 
 gemspec
 
-gem "rbi", github: "Shopify/rbi", branch: "main"
+# gem "rbi", github: "Shopify/rbi", branch: "main"
+gem "rbi", path: "../rbi"
 
 group :development do
   gem "debug"

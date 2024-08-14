@@ -23,9 +23,9 @@ module Spoom
         model_builder.visit(node)
         model.finalize!
 
-        resolver = Spoom::Resolver.new(model, path)
-        resolver.visit(node)
-        node_types = resolver.node_types
+        # resolver = Spoom::Resolver.new(model, path)
+        # resolver.visit(node)
+        # node_types = resolver.node_types
 
         puts content
 
@@ -38,7 +38,7 @@ module Spoom
             raise "No target node found" unless target_node
 
             puts command.target_location.string
-            puts node_types[target_node]
+            # puts node_types[target_node]
           when "typed", "frozen_string_literal"
           else
             puts "Unknown command: #{command.name}"

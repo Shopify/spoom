@@ -15,7 +15,7 @@ module Spoom
         @file = file
         @namespace_nesting = T.let([], T::Array[Namespace])
         @visibility_stack = T.let([Visibility::Public], T::Array[Visibility])
-        @last_sigs = T.let([], T::Array[Sig])
+        @last_sigs = T.let([], T::Array[RBI::Sig])
       end
 
       # Classes
@@ -134,6 +134,7 @@ module Spoom
             location: node_location(node),
             visibility: current_visibility,
             sigs: collect_sigs,
+            is_singleton: !recv.nil?,
           )
         end
 
@@ -216,7 +217,9 @@ module Spoom
             @visibility_stack.pop
           end
         when :sig
-          @last_sigs << Sig.new(node.slice)
+          tree = RBI::Parser.parse_string(node.slice)
+          sig = T.cast(tree.nodes.first, RBI::Sig)
+          @last_sigs << sig
         else
           @last_sigs.clear
           super
@@ -230,7 +233,7 @@ module Spoom
         T.must(@visibility_stack.last)
       end
 
-      sig { returns(T::Array[Sig]) }
+      sig { returns(T::Array[RBI::Sig]) }
       def collect_sigs
         sigs = @last_sigs
         @last_sigs = []

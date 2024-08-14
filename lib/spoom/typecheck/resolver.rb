@@ -20,10 +20,25 @@ module Spoom
         @errors = T.let([], T::Array[Error])
       end
 
+      sig { override.params(node: Prism::DefNode).void }
+      def visit_def_node(node)
+        symbol_def = node.spoom_symbol_def
+        raise error("Missing symbol def for `#{node.name}`", node) unless symbol_def.is_a?(Model::Method)
+
+        sig = symbol_def.sigs.first
+        if sig
+          resolver = SigResolver.new(@model, symbol_def)
+          resolver.visit_sig(sig)
+          @errors.concat(resolver.errors)
+        end
+
+        super
+      end
+
       sig { override.params(node: Prism::ConstantReadNode).void }
       def visit_constant_read_node(node)
         symbol = node.spoom_symbol
-        raise error("Missing unresolved def", node) unless symbol.is_a?(Model::UnresolvedRef)
+        raise error("Missing unresolved def for `#{node.slice}`", node) unless symbol.is_a?(Model::UnresolvedRef)
 
         node.spoom_symbol = @model.resolve_symbol(
           symbol.full_name,
@@ -75,6 +90,43 @@ module Spoom
       sig { params(node: Prism::Node).returns(Location) }
       def node_location(node)
         Location.from_prism(@file, node.location)
+      end
+    end
+
+    class SigResolver < RBI::Type::Visitor
+      extend T::Sig
+
+      sig { returns(T::Array[Error]) }
+      attr_reader :errors
+
+      sig { params(model: Model, method: Model::Method).void }
+      def initialize(model, method)
+        super()
+
+        @model = model
+        @method = method
+        @errors = T.let([], T::Array[Resolver::Error])
+      end
+
+      sig { params(sig: RBI::Sig).void }
+      def visit_sig(sig)
+        sig.params.each do |param|
+          visit(param.type)
+        end
+        visit(sig.return_type)
+      end
+
+      sig { override.params(type: RBI::Type::Simple).void }
+      def visit_simple(type)
+        symbol = @model.resolve_symbol(type.name, context: @method.owner&.symbol)
+        type.spoom_symbol = symbol
+
+        if symbol.is_a?(Model::UnresolvedSymbol)
+          @errors << Resolver::Error.new("Unresolved symbol `#{type.name}`", @method.location)
+        end
+
+        type.instance_variable_set(:@orig_name, type.name)
+        type.instance_variable_set(:@name, symbol.full_name)
       end
     end
   end

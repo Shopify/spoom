@@ -1,17 +1,11 @@
 # typed: ignore
 # frozen_string_literal: true
 
-class Base
-  sig { returns(Integer) }
-  def base; end
-end
-
-class Foo < Base
-  sig { void }
-  def foo
-    base
+module Foo
+  sig { returns(T::Array[String]) }
+  def self.foo
   end
 end
 
-foo = Foo.new
-foo.foo
+Foo.foo.each do |x|
+end

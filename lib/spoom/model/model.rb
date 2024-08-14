@@ -196,7 +196,7 @@ module Spoom
       sig { returns(Visibility) }
       attr_reader :visibility
 
-      sig { returns(T::Array[Sig]) }
+      sig { returns(T::Array[RBI::Sig]) }
       attr_reader :sigs
 
       sig do
@@ -205,7 +205,7 @@ module Spoom
           owner: T.nilable(Namespace),
           location: Location,
           visibility: Visibility,
-          sigs: T::Array[Sig],
+          sigs: T::Array[RBI::Sig],
         ).void
       end
       def initialize(symbol, owner:, location:, visibility:, sigs: [])
@@ -226,7 +226,7 @@ module Spoom
           owner: T.nilable(Namespace),
           location: Location,
           visibility: Visibility,
-          sigs: T::Array[Sig],
+          sigs: T::Array[RBI::Sig],
           is_singleton: T::Boolean,
         ).void
       end
@@ -277,30 +277,6 @@ module Spoom
     class Include < Mixin; end
     class Prepend < Mixin; end
     class Extend < Mixin; end
-
-    # A Sorbet signature (sig block)
-    class Sig
-      extend T::Sig
-
-      sig { returns(String) }
-      attr_reader :string
-
-      sig { params(string: String).void }
-      def initialize(string)
-        @string = string
-      end
-
-      sig { returns(RBI::Sig) }
-      def rbi
-        @rbi ||= T.let(
-          begin
-            tree = RBI::Parser.parse_string(@string)
-            T.cast(tree.nodes.first, RBI::Sig)
-          end,
-          T.nilable(RBI::Sig),
-        )
-      end
-    end
 
     # Model
 

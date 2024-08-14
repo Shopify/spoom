@@ -1,4 +1,4 @@
-# typed: true
+# typed: ugnore
 # frozen_string_literal: true
 
 class Foo

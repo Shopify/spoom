@@ -6,7 +6,17 @@
 # Please instead update this file by running `bin/tapioca gem rbi`.
 
 # source://rbi//lib/rbi.rb#7
-module RBI; end
+module RBI
+  class << self
+    # source://rbi//lib/rbi.rb#49
+    sig { params(path: ::String).returns(::RBI::Tree) }
+    def parse_file(path); end
+
+    # source://rbi//lib/rbi.rb#44
+    sig { params(string: ::String).returns(::RBI::Tree) }
+    def parse_string(string); end
+  end
+end
 
 # source://rbi//lib/rbi/model.rb#1045
 class RBI::Arg < RBI::Node
@@ -52,7 +62,7 @@ class RBI::Attr < RBI::NodeWithComments
     comments: T.unsafe(nil))
   end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#418
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#420
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
 
@@ -72,7 +82,7 @@ class RBI::Attr < RBI::NodeWithComments
   sig { override.returns(T::Array[::String]) }
   def index_ids; end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#426
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#428
   sig { override.params(other: ::RBI::Node).void }
   def merge_with(other); end
 
@@ -112,7 +122,7 @@ class RBI::Attr < RBI::NodeWithComments
     params(
       name: ::String,
       sig: T.nilable(::RBI::Sig),
-      attribute_type: T.nilable(T.any(::RBI::Type, ::String)),
+      attribute_type: T.nilable(::RBI::Type),
       visibility: ::RBI::Visibility,
       loc: T.nilable(::RBI::Loc),
       comments: T::Array[::RBI::Comment],
@@ -123,7 +133,7 @@ class RBI::Attr < RBI::NodeWithComments
   # @raise [UnexpectedMultipleSigsError]
   #
   # source://rbi//lib/rbi/rewriters/attr_to_methods.rb#66
-  sig(:final) { returns([T.nilable(::RBI::Sig), T.nilable(T.any(::RBI::Type, ::String))]) }
+  sig(:final) { returns([T.nilable(::RBI::Sig), T.nilable(::RBI::Type)]) }
   def parse_sig; end
 end
 
@@ -145,7 +155,7 @@ class RBI::AttrAccessor < RBI::Attr
     comments: T.unsafe(nil), &block)
   end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#458
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#460
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
 
@@ -180,7 +190,7 @@ class RBI::AttrReader < RBI::Attr
     comments: T.unsafe(nil), &block)
   end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#440
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#442
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
 
@@ -215,7 +225,7 @@ class RBI::AttrWriter < RBI::Attr
     comments: T.unsafe(nil), &block)
   end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#449
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#451
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
 
@@ -277,7 +287,7 @@ class RBI::Class < RBI::Scope
   end
   def initialize(name, superclass_name: T.unsafe(nil), loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#382
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#384
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
 
@@ -339,28 +349,28 @@ end
 # end
 # ~~~
 #
-# source://rbi//lib/rbi/rewriters/merge_trees.rb#595
+# source://rbi//lib/rbi/rewriters/merge_trees.rb#583
 class RBI::ConflictTree < RBI::Tree
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#605
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#593
   sig { params(left_name: ::String, right_name: ::String).void }
   def initialize(left_name: T.unsafe(nil), right_name: T.unsafe(nil)); end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#599
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#587
   sig { returns(::RBI::Tree) }
   def left; end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#602
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#590
   sig { returns(::String) }
   def left_name; end
 
   # @return [Tree]
   #
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#599
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#587
   def right; end
 
   # @return [String]
   #
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#602
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#590
   def right_name; end
 end
 
@@ -382,7 +392,7 @@ class RBI::Const < RBI::NodeWithComments
   end
   def initialize(name, value, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#409
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#411
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
 
@@ -430,7 +440,7 @@ class RBI::Extend < RBI::Mixin
   end
   def initialize(name, *names, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#508
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#510
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
 
@@ -472,7 +482,7 @@ class RBI::File
   sig { returns(T::Boolean) }
   def empty?; end
 
-  # source://rbi//lib/rbi/printer.rb#745
+  # source://rbi//lib/rbi/printer.rb#743
   sig do
     params(
       out: T.any(::IO, ::StringIO),
@@ -501,7 +511,7 @@ class RBI::File
   # source://rbi//lib/rbi/model.rb#146
   def strictness=(_arg0); end
 
-  # source://rbi//lib/rbi/printer.rb#751
+  # source://rbi//lib/rbi/printer.rb#749
   sig { params(indent: ::Integer, print_locs: T::Boolean, max_line_length: T.nilable(::Integer)).returns(::String) }
   def string(indent: T.unsafe(nil), print_locs: T.unsafe(nil), max_line_length: T.unsafe(nil)); end
 end
@@ -563,19 +573,19 @@ end
 # source://rbi//lib/rbi/rewriters/group_nodes.rb#99
 class RBI::Group::Kind < T::Enum
   enums do
-    Mixins = new
-    RequiredAncestors = new
-    Helpers = new
-    TypeMembers = new
-    MixesInClassMethods = new
-    Sends = new
     Attrs = new
-    TStructFields = new
-    TEnums = new
+    Consts = new
+    Helpers = new
     Inits = new
     Methods = new
+    MixesInClassMethods = new
+    Mixins = new
+    RequiredAncestors = new
+    Sends = new
     SingletonClasses = new
-    Consts = new
+    TEnums = new
+    TStructFields = new
+    TypeMembers = new
   end
 end
 
@@ -584,11 +594,11 @@ class RBI::GroupNodesError < RBI::Error; end
 
 # Sorbet's misc.
 #
-# source://rbi//lib/rbi/model.rb#1384
+# source://rbi//lib/rbi/model.rb#1386
 class RBI::Helper < RBI::NodeWithComments
   include ::RBI::Indexable
 
-  # source://rbi//lib/rbi/model.rb#1398
+  # source://rbi//lib/rbi/model.rb#1400
   sig do
     params(
       name: ::String,
@@ -599,7 +609,7 @@ class RBI::Helper < RBI::NodeWithComments
   end
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#526
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#528
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
 
@@ -607,11 +617,11 @@ class RBI::Helper < RBI::NodeWithComments
   sig { override.returns(T::Array[::String]) }
   def index_ids; end
 
-  # source://rbi//lib/rbi/model.rb#1388
+  # source://rbi//lib/rbi/model.rb#1390
   sig { returns(::String) }
   def name; end
 
-  # source://rbi//lib/rbi/model.rb#1405
+  # source://rbi//lib/rbi/model.rb#1407
   sig { override.returns(::String) }
   def to_s; end
 end
@@ -632,7 +642,7 @@ class RBI::Include < RBI::Mixin
   end
   def initialize(name, *names, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#499
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#501
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
 
@@ -923,7 +933,7 @@ class RBI::Method < RBI::NodeWithComments
   sig do
     params(
       params: T::Array[::RBI::SigParam],
-      return_type: T.any(::RBI::Type, ::String),
+      return_type: ::RBI::Type,
       is_abstract: T::Boolean,
       is_override: T::Boolean,
       is_overridable: T::Boolean,
@@ -937,7 +947,7 @@ class RBI::Method < RBI::NodeWithComments
     is_override: T.unsafe(nil), is_overridable: T.unsafe(nil), is_final: T.unsafe(nil), type_params: T.unsafe(nil), checked: T.unsafe(nil), &block)
   end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#467
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#469
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
 
@@ -958,7 +968,7 @@ class RBI::Method < RBI::NodeWithComments
   # source://rbi//lib/rbi/model.rb#495
   def is_singleton=(_arg0); end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#476
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#478
   sig { override.params(other: ::RBI::Node).void }
   def merge_with(other); end
 
@@ -998,11 +1008,11 @@ class RBI::Method < RBI::NodeWithComments
   def visibility=(_arg0); end
 end
 
-# source://rbi//lib/rbi/model.rb#1445
+# source://rbi//lib/rbi/model.rb#1447
 class RBI::MixesInClassMethods < RBI::Mixin
   include ::RBI::Indexable
 
-  # source://rbi//lib/rbi/model.rb#1457
+  # source://rbi//lib/rbi/model.rb#1459
   sig do
     params(
       name: ::String,
@@ -1014,7 +1024,7 @@ class RBI::MixesInClassMethods < RBI::Mixin
   end
   def initialize(name, *names, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#517
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#519
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
 
@@ -1022,7 +1032,7 @@ class RBI::MixesInClassMethods < RBI::Mixin
   sig { override.returns(T::Array[::String]) }
   def index_ids; end
 
-  # source://rbi//lib/rbi/model.rb#1463
+  # source://rbi//lib/rbi/model.rb#1465
   sig { override.returns(::String) }
   def to_s; end
 end
@@ -1046,7 +1056,7 @@ class RBI::Mixin < RBI::NodeWithComments
   end
   def initialize(name, names, loc: T.unsafe(nil), comments: T.unsafe(nil)); end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#490
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#492
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
 
@@ -1068,7 +1078,7 @@ class RBI::Module < RBI::Scope
   end
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#391
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#393
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
 
@@ -1138,7 +1148,7 @@ class RBI::Node
   # source://rbi//lib/rbi/model.rb#14
   def parent_tree=(_arg0); end
 
-  # source://rbi//lib/rbi/printer.rb#769
+  # source://rbi//lib/rbi/printer.rb#767
   sig do
     params(
       out: T.any(::IO, ::StringIO),
@@ -1159,7 +1169,7 @@ class RBI::Node
   sig { params(version: ::Gem::Version).returns(T::Boolean) }
   def satisfies_version?(version); end
 
-  # source://rbi//lib/rbi/printer.rb#775
+  # source://rbi//lib/rbi/printer.rb#773
   sig { params(indent: ::Integer, print_locs: T::Boolean, max_line_length: T.nilable(::Integer)).returns(::String) }
   def string(indent: T.unsafe(nil), print_locs: T.unsafe(nil), max_line_length: T.unsafe(nil)); end
 end
@@ -1284,21 +1294,21 @@ class RBI::Parser
   end
 end
 
-# source://rbi//lib/rbi/parser.rb#833
+# source://rbi//lib/rbi/parser.rb#828
 class RBI::Parser::SigBuilder < RBI::Parser::Visitor
-  # source://rbi//lib/rbi/parser.rb#840
+  # source://rbi//lib/rbi/parser.rb#835
   sig { params(content: ::String, file: ::String).void }
   def initialize(content, file:); end
 
-  # source://rbi//lib/rbi/parser.rb#837
+  # source://rbi//lib/rbi/parser.rb#832
   sig { returns(::RBI::Sig) }
   def current; end
 
-  # source://rbi//lib/rbi/parser.rb#892
+  # source://rbi//lib/rbi/parser.rb#887
   sig { override.params(node: ::Prism::AssocNode).void }
   def visit_assoc_node(node); end
 
-  # source://rbi//lib/rbi/parser.rb#847
+  # source://rbi//lib/rbi/parser.rb#842
   sig { override.params(node: ::Prism::CallNode).void }
   def visit_call_node(node); end
 end
@@ -1357,49 +1367,49 @@ class RBI::Parser::TreeBuilder < RBI::Parser::Visitor
 
   # Collect all the remaining comments within a node
   #
-  # source://rbi//lib/rbi/parser.rb#508
+  # source://rbi//lib/rbi/parser.rb#503
   sig { params(node: ::Prism::Node).void }
   def collect_dangling_comments(node); end
 
   # Collect all the remaining comments after visiting the tree
   #
-  # source://rbi//lib/rbi/parser.rb#526
+  # source://rbi//lib/rbi/parser.rb#521
   sig { void }
   def collect_orphan_comments; end
 
-  # source://rbi//lib/rbi/parser.rb#549
+  # source://rbi//lib/rbi/parser.rb#544
   sig { returns(::RBI::Tree) }
   def current_scope; end
 
-  # source://rbi//lib/rbi/parser.rb#554
+  # source://rbi//lib/rbi/parser.rb#549
   sig { returns(T::Array[::RBI::Sig]) }
   def current_sigs; end
 
-  # source://rbi//lib/rbi/parser.rb#561
+  # source://rbi//lib/rbi/parser.rb#556
   sig { params(sigs: T::Array[::RBI::Sig]).returns(T::Array[::RBI::Comment]) }
   def detach_comments_from_sigs(sigs); end
 
-  # source://rbi//lib/rbi/parser.rb#573
+  # source://rbi//lib/rbi/parser.rb#568
   sig { params(node: ::Prism::Node).returns(T::Array[::RBI::Comment]) }
   def node_comments(node); end
 
-  # source://rbi//lib/rbi/parser.rb#591
+  # source://rbi//lib/rbi/parser.rb#586
   sig { params(node: ::Prism::Comment).returns(::RBI::Comment) }
   def parse_comment(node); end
 
-  # source://rbi//lib/rbi/parser.rb#620
+  # source://rbi//lib/rbi/parser.rb#615
   sig { params(node: T.nilable(::Prism::Node)).returns(T::Array[::RBI::Param]) }
   def parse_params(node); end
 
-  # source://rbi//lib/rbi/parser.rb#596
+  # source://rbi//lib/rbi/parser.rb#591
   sig { params(node: T.nilable(::Prism::Node)).returns(T::Array[::RBI::Arg]) }
   def parse_send_args(node); end
 
-  # source://rbi//lib/rbi/parser.rb#694
+  # source://rbi//lib/rbi/parser.rb#689
   sig { params(node: ::Prism::CallNode).returns(::RBI::Sig) }
   def parse_sig(node); end
 
-  # source://rbi//lib/rbi/parser.rb#703
+  # source://rbi//lib/rbi/parser.rb#698
   sig do
     params(
       node: T.any(::Prism::ConstantPathWriteNode, ::Prism::ConstantWriteNode),
@@ -1407,23 +1417,23 @@ class RBI::Parser::TreeBuilder < RBI::Parser::Visitor
   end
   def parse_struct(node); end
 
-  # source://rbi//lib/rbi/parser.rb#753
+  # source://rbi//lib/rbi/parser.rb#748
   sig { params(send: ::Prism::CallNode).void }
   def parse_tstruct_field(send); end
 
-  # source://rbi//lib/rbi/parser.rb#790
+  # source://rbi//lib/rbi/parser.rb#785
   sig { params(name: ::String, node: ::Prism::Node).returns(::RBI::Visibility) }
   def parse_visibility(name, node); end
 
-  # source://rbi//lib/rbi/parser.rb#804
+  # source://rbi//lib/rbi/parser.rb#799
   sig { void }
   def separate_header_comments; end
 
-  # source://rbi//lib/rbi/parser.rb#814
+  # source://rbi//lib/rbi/parser.rb#809
   sig { void }
   def set_root_tree_loc; end
 
-  # source://rbi//lib/rbi/parser.rb#828
+  # source://rbi//lib/rbi/parser.rb#823
   sig { params(node: T.nilable(::Prism::Node)).returns(T::Boolean) }
   def type_variable_definition?(node); end
 end
@@ -1538,35 +1548,35 @@ class RBI::Printer < RBI::Visitor
 
   private
 
-  # source://rbi//lib/rbi/printer.rb#620
+  # source://rbi//lib/rbi/printer.rb#618
   sig { params(node: ::RBI::Node).returns(T::Boolean) }
   def oneline?(node); end
 
-  # source://rbi//lib/rbi/printer.rb#578
+  # source://rbi//lib/rbi/printer.rb#576
   sig { params(node: ::RBI::Node).void }
   def print_blank_line_before(node); end
 
-  # source://rbi//lib/rbi/printer.rb#588
+  # source://rbi//lib/rbi/printer.rb#586
   sig { params(node: ::RBI::Node).void }
   def print_loc(node); end
 
-  # source://rbi//lib/rbi/printer.rb#594
+  # source://rbi//lib/rbi/printer.rb#592
   sig { params(node: ::RBI::Param, last: T::Boolean).void }
   def print_param_comment_leading_space(node, last:); end
 
-  # source://rbi//lib/rbi/printer.rb#667
+  # source://rbi//lib/rbi/printer.rb#665
   sig { params(node: ::RBI::Sig).void }
   def print_sig_as_block(node); end
 
-  # source://rbi//lib/rbi/printer.rb#642
+  # source://rbi//lib/rbi/printer.rb#640
   sig { params(node: ::RBI::Sig).void }
   def print_sig_as_line(node); end
 
-  # source://rbi//lib/rbi/printer.rb#612
+  # source://rbi//lib/rbi/printer.rb#610
   sig { params(node: ::RBI::SigParam, last: T::Boolean).void }
   def print_sig_param_comment_leading_space(node, last:); end
 
-  # source://rbi//lib/rbi/printer.rb#723
+  # source://rbi//lib/rbi/printer.rb#721
   sig { params(node: ::RBI::Sig).returns(T::Array[::String]) }
   def sig_modifiers(node); end
 
@@ -1606,7 +1616,7 @@ class RBI::Printer < RBI::Visitor
   sig { override.params(node: ::RBI::Comment).void }
   def visit_comment(node); end
 
-  # source://rbi//lib/rbi/printer.rb#555
+  # source://rbi//lib/rbi/printer.rb#553
   sig { override.params(node: ::RBI::ConflictTree).void }
   def visit_conflict_tree(node); end
 
@@ -1618,11 +1628,11 @@ class RBI::Printer < RBI::Visitor
   sig { override.params(node: ::RBI::Extend).void }
   def visit_extend(node); end
 
-  # source://rbi//lib/rbi/printer.rb#527
+  # source://rbi//lib/rbi/printer.rb#525
   sig { override.params(node: ::RBI::Group).void }
   def visit_group(node); end
 
-  # source://rbi//lib/rbi/printer.rb#513
+  # source://rbi//lib/rbi/printer.rb#511
   sig { override.params(node: ::RBI::Helper).void }
   def visit_helper(node); end
 
@@ -1650,7 +1660,7 @@ class RBI::Printer < RBI::Visitor
   sig { override.params(node: ::RBI::Method).void }
   def visit_method(node); end
 
-  # source://rbi//lib/rbi/printer.rb#522
+  # source://rbi//lib/rbi/printer.rb#520
   sig { override.params(node: ::RBI::MixesInClassMethods).void }
   def visit_mixes_in_class_methods(node); end
 
@@ -1682,7 +1692,7 @@ class RBI::Printer < RBI::Visitor
   sig { override.params(node: ::RBI::ReqParam).void }
   def visit_req_param(node); end
 
-  # source://rbi//lib/rbi/printer.rb#546
+  # source://rbi//lib/rbi/printer.rb#544
   sig { override.params(node: ::RBI::RequiresAncestor).void }
   def visit_requires_ancestor(node); end
 
@@ -1698,7 +1708,7 @@ class RBI::Printer < RBI::Visitor
   sig { params(node: ::RBI::Scope).void }
   def visit_scope_body(node); end
 
-  # source://rbi//lib/rbi/printer.rb#564
+  # source://rbi//lib/rbi/printer.rb#562
   sig { override.params(node: ::RBI::ScopeConflict).void }
   def visit_scope_conflict(node); end
 
@@ -1754,7 +1764,7 @@ class RBI::Printer < RBI::Visitor
   sig { override.params(node: ::RBI::TStructProp).void }
   def visit_tstruct_prop(node); end
 
-  # source://rbi//lib/rbi/printer.rb#504
+  # source://rbi//lib/rbi/printer.rb#502
   sig { override.params(node: ::RBI::TypeMember).void }
   def visit_type_member(node); end
 
@@ -1762,7 +1772,7 @@ class RBI::Printer < RBI::Visitor
   sig { params(node: ::RBI::Visibility).void }
   def visit_visibility(node); end
 
-  # source://rbi//lib/rbi/printer.rb#533
+  # source://rbi//lib/rbi/printer.rb#531
   sig { override.params(node: ::RBI::VisibilityGroup).void }
   def visit_visibility_group(node); end
 end
@@ -1830,11 +1840,11 @@ class RBI::ReqParam < RBI::Param
   def ==(other); end
 end
 
-# source://rbi//lib/rbi/model.rb#1468
+# source://rbi//lib/rbi/model.rb#1470
 class RBI::RequiresAncestor < RBI::NodeWithComments
   include ::RBI::Indexable
 
-  # source://rbi//lib/rbi/model.rb#1481
+  # source://rbi//lib/rbi/model.rb#1483
   sig { params(name: ::String, loc: T.nilable(::RBI::Loc), comments: T::Array[::RBI::Comment]).void }
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil)); end
 
@@ -1842,11 +1852,11 @@ class RBI::RequiresAncestor < RBI::NodeWithComments
   sig { override.returns(T::Array[::String]) }
   def index_ids; end
 
-  # source://rbi//lib/rbi/model.rb#1472
+  # source://rbi//lib/rbi/model.rb#1474
   sig { returns(::String) }
   def name; end
 
-  # source://rbi//lib/rbi/model.rb#1487
+  # source://rbi//lib/rbi/model.rb#1489
   sig { override.returns(::String) }
   def to_s; end
 end
@@ -2237,8 +2247,8 @@ end
 # source://rbi//lib/rbi/rewriters/merge_trees.rb#42
 class RBI::Rewriters::Merge::Keep < T::Enum
   enums do
-    NONE = new
     LEFT = new
+    NONE = new
     RIGHT = new
   end
 end
@@ -2500,28 +2510,28 @@ end
 # end
 # ~~~
 #
-# source://rbi//lib/rbi/rewriters/merge_trees.rb#628
+# source://rbi//lib/rbi/rewriters/merge_trees.rb#616
 class RBI::ScopeConflict < RBI::Tree
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#645
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#633
   sig { params(left: ::RBI::Scope, right: ::RBI::Scope, left_name: ::String, right_name: ::String).void }
   def initialize(left:, right:, left_name: T.unsafe(nil), right_name: T.unsafe(nil)); end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#632
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#620
   sig { returns(::RBI::Scope) }
   def left; end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#635
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#623
   sig { returns(::String) }
   def left_name; end
 
   # @return [Scope]
   #
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#632
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#620
   def right; end
 
   # @return [String]
   #
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#635
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#623
   def right_name; end
 end
 
@@ -2555,7 +2565,7 @@ class RBI::Send < RBI::NodeWithComments
   sig { returns(T::Array[::RBI::Arg]) }
   def args; end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#535
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#537
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
 
@@ -2580,7 +2590,7 @@ class RBI::Sig < RBI::NodeWithComments
   sig do
     params(
       params: T::Array[::RBI::SigParam],
-      return_type: T.any(::RBI::Type, ::String),
+      return_type: ::RBI::Type,
       is_abstract: T::Boolean,
       is_override: T::Boolean,
       is_overridable: T::Boolean,
@@ -2605,7 +2615,7 @@ class RBI::Sig < RBI::NodeWithComments
   def ==(other); end
 
   # source://rbi//lib/rbi/model.rb#1168
-  sig { params(name: ::String, type: T.any(::RBI::Type, ::String)).void }
+  sig { params(name: ::String, type: ::RBI::Type).void }
   def add_param(name, type); end
 
   # source://rbi//lib/rbi/model.rb#1120
@@ -2661,10 +2671,10 @@ class RBI::Sig < RBI::NodeWithComments
   def params; end
 
   # source://rbi//lib/rbi/model.rb#1111
-  sig { returns(T.any(::RBI::Type, ::String)) }
+  sig { returns(::RBI::Type) }
   def return_type; end
 
-  # @return [Type, String]
+  # @return [Type]
   #
   # source://rbi//lib/rbi/model.rb#1111
   def return_type=(_arg0); end
@@ -2680,7 +2690,7 @@ class RBI::SigParam < RBI::NodeWithComments
   sig do
     params(
       name: ::String,
-      type: T.any(::RBI::Type, ::String),
+      type: ::RBI::Type,
       loc: T.nilable(::RBI::Loc),
       comments: T::Array[::RBI::Comment],
       block: T.nilable(T.proc.params(node: ::RBI::SigParam).void),
@@ -2697,7 +2707,7 @@ class RBI::SigParam < RBI::NodeWithComments
   def name; end
 
   # source://rbi//lib/rbi/model.rb#1189
-  sig { returns(T.any(::RBI::Type, ::String)) }
+  sig { returns(::RBI::Type) }
   def type; end
 end
 
@@ -2735,7 +2745,7 @@ class RBI::Struct < RBI::Scope
     comments: T.unsafe(nil), &block)
   end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#400
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#402
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
 
@@ -2785,44 +2795,41 @@ class RBI::TEnum < RBI::Class
     ).void
   end
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
+
+  # Find the names defined by the enum.
+  #
+  # source://rbi//lib/rbi/model.rb#1347
+  sig { returns(T::Array[::String]) }
+  def members; end
 end
 
-# source://rbi//lib/rbi/model.rb#1346
-class RBI::TEnumBlock < RBI::NodeWithComments
-  include ::RBI::Indexable
-
-  # source://rbi//lib/rbi/model.rb#1360
+# source://rbi//lib/rbi/model.rb#1352
+class RBI::TEnumBlock < RBI::Scope
+  # source://rbi//lib/rbi/model.rb#1362
   sig do
     params(
-      names: T::Array[::String],
       loc: T.nilable(::RBI::Loc),
       comments: T::Array[::RBI::Comment],
       block: T.nilable(T.proc.params(node: ::RBI::TEnumBlock).void),
     ).void
   end
-  def initialize(names = T.unsafe(nil), loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
+  def initialize(loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
-  # source://rbi//lib/rbi/model.rb#1372
-  sig { params(name: ::String).void }
-  def <<(name); end
-
-  # source://rbi//lib/rbi/model.rb#1367
-  sig { returns(T::Boolean) }
-  def empty?; end
+  # source://rbi//lib/rbi/model.rb#1368
+  sig { override.returns(::String) }
+  def fully_qualified_name; end
 
   # source://rbi//lib/rbi/index.rb#223
   sig { override.returns(T::Array[::String]) }
   def index_ids; end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#562
-  sig { override.params(other: ::RBI::Node).void }
-  def merge_with(other); end
-
-  # source://rbi//lib/rbi/model.rb#1350
+  # Find the names defined by the enum.
+  #
+  # source://rbi//lib/rbi/model.rb#1374
   sig { returns(T::Array[::String]) }
-  def names; end
+  def members; end
 
-  # source://rbi//lib/rbi/model.rb#1377
+  # source://rbi//lib/rbi/model.rb#1379
   sig { override.returns(::String) }
   def to_s; end
 end
@@ -2860,7 +2867,7 @@ class RBI::TStructConst < RBI::TStructField
   end
   def initialize(name, type, default: T.unsafe(nil), loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#553
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#555
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
 
@@ -2895,7 +2902,7 @@ class RBI::TStructField < RBI::NodeWithComments
   end
   def initialize(name, type, default: T.unsafe(nil), loc: T.unsafe(nil), comments: T.unsafe(nil)); end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#544
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#546
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
 
@@ -2950,7 +2957,7 @@ class RBI::TStructProp < RBI::TStructField
   end
   def initialize(name, type, default: T.unsafe(nil), loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
-  # source://rbi//lib/rbi/rewriters/merge_trees.rb#576
+  # source://rbi//lib/rbi/rewriters/merge_trees.rb#564
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
 
@@ -3841,11 +3848,11 @@ class RBI::Type::Void < RBI::Type
   def to_rbi; end
 end
 
-# source://rbi//lib/rbi/model.rb#1410
+# source://rbi//lib/rbi/model.rb#1412
 class RBI::TypeMember < RBI::NodeWithComments
   include ::RBI::Indexable
 
-  # source://rbi//lib/rbi/model.rb#1425
+  # source://rbi//lib/rbi/model.rb#1427
   sig do
     params(
       name: ::String,
@@ -3857,7 +3864,7 @@ class RBI::TypeMember < RBI::NodeWithComments
   end
   def initialize(name, value, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
-  # source://rbi//lib/rbi/model.rb#1433
+  # source://rbi//lib/rbi/model.rb#1435
   sig { returns(::String) }
   def fully_qualified_name; end
 
@@ -3865,17 +3872,17 @@ class RBI::TypeMember < RBI::NodeWithComments
   sig { override.returns(T::Array[::String]) }
   def index_ids; end
 
-  # source://rbi//lib/rbi/model.rb#1414
+  # source://rbi//lib/rbi/model.rb#1416
   sig { returns(::String) }
   def name; end
 
-  # source://rbi//lib/rbi/model.rb#1440
+  # source://rbi//lib/rbi/model.rb#1442
   sig { override.returns(::String) }
   def to_s; end
 
   # @return [String]
   #
-  # source://rbi//lib/rbi/model.rb#1414
+  # source://rbi//lib/rbi/model.rb#1416
   def value; end
 end
 

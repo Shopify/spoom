@@ -8,6 +8,9 @@ module Spoom
 
       class Error < Typecheck::Error; end
 
+      sig { returns(T::Array[Error]) }
+      attr_reader(:errors)
+
       sig { params(model: Model, file: String).void }
       def initialize(model, file)
         super()
@@ -16,7 +19,8 @@ module Spoom
         @file = file
         @namespace_nesting = T.let([], T::Array[Model::Namespace])
         @visibility_stack = T.let([Model::Visibility::Public], T::Array[Model::Visibility])
-        @last_sigs = T.let([], T::Array[Model::Sig])
+        @last_sigs = T.let([], T::Array[RBI::Sig])
+        @errors = T.let([], T::Array[Error])
       end
 
       # Classes
@@ -175,6 +179,7 @@ module Spoom
             location: node_location(node),
             visibility: current_visibility,
             sigs: collect_sigs,
+            is_singleton: !recv.nil? || @namespace_nesting.last.is_a?(Model::SingletonClass),
           )
 
           node.spoom_symbol_def = symbol_def
@@ -265,7 +270,10 @@ module Spoom
             @visibility_stack.pop
           end
         when :sig
-          @last_sigs << Model::Sig.new(node.slice)
+          tree = RBI::Parser.parse_string(node.slice)
+          sig = T.cast(tree.nodes.first, RBI::Sig)
+          @last_sigs << sig
+
           super
         else
           super
@@ -279,7 +287,7 @@ module Spoom
         T.must(@visibility_stack.last)
       end
 
-      sig { returns(T::Array[Model::Sig]) }
+      sig { returns(T::Array[RBI::Sig]) }
       def collect_sigs
         sigs = @last_sigs
         @last_sigs = []
@@ -295,6 +303,18 @@ module Spoom
       sig { params(node: Prism::Node).returns(Location) }
       def node_location(node)
         Location.from_prism(@file, node.location)
+      end
+
+      sig { params(node: Prism::Node).returns(T.nilable(RBI::Sig)) }
+      def parse_sig(node)
+        tree = RBI::Parser.parse_string(node.slice)
+        T.cast(tree.nodes.first, RBI::Sig)
+      rescue RBI::ParseError => e
+        @errors << error("Invalid signature: #{e.message}", node)
+        nil
+      rescue RBI::Type::Error => e
+        @errors << error("Invalid type: #{e.message}", node)
+        nil
       end
     end
   end

@@ -3,6 +3,7 @@
 
 require "rbi"
 require "ext/prism"
+require "ext/rbi"
 
 module Spoom
   module Typecheck

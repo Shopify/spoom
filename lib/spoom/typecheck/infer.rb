@@ -33,7 +33,7 @@ module Spoom
         @self_type = T.let(self_type_for(method), RBI::Type)
 
         # TODO: handle multiple sigs
-        sig = method.symbol.definitions.grep(Model::Method).flat_map(&:sigs).first&.rbi
+        sig = method.symbol.definitions.grep(Model::Method).flat_map(&:sigs).first
 
         scope = Scope.new
         if node.is_a?(Prism::DefNode)
@@ -43,15 +43,7 @@ module Spoom
                 Prism::RequiredKeywordParameterNode, Prism::OptionalKeywordParameterNode, Prism::KeywordRestParameterNode,
                 Prism::BlockParameterNode
               type = if sig
-                param_type = sig.params.find { |p| p.name == param.name.to_s }&.type
-                case param_type
-                when RBI::Type
-                  param_type
-                when String
-                  RBI::Type.parse_string(param_type)
-                else
-                  RBI::Type.untyped
-                end
+                sig.params.find { |p| p.name == param.name.to_s }&.type || RBI::Type.untyped
               else
                 RBI::Type.untyped
               end
@@ -70,7 +62,7 @@ module Spoom
 
       sig { void }
       def infer
-        visit(@node)
+        # visit(@node)
         visit_cfg(@cfg)
       end
 
@@ -86,9 +78,6 @@ module Spoom
         @seen << block
 
         block.instructions.each do |instr|
-          # puts instr
-          # puts instr.slice
-          # puts instr.inspect
           visit(instr)
         end
 
@@ -98,6 +87,13 @@ module Spoom
       end
 
       # Nodes
+
+      def visit(node)
+        return unless node
+
+        # puts node.class
+        super
+      end
 
       sig { override.params(node: Prism::ArrayNode).void }
       def visit_array_node(node)
@@ -113,10 +109,21 @@ module Spoom
         node.spoom_type = RBI::Type.untyped
       end
 
-      # sig { override.params(node: Prism::BlockArgumentNode).void }
-      # def visit_block_argument_node(node)
-      #   # puts node
-      # end
+      sig { override.params(node: Prism::BlockParametersNode).void }
+      def visit_block_parameters_node(node)
+        # TODO: type blocks
+        node.parameters&.child_nodes&.each do |param|
+          case param
+          when Prism::RequiredParameterNode, Prism::OptionalParameterNode, Prism::RestParameterNode,
+              Prism::RequiredKeywordParameterNode, Prism::OptionalKeywordParameterNode, Prism::KeywordRestParameterNode,
+              Prism::BlockParameterNode
+            type = RBI::Type.untyped
+            param.spoom_type = type
+            current_scope.var_types[param.name.to_s] = type
+          end
+        end
+        # TODO: locals
+      end
 
       sig { override.params(node: Prism::CallNode).void }
       def visit_call_node(node)
@@ -127,7 +134,6 @@ module Spoom
           type = receiver.spoom_type
 
           unless type
-            # puts receiver.class
             @errors << error("missing type for `#{receiver.slice}` (#{receiver.class})", receiver)
             type = RBI::Type.untyped
           end
@@ -137,19 +143,26 @@ module Spoom
           @self_type
         end
 
+        # if receiver_type.is_a?(RBI::Type::Untyped)
+        #   @errors << error("untyped receiver", node)
+        # end
+
         visit(node.arguments)
         visit(node.block)
 
         method_symbols = resolve_method_for_type(receiver_type, node.name.to_s) || []
+        if method_symbols.empty? && !receiver_type.is_a?(RBI::Type::Untyped)
+          @errors << error("missing method `#{node.name}` for type `#{receiver_type}`", node)
+        end
         node.spoom_method_symbol = method_symbols.first
 
         sigs = method_symbols.flat_map(&:sigs)
         # TODO: support multiple sigs
-        sig = sigs.first&.rbi
+        sig = sigs.first
 
         node.spoom_type = if sig
           sig = resolve_signature(receiver_type, sig)
-          T.cast(sig.return_type, RBI::Type)
+          sig.return_type
         else
           RBI::Type.untyped
         end
@@ -221,7 +234,7 @@ module Spoom
 
       sig { override.params(node: Prism::InstanceVariableReadNode).void }
       def visit_instance_variable_read_node(node)
-        node.spoom_type = RBI::Type.simple("NilClass")
+        node.spoom_type = RBI::Type.untyped
       end
 
       sig { override.params(node: Prism::IntegerNode).void }
@@ -271,6 +284,39 @@ module Spoom
         node.spoom_type = RBI::Type.simple("NilClass")
       end
 
+      sig { override.params(node: Prism::MultiWriteNode).void }
+      def visit_multi_write_node(node)
+        super
+
+        node.lefts.each do |left|
+          case left
+          when Prism::LocalVariableTargetNode
+            # TODO
+            type = RBI::Type.untyped
+            left.spoom_type = type
+            current_scope.var_types[left.name.to_s] = type
+          else
+            raise "not yet impl #{left.class}"
+          end
+        end
+
+        rest = node.rest
+        if rest.is_a?(Prism::SplatNode)
+          type = RBI::Type.untyped
+          node.spoom_type = type
+          current_scope.var_types[T.must(rest.expression&.slice)] = type
+        end
+
+        value_type = node.value.spoom_type
+
+        unless value_type
+          @errors << error("missing type for `#{node.value.slice}` (#{node.value.class})", node.value)
+          value_type = RBI::Type.untyped
+        end
+
+        node.spoom_type = value_type
+      end
+
       sig { override.params(node: Prism::OrNode).void }
       def visit_or_node(node)
         super
@@ -295,13 +341,17 @@ module Spoom
         node.spoom_type = RBI::Type.untyped
       end
 
+      sig { override.params(node: Prism::TrueNode).void }
+      def visit_true_node(node)
+        node.spoom_type = RBI::Type.simple("TrueClass")
+      end
+
       private
 
       sig { params(recv_type: RBI::Type, sig: RBI::Sig).returns(RBI::Sig) }
       def resolve_signature(recv_type, sig)
         sig = sig.dup
         return_type = sig.return_type
-        return_type = RBI::Type.parse_string(return_type) if return_type.is_a?(String)
 
         if return_type == RBI::Type.self_type
           return_type = recv_type
@@ -317,10 +367,11 @@ module Spoom
 
       sig { params(type: RBI::Type, name: String).returns(T.nilable(T::Array[Model::Method])) }
       def resolve_method_for_type(type, name)
-        case type
+        # puts "resolve_method_for_type: #{type} (#{type.class}) #{name}"
+        res = case type
         when RBI::Type.untyped
           []
-        when RBI::Type::ClassOf
+        when RBI::Type::ClassOf, RBI::Type::Class
           inner_type = type.type
           type_symbol = @model.symbols[inner_type.to_rbi]
           return unless type_symbol
@@ -344,7 +395,9 @@ module Spoom
 
           defs
         when RBI::Type::Simple
+          # puts "  type: #{type.to_rbi}"
           type_symbol = @model.symbols[type.to_rbi]
+          # puts "  type_symbol: #{type_symbol}"
           return unless type_symbol
 
           # raise Error.new("unknown symbol for type #{type.to_rbi}", @method.location) unless type_symbol
@@ -357,14 +410,17 @@ module Spoom
 
           # TODO: linearize results properly
           defs
-        when RBI::Type::Nilable
-          # TODO: intersection
-          # resolve_method_for_type(type.type, name)
-          []
         when RBI::Type::Generic
-          # resolve_method_for_type(RBI::Type.simple("Array"), name)
-          []
-        when RBI::Type::All, RBI::Type::Any,
+          case type.name
+          when "T::Array"
+            resolve_method_for_type(RBI::Type.simple("Array"), name)
+          when "T::Hash"
+            resolve_method_for_type(RBI::Type.simple("Hash"), name)
+          else
+            # TODO
+            []
+          end
+        when RBI::Type::Nilable, RBI::Type::All, RBI::Type::Any, RBI::Type::Boolean, RBI::Type::TypeParameter
           # candidates = type.types.map { |t| resolve_method_for_type(t, name) }
           # return [] if candidates.any? { |c| c.nil? || c.empty? }
 
@@ -375,7 +431,10 @@ module Spoom
         else
           raise "unexpected type: #{type} (#{type.class})"
         end
+        # puts "  ---> #{res&.first}"
+        res
       rescue Poset::Error
+        puts "  ---> ERROR"
         nil
       end
 

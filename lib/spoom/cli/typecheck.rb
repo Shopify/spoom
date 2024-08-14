@@ -17,9 +17,12 @@ module Spoom
         enum: ["files", "payload", "parser", "namer", "resolver", "cfg", "global_pass", "infer"],
         desc: "Stop after a specific phase"
       option :print,
-        enum: ["files", "parser-tree", "parser-prism", "namer-tree"],
+        enum: ["files", "parser-tree", "parser-prism", "namer-tree", "resolver-tree", "infer-tree"],
         desc: "Print things"
+      option :focus, type: :string, desc: "Focus on a specific file"
       def typecheck(*paths)
+        tc_starting = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
         files = files_to_typecheck(paths)
 
         if options[:print] == "files"
@@ -118,6 +121,12 @@ module Spoom
           module T
             class Array; end
             class Hash; end
+
+            class << self
+              def let; end
+              def cast; end
+            end
+            def self.unsafe; end
           end
 
           RBS = nil
@@ -173,6 +182,13 @@ module Spoom
         parsed_files.each do |file, node|
           namer = Spoom::Typecheck::Namer.new(model, file)
           namer.visit(node)
+          namer.errors.each do |error|
+            next if options[:focus] && error.location.file != options[:focus]
+
+            $stderr.puts "#{red("Error")}: #{error.message}"
+            $stderr.puts error.location.snippet
+            errors += 1
+          end
         end
         ending = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         $stderr.puts "  took #{(ending - starting).round(2)} seconds"
@@ -190,6 +206,8 @@ module Spoom
           resolver.visit(node)
 
           resolver.errors.each do |error|
+            next if options[:focus] && error.location.file != options[:focus]
+
             $stderr.puts "#{red("Error")}: #{error.message}"
             $stderr.puts error.location.snippet
             errors += 1
@@ -197,6 +215,10 @@ module Spoom
         end
         ending = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         $stderr.puts "  took #{(ending - starting).round(2)} seconds"
+
+        if options[:print] == "resolver-tree"
+          print_trees(parsed_files)
+        end
         exit(1) if options[:stop_after] == "resolver"
 
         # TODO: stop after, print tree
@@ -238,6 +260,8 @@ module Spoom
           infer.infer
 
           infer.errors.each do |error|
+            next if options[:focus] && error.location.file != options[:focus]
+
             $stderr.puts "#{red("Error")}: #{error.message}"
             $stderr.puts error.location.snippet
             errors += 1
@@ -249,12 +273,13 @@ module Spoom
 
         # TODO: stop after, print tree
         # print_trees(parsed_files)
+        tc_ending = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
         if errors > 0
-          $stderr.puts "#{red("Failure")}: #{errors} errors"
+          $stderr.puts "Found #{errors} errors in #{(tc_ending - tc_starting).round(2)} seconds"
           exit(1)
         else
-          $stderr.puts green("Success: No errors")
+          $stderr.puts "Found no errors in #{(tc_ending - tc_starting).round(2)} seconds"
           exit(0)
         end
       end
