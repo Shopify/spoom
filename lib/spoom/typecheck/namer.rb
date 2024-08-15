@@ -3,10 +3,32 @@
 
 module Spoom
   module Typecheck
+    # Equivalent to namer - 4000 phase in Sorbet
     class Namer < Spoom::Model::NamespaceVisitor
       extend T::Sig
 
       class Error < Typecheck::Error; end
+
+      class Result < T::Struct
+        prop :errors, T::Array[Error], default: []
+      end
+
+      class << self
+        extend T::Sig
+
+        sig { params(model: Model, parsed_files: T::Array[[String, Prism::Node]]).returns(Result) }
+        def run(model, parsed_files)
+          result = Result.new
+
+          parsed_files.each do |file, node|
+            namer = Spoom::Typecheck::Namer.new(model, file)
+            namer.visit(node)
+            result.errors.concat(namer.errors)
+          end
+
+          result
+        end
+      end
 
       sig { returns(T::Array[Error]) }
       attr_reader(:errors)

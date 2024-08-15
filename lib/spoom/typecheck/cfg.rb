@@ -3,8 +3,36 @@
 
 module Spoom
   module Typecheck
+    # Equivalent to CFG - 6000 phase in Sorbet
     class CFG < Visitor
       extend T::Sig
+
+      class Result < T::Struct
+        prop :errors, T::Array[Error], default: []
+        prop :cfgs, T::Hash[Model::Method, [Prism::Node, Spoom::CFG]], default: {}
+      end
+
+      class << self
+        extend T::Sig
+
+        sig do
+          params(
+            model: Model,
+            parsed_files: T::Array[[String, Prism::Node]],
+          ).returns(Result)
+        end
+        def run(model, parsed_files)
+          result = Result.new
+
+          parsed_files.each do |file, node|
+            resolver = Spoom::Typecheck::CFG.new(model, file)
+            resolver.visit(node)
+            result.cfgs.merge!(resolver.cfgs)
+          end
+
+          result
+        end
+      end
 
       sig { returns(T::Hash[Model::Method, [Prism::Node, Spoom::CFG]]) }
       attr_reader :cfgs

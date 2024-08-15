@@ -3,10 +3,32 @@
 
 module Spoom
   module Typecheck
+    # Equivalent to resolver - 5000 phase in Sorbet
     class Resolver < Visitor
       extend T::Sig
 
       class Error < Typecheck::Error; end
+
+      class Result < T::Struct
+        prop :errors, T::Array[Error], default: []
+      end
+
+      class << self
+        extend T::Sig
+
+        sig { params(model: Model, parsed_files: T::Array[[String, Prism::Node]]).returns(Result) }
+        def run(model, parsed_files)
+          result = Result.new
+
+          parsed_files.each do |file, node|
+            resolver = Spoom::Typecheck::Resolver.new(model, file)
+            resolver.visit(node)
+            result.errors.concat(resolver.errors)
+          end
+
+          result
+        end
+      end
 
       sig { returns(T::Array[Error]) }
       attr_reader(:errors)
@@ -46,7 +68,7 @@ module Spoom
         )
 
         if node.spoom_symbol.is_a?(Model::UnresolvedSymbol)
-          @errors << error("Unresolved symbol `#{node.slice}`", node)
+          @errors << error("Unable to resolve constant `#{node.slice}`", node)
         end
 
         super

@@ -333,6 +333,43 @@ module Spoom
       UnresolvedSymbol.new(full_name)
     end
 
+    sig { params(receiver: Symbol, method_name: String, singleton: T::Boolean).returns(T::Array[T.any(Attr, Method)]) }
+    def resolve_method(receiver, method_name, singleton: false)
+      # TODO: linearize
+      definitions = T.let([], T::Array[T.any(Attr, Method)])
+
+      symbols = [receiver, *supertypes(receiver)]
+
+      if singleton
+        class_symbol = self.symbols["Class"]
+        if class_symbol
+          symbols = [*symbols, class_symbol, *supertypes(class_symbol)]
+        end
+      end
+
+      symbols.each do |symbol|
+        symbol.definitions.each do |definition|
+          next unless definition.is_a?(Namespace)
+
+          definition.children.each do |defn|
+            case defn
+            when Method
+              definitions << defn if defn.name == method_name && defn.singleton? == singleton
+            when Attr
+              definitions << defn if defn.name == method_name && !singleton
+            end
+          end
+        end
+      end
+
+      definitions
+
+      # [receiver, *supertypes(receiver)]
+      #   .flat_map(&:definitions).grep(Model::Namespace)
+      #   .flat_map(&:children).grep(Model::Method)
+      #   .select! { |m| m.name == method_name }
+    end
+
     sig { params(symbol: Symbol).returns(T::Array[Symbol]) }
     def supertypes(symbol)
       poe = @symbols_hierarchy[symbol]

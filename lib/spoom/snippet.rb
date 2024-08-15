@@ -1,4 +1,4 @@
-# typed: true
+# typed: strict
 # frozen_string_literal: true
 
 module Spoom
@@ -7,24 +7,6 @@ module Spoom
 
     class << self
       extend T::Sig
-
-      sig { params(string: String, file: String).returns(Snippet) }
-      def from_string(string, file: "-")
-        snippet = Snippet.new(file)
-
-        Prism.parse_comments(string).each do |comment|
-          comment_string = comment.slice
-          name, args_string, offset = match_command(comment_string)
-          next unless name && args_string && offset
-
-          location = Spoom::Location.from_prism(file, comment.location)
-          target_location = target_location(comment_string, location, offset)
-
-          snippet.commands << Snippet::Command.new(name, args_string, location, target_location)
-        end
-
-        snippet
-      end
 
       sig { params(string: String, file: String).returns(Snippet) }
       def from_string(string, file: "-")
@@ -105,16 +87,25 @@ module Spoom
       @commands = commands
     end
 
-    def render(replacements)
-      lines = File.read(file).lines
-      replacements.sort_by { |location, _text| location.start_line }.reverse.each do |(location, text)|
-        lines = replace(lines, location, text)
-      end
-      lines.join
-    end
+    sig { params(content: String, replacements: T::Array[[Command, String]]).returns(String) }
+    def render(content, replacements)
+      output = []
 
-    def replace(lines, location, text)
-      lines[location.start_line..location.start_line]
+      content.lines.each_with_index do |line, i|
+        replacements.each do |command, text|
+          loc = command.location
+
+          next if (i + 1) < T.must(loc.start_line) || (i + 1) > T.must(loc.start_line)
+
+          line[command.location.start_column..command.location.end_column] =
+            "#{command.location.string.sub(command.args_string || "", text)}\n"
+        end
+
+        output << line
+        output
+      end
+
+      output.join
     end
 
     class Command

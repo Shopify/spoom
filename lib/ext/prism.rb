@@ -59,12 +59,12 @@ module Prism
   class CallNode
     extend T::Sig
 
-    sig { returns(T.nilable(Spoom::Model::Symbol)) }
+    sig { returns(T.nilable(T.any(Spoom::Model::Attr, Spoom::Model::Method))) }
     def spoom_method_symbol
       instance_variable_get(:@spoom_method_symbol)
     end
 
-    sig { params(method_symbol: T.nilable(Spoom::Model::Method)).void }
+    sig { params(method_symbol: T.nilable(T.any(Spoom::Model::Attr, Spoom::Model::Method))).void }
     def spoom_method_symbol=(method_symbol)
       instance_variable_set(:@spoom_method_symbol, method_symbol)
     end

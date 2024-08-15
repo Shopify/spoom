@@ -11,6 +11,7 @@ AllCops:
   SuggestExtensions: false
   Exclude:
   - 'vendor/**/*'
+  - 'test/spoom/tc/fixtures/**/*'
 
 Sorbet:
   Enabled: true
