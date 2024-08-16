@@ -10,9 +10,9 @@ module Spoom
     class << self
       extend T::Sig
 
-      sig { params(node: Prism::Node).returns(CFG) }
-      def from_node(node)
-        builder = Builder.new
+      sig { params(file: String, node: Prism::Node).returns(CFG) }
+      def from_node(file, node)
+        builder = Builder.new(file)
         builder.visit(node)
         builder.cfg
       end
@@ -104,11 +104,15 @@ module Spoom
       sig { returns(T::Array[[BasicBlock, T.nilable(String)]]) }
       attr_reader :edges_out
 
+      sig { returns(T::Boolean) }
+      attr_accessor :returns
+
       sig { params(name: String).void }
       def initialize(name)
         @name = name
         @instructions = T.let([], T::Array[Prism::Node])
         @edges_out = T.let([], T::Array[[BasicBlock, T.nilable(String)]])
+        @returns = T.let(false, T::Boolean)
       end
 
       sig { params(to: BasicBlock, label: T.nilable(String)).void }
@@ -123,13 +127,18 @@ module Spoom
 
       sig { params(out: String).returns(String) }
       def to_dot(out)
+        instructions = @instructions.map do |i|
+          text = i.slice
+          text = "#{text[0..50]}..." if text.size > 50
+          CGI.escapeHTML(text)
+        end
         out << <<~DOT
           "#{name}" [
             shape="plain",
             label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
               <tr><td><b>#{CGI.escapeHTML(name)}</b></td></tr>
               <tr>
-                <td>#{@instructions.map(&:slice).join("<br/>")}</td>
+                <td>#{instructions.join("<br/>")}</td>
               </tr>
             </table>>
           ]
@@ -166,39 +175,18 @@ module Spoom
       sig { returns(CFG) }
       attr_reader :cfg
 
-      sig { void }
-      def initialize
-        super
+      sig { params(file: String).void }
+      def initialize(file)
+        super()
+
+        @file = file
 
         @cfg = T.let(CFG.new, CFG)
         @current_block = T.let(@cfg.root, BasicBlock)
         @block_count = T.let(1, Integer)
 
+        @loop_stack = T.let([], T::Array[BasicBlock])
         @scope_stack = T.let([], T::Array[Scope])
-      end
-
-      sig { params(nodes: T::Array[Prism::Node]).void }
-      def visit_all(nodes)
-        nodes.each do |stmt|
-          visit(stmt)
-          case stmt
-          when Prism::BreakNode,
-                Prism::CaseNode,
-                Prism::DefNode,
-                Prism::ForNode,
-                Prism::NextNode,
-                Prism::ProgramNode,
-                Prism::IfNode,
-                Prism::ReturnNode,
-                Prism::StatementsNode,
-                Prism::UnlessNode,
-                Prism::UntilNode,
-                Prism::WhileNode
-            # we do not store these nodes as instructions
-          else
-            @current_block.instructions << stmt
-          end
-        end
       end
 
       sig { override.params(node: Prism::ProgramNode).void }
@@ -209,225 +197,287 @@ module Spoom
         # T.must(@cfg.blocks.last).add_edge(new_block, "exit")
       end
 
-      sig { override.params(node: Prism::StatementsNode).void }
-      def visit_statements_node(node)
-        visit_all(node.body)
+      sig { override.params(node: Prism::AndNode).void }
+      def visit_and_node(node)
+        left_block = new_block
+        @current_block.add_edge(left_block, "and")
+        @current_block = left_block
+        visit(node.left)
+
+        right_block = new_block
+        @current_block.add_edge(right_block, "true")
+        @current_block = right_block
+        visit(node.right)
+
+        merge_block = new_block
+        left_block.add_edge(merge_block, "false") unless left_block.returns
+        right_block.add_edge(merge_block, "merge") unless right_block.returns
+        @current_block = merge_block
       end
 
-      sig { override.params(node: Prism::BlockNode).void }
-      def visit_block_node(node)
-        # puts "visit_block_node: #{node}"
-        # TODO: handle blocks
-      end
+      # sig { override.params(node: Prism::BlockNode).void }
+      # def visit_block_node(node)
+      #   # puts "visit_block_node: #{node}"
+      #   # TODO: handle blocks
+      # end
 
       sig { override.params(node: Prism::BreakNode).void }
       def visit_break_node(node)
-        current_loop = @scope_stack.last
-        raise Error, "Unexpected break outside of loop" unless current_loop
+        @current_block.instructions << node
 
-        current_block = @current_block
-        current_block.add_edge(current_loop.exit, "break")
-        after_block = new_block
-        current_block.add_edge(after_block, "")
-        @current_block = after_block
+        current_loop = @loop_stack.last
+        raise Typecheck::Error.new(
+          "Unexpected break outside of loop",
+          Location.from_prism(@file, node.location),
+        ) unless current_loop
+      end
+
+      sig { override.params(node: Prism::CallNode).void }
+      def visit_call_node(node)
+        @current_block.instructions << node
+
+        block_node = node.block
+
+        if block_node
+          block_block = new_block
+          @loop_stack << block_block
+          @current_block.add_edge(block_block, "block call")
+          @current_block = block_block
+          visit(block_node)
+          merge_block = new_block
+          @current_block.add_edge(merge_block, "merge call")
+          @current_block = merge_block
+          @loop_stack.pop
+        end
       end
 
       sig { override.params(node: Prism::CaseNode).void }
       def visit_case_node(node)
-        current_block = @current_block
+        predicate_block = new_block
+        @current_block.add_edge(predicate_block, "case")
+        @current_block = predicate_block
+        visit(node.predicate)
+        predicate_block = @current_block
+
         merge_block = new_block
 
         # visit `when <predicate> <statements>`
         node.conditions.each do |condition|
           raise Error, "Unexpected #{condition}" unless condition.is_a?(Prism::WhenNode)
 
-          case_block = new_block
-          current_block = @current_block
-          current_block.add_edge(case_block, "case #{node.predicate&.slice}")
-          @current_block = case_block
+          when_block = new_block
+          predicate_block.add_edge(when_block, "when")
+          @current_block = when_block
           visit(condition.statements)
-          @current_block.add_edge(merge_block, "")
+          when_block = @current_block
+
+          when_block.add_edge(merge_block, "merge") unless when_block.returns
         end
 
         # visit `else <statements>`
-        if node.consequent
-          else_block = new_block
-          current_block.add_edge(else_block, "else")
-          @current_block = else_block
-          visit(node.consequent)
-          @current_block.add_edge(merge_block, "")
-        else
-          current_block.add_edge(merge_block, "")
-        end
+        else_block = new_block
+        predicate_block.add_edge(else_block, "else")
+        @current_block = else_block
+        visit(node.consequent)
+        else_block = @current_block
+        else_block.add_edge(merge_block, "merge")
 
         @current_block = merge_block
       end
 
-      sig { override.params(node: Prism::DefNode).void }
-      def visit_def_node(node)
-        current_block = @current_block
+      # sig { override.params(node: Prism::DefNode).void }
+      # def visit_def_node(node)
+      #   current_block = @current_block
 
-        body_block = new_block
-        exit_block = new_block
-        current_block.add_edge(body_block, "def #{node.name}")
-        @current_block = body_block
+      #   body_block = new_block
+      #   exit_block = new_block
+      #   current_block.add_edge(body_block, "def #{node.name}")
+      #   @current_block = body_block
 
-        # after_block = new_block
-        # enter_block = new_block
+      #   # after_block = new_block
+      #   # enter_block = new_block
 
-        # @current_block.add_edge(enter_block, "def #{node.name}")
-        # @current_block = enter_block
+      #   # @current_block.add_edge(enter_block, "def #{node.name}")
+      #   # @current_block = enter_block
 
-        @scope_stack << Scope.new(root: @current_block, exit: exit_block)
-        @current_block = body_block
-        visit(node.body)
-        @current_block = current_block
-        @scope_stack.pop
+      #   @scope_stack << Scope.new(root: @current_block, exit: exit_block)
+      #   @current_block = body_block
+      #   visit(node.body)
+      #   @current_block = current_block
+      #   @scope_stack.pop
 
-        body_block.add_edge(exit_block, "exit")
-        @current_block = exit_block
+      #   body_block.add_edge(exit_block, "exit")
+      #   @current_block = exit_block
 
-        # exit_block.add_edge(after_block, "exit")
-        # @current_block = after_block
-        # @current_block.add_edge(exit_block, "exit")
-      end
+      #   # exit_block.add_edge(after_block, "exit")
+      #   # @current_block = after_block
+      #   # @current_block.add_edge(exit_block, "exit")
+      # end
 
-      sig { override.params(node: Prism::ForNode).void }
-      def visit_for_node(node)
-        merge_block = new_block
-        @current_block.add_edge(merge_block, "")
+      # sig { override.params(node: Prism::ForNode).void }
+      # def visit_for_node(node)
+      #   merge_block = new_block
+      #   @current_block.add_edge(merge_block, "")
 
-        do_block = new_block
-        @current_block.add_edge(do_block, "for #{node.index.slice} in #{node.collection.slice}")
-        @current_block = do_block
-        @scope_stack << Scope.new(root: do_block, exit: merge_block)
-        visit(node.statements)
-        @scope_stack.pop
-        @current_block.add_edge(do_block, "for #{node.index.slice} in #{node.collection.slice}")
-        @current_block.add_edge(merge_block, "")
+      #   do_block = new_block
+      #   @current_block.add_edge(do_block, "for #{node.index.slice} in #{node.collection.slice}")
+      #   @current_block = do_block
+      #   @scope_stack << Scope.new(root: do_block, exit: merge_block)
+      #   visit(node.statements)
+      #   @scope_stack.pop
+      #   @current_block.add_edge(do_block, "for #{node.index.slice} in #{node.collection.slice}")
+      #   @current_block.add_edge(merge_block, "")
 
-        @current_block = merge_block
-      end
+      #   @current_block = merge_block
+      # end
 
       sig { override.params(node: Prism::NextNode).void }
       def visit_next_node(node)
-        current_loop = @scope_stack.last
-        raise Error, "Unexpected break outside of loop" unless current_loop
+        @current_block.instructions << node
 
-        current_block = @current_block
-        current_block.add_edge(current_loop.root, "next")
-        after_block = new_block
-        current_block.add_edge(after_block, "")
-        @current_block = after_block
+        current_loop = @loop_stack.last
+        raise Error, "Unexpected next outside of loop" unless current_loop
+
+        @current_block.add_edge(current_loop, "next")
+        @current_block.returns = true
       end
 
       sig { override.params(node: Prism::IfNode).void }
       def visit_if_node(node)
-        current_block = @current_block
-        merge_block = new_block
+        predicate_block = new_block
+        @current_block.add_edge(predicate_block, "predicate")
+        @current_block = predicate_block
+        visit(node.predicate)
+        predicate_block = @current_block
 
         # visit `if predicate <statements>`
-        if node.statements
-          then_block = new_block
-          current_block = @current_block
-          current_block.add_edge(then_block, "if #{node.predicate.slice}")
-          @current_block = then_block
-          visit(node.statements)
-          @current_block.add_edge(merge_block, "")
-        end
+        if_block = new_block
+        predicate_block.add_edge(if_block, "true")
+        @current_block = if_block
+        visit(node.statements)
+        if_block = @current_block
 
         # visit `if predicate else <statements>`
-        if node.consequent
-          else_block = new_block
-          current_block.add_edge(else_block, "else")
-          @current_block = else_block
-          visit(node.consequent)
-          @current_block.add_edge(merge_block, "")
-        else
-          current_block.add_edge(merge_block, "")
-        end
+        else_block = new_block
+        predicate_block.add_edge(else_block, "false")
+        @current_block = else_block
+        visit(node.consequent)
+        else_block = @current_block
 
+        merge_block = new_block
+        if_block.add_edge(merge_block, "merge") unless if_block.returns
+        else_block.add_edge(merge_block, "merge") unless else_block.returns
+        @current_block = merge_block
+      end
+
+      sig { override.params(node: Prism::LocalVariableReadNode).void }
+      def visit_local_variable_read_node(node)
+        @current_block.instructions << node
+      end
+
+      sig { override.params(node: Prism::LocalVariableWriteNode).void }
+      def visit_local_variable_write_node(node)
+        @current_block.instructions << node
+      end
+
+      sig { override.params(node: Prism::OrNode).void }
+      def visit_or_node(node)
+        left_block = new_block
+        @current_block.add_edge(left_block, "or")
+        @current_block = left_block
+        visit(node.left)
+
+        right_block = new_block
+        left_block.add_edge(right_block, "true")
+        @current_block = right_block
+        visit(node.right)
+
+        merge_block = new_block
+        right_block.add_edge(merge_block, "merge") unless right_block.returns
         @current_block = merge_block
       end
 
       sig { override.params(node: Prism::ReturnNode).void }
       def visit_return_node(node)
-        current_def = @scope_stack.last
-        raise Error, "Unexpected return outside of def" unless current_def
-
-        current_block = @current_block
-        current_block.add_edge(current_def.exit, "exit")
-
-        node.arguments&.arguments&.each do |arg|
-          return_block = new_block
-          current_block.add_edge(return_block, "return")
-          @current_block = return_block
-          visit(arg)
-          return_block.add_edge(current_def.exit, "exit")
-        end
-        @current_block = current_block
-
-        after_block = new_block
-        @current_block = after_block
+        @current_block.instructions << node
+        @current_block.returns = true
       end
 
       sig { override.params(node: Prism::UnlessNode).void }
       def visit_unless_node(node)
-        current_block = @current_block
-        merge_block = new_block
+        predicate_block = new_block
+        @current_block.add_edge(predicate_block, "unless")
+        @current_block = predicate_block
+        visit(node.predicate)
+        predicate_block = @current_block
 
         # visit `unless predicate <statements>`
-        if node.statements
-          then_block = new_block
-          current_block = @current_block
-          current_block.add_edge(then_block, "unless #{node.predicate.slice}")
-          @current_block = then_block
-          visit(node.statements)
-          @current_block.add_edge(merge_block, "merge")
-        end
+        unless_block = new_block
+        predicate_block.add_edge(unless_block, "true")
+        @current_block = unless_block
+        visit(node.statements)
+        unless_block = @current_block
 
-        # visit `unless predicate else <statements>`
-        if node.consequent
-          else_block = new_block
-          current_block.add_edge(else_block, "else")
-          @current_block = else_block
-          visit(node.consequent)
-          @current_block.add_edge(merge_block, "merge")
-        else
-          current_block.add_edge(merge_block, "merge")
-        end
+        # visit `if predicate else <statements>`
+        else_block = new_block
+        predicate_block.add_edge(else_block, "false")
+        @current_block = else_block
+        visit(node.consequent)
+        else_block = @current_block
 
+        merge_block = new_block
+        unless_block.add_edge(merge_block, "merge") unless unless_block.returns
+        else_block.add_edge(merge_block, "merge") unless else_block.returns
         @current_block = merge_block
       end
 
       sig { override.params(node: Prism::UntilNode).void }
       def visit_until_node(node)
+        predicate_block = new_block
+        @current_block.add_edge(predicate_block, "until")
+        @current_block = predicate_block
+        visit(node.predicate)
+
+        # visit `until predicate <statements>`
+        then_block = nil
+        if node.statements
+          @loop_stack << predicate_block
+          then_block = new_block
+          predicate_block.add_edge(then_block, "true")
+          @current_block = then_block
+          visit(node.statements)
+          then_block = @current_block
+          @loop_stack.pop
+        end
+
         merge_block = new_block
-        @current_block.add_edge(merge_block, "")
-
-        then_block = new_block
-        @current_block.add_edge(then_block, "until #{node.predicate.slice}")
-        @current_block = then_block
-        @scope_stack << Scope.new(root: then_block, exit: merge_block)
-        visit(node.statements)
-        @scope_stack.pop
-        @current_block.add_edge(then_block, "until #{node.predicate.slice}")
-        @current_block.add_edge(merge_block, "merge until")
-
+        predicate_block.add_edge(merge_block, "false")
+        then_block.add_edge(merge_block, "merge true") if then_block && !then_block.returns
         @current_block = merge_block
       end
 
       sig { override.params(node: Prism::WhileNode).void }
       def visit_while_node(node)
+        predicate_block = new_block
+        @current_block.add_edge(predicate_block, "while")
+        @current_block = predicate_block
+        visit(node.predicate)
+
+        # visit `until predicate <statements>`
+        then_block = nil
+        if node.statements
+          @loop_stack << predicate_block
+          then_block = new_block
+          predicate_block.add_edge(then_block, "true")
+          @current_block = then_block
+          visit(node.statements)
+          then_block = @current_block
+          @loop_stack.pop
+        end
+
         merge_block = new_block
-
-        then_block = new_block
-        @current_block.add_edge(then_block, "until #{node.predicate.slice}")
-        @current_block = then_block
-        visit(node.statements)
-        @current_block.add_edge(then_block, "until #{node.predicate.slice}")
-        @current_block.add_edge(merge_block, "merge until")
-
+        predicate_block.add_edge(merge_block, "false")
+        then_block.add_edge(merge_block, "merge true") if then_block && !then_block.returns
         @current_block = merge_block
       end
 

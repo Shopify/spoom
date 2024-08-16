@@ -319,8 +319,7 @@ module Spoom
         return @symbols[full_name] || UnresolvedSymbol.new(full_name)
       end
 
-      target = T.let(@symbols[full_name], T.nilable(Symbol))
-      return target if target
+      target = T.let(nil, T.nilable(Symbol))
 
       parts = context&.full_name&.split("::") || []
       until parts.empty?
@@ -329,6 +328,9 @@ module Spoom
 
         parts.pop
       end
+
+      target = T.let(@symbols[full_name], T.nilable(Symbol))
+      return target if target
 
       UnresolvedSymbol.new(full_name)
     end
@@ -354,7 +356,7 @@ module Spoom
           definition.children.each do |defn|
             case defn
             when Method
-              definitions << defn if defn.name == method_name && defn.singleton? == singleton
+              definitions << defn if defn.name == method_name # && defn.singleton? == singleton
             when Attr
               definitions << defn if defn.name == method_name && !singleton
             end

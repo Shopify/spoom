@@ -53,14 +53,8 @@ module Spoom
           Spoom::Typecheck::Parse.run(files)
         end
         parsed_files = result.parsed_files
-
-        result.errors.each do |error|
-          next if options[:focus] && error.location.file != options[:focus]
-
-          $stderr.puts "#{red("Error")}: #{error.message}"
-          # $stderr.puts error.location.snippet
-          errors += 1
-        end
+        errors += result.errors.size
+        print_errors(result.errors, focus: options[:focus])
 
         if options[:print] == "parser-tree"
           print_trees(parsed_files)
@@ -80,13 +74,8 @@ module Spoom
           $stderr.puts "Namer..."
           Spoom::Typecheck::Namer.run(model, parsed_files)
         end
-        result.errors.each do |error|
-          next if options[:focus] && error.location.file != options[:focus]
-
-          $stderr.puts "#{red("Error")}: #{error.message}"
-          # $stderr.puts error.location.snippet
-          errors += 1
-        end
+        errors += result.errors.size
+        print_errors(result.errors, focus: options[:focus])
 
         if options[:print] == "namer-tree"
           print_trees(parsed_files)
@@ -102,7 +91,7 @@ module Spoom
         result.errors.each do |error|
           next if options[:focus] && error.location.file != options[:focus]
 
-          $stderr.puts "#{red("Error")}: #{error.message}"
+          $stderr.puts "#{error.location}: #{red("Error")}: #{error.message}"
           # $stderr.puts error.location.snippet
           errors += 1
         end
@@ -113,11 +102,21 @@ module Spoom
         exit(1) if options[:stop_after] == "resolver"
 
         # Equivalent to CFG - 6000 phase in Sorbet
-        # $stderr.puts "CFG..."
-        # starting = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        # result = Spoom::Typecheck::CFG.run(model, parsed_files)
-        # ending = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        # $stderr.puts "  took #{(ending - starting).round(2)} seconds"
+        $stderr.puts "CFG..."
+        starting = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        result = Spoom::Typecheck::CFG.run(model, parsed_files)
+        errors += result.errors.size
+        print_errors(result.errors, focus: options[:focus])
+        # result.cfgs.each do |method, (file, cfg)|
+        # next unless method.name == "attached_sig"
+
+        # puts "#{method.symbol}"
+        # puts cfg.to_dot
+        # cfg.show_dot
+        # exit
+        # end
+        ending = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        $stderr.puts "  took #{(ending - starting).round(2)} seconds"
 
         exit(1) if options[:stop_after] == "cfg"
 
@@ -134,14 +133,8 @@ module Spoom
           $stderr.puts "Infer..."
           Spoom::Typecheck::Infer.run(model, parsed_files)
         end
-
-        result.errors.each do |error|
-          next if options[:focus] && error.location.file != options[:focus]
-
-          $stderr.puts "#{red("Error")}: #{error.message}"
-          # $stderr.puts error.location.snippet
-          errors += 1
-        end
+        errors += result.errors.size
+        print_errors(result.errors, focus: options[:focus])
         exit(1) if options[:stop_after] == "infer"
 
         tc_ending = Process.clock_gettime(Process::CLOCK_MONOTONIC)
@@ -178,6 +171,16 @@ module Spoom
             else
               Dir.glob(path)
             end
+          end
+        end
+
+        sig { params(errors: T::Array[Spoom::Typecheck::Error], focus: T.nilable(String)).void }
+        def print_errors(errors, focus: nil)
+          errors.each do |error|
+            next if options[:focus] && error.location.file != options[:focus]
+
+            $stderr.puts "#{error.location}: #{red("Error")}: #{error.message}"
+            # $stderr.puts error.location.snippet
           end
         end
 

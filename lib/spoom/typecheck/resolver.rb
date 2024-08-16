@@ -87,6 +87,24 @@ module Spoom
         super
       end
 
+      sig { override.params(node: Prism::ConstantPathWriteNode).void }
+      def visit_constant_path_write_node(node)
+        symbol_def = node.spoom_symbol_def
+        raise error("Missing symbol def", node) unless symbol_def
+
+        if symbol_def.is_a?(Model::Alias)
+          target = symbol_def.target
+          raise error("Alias already resolved for #{symbol_def}", node) unless target.is_a?(Model::UnresolvedRef)
+
+          symbol_def.target = @model.resolve_symbol(
+            target.full_name,
+            context: target.context&.symbol,
+          )
+        end
+
+        super
+      end
+
       sig { override.params(node: Prism::ConstantWriteNode).void }
       def visit_constant_write_node(node)
         symbol_def = node.spoom_symbol_def
@@ -101,6 +119,8 @@ module Spoom
             context: target.context&.symbol,
           )
         end
+
+        super
       end
 
       sig { params(message: String, node: Prism::Node).returns(Error) }

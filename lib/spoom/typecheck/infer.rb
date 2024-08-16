@@ -54,6 +54,13 @@ module Spoom
         def var?(name)
           var_types.key?(name)
         end
+
+        sig { returns(Scope) }
+        def dup
+          Scope.new(@self_type).tap do |scope|
+            scope.var_types.merge!(var_types)
+          end
+        end
       end
 
       sig { returns(T::Array[Error]) }
@@ -71,6 +78,16 @@ module Spoom
 
       # Nodes
 
+      sig { override.params(node: Prism::AndNode).void }
+      def visit_and_node(node)
+        @scope_stack << current_scope.dup
+        visit(node.left)
+        visit(node.right)
+        @scope_stack.pop
+
+        node.spoom_type = RBI::Type.simple("T::Boolean")
+      end
+
       sig { override.params(node: Prism::ArrayNode).void }
       def visit_array_node(node)
         super
@@ -80,7 +97,9 @@ module Spoom
 
       sig { override.params(node: Prism::BlockNode).void }
       def visit_block_node(node)
+        @scope_stack << current_scope.dup
         super
+        @scope_stack.pop
 
         node.spoom_type = RBI::Type.untyped
       end
@@ -103,6 +122,8 @@ module Spoom
 
       sig { override.params(node: Prism::CallNode).void }
       def visit_call_node(node)
+        return if node.name == :sig
+
         receiver = node.receiver
         receiver_name = receiver&.slice
         receiver_type = if receiver
@@ -120,8 +141,6 @@ module Spoom
 
           type
         else
-          return if node.name == :sig
-
           current_scope.self_type
         end
 
@@ -276,7 +295,19 @@ module Spoom
 
       sig { override.params(node: Prism::IfNode).void }
       def visit_if_node(node)
-        super
+        if_scope = current_scope.dup
+        else_scope = current_scope.dup
+
+        @scope_stack << if_scope
+        visit(node.predicate)
+        visit(node.statements)
+        @scope_stack.pop
+
+        if node.consequent
+          @scope_stack << else_scope
+          visit(node.consequent)
+          @scope_stack.pop
+        end
 
         # TODO: merge type
         node.spoom_type = RBI::Type.untyped
@@ -422,7 +453,7 @@ module Spoom
 
       sig do
         params(
-          node: Prism::Node,
+          node: Prism::CallNode,
           type: RBI::Type,
           name: String,
         ).returns(T.nilable(T::Array[T.any(Model::Method, Model::Attr)]))
@@ -443,7 +474,12 @@ module Spoom
 
           defs = @model.resolve_method(type_symbol, name, singleton: false)
 
-          @errors << error("Method `#{name}` does not exist on `#{type}`", node) if defs.empty?
+          if defs.empty? && !IGNORED_METHODS.include?(name)
+            @errors << Error.new(
+              "Method `#{name}` does not exist on `#{type_symbol}`",
+              Location.from_prism(@file, T.must(node.message_loc)),
+            )
+          end
 
           defs
         when RBI::Type::ClassOf, RBI::Type::Class
@@ -457,7 +493,14 @@ module Spoom
           end
 
           defs = @model.resolve_method(type_symbol, name, singleton: true)
-          @errors << error("Method `#{name}` does not exist on `#{type}`", node) if defs.empty?
+
+          if defs.empty? && !IGNORED_METHODS.include?(name)
+            @errors << Error.new(
+              "Method `#{name}` does not exist on `T.class_of(#{type_symbol})`",
+              Location.from_prism(@file, T.must(node.message_loc)),
+            )
+          end
+
           defs
         when RBI::Type::Generic
           # TODO
@@ -493,15 +536,24 @@ module Spoom
           # TODO
           @errors << error("Not yet implemented `#{type}` (#{type.class})", node)
           nil
+        when RBI::Type::Void
+          []
         else
           @errors << error("Unexpected type `#{type}` (#{type.class})", node)
           raise "Unexpected type: #{type} (#{type.class})"
           # return
         end
-      rescue Poset::Error
+      rescue Poset::Error => e
         @errors << error("POSet error in type resolution `#{type}` (#{type.class})", node)
         nil
       end
+
+      IGNORED_METHODS = T.let(
+        Set.new([
+          "_",
+        ]),
+        T::Set[String],
+      )
 
       sig { returns(Scope) }
       def current_scope

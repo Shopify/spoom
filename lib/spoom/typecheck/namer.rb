@@ -227,8 +227,16 @@ module Spoom
           node.arguments&.arguments&.each do |arg|
             next unless arg.is_a?(Prism::SymbolNode)
 
-            Model::AttrAccessor.new(
+            Model::AttrReader.new(
               @model.register_symbol([*@names_nesting, arg.slice.delete_prefix(":")].join("::")),
+              owner: current_namespace,
+              location: node_location(arg),
+              visibility: current_visibility,
+              sigs: sigs,
+            )
+
+            Model::AttrWriter.new(
+              @model.register_symbol([*@names_nesting, "#{arg.slice.delete_prefix(":")}="].join("::")),
               owner: current_namespace,
               location: node_location(arg),
               visibility: current_visibility,
@@ -261,7 +269,7 @@ module Spoom
               sigs: sigs,
             )
           end
-        when :include
+        when :include, :mixes_in_class_methods
           node.arguments&.arguments&.each do |arg|
             next unless arg.is_a?(Prism::ConstantReadNode) || arg.is_a?(Prism::ConstantPathNode)
             next unless current_namespace

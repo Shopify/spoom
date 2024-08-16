@@ -27,12 +27,16 @@ module Spoom
           parsed_files.each do |file, node|
             resolver = Spoom::Typecheck::CFG.new(model, file)
             resolver.visit(node)
+            result.errors.concat(resolver.errors)
             result.cfgs.merge!(resolver.cfgs)
           end
 
           result
         end
       end
+
+      sig { returns(T::Array[Error]) }
+      attr_reader :errors
 
       sig { returns(T::Hash[Model::Method, [Prism::Node, Spoom::CFG]]) }
       attr_reader :cfgs
@@ -43,6 +47,7 @@ module Spoom
 
         @model = model
         @file = file
+        @errors = T.let([], T::Array[Error])
         @cfgs = T.let({}, T::Hash[Model::Method, [Prism::Node, Spoom::CFG]])
       end
 
@@ -68,7 +73,7 @@ module Spoom
           visibility: Model::Visibility::Public,
         )
 
-        builder = Spoom::CFG::Builder.new
+        builder = Spoom::CFG::Builder.new(@file)
         builder.visit_all(top_level_instructions)
 
         @cfgs[main] = [node, builder.cfg]
@@ -79,10 +84,12 @@ module Spoom
         symbol_def = node.spoom_symbol_def
         raise unless symbol_def.is_a?(Model::Method)
 
-        builder = Spoom::CFG::Builder.new
+        builder = Spoom::CFG::Builder.new(@file)
         builder.visit(node)
 
         @cfgs[symbol_def] = [node, builder.cfg]
+      rescue Typecheck::Error => e
+        @errors << e
       end
     end
   end

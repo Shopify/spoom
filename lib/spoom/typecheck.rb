@@ -39,6 +39,66 @@ module Spoom
     PAYLOAD = <<~RBI
       module Kernel
         def require; end
+        def extend; end
+      end
+
+      class BasicObject
+      end
+
+      class Object < BasicObject
+        include Kernel
+      end
+
+      class Module
+        def extend; end
+        def include; end
+
+        include T::Sig
+        include T::Helpers
+        include T::Generics
+      end
+
+      class Class < Module
+        sig { returns(T.attached_class) }
+        def new; end
+
+        def is_a?(klass); end
+      end
+
+      module T
+        module Sig
+          def sig; end
+        end
+
+        module Helpers
+          def abstract!; end
+          def interface!; end
+        end
+
+        module Generics
+          def type_member; end
+          def type_template; end
+          def has_attached_class!; end
+        end
+
+        class Array; end
+        class Hash; end
+
+        class << self
+          def let; end
+          def cast; end
+          def unsafe; end
+          def nilable; end
+        end
+      end
+
+      class Sorbet
+      end
+    RBI
+
+    PAYLOAD_STDLIB = <<~RBI
+      module Kernel
+        def require; end
       end
 
       class BasicObject
@@ -128,6 +188,8 @@ module Spoom
         end
         def self.unsafe; end
       end
+
+      class Sorbet; end
 
       RBS = nil
       ENV = nil
