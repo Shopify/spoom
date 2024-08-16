@@ -1,15 +1,9 @@
 # typed: true
 # frozen_string_literal: true
 
-def bar; end
-
 def foo
-  bar
-end
+  puts "before"
+  return if bar?
 
-y = 42
-
-x = if foo?
-  foo
-  puts y
+  puts "after"
 end

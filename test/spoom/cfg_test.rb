@@ -8,459 +8,891 @@ module Spoom
     extend T::Sig
 
     def test_empty
-      cfg = parse("")
+      cluster = parse("")
+      assert_equal(1, cluster.cfgs.size)
 
-      blocks = cfg.blocks
-      assert_equal(1, blocks.size)
+      cfg = T.must(cluster.cfgs.first)
+      assert_equal(1, cfg.blocks.size)
 
-      first = T.must(blocks.first)
-      # assert_same(first, cfg.root)
-      assert_empty(first.instructions)
+      block = T.must(cfg.blocks.first)
+      assert_equal("0", block.name)
     end
 
-    # def test_single_block
-    #   cfg = parse(<<~RB)
-    #     foo
-    #     bar
-    #     baz
-    #   RB
+    def test_top_level_instructions
+      cluster = parse(<<~RB)
+        puts "foo"
+        puts "bar"
+      RB
+      assert_equal(1, cluster.cfgs.size)
 
-    #   blocks = cfg.blocks
-    #   assert_equal(1, blocks.size)
+      cfg = T.must(cluster.cfgs.first)
+      assert_equal(1, cfg.blocks.size)
 
-    #   first = T.must(blocks.first)
-    #   # assert_same(first, cfg.root)
-    #   assert_equal("0", first.name)
-    #   assert_equal(["foo", "bar", "baz"], first.instructions.map(&:slice))
-    # end
+      block = T.must(cfg.blocks.first)
+      assert_equal("0", block.name)
 
-    # def test_break_for
-    #   cfg = parse(<<~RB)
-    #     0
-    #     for i in []
-    #       2
-    #       break
-    #       3
-    #     end
-    #     1
-    #   RB
+      assert_debug(<<~CFG, cluster)
+        cfg: <main>
 
-    #   assert_equal(<<~CFG, cfg.debug)
-    #     0
-    #       -> 1
-    #       -> 2
-    #     1
-    #     2
-    #       -> 1
-    #       -> 3
-    #     3
-    #       -> 1
-    #       -> 2
-    #   CFG
-    # end
+          bb#0
+            puts "foo"
+            puts "bar"
+      CFG
+    end
 
-    # def test_break_until
-    #   cfg = parse(<<~RB)
-    #     0
-    #     until true
-    #       2
-    #       break
-    #       3
-    #     end
-    #     1
-    #   RB
+    def test_static_init_empty
+      cluster = parse(<<~RB)
+        class Foo
+          puts "foo"
+          class Bar
+            puts "bar"
+            class << self
+              puts "self"
+              def foo; end
+              private def bar; end
+              puts "/self"
+            end
+            puts "/bar"
+          end
+          puts "/foo"
+        end
+      RB
+      assert_equal(6, cluster.cfgs.size)
 
-    #   assert_equal(<<~CFG, cfg.debug)
-    #     0
-    #       -> 1
-    #       -> 2
-    #     1
-    #     2
-    #       -> 1
-    #       -> 3
-    #     3
-    #       -> 1
-    #       -> 2
-    #   CFG
-    # end
+      assert_debug(<<~CFG, cluster)
+        cfg: <main>
 
-    # def test_case_when
-    #   cfg = parse(<<~RB)
-    #     0
-    #     case foo
-    #     when a
-    #       2
-    #     when b
-    #       3
-    #     else
-    #       4
-    #     end
-    #     1
-    #   RB
+          bb#0
+            class Foo
 
-    #   assert_equal(<<~CFG, cfg.debug)
-    #     0
-    #       -> 2
-    #     1
-    #     2
-    #       -> 1
-    #       -> 3
-    #       -> 4
-    #     3
-    #       -> 1
-    #     4
-    #       -> 1
-    #   CFG
-    # end
+        cfg: Foo::<static-init>
 
-    # def test_def
-    #   cfg = parse(<<~RB)
-    #     0
-    #     def foo
-    #       1
-    #     end
-    #     2
-    #   RB
+          bb#0
+            puts "foo"
+            class Bar
+            puts "/foo"
 
-    #   puts cfg.debug
-    #   cfg.show_dot
+        cfg: Bar::<static-init>
 
-    #   assert_equal(<<~CFG, cfg.debug)
-    #     0
-    #       -> 1
-    #       -> 2
-    #     1
-    #     2
-    #       -> 3
-    #   CFG
-    # end
+          bb#0
+            puts "bar"
+            class << self
+            puts "/bar"
 
-    # def test_for
-    #   cfg = parse(<<~RB)
-    #     0
-    #     for i in []
-    #       2
-    #     end
-    #     1
-    #     for i in []
-    #       4
-    #       for i in []
-    #         6
-    #       end
-    #       5
-    #     end
-    #     3
-    #   RB
+        cfg: class << self::<static-init>
 
-    #   assert_equal(<<~CFG, cfg.debug)
-    #     0
-    #       -> 1
-    #       -> 2
-    #     1
-    #       -> 3
-    #       -> 4
-    #     2
-    #       -> 1
-    #       -> 2
-    #     3
-    #     4
-    #       -> 5
-    #       -> 6
-    #     5
-    #       -> 3
-    #       -> 4
-    #     6
-    #       -> 5
-    #       -> 6
-    #   CFG
-    # end
+          bb#0
+            puts "self"
+            def foo
+            private def bar; end
+            puts "/self"
 
-    # def test_if
-    #   cfg = parse(<<~RB)
-    #     0
-    #     if foo
-    #       2
-    #     end
-    #     1
-    #   RB
+        cfg: foo
 
-    #   assert_equal(<<~CFG, cfg.debug)
-    #     0
-    #       -> 1
-    #       -> 2
-    #     1
-    #     2
-    #       -> 1
-    #   CFG
-    # end
+          bb#0
 
-    # def test_if_inline
-    #   cfg = parse(<<~RB)
-    #     0
-    #     2 if foo
-    #     1
-    #   RB
+        cfg: bar
 
-    #   assert_equal(<<~CFG, cfg.debug)
-    #     0
-    #       -> 1
-    #       -> 2
-    #     1
-    #     2
-    #       -> 1
-    #   CFG
-    # end
+          bb#0
+      CFG
+    end
 
-    # def test_if_else
-    #   cfg = parse(<<~RB)
-    #     0
-    #     if foo
-    #       2
-    #     else
-    #       3
-    #     end
-    #     1
-    #   RB
+    def test_break_for
+      cluster = parse(<<~RB)
+        puts "before"
+        for i in foo
+          puts "foo"
+          break if bar?
+          puts "bar"
+        end
+        puts "after"
+      RB
 
-    #   assert_equal(<<~CFG, cfg.debug)
-    #     0
-    #       -> 2
-    #       -> 3
-    #     1
-    #     2
-    #       -> 1
-    #     3
-    #       -> 1
-    #   CFG
-    # end
+      assert_debug(<<~CFG, cluster.compact!)
+        cfg: <main>
 
-    # def test_if_elsif
-    #   cfg = parse(<<~RB)
-    #     0
-    #     if foo
-    #       2
-    #     # 3 (merge)
-    #     elsif bar
-    #       5
-    #     end
-    #     1
-    #   RB
+          bb#0
+            puts "before"
+            foo
+            -> bb#1
 
-    #   assert_equal(<<~CFG, cfg.debug)
-    #     0
-    #       -> 2
-    #       -> 3
-    #     1
-    #     2
-    #       -> 1
-    #     3
-    #       -> 4
-    #       -> 5
-    #     4
-    #       -> 1
-    #     5
-    #       -> 4
-    #   CFG
-    # end
+          bb#1
+            i
+            -> bb#2
+            -> bb#3
 
-    # def test_if_elsif_else
-    #   cfg = parse(<<~RB)
-    #     0
-    #     if foo
-    #       2
-    #     # 3 (else)
-    #     elsif bar
-    #       5
-    #     else
-    #       6
-    #     end
-    #     # 4 (merge)
-    #     1
-    #   RB
+          bb#2
+            puts "foo"
+            bar?
+            -> bb#4
+            -> bb#6
 
-    #   assert_equal(<<~CFG, cfg.debug)
-    #     0
-    #       -> 2
-    #       -> 3
-    #     1
-    #     2
-    #       -> 1
-    #     3
-    #       -> 5
-    #       -> 6
-    #     4
-    #       -> 1
-    #     5
-    #       -> 4
-    #     6
-    #       -> 4
-    #   CFG
-    # end
+          bb#3
+            puts "after"
 
-    # def test_next_for
-    #   cfg = parse(<<~RB)
-    #     0
-    #     for i in []
-    #       2
-    #       next
-    #       3
-    #     end
-    #     1
-    #   RB
+          bb#4
+            break
+            -> bb#3
 
-    #   assert_equal(<<~CFG, cfg.debug)
-    #     0
-    #       -> 1
-    #       -> 2
-    #     1
-    #     2
-    #       -> 2
-    #       -> 3
-    #     3
-    #       -> 1
-    #       -> 2
-    #   CFG
-    # end
+          bb#6
+            puts "bar"
+            -> bb#1
+      CFG
+    end
 
-    # def test_next_until
-    #   cfg = parse(<<~RB)
-    #     0
-    #     until true
-    #       2
-    #       next
-    #       3
-    #     end
-    #     1
-    #   RB
+    def test_break_until
+      cluster = parse(<<~RB)
+        puts "before"
+        until foo?
+          puts "foo"
+          break if bar?
+          puts "bar"
+        end
+        puts "after"
+      RB
 
-    #   puts cfg.debug
-    #   cfg.show_dot
+      assert_debug(<<~CFG, cluster.compact!)
+        cfg: <main>
 
-    #   assert_equal(<<~CFG, cfg.debug)
-    #     0
-    #       -> 1
-    #       -> 2
-    #     1
-    #     2
-    #       -> 2
-    #       -> 3
-    #     3
-    #       -> 1
-    #       -> 2
-    #   CFG
-    # end
+          bb#0
+            puts "before"
+            -> bb#1
 
-    # def test_unless
-    #   cfg = parse(<<~RB)
-    #     0
-    #     unless true
-    #       2
-    #       4 unless true
-    #       3
-    #     end
-    #     1
-    #   RB
+          bb#1
+            foo?
+            -> bb#2
+            -> bb#3
 
-    #   assert_equal(<<~CFG, cfg.debug)
-    #     0
-    #       -> 1
-    #       -> 2
-    #     1
-    #     2
-    #       -> 3
-    #       -> 4
-    #     3
-    #       -> 1
-    #     4
-    #       -> 3
-    #   CFG
-    # end
+          bb#2
+            puts "foo"
+            bar?
+            -> bb#4
+            -> bb#6
 
-    # def test_until
-    #   cfg = parse(<<~RB)
-    #     0
-    #     until true
-    #       2
-    #     end
-    #     1
-    #     until true
-    #       4
-    #       until true
-    #         6
-    #       end
-    #       5
-    #     end
-    #     3
-    #   RB
+          bb#3
+            puts "after"
 
-    #   assert_equal(<<~CFG, cfg.debug)
-    #     0
-    #       -> 1
-    #       -> 2
-    #     1
-    #       -> 3
-    #       -> 4
-    #     2
-    #       -> 1
-    #       -> 2
-    #     3
-    #     4
-    #       -> 5
-    #       -> 6
-    #     5
-    #       -> 3
-    #       -> 4
-    #     6
-    #       -> 5
-    #       -> 6
-    #   CFG
-    # end
+          bb#4
+            break
+            -> bb#3
 
-    # def test_yield
-    #   cfg = parse(<<~RB)
-    #     0
-    #     def foo
-    #       1
-    #       yield
-    #       2
-    #     end
-    #     # 2 exit foo
-    #     3
-    #   RB
+          bb#6
+            puts "bar"
+            -> bb#1
+      CFG
+    end
 
-    #   puts cfg.debug
-    #   cfg.show_dot
+    def test_break_while
+      cluster = parse(<<~RB)
+        puts "before"
+        while foo?
+          puts "foo"
+          break if bar?
+          puts "bar"
+        end
+        puts "after"
+      RB
 
-    #   assert_equal(<<~CFG, cfg.debug)
-    #     0
-    #       -> 1
-    #     1
-    #   CFG
-    # end
+      assert_debug(<<~CFG, cluster.compact!)
+        cfg: <main>
 
-    # def test_return
-    #   cfg = parse(<<~RB)
-    #     0
-    #     def foo
-    #       1
-    #       return
-    #       3
-    #     end
-    #     2
-    #   RB
+          bb#0
+            puts "before"
+            -> bb#1
 
-    #   puts cfg.debug
-    #   cfg.show_dot
+          bb#1
+            foo?
+            -> bb#2
+            -> bb#3
 
-    #   assert_equal(<<~CFG, cfg.debug)
-    #     0
-    #       -> 1
-    #       -> 2
-    #     1
-    #     2
-    #       -> 3
-    #   CFG
-    # end
+          bb#2
+            puts "foo"
+            bar?
+            -> bb#4
+            -> bb#6
+
+          bb#3
+            puts "after"
+
+          bb#4
+            break
+            -> bb#3
+
+          bb#6
+            puts "bar"
+            -> bb#1
+      CFG
+    end
+
+    def test_case_when
+      cluster = parse(<<~RB)
+        puts "before"
+        case foo
+        when 1
+          puts "one"
+        when 2
+          puts "two"
+        end
+        puts "after"
+      RB
+
+      assert_debug(<<~CFG, cluster.compact!)
+        cfg: <main>
+
+          bb#0
+            puts "before"
+            foo
+            -> bb#2
+            -> bb#3
+            -> bb#1
+
+          bb#2
+            puts "one"
+            -> bb#1
+
+          bb#3
+            puts "two"
+            -> bb#1
+
+          bb#1
+            puts "after"
+      CFG
+    end
+
+    def test_def
+      cluster = parse(<<~RB)
+        puts "before"
+        def foo
+          puts "foo"
+        end
+        puts "after"
+      RB
+
+      assert_debug(<<~CFG, cluster.compact!)
+        cfg: <main>
+
+          bb#0
+            puts "before"
+            def foo
+            puts "after"
+
+        cfg: foo
+
+          bb#0
+            puts "foo"
+      CFG
+    end
+
+    def test_for
+      cluster = parse(<<~RB)
+        puts "before"
+        for i in foo
+          puts "foo"
+        end
+        puts "after"
+      RB
+
+      assert_debug(<<~CFG, cluster.compact!)
+        cfg: <main>
+
+          bb#0
+            puts "before"
+            foo
+            -> bb#1
+
+          bb#1
+            i
+            -> bb#2
+            -> bb#3
+
+          bb#2
+            puts "foo"
+            -> bb#1
+
+          bb#3
+            puts "after"
+      CFG
+    end
+
+    def test_if
+      cluster = parse(<<~RB)
+        puts "before"
+        if foo?
+          puts "foo"
+        end
+        puts "after"
+      RB
+
+      assert_debug(<<~CFG, cluster)
+        cfg: <main>
+
+          bb#0
+            puts "before"
+            foo?
+            -> bb#1
+            -> bb#3
+
+          bb#1
+            puts "foo"
+            -> bb#3
+
+          bb#3
+            puts "after"
+      CFG
+    end
+
+    def test_if_inline
+      cluster = parse(<<~RB)
+        puts "before"
+        puts "foo" if foo?
+        puts "after"
+      RB
+
+      assert_debug(<<~CFG, cluster)
+        cfg: <main>
+
+          bb#0
+            puts "before"
+            foo?
+            -> bb#1
+            -> bb#3
+
+          bb#1
+            puts "foo"
+            -> bb#3
+
+          bb#3
+            puts "after"
+      CFG
+    end
+
+    def test_if_else
+      cluster = parse(<<~RB)
+        puts "before"
+        if foo?
+          puts "foo"
+        else
+          puts "bar"
+        end
+        puts "after"
+      RB
+
+      assert_debug(<<~CFG, cluster)
+        cfg: <main>
+
+          bb#0
+            puts "before"
+            foo?
+            -> bb#1
+            -> bb#2
+
+          bb#1
+            puts "foo"
+            -> bb#3
+
+          bb#2
+            puts "bar"
+            -> bb#3
+
+          bb#3
+            puts "after"
+      CFG
+    end
+
+    def test_if_elsif
+      cluster = parse(<<~RB)
+        puts "before"
+        if foo?
+          puts "foo"
+        elsif bar?
+          puts "bar"
+        end
+        puts "after"
+      RB
+
+      assert_debug(<<~CFG, cluster.compact!)
+        cfg: <main>
+
+          bb#0
+            puts "before"
+            foo?
+            -> bb#1
+            -> bb#2
+
+          bb#1
+            puts "foo"
+            -> bb#3
+
+          bb#2
+            bar?
+            -> bb#4
+            -> bb#3
+
+          bb#3
+            puts "after"
+
+          bb#4
+            puts "bar"
+            -> bb#3
+      CFG
+    end
+
+    def test_if_elsif_else
+      cluster = parse(<<~RB)
+        puts "before"
+        if foo?
+          puts "foo"
+        elsif bar?
+          puts "bar"
+        else
+          puts "baz"
+        end
+        puts "after"
+      RB
+
+      assert_debug(<<~CFG, cluster.compact!)
+        cfg: <main>
+
+          bb#0
+            puts "before"
+            foo?
+            -> bb#1
+            -> bb#2
+
+          bb#1
+            puts "foo"
+            -> bb#3
+
+          bb#2
+            bar?
+            -> bb#4
+            -> bb#5
+
+          bb#3
+            puts "after"
+
+          bb#4
+            puts "bar"
+            -> bb#3
+
+          bb#5
+            puts "baz"
+            -> bb#3
+      CFG
+    end
+
+    def test_next_for
+      cluster = parse(<<~RB)
+        puts "before"
+        for i in foo
+          puts "foo"
+          next if bar?
+          puts "bar"
+        end
+        puts "after"
+      RB
+
+      assert_debug(<<~CFG, cluster.compact!)
+        cfg: <main>
+
+          bb#0
+            puts "before"
+            foo
+            -> bb#1
+
+          bb#1
+            i
+            -> bb#2
+            -> bb#3
+
+          bb#2
+            puts "foo"
+            bar?
+            -> bb#4
+            -> bb#6
+
+          bb#3
+            puts "after"
+
+          bb#4
+            next
+            -> bb#1
+
+          bb#6
+            puts "bar"
+            -> bb#1
+      CFG
+    end
+
+    def test_next_until
+      cluster = parse(<<~RB)
+        puts "before"
+        until foo?
+          puts "foo"
+          next if bar?
+          puts "bar"
+        end
+        puts "after"
+      RB
+
+      assert_debug(<<~CFG, cluster.compact!)
+        cfg: <main>
+
+          bb#0
+            puts "before"
+            -> bb#1
+
+          bb#1
+            foo?
+            -> bb#2
+            -> bb#3
+
+          bb#2
+            puts "foo"
+            bar?
+            -> bb#4
+            -> bb#6
+
+          bb#3
+            puts "after"
+
+          bb#4
+            next
+            -> bb#1
+
+          bb#6
+            puts "bar"
+            -> bb#1
+      CFG
+    end
+
+    def test_next_while
+      cluster = parse(<<~RB)
+        puts "before"
+        while foo?
+          puts "foo"
+          next if bar?
+          puts "bar"
+        end
+        puts "after"
+      RB
+
+      assert_debug(<<~CFG, cluster.compact!)
+        cfg: <main>
+
+          bb#0
+            puts "before"
+            -> bb#1
+
+          bb#1
+            foo?
+            -> bb#2
+            -> bb#3
+
+          bb#2
+            puts "foo"
+            bar?
+            -> bb#4
+            -> bb#6
+
+          bb#3
+            puts "after"
+
+          bb#4
+            next
+            -> bb#1
+
+          bb#6
+            puts "bar"
+            -> bb#1
+      CFG
+    end
+
+    def test_unless
+      cluster = parse(<<~RB)
+        puts "before"
+        unless foo?
+          puts "foo"
+        end
+        puts "after"
+      RB
+
+      assert_debug(<<~CFG, cluster.compact!)
+        cfg: <main>
+
+          bb#0
+            puts "before"
+            foo?
+            -> bb#1
+            -> bb#3
+
+          bb#1
+            puts "foo"
+            -> bb#3
+
+          bb#3
+            puts "after"
+      CFG
+    end
+
+    def test_unless_inline
+      cluster = parse(<<~RB)
+        puts "before"
+        puts "foo" unless foo?
+        puts "after"
+      RB
+
+      assert_debug(<<~CFG, cluster)
+        cfg: <main>
+
+          bb#0
+            puts "before"
+            foo?
+            -> bb#1
+            -> bb#3
+
+          bb#1
+            puts "foo"
+            -> bb#3
+
+          bb#3
+            puts "after"
+      CFG
+    end
+
+    def test_unless_else
+      cluster = parse(<<~RB)
+        puts "before"
+        unless foo?
+          puts "foo"
+        else
+          puts "bar"
+        end
+        puts "after"
+      RB
+
+      assert_debug(<<~CFG, cluster)
+        cfg: <main>
+
+          bb#0
+            puts "before"
+            foo?
+            -> bb#1
+            -> bb#2
+
+          bb#1
+            puts "foo"
+            -> bb#3
+
+          bb#2
+            puts "bar"
+            -> bb#3
+
+          bb#3
+            puts "after"
+      CFG
+    end
+
+    def test_until
+      cluster = parse(<<~RB)
+        puts "before"
+        until foo?
+          puts "foo"
+
+          puts "bar" until bar?
+        end
+        puts "after"
+      RB
+
+      assert_debug(<<~CFG, cluster.compact!)
+        cfg: <main>
+
+          bb#0
+            puts "before"
+            -> bb#1
+
+          bb#1
+            foo?
+            -> bb#2
+            -> bb#3
+
+          bb#2
+            puts "foo"
+            -> bb#4
+
+          bb#3
+            puts "after"
+
+          bb#4
+            bar?
+            -> bb#5
+            -> bb#1
+
+          bb#5
+            puts "bar"
+            -> bb#4
+      CFG
+    end
+
+    def test_while
+      cluster = parse(<<~RB)
+        puts "before"
+        while foo?
+          puts "foo"
+
+          puts "bar" while bar?
+        end
+        puts "after"
+      RB
+
+      assert_debug(<<~CFG, cluster.compact!)
+        cfg: <main>
+
+          bb#0
+            puts "before"
+            -> bb#1
+
+          bb#1
+            foo?
+            -> bb#2
+            -> bb#3
+
+          bb#2
+            puts "foo"
+            -> bb#4
+
+          bb#3
+            puts "after"
+
+          bb#4
+            bar?
+            -> bb#5
+            -> bb#1
+
+          bb#5
+            puts "bar"
+            -> bb#4
+      CFG
+    end
+
+    def test_yield
+      cluster = parse(<<~RB)
+        def foo
+          puts "before"
+          yield
+          puts "after"
+        end
+      RB
+
+      assert_debug(<<~CFG, cluster)
+        cfg: <main>
+
+          bb#0
+            def foo
+
+        cfg: foo
+
+          bb#0
+            puts "before"
+            yield
+            puts "after"
+      CFG
+    end
+
+    def test_return
+      cluster = parse(<<~RB)
+        puts "before"
+        def foo
+          puts "before"
+          return
+          puts "dead"
+        end
+
+        return
+        puts "after all"
+      RB
+
+      cluster.compact!.show_dot
+      assert_debug(<<~CFG, cluster.compact!)
+      CFG
+    end
+
+    def test_return_case
+      cluster = parse(<<~RB)
+        puts "before"
+        case bar
+        when 1
+          return
+        else
+          puts "else"
+        end
+        puts "after"
+      RB
+
+      cluster.compact!.show_dot
+      assert_debug(<<~CFG, cluster.compact!)
+      CFG
+    end
+
+    def test_return_if
+      cluster = parse(<<~RB)
+        puts "before"
+        return if bar?
+        puts "after"
+      RB
+
+      # cluster.compact!.show_dot
+      assert_debug(<<~CFG, cluster.compact!)
+      CFG
+    end
+
+    def test_return_if_else
+      cluster = parse(<<~RB)
+        puts "before"
+        if bar?
+          puts "bar"
+        else
+          return
+        end
+        puts "after"
+      RB
+
+      # cluster.compact!.show_dot
+      assert_debug(<<~CFG, cluster.compact!)
+      CFG
+    end
+
+    def test_return_until
+      cluster = parse(<<~RB)
+        puts "before"
+        until foo?
+          puts "foo"
+          return if bar?
+          puts "bar"
+        end
+        puts "after"
+      RB
+
+      # cluster.compact!.show_dot
+      assert_debug(<<~CFG, cluster.compact!)
+      CFG
+    end
+
+    def test_return_while
+      cluster = parse(<<~RB)
+        puts "before"
+        while foo?
+          puts "foo"
+          return if bar?
+          puts "bar"
+        end
+        puts "after"
+      RB
+
+      cluster.compact!.show_dot
+      assert_debug(<<~CFG, cluster.compact!)
+      CFG
+    end
 
     # def test_return_args
     #   cfg = parse(<<~RB)
@@ -495,9 +927,22 @@ module Spoom
 
     private
 
-    sig { params(code: String).returns(CFG) }
+    sig { params(expected: String, cluster: CFG::Cluster).void }
+    def assert_debug(expected, cluster)
+      actual = cluster.inspect
+      return if expected == actual
+
+      puts "Actual:"
+      puts actual
+      puts "Diff:"
+      $stderr.puts diff(expected, actual)
+      raise
+    end
+
+    sig { params(code: String).returns(CFG::Cluster) }
     def parse(code)
-      CFG.from_node("-", Spoom.parse_ruby(code, file: "-"))
+      node = Spoom.parse_ruby(code, file: "-")
+      CFG.from_node(node)
     end
   end
 end

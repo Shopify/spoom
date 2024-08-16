@@ -4,10 +4,9 @@
 require "thor"
 
 require_relative "cli/helper"
+require_relative "cli/cfg"
 require_relative "cli/deadcode"
 require_relative "cli/srb"
-require_relative "cli/snippet"
-require_relative "cli/typecheck"
 
 module Spoom
   module Cli
@@ -23,11 +22,8 @@ module Spoom
       desc "srb", "Sorbet related commands"
       subcommand "srb", Spoom::Cli::Srb::Main
 
-      desc "snippet", "Render a snippet"
-      subcommand "snippet", Spoom::Cli::Snippet
-
-      desc "tc", "Type checke"
-      subcommand "tc", Spoom::Cli::Typecheck
+      desc "cfg", "Show the control flow graph of a Ruby file"
+      subcommand "cfg", Spoom::Cli::CFG
 
       desc "bump", "Bump Sorbet sigils from `false` to `true` when no errors"
       option :from,
