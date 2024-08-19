@@ -12,6 +12,7 @@ module Spoom
       default_task :cfg
 
       desc "cfg PATH...", "Show the control flow graph of a Ruby file"
+      option :compact, type: :boolean, default: true, desc: "Compact empty blocks away"
       def cfg(*paths)
         files = files_to_typecheck(paths)
 
@@ -30,6 +31,7 @@ module Spoom
 
           node = result.value
           cfgs = Spoom::CFG.from_node(node)
+          cfgs.compact! if options[:compact]
           cfgs.show_dot
         end
       end

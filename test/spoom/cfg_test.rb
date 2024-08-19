@@ -9,13 +9,13 @@ module Spoom
 
     def test_empty
       cluster = parse("")
+
+      # Only one basic block in the cluster: the one for <main>
       assert_equal(1, cluster.cfgs.size)
 
+      # A CFG as always at least two blocks: the entry block and the exit block
       cfg = T.must(cluster.cfgs.first)
-      assert_equal(1, cfg.blocks.size)
-
-      block = T.must(cfg.blocks.first)
-      assert_equal("0", block.name)
+      assert_equal(2, cfg.blocks.size)
     end
 
     def test_top_level_instructions
@@ -23,24 +23,20 @@ module Spoom
         puts "foo"
         puts "bar"
       RB
-      assert_equal(1, cluster.cfgs.size)
 
-      cfg = T.must(cluster.cfgs.first)
-      assert_equal(1, cfg.blocks.size)
-
-      block = T.must(cfg.blocks.first)
-      assert_equal("0", block.name)
-
-      assert_debug(<<~CFG, cluster)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "foo"
-            puts "bar"
+            <self>.puts("foo")
+            <self>.puts("bar")
+            -> bb#1
+
+          bb#1
       CFG
     end
 
-    def test_static_init_empty
+    def test_static_init
       cluster = parse(<<~RB)
         class Foo
           puts "foo"
@@ -57,43 +53,60 @@ module Spoom
           puts "/foo"
         end
       RB
-      assert_equal(6, cluster.cfgs.size)
 
-      assert_debug(<<~CFG, cluster)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
             class Foo
+            -> bb#1
+
+          bb#1
 
         cfg: Foo::<static-init>
 
           bb#0
-            puts "foo"
+            <self>.puts("foo")
             class Bar
-            puts "/foo"
+            <self>.puts("/foo")
+            -> bb#1
+
+          bb#1
 
         cfg: Bar::<static-init>
 
           bb#0
-            puts "bar"
+            <self>.puts("bar")
             class << self
-            puts "/bar"
+            <self>.puts("/bar")
+            -> bb#1
+
+          bb#1
 
         cfg: class << self::<static-init>
 
           bb#0
-            puts "self"
+            <self>.puts("self")
             def foo
-            private def bar; end
-            puts "/self"
+            <self>.private(def bar; end)
+            <self>.puts("/self")
+            -> bb#1
+
+          bb#1
 
         cfg: foo
 
           bb#0
+            -> bb#1
+
+          bb#1
 
         cfg: bar
 
           bb#0
+            -> bb#1
+
+          bb#1
       CFG
     end
 
@@ -108,35 +121,38 @@ module Spoom
         puts "after"
       RB
 
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "before"
-            foo
-            -> bb#1
-
-          bb#1
-            i
+            <self>.puts("before")
+            <self>.foo()
             -> bb#2
-            -> bb#3
 
           bb#2
-            puts "foo"
-            bar?
+            i
+            -> bb#3
             -> bb#4
-            -> bb#6
 
           bb#3
-            puts "after"
+            <self>.puts("foo")
+            <self>.bar?()
+            -> bb#5
+            -> bb#7
 
           bb#4
-            break
-            -> bb#3
-
-          bb#6
-            puts "bar"
+            <self>.puts("after")
             -> bb#1
+
+          bb#5
+            break
+            -> bb#4
+
+          bb#7
+            <self>.puts("bar")
+            -> bb#2
+
+          bb#1
       CFG
     end
 
@@ -151,34 +167,37 @@ module Spoom
         puts "after"
       RB
 
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "before"
-            -> bb#1
-
-          bb#1
-            foo?
+            <self>.puts("before")
             -> bb#2
-            -> bb#3
 
           bb#2
-            puts "foo"
-            bar?
+            <self>.foo?()
+            -> bb#3
             -> bb#4
-            -> bb#6
 
           bb#3
-            puts "after"
+            <self>.puts("foo")
+            <self>.bar?()
+            -> bb#5
+            -> bb#7
 
           bb#4
-            break
-            -> bb#3
-
-          bb#6
-            puts "bar"
+            <self>.puts("after")
             -> bb#1
+
+          bb#5
+            break
+            -> bb#4
+
+          bb#7
+            <self>.puts("bar")
+            -> bb#2
+
+          bb#1
       CFG
     end
 
@@ -193,34 +212,66 @@ module Spoom
         puts "after"
       RB
 
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "before"
+            <self>.puts("before")
+            -> bb#2
+
+          bb#2
+            <self>.foo?()
+            -> bb#3
+            -> bb#4
+
+          bb#3
+            <self>.puts("foo")
+            <self>.bar?()
+            -> bb#5
+            -> bb#7
+
+          bb#4
+            <self>.puts("after")
+            -> bb#1
+
+          bb#5
+            break
+            -> bb#4
+
+          bb#7
+            <self>.puts("bar")
+            -> bb#2
+
+          bb#1
+      CFG
+    end
+
+    def test_break_dead
+      cluster = parse(<<~RB)
+        while true
+          puts "before"
+          break "break"
+          puts "dead"
+        end
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            -> bb#3
+            -> bb#1
+
+          bb#3
+            <self>.puts("before")
+            break "break"
+            -> bb#5
             -> bb#1
 
           bb#1
-            foo?
-            -> bb#2
-            -> bb#3
 
-          bb#2
-            puts "foo"
-            bar?
-            -> bb#4
-            -> bb#6
-
-          bb#3
-            puts "after"
-
-          bb#4
-            break
-            -> bb#3
-
-          bb#6
-            puts "bar"
-            -> bb#1
+          bb#5
+            <self>.puts("dead")
       CFG
     end
 
@@ -236,26 +287,196 @@ module Spoom
         puts "after"
       RB
 
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "before"
-            foo
-            -> bb#2
+            <self>.puts("before")
+            <self>.foo()
             -> bb#3
-            -> bb#1
-
-          bb#2
-            puts "one"
-            -> bb#1
+            -> bb#4
+            -> bb#2
 
           bb#3
-            puts "two"
+            <self>.puts("one")
+            -> bb#2
+
+          bb#4
+            <self>.puts("two")
+            -> bb#2
+
+          bb#2
+            <self>.puts("after")
             -> bb#1
 
           bb#1
-            puts "after"
+      CFG
+    end
+
+    def test_case_else
+      cluster = parse(<<~RB)
+        case foo
+        when 1
+          puts "one"
+        when 2
+          puts "two"
+        else
+          puts "else"
+        end
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            <self>.foo()
+            -> bb#3
+            -> bb#4
+            -> bb#5
+
+          bb#3
+            <self>.puts("one")
+            -> bb#1
+
+          bb#4
+            <self>.puts("two")
+            -> bb#1
+
+          bb#5
+            <self>.puts("else")
+            -> bb#1
+
+          bb#1
+      CFG
+    end
+
+    def test_call_block
+      cluster = parse(<<~RB)
+        puts "before"
+        foo { puts "inside" }
+        puts "after"
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            <self>.puts("before")
+            <self>.foo()
+            -> bb#2
+
+          bb#2
+            <block-call>
+            -> bb#3
+            -> bb#4
+
+          bb#3
+            <self>.puts("inside")
+            -> bb#2
+
+          bb#4
+            <self>.puts("after")
+            -> bb#1
+
+          bb#1
+      CFG
+    end
+
+    def test_call_block_next
+      cluster = parse(<<~RB)
+        def foo
+          [1].map do |x|
+            good # error: Method `good` does not exist on `Object`
+            next x
+            bad
+          # ^^^ error: This expression appears after an unconditional return
+          end
+        end
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            def foo
+            -> bb#1
+
+          bb#1
+
+        cfg: foo
+
+          bb#0
+            [1].map()
+            -> bb#2
+
+          bb#2
+            <block-call>
+            -> bb#3
+            -> bb#1
+
+          bb#3
+            <self>.good()
+            next x
+            -> bb#2
+            -> bb#4
+
+          bb#1
+
+          bb#4
+            <self>.bad()
+      CFG
+    end
+
+    def test_call_block_return
+      cluster = parse(<<~RB)
+        puts "before"
+        foo do |x|
+          if foo?
+            puts "will return"
+            return x
+            puts "dead"
+          end
+          puts "after return"
+        end
+        puts "after"
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            <self>.puts("before")
+            <self>.foo()
+            -> bb#2
+
+          bb#2
+            <block-call>
+            -> bb#3
+            -> bb#8
+
+          bb#3
+            <self>.foo?()
+            -> bb#4
+            -> bb#6
+
+          bb#8
+            <self>.puts("after")
+            -> bb#1
+
+          bb#4
+            <self>.puts("will return")
+            return x
+            -> bb#1
+            -> bb#7
+
+          bb#6
+            <self>.puts("after return")
+            -> bb#2
+
+          bb#1
+
+          bb#7
+            <self>.puts("dead")
       CFG
     end
 
@@ -268,18 +489,24 @@ module Spoom
         puts "after"
       RB
 
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "before"
+            <self>.puts("before")
             def foo
-            puts "after"
+            <self>.puts("after")
+            -> bb#1
+
+          bb#1
 
         cfg: foo
 
           bb#0
-            puts "foo"
+            <self>.puts("foo")
+            -> bb#1
+
+          bb#1
       CFG
     end
 
@@ -292,25 +519,28 @@ module Spoom
         puts "after"
       RB
 
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "before"
-            foo
+            <self>.puts("before")
+            <self>.foo()
+            -> bb#2
+
+          bb#2
+            i
+            -> bb#3
+            -> bb#4
+
+          bb#3
+            <self>.puts("foo")
+            -> bb#2
+
+          bb#4
+            <self>.puts("after")
             -> bb#1
 
           bb#1
-            i
-            -> bb#2
-            -> bb#3
-
-          bb#2
-            puts "foo"
-            -> bb#1
-
-          bb#3
-            puts "after"
       CFG
     end
 
@@ -323,21 +553,24 @@ module Spoom
         puts "after"
       RB
 
-      assert_debug(<<~CFG, cluster)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "before"
-            foo?
+            <self>.puts("before")
+            <self>.foo?()
+            -> bb#2
+            -> bb#4
+
+          bb#2
+            <self>.puts("foo")
+            -> bb#4
+
+          bb#4
+            <self>.puts("after")
             -> bb#1
-            -> bb#3
 
           bb#1
-            puts "foo"
-            -> bb#3
-
-          bb#3
-            puts "after"
       CFG
     end
 
@@ -348,21 +581,24 @@ module Spoom
         puts "after"
       RB
 
-      assert_debug(<<~CFG, cluster)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "before"
-            foo?
+            <self>.puts("before")
+            <self>.foo?()
+            -> bb#2
+            -> bb#4
+
+          bb#2
+            <self>.puts("foo")
+            -> bb#4
+
+          bb#4
+            <self>.puts("after")
             -> bb#1
-            -> bb#3
 
           bb#1
-            puts "foo"
-            -> bb#3
-
-          bb#3
-            puts "after"
       CFG
     end
 
@@ -377,25 +613,28 @@ module Spoom
         puts "after"
       RB
 
-      assert_debug(<<~CFG, cluster)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "before"
-            foo?
-            -> bb#1
+            <self>.puts("before")
+            <self>.foo?()
             -> bb#2
-
-          bb#1
-            puts "foo"
             -> bb#3
 
           bb#2
-            puts "bar"
-            -> bb#3
+            <self>.puts("foo")
+            -> bb#4
 
           bb#3
-            puts "after"
+            <self>.puts("bar")
+            -> bb#4
+
+          bb#4
+            <self>.puts("after")
+            -> bb#1
+
+          bb#1
       CFG
     end
 
@@ -410,30 +649,33 @@ module Spoom
         puts "after"
       RB
 
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "before"
-            foo?
-            -> bb#1
+            <self>.puts("before")
+            <self>.foo?()
             -> bb#2
-
-          bb#1
-            puts "foo"
             -> bb#3
 
           bb#2
-            bar?
+            <self>.puts("foo")
             -> bb#4
-            -> bb#3
 
           bb#3
-            puts "after"
+            <self>.bar?()
+            -> bb#5
+            -> bb#4
 
           bb#4
-            puts "bar"
-            -> bb#3
+            <self>.puts("after")
+            -> bb#1
+
+          bb#5
+            <self>.puts("bar")
+            -> bb#4
+
+          bb#1
       CFG
     end
 
@@ -450,34 +692,37 @@ module Spoom
         puts "after"
       RB
 
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "before"
-            foo?
-            -> bb#1
+            <self>.puts("before")
+            <self>.foo?()
             -> bb#2
-
-          bb#1
-            puts "foo"
             -> bb#3
 
           bb#2
-            bar?
+            <self>.puts("foo")
             -> bb#4
-            -> bb#5
 
           bb#3
-            puts "after"
+            <self>.bar?()
+            -> bb#5
+            -> bb#6
 
           bb#4
-            puts "bar"
-            -> bb#3
+            <self>.puts("after")
+            -> bb#1
 
           bb#5
-            puts "baz"
-            -> bb#3
+            <self>.puts("bar")
+            -> bb#4
+
+          bb#6
+            <self>.puts("baz")
+            -> bb#4
+
+          bb#1
       CFG
     end
 
@@ -492,35 +737,38 @@ module Spoom
         puts "after"
       RB
 
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "before"
-            foo
-            -> bb#1
-
-          bb#1
-            i
+            <self>.puts("before")
+            <self>.foo()
             -> bb#2
-            -> bb#3
 
           bb#2
-            puts "foo"
-            bar?
+            i
+            -> bb#3
             -> bb#4
-            -> bb#6
 
           bb#3
-            puts "after"
+            <self>.puts("foo")
+            <self>.bar?()
+            -> bb#5
+            -> bb#7
 
           bb#4
-            next
+            <self>.puts("after")
             -> bb#1
 
-          bb#6
-            puts "bar"
-            -> bb#1
+          bb#5
+            next
+            -> bb#2
+
+          bb#7
+            <self>.puts("bar")
+            -> bb#2
+
+          bb#1
       CFG
     end
 
@@ -535,34 +783,37 @@ module Spoom
         puts "after"
       RB
 
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "before"
-            -> bb#1
-
-          bb#1
-            foo?
+            <self>.puts("before")
             -> bb#2
-            -> bb#3
 
           bb#2
-            puts "foo"
-            bar?
+            <self>.foo?()
+            -> bb#3
             -> bb#4
-            -> bb#6
 
           bb#3
-            puts "after"
+            <self>.puts("foo")
+            <self>.bar?()
+            -> bb#5
+            -> bb#7
 
           bb#4
-            next
+            <self>.puts("after")
             -> bb#1
 
-          bb#6
-            puts "bar"
-            -> bb#1
+          bb#5
+            next
+            -> bb#2
+
+          bb#7
+            <self>.puts("bar")
+            -> bb#2
+
+          bb#1
       CFG
     end
 
@@ -577,34 +828,37 @@ module Spoom
         puts "after"
       RB
 
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "before"
-            -> bb#1
-
-          bb#1
-            foo?
+            <self>.puts("before")
             -> bb#2
-            -> bb#3
 
           bb#2
-            puts "foo"
-            bar?
+            <self>.foo?()
+            -> bb#3
             -> bb#4
-            -> bb#6
 
           bb#3
-            puts "after"
+            <self>.puts("foo")
+            <self>.bar?()
+            -> bb#5
+            -> bb#7
 
           bb#4
-            next
+            <self>.puts("after")
             -> bb#1
 
-          bb#6
-            puts "bar"
-            -> bb#1
+          bb#5
+            next
+            -> bb#2
+
+          bb#7
+            <self>.puts("bar")
+            -> bb#2
+
+          bb#1
       CFG
     end
 
@@ -617,21 +871,24 @@ module Spoom
         puts "after"
       RB
 
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "before"
-            foo?
+            <self>.puts("before")
+            <self>.foo?()
+            -> bb#2
+            -> bb#4
+
+          bb#2
+            <self>.puts("foo")
+            -> bb#4
+
+          bb#4
+            <self>.puts("after")
             -> bb#1
-            -> bb#3
 
           bb#1
-            puts "foo"
-            -> bb#3
-
-          bb#3
-            puts "after"
       CFG
     end
 
@@ -642,21 +899,24 @@ module Spoom
         puts "after"
       RB
 
-      assert_debug(<<~CFG, cluster)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "before"
-            foo?
+            <self>.puts("before")
+            <self>.foo?()
+            -> bb#2
+            -> bb#4
+
+          bb#2
+            <self>.puts("foo")
+            -> bb#4
+
+          bb#4
+            <self>.puts("after")
             -> bb#1
-            -> bb#3
 
           bb#1
-            puts "foo"
-            -> bb#3
-
-          bb#3
-            puts "after"
       CFG
     end
 
@@ -671,25 +931,28 @@ module Spoom
         puts "after"
       RB
 
-      assert_debug(<<~CFG, cluster)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "before"
-            foo?
-            -> bb#1
+            <self>.puts("before")
+            <self>.foo?()
             -> bb#2
-
-          bb#1
-            puts "foo"
             -> bb#3
 
           bb#2
-            puts "bar"
-            -> bb#3
+            <self>.puts("foo")
+            -> bb#4
 
           bb#3
-            puts "after"
+            <self>.puts("bar")
+            -> bb#4
+
+          bb#4
+            <self>.puts("after")
+            -> bb#1
+
+          bb#1
       CFG
     end
 
@@ -704,33 +967,36 @@ module Spoom
         puts "after"
       RB
 
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "before"
-            -> bb#1
-
-          bb#1
-            foo?
+            <self>.puts("before")
             -> bb#2
-            -> bb#3
 
           bb#2
-            puts "foo"
+            <self>.foo?()
+            -> bb#3
             -> bb#4
 
           bb#3
-            puts "after"
+            <self>.puts("foo")
+            -> bb#5
 
           bb#4
-            bar?
-            -> bb#5
+            <self>.puts("after")
             -> bb#1
 
           bb#5
-            puts "bar"
-            -> bb#4
+            <self>.bar?()
+            -> bb#6
+            -> bb#2
+
+          bb#1
+
+          bb#6
+            <self>.puts("bar")
+            -> bb#5
       CFG
     end
 
@@ -745,33 +1011,36 @@ module Spoom
         puts "after"
       RB
 
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
-            puts "before"
-            -> bb#1
-
-          bb#1
-            foo?
+            <self>.puts("before")
             -> bb#2
-            -> bb#3
 
           bb#2
-            puts "foo"
+            <self>.foo?()
+            -> bb#3
             -> bb#4
 
           bb#3
-            puts "after"
+            <self>.puts("foo")
+            -> bb#5
 
           bb#4
-            bar?
-            -> bb#5
+            <self>.puts("after")
             -> bb#1
 
           bb#5
-            puts "bar"
-            -> bb#4
+            <self>.bar?()
+            -> bb#6
+            -> bb#2
+
+          bb#1
+
+          bb#6
+            <self>.puts("bar")
+            -> bb#5
       CFG
     end
 
@@ -784,18 +1053,24 @@ module Spoom
         end
       RB
 
-      assert_debug(<<~CFG, cluster)
+      assert_equal(<<~CFG, cluster.inspect)
         cfg: <main>
 
           bb#0
             def foo
+            -> bb#1
+
+          bb#1
 
         cfg: foo
 
           bb#0
-            puts "before"
+            <self>.puts("before")
             yield
-            puts "after"
+            <self>.puts("after")
+            -> bb#1
+
+          bb#1
       CFG
     end
 
@@ -809,11 +1084,36 @@ module Spoom
         end
 
         return
-        puts "after all"
+        puts "dead2"
       RB
 
-      cluster.compact!.show_dot
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            <self>.puts("before")
+            def foo
+            return
+            -> bb#1
+            -> bb#2
+
+          bb#1
+
+          bb#2
+            <self>.puts("dead2")
+
+        cfg: foo
+
+          bb#0
+            <self>.puts("before")
+            return
+            -> bb#1
+            -> bb#2
+
+          bb#1
+
+          bb#2
+            <self>.puts("dead")
       CFG
     end
 
@@ -829,8 +1129,28 @@ module Spoom
         puts "after"
       RB
 
-      cluster.compact!.show_dot
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            <self>.puts("before")
+            <self>.bar()
+            -> bb#3
+            -> bb#5
+
+          bb#3
+            return
+            -> bb#1
+
+          bb#5
+            <self>.puts("else")
+            -> bb#2
+
+          bb#1
+
+          bb#2
+            <self>.puts("after")
+            -> bb#1
       CFG
     end
 
@@ -841,8 +1161,24 @@ module Spoom
         puts "after"
       RB
 
-      # cluster.compact!.show_dot
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            <self>.puts("before")
+            <self>.bar?()
+            -> bb#2
+            -> bb#4
+
+          bb#2
+            return
+            -> bb#1
+
+          bb#4
+            <self>.puts("after")
+            -> bb#1
+
+          bb#1
       CFG
     end
 
@@ -857,8 +1193,28 @@ module Spoom
         puts "after"
       RB
 
-      # cluster.compact!.show_dot
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            <self>.puts("before")
+            <self>.bar?()
+            -> bb#2
+            -> bb#3
+
+          bb#2
+            <self>.puts("bar")
+            -> bb#4
+
+          bb#3
+            return
+            -> bb#1
+
+          bb#4
+            <self>.puts("after")
+            -> bb#1
+
+          bb#1
       CFG
     end
 
@@ -873,8 +1229,37 @@ module Spoom
         puts "after"
       RB
 
-      # cluster.compact!.show_dot
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            <self>.puts("before")
+            -> bb#2
+
+          bb#2
+            <self>.foo?()
+            -> bb#3
+            -> bb#4
+
+          bb#3
+            <self>.puts("foo")
+            <self>.bar?()
+            -> bb#5
+            -> bb#7
+
+          bb#4
+            <self>.puts("after")
+            -> bb#1
+
+          bb#5
+            return
+            -> bb#1
+
+          bb#7
+            <self>.puts("bar")
+            -> bb#2
+
+          bb#1
       CFG
     end
 
@@ -889,60 +1274,54 @@ module Spoom
         puts "after"
       RB
 
-      cluster.compact!.show_dot
-      assert_debug(<<~CFG, cluster.compact!)
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            <self>.puts("before")
+            -> bb#2
+
+          bb#2
+            <self>.foo?()
+            -> bb#3
+            -> bb#4
+
+          bb#3
+            <self>.puts("foo")
+            <self>.bar?()
+            -> bb#5
+            -> bb#7
+
+          bb#4
+            <self>.puts("after")
+            -> bb#1
+
+          bb#5
+            return
+            -> bb#1
+
+          bb#7
+            <self>.puts("bar")
+            -> bb#2
+
+          bb#1
       CFG
     end
 
-    # def test_return_args
-    #   cfg = parse(<<~RB)
-    #     0
-    #     def foo
-    #       1
-    #       return 3, 4 if true
-    #       5
-    #     end
-    #     2
-    #   RB
-
-    #   puts cfg.debug
-    #   cfg.show_dot
-
-    #   assert_equal(<<~CFG, cfg.debug)
-    #     0
-    #       -> 1
-    #       -> 2
-    #     1
-    #     2
-    #       -> 3
-    #   CFG
-    # end
-
-    # block / do .. end / {}
     # begin
-    # raise
     # rescue
     # ensure
     # &&, ||, and, or
+    # raise?
 
     private
 
-    sig { params(expected: String, cluster: CFG::Cluster).void }
-    def assert_debug(expected, cluster)
-      actual = cluster.inspect
-      return if expected == actual
-
-      puts "Actual:"
-      puts actual
-      puts "Diff:"
-      $stderr.puts diff(expected, actual)
-      raise
-    end
-
-    sig { params(code: String).returns(CFG::Cluster) }
-    def parse(code)
+    sig { params(code: String, compact: T::Boolean).returns(CFG::Cluster) }
+    def parse(code, compact: true)
       node = Spoom.parse_ruby(code, file: "-")
-      CFG.from_node(node)
+      cfg = CFG.from_node(node)
+      cfg.compact! if compact
+      cfg
     end
   end
 end

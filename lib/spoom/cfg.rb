@@ -122,6 +122,10 @@ module Spoom
             "class << self"
           when Prism::DefNode
             "def #{i.name}"
+          when Prism::CallNode
+            "#{i.receiver&.slice || "<self>"}.#{i.name}(#{i.arguments&.slice})"
+          when Prism::BlockNode
+            "<block-call>"
           else
             i.slice
           end
@@ -168,6 +172,10 @@ module Spoom
             "class << self"
           when Prism::DefNode
             "def #{i.name}"
+          when Prism::CallNode
+            "#{i.receiver&.slice || "<self>"}.#{i.name}(#{i.arguments&.slice})"
+          when Prism::BlockNode
+            "<block-call>"
           else
             i.slice
           end
@@ -213,6 +221,7 @@ module Spoom
       def visit_program_node(node)
         builder = Builder.new("<main>", node)
         builder.visit(node.statements)
+        builder.finalize!
         @cluster.cfgs << builder.cfg
 
         super
@@ -222,6 +231,7 @@ module Spoom
       def visit_class_node(node)
         builder = Builder.new("#{node.name}::<static-init>", node)
         builder.visit(node.body)
+        builder.finalize!
         @cluster.cfgs << builder.cfg
 
         super
@@ -231,6 +241,7 @@ module Spoom
       def visit_module_node(node)
         builder = Builder.new("#{node.name}::<static-init>", node)
         builder.visit(node.body)
+        builder.finalize!
         @cluster.cfgs << builder.cfg
 
         super
@@ -240,6 +251,7 @@ module Spoom
       def visit_singleton_class_node(node)
         builder = Builder.new("class << self::<static-init>", node)
         builder.visit(node.body)
+        builder.finalize!
         @cluster.cfgs << builder.cfg
 
         super
@@ -249,6 +261,7 @@ module Spoom
       def visit_def_node(node)
         builder = Builder.new(node.name.to_s, node)
         builder.visit(node.body)
+        builder.finalize!
         @cluster.cfgs << builder.cfg
       end
     end
@@ -264,9 +277,15 @@ module Spoom
         super()
 
         @block_count = T.let(0, Integer)
-        @current_block = T.let(new_block, BasicBlock)
-        @cfg = T.let(CFG.new(name, node, @current_block), CFG)
         @loop_stack = T.let([], T::Array[Loop])
+        @current_block = T.let(new_block, BasicBlock)
+        @exit_block = T.let(new_block, BasicBlock)
+        @cfg = T.let(CFG.new(name, node, @current_block, @exit_block), CFG)
+      end
+
+      sig { void }
+      def finalize!
+        @current_block.add_edge(@exit_block) unless @current_block.exits
       end
 
       # sig { override.params(node: Prism::AndNode).void }
@@ -298,27 +317,38 @@ module Spoom
         raise Error.new("Unexpected break outside of loop", node) unless current_loop
 
         @current_block.instructions << node
-        @current_block.exits = true
         @current_block.add_edge(current_loop.merge)
+
+        after_block = new_block
+        @current_block.add_edge(after_block)
+        @current_block = after_block
+        @current_block.exits = true
       end
 
       sig { override.params(node: Prism::CallNode).void }
       def visit_call_node(node)
         @current_block.instructions << node
+        before_block = @current_block
 
-        # block_node = node.block
+        block_node = node.block
+        if block_node
+          call_block = new_block
+          before_block.add_edge(call_block)
+          call_block.instructions << block_node
 
-        # if block_node
-        #   block_block = new_block
-        #   @loop_stack << block_block
-        #   @current_block.add_edge(block_block)
-        #   @current_block = block_block
-        #   visit(block_node)
-        #   merge_block = new_block
-        #   @current_block.add_edge(merge_block)
-        #   @current_block = merge_block
-        #   @loop_stack.pop
-        # end
+          block_block = new_block
+          call_block.add_edge(block_block)
+          @current_block = block_block
+          @loop_stack << Loop.new(call_block, @exit_block)
+          visit(block_node)
+          @loop_stack.pop
+          block_block = @current_block
+          block_block.add_edge(call_block) unless block_block.exits
+
+          merge_block = new_block
+          call_block.add_edge(merge_block)
+          @current_block = merge_block
+        end
       end
 
       sig { override.params(node: Prism::CaseNode).void }
@@ -397,9 +427,13 @@ module Spoom
         current_loop = @loop_stack.last
         raise Error.new("Unexpected next outside of loop", node) unless current_loop
 
-        @current_block.exits = true
         @current_block.instructions << node
         @current_block.add_edge(current_loop.header)
+
+        after_block = new_block
+        @current_block.add_edge(after_block)
+        @current_block = after_block
+        @current_block.exits = true
       end
 
       sig { override.params(node: Prism::IfNode).void }
@@ -471,6 +505,7 @@ module Spoom
       sig { override.params(node: Prism::ReturnNode).void }
       def visit_return_node(node)
         @current_block.instructions << node
+        @current_block.add_edge(@exit_block)
         after_block = new_block
         @current_block.add_edge(after_block)
         @current_block = after_block
@@ -586,19 +621,20 @@ module Spoom
     attr_reader :node
 
     sig { returns(BasicBlock) }
-    attr_reader :root
+    attr_reader :root_block, :exit_block
 
-    sig { params(name: String, node: Prism::Node, root: BasicBlock).void }
-    def initialize(name, node, root)
+    sig { params(name: String, node: Prism::Node, root_block: BasicBlock, exit_block: BasicBlock).void }
+    def initialize(name, node, root_block, exit_block)
       @name = name
       @node = node
-      @root = root
+      @root_block = root_block
+      @exit_block = exit_block
     end
 
     sig { returns(T::Array[BasicBlock]) }
     def blocks
       blocks = T.let([], T::Array[BasicBlock])
-      queue = T.let([root], T::Array[BasicBlock])
+      queue = T.let([root_block], T::Array[BasicBlock])
       seen = T.let(Set.new, T::Set[BasicBlock])
 
       until queue.empty?
@@ -622,6 +658,8 @@ module Spoom
       return self if blocks.size == 1
 
       blocks.each do |block|
+        next if block == @root_block
+        next if block == @exit_block
         next unless block.empty?
 
         block.ins.each do |block_in|
