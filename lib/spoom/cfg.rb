@@ -328,11 +328,7 @@ module Spoom
         rescue_node = T.let(node.rescue_clause, T.nilable(Prism::RescueNode))
         while rescue_node
           rescue_block = new_block
-
-          # We add edges both from the before block and the begin block to the rescue block
-          # to model how the begin block can raise an exception at any statement
           before_block.add_edge(rescue_block)
-          begin_block.add_edge(rescue_block) unless begin_block.exits
 
           @current_block = rescue_block
           visit(rescue_node)

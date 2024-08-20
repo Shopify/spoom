@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 begin
+  x = 1
   puts "inside"
   if foo?
     return
@@ -13,9 +14,8 @@ begin
 
   puts "dead"
 rescue
+  puts x
   puts "rescue"
   return
   puts "dead"
 end
-
-puts "after"

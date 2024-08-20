@@ -13,9 +13,9 @@ module Spoom
     fixture_files.each do |file|
       dir = File.dirname(file)
       name = File.basename(file, ".rb")
-      puts name
+      test_name = "test_#{name}"
 
-      define_method("test_#{name}") do
+      define_method(test_name) do
         expected_path = File.join(dir, "#{name}.cfg.exp")
         assert(File.exist?(expected_path), "expectation file missing for #{file}")
         expected_output = File.read(expected_path)
@@ -26,12 +26,24 @@ module Spoom
 
         actual_output = cfgs_cluster.inspect
 
-        if ENV["UPDATE_FIXTURES"]
+        if ENV["CFG_SHOW"]
+          puts file
+          puts
+          puts actual_output
+          cfgs_cluster.show_dot
+        elsif ENV["CFG_UPDATE_FIXTURES"]
           File.write(expected_path, actual_output)
-          return
-        end
+        else
+          unless expected_output == actual_output
+            raise <<~MSG
+              CFG expectation failed
 
-        assert_equal(expected_output, actual_output)
+              #{file}
+
+              #{diff(expected_output, actual_output)}
+            MSG
+          end
+        end
       end
     end
   end

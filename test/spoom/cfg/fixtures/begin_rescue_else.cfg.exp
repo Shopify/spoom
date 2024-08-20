@@ -8,8 +8,6 @@ cfg: <main>
   bb#2
     <self>.puts(1)
     <self>.puts(2)
-    -> bb#3
-    -> bb#4
     -> bb#5
 
   bb#3
