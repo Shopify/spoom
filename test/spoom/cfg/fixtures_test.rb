@@ -16,9 +16,7 @@ module Spoom
       test_name = "test_#{name}"
 
       define_method(test_name) do
-        expected_path = File.join(dir, "#{name}.cfg.exp")
-        assert(File.exist?(expected_path), "expectation file missing for #{file}")
-        expected_output = File.read(expected_path)
+        T.bind(self, Minitest::Test)
 
         node = Spoom.parse_ruby(File.read(file), file: file)
         cfgs_cluster = Spoom::CFG.from_node(node)
@@ -31,7 +29,13 @@ module Spoom
           puts
           puts actual_output
           cfgs_cluster.show_dot
-        elsif ENV["CFG_UPDATE_FIXTURES"]
+        end
+
+        expected_path = File.join(dir, "#{name}.cfg")
+        assert(File.exist?(expected_path), "expectation file missing for #{file}")
+        expected_output = File.read(expected_path)
+
+        if ENV["CFG_UPDATE_FIXTURES"]
           File.write(expected_path, actual_output)
         else
           unless expected_output == actual_output

@@ -605,6 +605,9 @@ module Spoom
 
       sig { override.params(node: Prism::RescueNode).void }
       def visit_rescue_node(node)
+        puts node.inspect
+        visit_all(node.exceptions)
+        visit(node.reference)
         visit(node.statements)
       end
 
