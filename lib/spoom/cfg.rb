@@ -12,6 +12,7 @@ module Spoom
 
       sig { params(node: Prism::Node).returns(Cluster) }
       def from_node(node)
+        # puts node.inspect
         walker = Walker.new
         walker.visit(node)
         walker.cluster
@@ -110,6 +111,11 @@ module Spoom
         to.ins << self
       end
 
+      sig { returns(String) }
+      def to_s
+        name
+      end
+
       sig { params(cluster_id: String).returns(String) }
       def to_dot(cluster_id)
         instructions = @instructions.map do |i|
@@ -126,9 +132,12 @@ module Spoom
             "#{i.receiver&.slice || "<self>"}.#{i.name}(#{i.arguments&.slice})"
           when Prism::BlockNode
             "<block-call>"
+          when Prism::BeginNode
+            "<begin>"
           else
             i.slice
           end
+          text = text.gsub(/\n+/, "; ").gsub(/\s+/, " ")
           text = "#{text[0..50]}..." if text.size > 50
           CGI.escapeHTML(text)
         end
@@ -149,16 +158,6 @@ module Spoom
         dot
       end
 
-      # sig { params(other: BasicObject).returns(T::Boolean) }
-      # def ==(other)
-      #   BasicBlock === other && name == other.name
-      # end
-
-      sig { returns(String) }
-      def to_s
-        name
-      end
-
       sig { override.returns(String) }
       def inspect
         out = +"  bb##{@name}\n"
@@ -176,9 +175,12 @@ module Spoom
             "#{i.receiver&.slice || "<self>"}.#{i.name}(#{i.arguments&.slice})"
           when Prism::BlockNode
             "<block-call>"
+          when Prism::BeginNode
+            "<begin>"
           else
             i.slice
           end
+          text = text.gsub(/\n+/, "; ").gsub(/\s+/, " ")
           out << "    #{text}\n"
         end
         outs.each do |edge_out|
@@ -279,6 +281,7 @@ module Spoom
         @block_count = T.let(0, Integer)
         @loop_stack = T.let([], T::Array[Loop])
         @current_block = T.let(new_block, BasicBlock)
+        @last_return_block = T.let(nil, T.nilable(BasicBlock))
         @exit_block = T.let(new_block, BasicBlock)
         @cfg = T.let(CFG.new(name, node, @current_block, @exit_block), CFG)
       end
@@ -288,28 +291,97 @@ module Spoom
         @current_block.add_edge(@exit_block) unless @current_block.exits
       end
 
-      # sig { override.params(node: Prism::AndNode).void }
-      # def visit_and_node(node)
-      #   left_block = new_block
-      #   @current_block.add_edge(left_block)
-      #   @current_block = left_block
-      #   visit(node.left)
+      sig { override.params(node: Prism::AndNode).void }
+      def visit_and_node(node)
+        # We merge the left side in the current block
+        visit(node.left)
+        left_block = @current_block
 
-      #   right_block = new_block
-      #   @current_block.add_edge(right_block)
-      #   @current_block = right_block
-      #   visit(node.right)
+        right_block = new_block
+        @current_block.add_edge(right_block)
+        @current_block = right_block
+        visit(node.right)
+        right_block = @current_block
 
-      #   merge_block = new_block
-      #   left_block.add_edge(merge_block) unless left_block.returns
-      #   right_block.add_edge(merge_block) unless right_block.returns
-      #   @current_block = merge_block
-      # end
+        merge_block = new_block
+        left_block.add_edge(merge_block) unless left_block.exits
+        right_block.add_edge(merge_block) unless right_block.exits
+        @current_block = merge_block
+      end
 
       # sig { override.params(node: Prism::BlockNode).void }
       # def visit_block_node(node)
       #   super
       # end
+
+      sig { override.params(node: Prism::BeginNode).void }
+      def visit_begin_node(node)
+        before_block = @current_block
+
+        begin_block = new_block
+        @current_block.add_edge(begin_block)
+        @current_block = begin_block
+        visit(node.statements)
+        begin_block = @current_block
+
+        rescue_blocks = T.let([], T::Array[BasicBlock])
+        rescue_node = T.let(node.rescue_clause, T.nilable(Prism::RescueNode))
+        while rescue_node
+          rescue_block = new_block
+
+          # We add edges both from the before block and the begin block to the rescue block
+          # to model how the begin block can raise an exception at any statement
+          before_block.add_edge(rescue_block)
+          begin_block.add_edge(rescue_block) unless begin_block.exits
+
+          @current_block = rescue_block
+          visit(rescue_node)
+          rescue_block = @current_block
+
+          rescue_blocks << rescue_block
+          rescue_node = rescue_node.consequent
+        end
+
+        else_node = node.else_clause
+        if else_node
+          else_block = new_block
+          begin_block.add_edge(else_block) unless begin_block.exits
+          @current_block = else_block
+          visit(else_node)
+          else_block = @current_block
+        end
+
+        merge_block = new_block
+        ensure_node = node.ensure_clause
+        if ensure_node
+          ensure_block = new_block
+          if else_block
+            else_block.add_edge(ensure_block)
+          else
+            begin_block.add_edge(ensure_block) unless begin_block.exits
+          end
+          rescue_blocks.each do |rescue_block|
+            rescue_block.add_edge(ensure_block)
+          end
+          @current_block = ensure_block
+          visit(ensure_node)
+          ensure_block = @current_block
+          ensure_block.add_edge(merge_block)
+        else
+          if else_block
+            else_block.add_edge(merge_block)
+          else
+            puts "begin_block.exits: #{begin_block.exits}"
+            puts "begin_block#{begin_block} -> merge_block#{merge_block}"
+            begin_block.add_edge(merge_block) unless begin_block.exits
+          end
+          rescue_blocks.each do |rescue_block|
+            rescue_block.add_edge(merge_block) unless rescue_block.exits
+          end
+        end
+
+        @current_block = merge_block
+      end
 
       sig { override.params(node: Prism::BreakNode).void }
       def visit_break_node(node)
@@ -394,6 +466,28 @@ module Spoom
         @current_block.instructions << node
       end
 
+      # sig { override.params(node: Prism::EnsureNode).void }
+      # def visit_ensure_node(node)
+      #   before_block = @current_block
+
+      #   ensure_block = new_block
+      #   @current_block = ensure_block
+      #   visit(node.statements)
+      #   ensure_block = @current_block
+
+      #   before_block.add_edge(ensure_block)
+      #   # ensure_block.add_edge(@exit_block)
+
+      #   merge_block = new_block
+      #   ensure_block.add_edge(merge_block)
+      #   @current_block = merge_block
+      # end
+
+      sig { override.params(node: Prism::FalseNode).void }
+      def visit_false_node(node)
+        @current_block.instructions << node
+      end
+
       sig { override.params(node: Prism::ForNode).void }
       def visit_for_node(node)
         before_block = @current_block
@@ -420,6 +514,11 @@ module Spoom
 
         iterator_block.add_edge(merge_block)
         @current_block = merge_block
+      end
+
+      sig { override.params(node: Prism::NilNode).void }
+      def visit_nil_node(node)
+        @current_block.instructions << node
       end
 
       sig { override.params(node: Prism::NextNode).void }
@@ -461,7 +560,12 @@ module Spoom
           before_block.add_edge(merge_block)
         end
 
-        @current_block = merge_block
+        if if_block.exits && else_block.exits
+          dead_block = new_block
+          @current_block = dead_block
+        else
+          @current_block = merge_block
+        end
       end
 
       sig { override.params(node: Prism::LocalVariableReadNode).void }
@@ -485,35 +589,47 @@ module Spoom
         @current_block.instructions << node
       end
 
-      # sig { override.params(node: Prism::OrNode).void }
-      # def visit_or_node(node)
-      #   left_block = new_block
-      #   @current_block.add_edge(left_block)
-      #   @current_block = left_block
-      #   visit(node.left)
+      sig { override.params(node: Prism::OrNode).void }
+      def visit_or_node(node)
+        # We merge the left side in the current block
+        visit(node.left)
+        left_block = @current_block
 
-      #   right_block = new_block
-      #   left_block.add_edge(right_block)
-      #   @current_block = right_block
-      #   visit(node.right)
+        right_block = new_block
+        left_block.add_edge(right_block)
+        @current_block = right_block
+        visit(node.right)
+        right_block = @current_block
 
-      #   merge_block = new_block
-      #   right_block.add_edge(merge_block) unless right_block.returns
-      #   @current_block = merge_block
-      # end
+        merge_block = new_block
+        left_block.add_edge(merge_block) unless left_block.exits
+        right_block.add_edge(merge_block) unless right_block.exits
+        @current_block = merge_block
+      end
+
+      sig { override.params(node: Prism::RescueNode).void }
+      def visit_rescue_node(node)
+        visit(node.statements)
+      end
 
       sig { override.params(node: Prism::ReturnNode).void }
       def visit_return_node(node)
         @current_block.instructions << node
         @current_block.add_edge(@exit_block)
-        after_block = new_block
-        @current_block.add_edge(after_block)
-        @current_block = after_block
+        @last_return_block = @current_block
+        dead_block = new_block
+        @current_block.add_edge(dead_block)
+        @current_block = dead_block
         @current_block.exits = true
       end
 
       sig { override.params(node: Prism::SingletonClassNode).void }
       def visit_singleton_class_node(node)
+        @current_block.instructions << node
+      end
+
+      sig { override.params(node: Prism::TrueNode).void }
+      def visit_true_node(node)
         @current_block.instructions << node
       end
 

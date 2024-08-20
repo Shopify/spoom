@@ -1,0 +1,35 @@
+cfg: <main>
+
+  bb#0
+    <self>.puts("before")
+    <self>.foo()
+    -> bb#2
+
+  bb#2
+    <block-call>
+    -> bb#3
+    -> bb#8
+
+  bb#3
+    <self>.foo?()
+    -> bb#4
+    -> bb#6
+
+  bb#8
+    <self>.puts("after")
+    -> bb#1
+
+  bb#4
+    <self>.puts("will return")
+    return x
+    -> bb#1
+    -> bb#7
+
+  bb#6
+    <self>.puts("after return")
+    -> bb#2
+
+  bb#1
+
+  bb#7
+    <self>.puts("dead")

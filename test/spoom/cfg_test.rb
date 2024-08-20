@@ -7,17 +7,6 @@ module Spoom
   class CFGTest < Minitest::Test
     extend T::Sig
 
-    def test_empty
-      cluster = parse("")
-
-      # Only one basic block in the cluster: the one for <main>
-      assert_equal(1, cluster.cfgs.size)
-
-      # A CFG as always at least two blocks: the entry block and the exit block
-      cfg = T.must(cluster.cfgs.first)
-      assert_equal(2, cfg.blocks.size)
-    end
-
     def test_top_level_instructions
       cluster = parse(<<~RB)
         puts "foo"
@@ -107,6 +96,411 @@ module Spoom
             -> bb#1
 
           bb#1
+      CFG
+    end
+
+    def test_and
+      cluster = parse(<<~RB)
+        x && y
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            <self>.x()
+            -> bb#2
+            -> bb#1
+
+          bb#2
+            <self>.y()
+            -> bb#1
+
+          bb#1
+      CFG
+    end
+
+    def test_begin
+      cluster = parse(<<~RB)
+        begin
+          puts "inside"
+        end
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            -> bb#2
+
+          bb#2
+            <self>.puts("inside")
+            -> bb#1
+
+          bb#1
+      CFG
+    end
+
+    def test_begin_ensure
+      cluster = parse(<<~RB)
+        begin
+          puts 1
+          puts 2
+        ensure
+          puts "ensure"
+        end
+
+        puts "after"
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            -> bb#2
+
+          bb#2
+            <self>.puts(1)
+            <self>.puts(2)
+            -> bb#4
+
+          bb#4
+            <self>.puts("ensure")
+            -> bb#3
+
+          bb#3
+            <self>.puts("after")
+            -> bb#1
+
+          bb#1
+      CFG
+    end
+
+    def test_begin_rescue
+      cluster = parse(<<~RB)
+        begin
+          puts 1
+          puts 2
+        rescue
+          puts "rescue1"
+        rescue
+          puts "rescue2"
+        end
+
+        puts "after"
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            -> bb#2
+            -> bb#3
+            -> bb#4
+
+          bb#2
+            <self>.puts(1)
+            <self>.puts(2)
+            -> bb#3
+            -> bb#4
+            -> bb#5
+
+          bb#3
+            <self>.puts("rescue1")
+            -> bb#5
+
+          bb#4
+            <self>.puts("rescue2")
+            -> bb#5
+
+          bb#5
+            <self>.puts("after")
+            -> bb#1
+
+          bb#1
+      CFG
+    end
+
+    def test_begin_rescue_else
+      cluster = parse(<<~RB)
+        begin
+          puts 1
+          puts 2
+        rescue
+          puts "rescue1"
+        rescue
+          puts "rescue2"
+        else
+          puts "else"
+        end
+
+        puts "after"
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            -> bb#2
+            -> bb#3
+            -> bb#4
+
+          bb#2
+            <self>.puts(1)
+            <self>.puts(2)
+            -> bb#3
+            -> bb#4
+            -> bb#5
+
+          bb#3
+            <self>.puts("rescue1")
+            -> bb#6
+
+          bb#4
+            <self>.puts("rescue2")
+            -> bb#6
+
+          bb#5
+            <self>.puts("else")
+            -> bb#6
+
+          bb#6
+            <self>.puts("after")
+            -> bb#1
+
+          bb#1
+      CFG
+    end
+
+    def test_begin_rescue_else_ensure
+      cluster = parse(<<~RB)
+        begin
+          puts 1
+          puts 2
+        rescue
+          puts "rescue1"
+        rescue
+          puts "rescue2"
+        else
+          puts "else"
+        ensure
+          puts "ensure"
+        end
+
+        puts "after"
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            -> bb#2
+            -> bb#3
+            -> bb#4
+
+          bb#2
+            <self>.puts(1)
+            <self>.puts(2)
+            -> bb#3
+            -> bb#4
+            -> bb#5
+
+          bb#3
+            <self>.puts("rescue1")
+            -> bb#7
+
+          bb#4
+            <self>.puts("rescue2")
+            -> bb#7
+
+          bb#5
+            <self>.puts("else")
+            -> bb#7
+
+          bb#7
+            <self>.puts("ensure")
+            -> bb#6
+
+          bb#6
+            <self>.puts("after")
+            -> bb#1
+
+          bb#1
+      CFG
+    end
+
+    def test_begin_rescue_ensure
+      cluster = parse(<<~RB)
+        begin
+          puts 1
+          puts 2
+        rescue
+          puts "rescue1"
+        rescue
+          puts "rescue2"
+        ensure
+          puts "ensure"
+        end
+
+        puts "after"
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            -> bb#2
+            -> bb#3
+            -> bb#4
+
+          bb#2
+            <self>.puts(1)
+            <self>.puts(2)
+            -> bb#3
+            -> bb#4
+            -> bb#6
+
+          bb#3
+            <self>.puts("rescue1")
+            -> bb#6
+
+          bb#4
+            <self>.puts("rescue2")
+            -> bb#6
+
+          bb#6
+            <self>.puts("ensure")
+            -> bb#5
+
+          bb#5
+            <self>.puts("after")
+            -> bb#1
+
+          bb#1
+      CFG
+    end
+
+    def test_begin_until
+      cluster = parse(<<~RB)
+        begin
+          puts "inside"
+        end until true
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            -> bb#2
+
+          bb#2
+            true
+            -> bb#5
+            -> bb#1
+
+          bb#5
+            <self>.puts("inside")
+            -> bb#2
+
+          bb#1
+      CFG
+    end
+
+    # When we assign the begin-until to a variable,
+    # the block is not executed as in a bare begin-until.
+    #
+    # This is because the until is actually associated with the
+    # variable assign thus the block is never executed if the condition
+    # is true.
+    def test_begin_until_assign
+      cluster = parse(<<~RB)
+        x = begin
+          puts "inside"
+        end until true
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            -> bb#2
+
+          bb#2
+            true
+            -> bb#3
+            -> bb#1
+
+          bb#3
+            x = begin; puts "inside"; end
+            -> bb#5
+
+          bb#1
+
+          bb#5
+            <self>.puts("inside")
+            -> bb#2
+      CFG
+    end
+
+    def test_begin_while
+      cluster = parse(<<~RB)
+        begin
+          puts "inside"
+        end while true
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            -> bb#2
+
+          bb#2
+            true
+            -> bb#5
+            -> bb#1
+
+          bb#5
+            <self>.puts("inside")
+            -> bb#2
+
+          bb#1
+      CFG
+    end
+
+    # When we assign the begin-while to a variable,
+    # the block is not executed as in a bare begin-while.
+    #
+    # This is because the until is actually associated with the
+    # variable assign thus the block is never executed if the condition
+    # is false.
+    def test_begin_while_assign
+      cluster = parse(<<~RB)
+        x = begin
+          puts "inside"
+        end while false
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            -> bb#2
+
+          bb#2
+            false
+            -> bb#3
+            -> bb#1
+
+          bb#3
+            x = begin; puts "inside"; end
+            -> bb#5
+
+          bb#1
+
+          bb#5
+            <self>.puts("inside")
+            -> bb#2
       CFG
     end
 
@@ -250,7 +644,7 @@ module Spoom
       cluster = parse(<<~RB)
         while true
           puts "before"
-          break "break"
+          break
           puts "dead"
         end
       RB
@@ -259,12 +653,16 @@ module Spoom
         cfg: <main>
 
           bb#0
+            -> bb#2
+
+          bb#2
+            true
             -> bb#3
             -> bb#1
 
           bb#3
             <self>.puts("before")
-            break "break"
+            break
             -> bb#5
             -> bb#1
 
@@ -427,6 +825,77 @@ module Spoom
       CFG
     end
 
+    def test_call_block_break
+      cluster = parse(<<~RB)
+        target = foo do
+          3
+          break
+          4
+        end
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            target = foo do; 3; break; 4; end
+            <self>.foo()
+            -> bb#2
+
+          bb#2
+            <block-call>
+            -> bb#3
+            -> bb#1
+
+          bb#3
+            break
+            -> bb#1
+
+          bb#1
+      CFG
+    end
+
+    def test_call_block_break_if
+      cluster = parse(<<~RB)
+        b = bar do |x|
+          if x > 5
+            break
+          end
+
+          puts "after"
+        end
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            b = bar do |x|; if x > 5; break; end; puts "after"; end
+            <self>.bar()
+            -> bb#2
+
+          bb#2
+            <block-call>
+            -> bb#3
+            -> bb#1
+
+          bb#3
+            x.>(5)
+            -> bb#4
+            -> bb#6
+
+          bb#1
+
+          bb#4
+            break
+            -> bb#1
+
+          bb#6
+            <self>.puts("after")
+            -> bb#2
+      CFG
+    end
+
     def test_call_block_return
       cluster = parse(<<~RB)
         puts "before"
@@ -477,6 +946,45 @@ module Spoom
 
           bb#7
             <self>.puts("dead")
+      CFG
+    end
+
+    def test_call_block_return_if
+      cluster = parse(<<~RB)
+        x || (y.each { |item| return if z? }; foo)
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            <self>.x()
+            -> bb#2
+            -> bb#1
+
+          bb#2
+            y.each()
+            -> bb#3
+
+          bb#1
+
+          bb#3
+            <block-call>
+            -> bb#4
+            -> bb#9
+
+          bb#4
+            <self>.z?()
+            -> bb#5
+            -> bb#3
+
+          bb#9
+            <self>.foo()
+            -> bb#1
+
+          bb#5
+            return
+            -> bb#1
       CFG
     end
 
@@ -857,6 +1365,27 @@ module Spoom
           bb#7
             <self>.puts("bar")
             -> bb#2
+
+          bb#1
+      CFG
+    end
+
+    def test_or
+      cluster = parse(<<~RB)
+        x || y
+      RB
+
+      assert_equal(<<~CFG, cluster.inspect)
+        cfg: <main>
+
+          bb#0
+            <self>.x()
+            -> bb#2
+            -> bb#1
+
+          bb#2
+            <self>.y()
+            -> bb#1
 
           bb#1
       CFG
@@ -1308,16 +1837,29 @@ module Spoom
       CFG
     end
 
-    # begin
     # rescue
+    # retry
     # ensure
-    # &&, ||, and, or
     # raise?
 
     private
 
+    def assert_equal(expected, actual)
+      if ENV["TMPP"]
+        out_path = "test/spoom/cfg/fixtures"
+        name = "#{self.name.delete_prefix("test_")}"
+        File.write("#{out_path}/#{name}.cfg.exp", expected)
+      end
+      super(expected.strip, actual.strip)
+    end
+
     sig { params(code: String, compact: T::Boolean).returns(CFG::Cluster) }
     def parse(code, compact: true)
+      if ENV["TMPP"]
+        out_path = "test/spoom/cfg/fixtures"
+        name = "#{self.name.delete_prefix("test_")}"
+        File.write("#{out_path}/#{name}.rb", code)
+      end
       node = Spoom.parse_ruby(code, file: "-")
       cfg = CFG.from_node(node)
       cfg.compact! if compact

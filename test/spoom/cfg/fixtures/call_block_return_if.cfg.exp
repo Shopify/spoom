@@ -1,0 +1,30 @@
+cfg: <main>
+
+  bb#0
+    <self>.x()
+    -> bb#2
+    -> bb#1
+
+  bb#2
+    y.each()
+    -> bb#3
+
+  bb#1
+
+  bb#3
+    <block-call>
+    -> bb#4
+    -> bb#9
+
+  bb#4
+    <self>.z?()
+    -> bb#5
+    -> bb#3
+
+  bb#9
+    <self>.foo()
+    -> bb#1
+
+  bb#5
+    return
+    -> bb#1

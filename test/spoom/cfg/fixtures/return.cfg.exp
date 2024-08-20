@@ -1,0 +1,26 @@
+cfg: <main>
+
+  bb#0
+    <self>.puts("before")
+    def foo
+    return
+    -> bb#1
+    -> bb#2
+
+  bb#1
+
+  bb#2
+    <self>.puts("dead2")
+
+cfg: foo
+
+  bb#0
+    <self>.puts("before")
+    return
+    -> bb#1
+    -> bb#2
+
+  bb#1
+
+  bb#2
+    <self>.puts("dead")

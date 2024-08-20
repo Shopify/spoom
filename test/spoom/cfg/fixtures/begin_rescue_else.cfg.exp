@@ -1,0 +1,31 @@
+cfg: <main>
+
+  bb#0
+    -> bb#2
+    -> bb#3
+    -> bb#4
+
+  bb#2
+    <self>.puts(1)
+    <self>.puts(2)
+    -> bb#3
+    -> bb#4
+    -> bb#5
+
+  bb#3
+    <self>.puts("rescue1")
+    -> bb#6
+
+  bb#4
+    <self>.puts("rescue2")
+    -> bb#6
+
+  bb#5
+    <self>.puts("else")
+    -> bb#6
+
+  bb#6
+    <self>.puts("after")
+    -> bb#1
+
+  bb#1

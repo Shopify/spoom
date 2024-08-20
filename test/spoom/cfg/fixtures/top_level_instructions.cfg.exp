@@ -1,0 +1,8 @@
+cfg: <main>
+
+  bb#0
+    <self>.puts("foo")
+    <self>.puts("bar")
+    -> bb#1
+
+  bb#1

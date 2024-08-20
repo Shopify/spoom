@@ -1,13 +1,21 @@
 # typed: true
 # frozen_string_literal: true
 
-puts "before"
-foo do |x|
+begin
+  puts "inside"
   if foo?
-    puts "will return"
-    return x
+    return
+    puts "dead"
+  else
+    return
     puts "dead"
   end
-  puts "after return"
+
+  puts "dead"
+rescue
+  puts "rescue"
+  return
+  puts "dead"
 end
+
 puts "after"

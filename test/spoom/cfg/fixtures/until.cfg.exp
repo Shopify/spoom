@@ -1,0 +1,29 @@
+cfg: <main>
+
+  bb#0
+    <self>.puts("before")
+    -> bb#2
+
+  bb#2
+    <self>.foo?()
+    -> bb#3
+    -> bb#4
+
+  bb#3
+    <self>.puts("foo")
+    -> bb#5
+
+  bb#4
+    <self>.puts("after")
+    -> bb#1
+
+  bb#5
+    <self>.bar?()
+    -> bb#6
+    -> bb#2
+
+  bb#1
+
+  bb#6
+    <self>.puts("bar")
+    -> bb#5

@@ -1,0 +1,26 @@
+cfg: <main>
+
+  bb#0
+    b = bar do |x|; if x > 5; break; end; puts "after"; end
+    <self>.bar()
+    -> bb#2
+
+  bb#2
+    <block-call>
+    -> bb#3
+    -> bb#1
+
+  bb#3
+    x.>(5)
+    -> bb#4
+    -> bb#6
+
+  bb#1
+
+  bb#4
+    break
+    -> bb#1
+
+  bb#6
+    <self>.puts("after")
+    -> bb#2

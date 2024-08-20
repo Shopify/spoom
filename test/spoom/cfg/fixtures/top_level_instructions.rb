@@ -1,0 +1,2 @@
+puts "foo"
+puts "bar"

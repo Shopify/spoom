@@ -1,0 +1,17 @@
+cfg: <main>
+
+  bb#0
+    <self>.puts("before")
+    def foo
+    <self>.puts("after")
+    -> bb#1
+
+  bb#1
+
+cfg: foo
+
+  bb#0
+    <self>.puts("foo")
+    -> bb#1
+
+  bb#1

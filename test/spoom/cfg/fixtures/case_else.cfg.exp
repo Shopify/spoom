@@ -1,0 +1,21 @@
+cfg: <main>
+
+  bb#0
+    <self>.foo()
+    -> bb#3
+    -> bb#4
+    -> bb#5
+
+  bb#3
+    <self>.puts("one")
+    -> bb#1
+
+  bb#4
+    <self>.puts("two")
+    -> bb#1
+
+  bb#5
+    <self>.puts("else")
+    -> bb#1
+
+  bb#1

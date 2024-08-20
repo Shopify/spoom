@@ -1,0 +1,19 @@
+cfg: <main>
+
+  bb#0
+    -> bb#2
+
+  bb#2
+    false
+    -> bb#3
+    -> bb#1
+
+  bb#3
+    x = begin; puts "inside"; end
+    -> bb#5
+
+  bb#1
+
+  bb#5
+    <self>.puts("inside")
+    -> bb#2
