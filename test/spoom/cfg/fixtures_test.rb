@@ -24,7 +24,7 @@ module Spoom
 
         actual_output = cfgs_cluster.inspect
 
-        if ENV["CFG_SHOW"]
+        if ENV["SHOW"]
           puts file
           puts
           puts actual_output
@@ -32,12 +32,13 @@ module Spoom
         end
 
         expected_path = File.join(dir, "#{name}.cfg")
-        assert(File.exist?(expected_path), "expectation file missing for #{file}")
-        expected_output = File.read(expected_path)
 
-        if ENV["CFG_UPDATE_FIXTURES"]
+        if ENV["UPDATE"]
           File.write(expected_path, actual_output)
         else
+          assert(File.exist?(expected_path), "expectation file missing for #{file}")
+          expected_output = File.read(expected_path)
+
           unless expected_output == actual_output
             raise <<~MSG
               CFG expectation failed
@@ -45,6 +46,8 @@ module Spoom
               #{file}
 
               #{diff(expected_output, actual_output)}
+
+              #{expected_path}
             MSG
           end
         end

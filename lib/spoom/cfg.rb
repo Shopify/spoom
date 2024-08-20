@@ -12,6 +12,7 @@ module Spoom
 
       sig { params(node: Prism::Node).returns(Cluster) }
       def from_node(node)
+        puts node.inspect
         # puts node.inspect
         walker = Walker.new
         walker.visit(node)
@@ -452,6 +453,11 @@ module Spoom
         @current_block = merge_block
       end
 
+      sig { override.params(node: Prism::ConstantReadNode).void }
+      def visit_constant_read_node(node)
+        @current_block.instructions << node
+      end
+
       sig { override.params(node: Prism::ClassNode).void }
       def visit_class_node(node)
         @current_block.instructions << node
@@ -564,6 +570,11 @@ module Spoom
         end
       end
 
+      sig { override.params(node: Prism::InstanceVariableTargetNode).void }
+      def visit_instance_variable_target_node(node)
+        @current_block.instructions << node
+      end
+
       sig { override.params(node: Prism::LocalVariableReadNode).void }
       def visit_local_variable_read_node(node)
         @current_block.instructions << node
@@ -624,6 +635,11 @@ module Spoom
 
       sig { override.params(node: Prism::SingletonClassNode).void }
       def visit_singleton_class_node(node)
+        @current_block.instructions << node
+      end
+
+      sig { override.params(node: Prism::SplatNode).void }
+      def visit_splat_node(node)
         @current_block.instructions << node
       end
 

@@ -1,7 +1,17 @@
-# typed: true
 # frozen_string_literal: true
+# typed: true
 
-begin
-rescue MyException.new.class => e
-  puts e
+class C
+  def test(x)
+    begin
+      true
+    rescue
+      begin
+        false
+      rescue
+        raise if x
+        true
+      end
+    end
+  end
 end

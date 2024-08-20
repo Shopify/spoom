@@ -1,4 +1,5 @@
 .
 --ignore=vendor/
 --ignore=test/spoom/cfg/fixtures
+--ignore=test/spoom/cfg_sorbet
 --enable-experimental-requires-ancestor
