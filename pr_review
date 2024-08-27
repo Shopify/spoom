@@ -1,0 +1,240 @@
+#!/usr/bin/env ruby
+# typed: strict
+# frozen_string_literal: true
+
+require "spoom"
+
+require "open-uri"
+require "octokit"
+
+require "net/http"
+require "json"
+require "uri"
+
+require "erb"
+
+# https://openai-proxy.shopify.io/
+module OpenAI
+  class << self
+    extend T::Sig
+
+    sig { returns(Client) }
+    def client
+      Client.new
+    end
+  end
+
+  class Client
+    extend T::Sig
+
+    sig { void }
+    def initialize
+      @token = T.let(File.read("TOKEN_OPENAI"), String)
+    end
+
+    sig { params(content: String).returns(String) }
+    def message(content)
+      uri = URI("https://proxy.shopify.ai/v3/v1/chat/completions")
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true
+
+      request = Net::HTTP::Post.new(uri)
+      request["Content-Type"] = "application/json"
+      request["Authorization"] = @token
+
+      payload = {
+        model: "anthropic:claude-3-5-sonnet",
+        messages: [
+          {
+            role: "user",
+            content: content,
+          },
+        ],
+      }
+
+      request.body = payload.to_json
+      response = http.request(request)
+
+      JSON.parse(response.body)["choices"][0]["message"]["content"]
+    end
+  end
+end
+
+module Github
+  class << self
+    extend T::Sig
+
+    sig { returns(Octokit::Client) }
+    def client
+      Octokit::Client.new(
+        user_agent: "Shopify - CodeDB",
+        bearer_token: File.read("TOKEN_GITHUB"),
+        auto_paginate: false,
+        per_page: 100,
+      )
+    end
+  end
+end
+
+class Reviewer
+  extend T::Sig
+
+  sig { params(repo: String, pr_number: String).void }
+  def initialize(repo, pr_number)
+    @repo = repo
+    @pr_number = pr_number
+  end
+
+  sig { returns(T::Hash[String, T.untyped]) }
+  def make_review
+    github = Github.client
+    pr = github.pull_request(@repo, @pr_number)
+    commit_sha = pr.head.sha
+    diff = github.pull_request_files(@repo, @pr_number)
+
+    template = ERB.new(<<~ERB).result(binding)
+      Can you do code review for this PR?
+
+      Here are some rules to follow:
+      * Act as a skilled, patient yet amicable senior developer.
+      * Be as succinct and to the point as possible.
+      * If the PR is a new feature, explain what would be the best way to implement the feature.
+      * If the PR is a refactor, explain what would be the best way to refactor the code.
+      * If the PR is a bug fix, explain what would be the best way to fix the bug.
+      * When suggesting changes, explain why the change is necessary and what problem it solves.
+      * When suggesting changes, explain how the change would improve the code.
+      * When suggesting changes, five a code snippet that shows the change.
+      * When talking about corner cases, always provide a test case that demonstrates the corner case.
+      * Format your answer as a valid JSON object and only return the JSON object:
+
+          {
+            commit_id: commit_sha,
+            body: review_content,
+            event: "COMMENT", # and nothing else
+            comments: [
+              {
+                path: "path/to/file",
+                position: 1,
+                body: "This is a comment",
+              },
+            ],
+          }
+
+
+      Title: <%= pr.title %>
+
+      Description:
+      ```md
+      <%= pr.body %>
+      ```
+
+      Diff at commit #{commit_sha}:
+
+      <% diff.each do |file| %>
+      ```diff
+      <%= file.filename %> (<%= file.status %>, +<%= file.additions %> -<%= file.deletions %>)
+      <%= file.patch %>
+      ```
+      <% end %>
+    ERB
+
+    openai = OpenAI.client
+    review_json = openai.message(template)
+    JSON.parse(review_json)
+  end
+
+  # sig { params(review_json: String).void }
+  # def post_review!(review_json)
+  # object = JSON.parse(review_json)
+  # review = github.create_pull_request_review(REPO, PR_NUMBER, object)
+
+  # puts "Review created successfully. Review ID: #{review.id}"
+  # end
+end
+
+unless ARGV.length == 2
+  puts "Usage: #{$PROGRAM_NAME} <repo> <pr_number>"
+  exit 1
+end
+
+repo, pr_number = ARGV
+
+puts repo
+repos_root = "/Users/at/src/github.com/"
+repo_path = File.join(repos_root, repo)
+
+context = Spoom::Context.new(repo_path)
+
+github = Github.client
+pr = github.pull_request(repo, pr_number)
+commit_sha = pr.head.sha
+diff = github.pull_request_files(repo, pr_number)
+
+# diff.each do |file|
+#   puts JSON.generate(context.read(file.filename))
+# end
+# exit(1)
+
+prompt = ERB.new(<<~ERB).result(binding)
+  Can you do code review for this PR?
+
+  Here are some rules to follow:
+  * Act as a skilled, patient yet amicable senior developer.
+  * Be as succinct and to the point as possible.
+  * If the PR is a new feature, explain what would be the best way to implement the feature.
+  * If the PR is a refactor, explain what would be the best way to refactor the code.
+  * If the PR is a bug fix, explain what would be the best way to fix the bug.
+  * When suggesting changes, explain why the change is necessary and what problem it solves.
+  * When suggesting changes, explain how the change would improve the code.
+  * When suggesting changes, five a code snippet that shows the change.
+  * When talking about corner cases, always provide a test case that demonstrates the corner case.
+  * Format your answer as a valid JSON object and only return the JSON object:
+
+      {
+        commit_id: #{commit_sha},
+        body: review_content,
+        event: "COMMENT", # and nothing else
+        comments: [
+          {
+            path: "path/to/file",
+            position: 1,
+            body: "This is a comment",
+          },
+        ],
+      }
+    * Do not make comments on code that is not impacted by the PR.
+    * Do not create comments if they are only positive.
+
+
+  Title: <%= pr.title %>
+
+  Description:
+  ```md
+  <%= pr.body %>
+  ```
+
+  Diff:
+
+  <% diff.each do |file| %>
+  ```diff
+  <%= file.filename %> (<%= file.status %>, +<%= file.additions %> -<%= file.deletions %>)
+  <%= file.patch %>
+  ```
+  <% end %>
+
+  Here are the files impacted by this PR:
+  <% diff.each do |file| %>
+  ~~~rb
+  <%= JSON.generate(context.read(file.filename)) %>
+  ~~~
+  <% end %>
+ERB
+
+openai = OpenAI.client
+review_json = openai.message(prompt)
+review_obj = JSON.parse(review_json)
+puts JSON.pretty_generate(review_obj)
+
+
+# TODO: move to CodeDB
+# TODO: better engineer the prompts (files? previous reviews? docs? style guide?)

@@ -11,3 +11,5 @@ group :development do
   gem "rubocop-sorbet", require: false
   gem "tapioca", require: false
 end
+
+gem "octokit", "~> 9.1"
