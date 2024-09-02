@@ -186,7 +186,7 @@ module Spoom
             if dry && command
               say("\nRun `#{command}` to bump #{files_count > 1 ? "them" : "it"}")
             elsif dry
-              say("\nRun `spoom bump --from #{from} --to #{to}` locally then `commit the changes` and `push them`")
+              say("\nRun `spoom srb bump --from #{from} --to #{to}` locally then `commit the changes` and `push them`")
             end
           end
 
