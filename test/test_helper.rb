@@ -32,6 +32,7 @@ module Spoom
         gemspec name: "spoom", path: "#{SPOOM_PATH}"
         gem "tapioca"
         gem "sorbet-static-and-runtime", "#{Sorbet::GEM_VERSION}"
+        gem "json", "2.7.2"
       GEMFILE
     end
 

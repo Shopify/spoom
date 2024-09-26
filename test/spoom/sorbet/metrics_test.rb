@@ -23,11 +23,11 @@ module Spoom
            "uuid": "some-uuid",
            "metrics": [
             {
-             "name": "ruby_typer.unknown..error.total",
+             "name": "ruby_typer.unknown.error.total",
              "value": 1
             },
             {
-             "name": "ruby_typer.unknown..types.input.sends.total",
+             "name": "ruby_typer.unknown.types.input.sends.total",
              "value": 2094
             }
            ]

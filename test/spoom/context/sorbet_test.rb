@@ -76,17 +76,10 @@ module Spoom
           capture_err: true,
           sorbet_bin: Spoom::Sorbet::BIN_PATH,
         )
-        assert_equal(<<~OUT, result.err)
-          Typechecker for Ruby
+        assert_includes(result.err, <<~OUT)
+          Sorbet: A fast, powerful typechecker designed for Ruby
           Usage:
-            sorbet [OPTION...] <path 1> <path 2> ...
-
-            -e string      Parse an inline ruby string (default: "")
-            -q, --quiet    Silence all non-critical errors
-            -v, --verbose  Verbosity level [0-3]
-            -h             Show short help
-                --help     Show long help
-                --version  Show version
+            sorbet [options] [[--] <path>...]
 
         OUT
         assert(result.status)
