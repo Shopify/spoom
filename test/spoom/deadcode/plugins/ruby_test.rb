@@ -163,6 +163,23 @@ module Spoom
           assert_dead(index, "DEAD")
         end
 
+        def test_alive_methods_with_method
+          @project.write!("foo.rb", <<~RB)
+            def alive1; end
+            def alive2; end
+
+            def dead; end
+
+            method :alive1
+            [].map(&method(:alive2))
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "alive1")
+          assert_alive(index, "alive2")
+          assert_dead(index, "dead")
+        end
+
         private
 
         sig { returns(Deadcode::Index) }

@@ -34,6 +34,9 @@ module Spoom
             if last_arg.is_a?(Prism::SymbolNode) || last_arg.is_a?(Prism::StringNode)
               @index.reference_method(last_arg.unescaped, send.location)
             end
+          when "method"
+            arg = send.args.first
+            @index.reference_method(arg.unescaped, send.location) if arg.is_a?(Prism::SymbolNode)
           end
         end
 
