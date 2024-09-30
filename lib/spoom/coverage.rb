@@ -70,8 +70,8 @@ module Spoom
           end
         end
 
-        snapshot.version_static = context.gem_version_from_gemfile_lock("sorbet-static")
-        snapshot.version_runtime = context.gem_version_from_gemfile_lock("sorbet-runtime")
+        snapshot.version_static = context.gem_version_from_gemfile_lock("sorbet-static").to_s
+        snapshot.version_runtime = context.gem_version_from_gemfile_lock("sorbet-runtime").to_s
 
         files = context.srb_files(with_config: new_config)
         snapshot.rbi_files = files.count { |file| file.end_with?(".rbi") }
