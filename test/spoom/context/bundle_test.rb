@@ -143,15 +143,15 @@ module Spoom
         STR
         assert_equal(
           "0.5.5001",
-          context.gem_version_from_gemfile_lock("sorbet"),
+          context.gem_version_from_gemfile_lock("sorbet").to_s,
         )
         assert_equal(
           "0.5.5002",
-          context.gem_version_from_gemfile_lock("sorbet-runtime"),
+          context.gem_version_from_gemfile_lock("sorbet-runtime").to_s,
         )
         assert_equal(
           "0.5.5003",
-          context.gem_version_from_gemfile_lock("sorbet-static"),
+          context.gem_version_from_gemfile_lock("sorbet-static").to_s,
         )
       end
     end

@@ -58,9 +58,9 @@ module Spoom
       # Get `gem` version from the `Gemfile.lock` content
       #
       # Returns `nil` if `gem` cannot be found in the Gemfile.
-      sig { params(gem: String).returns(T.nilable(String)) }
+      sig { params(gem: String).returns(T.nilable(Gem::Version)) }
       def gem_version_from_gemfile_lock(gem)
-        gemfile_lock_specs[gem]&.version&.to_s
+        gemfile_lock_specs[gem]&.version
       end
     end
   end
