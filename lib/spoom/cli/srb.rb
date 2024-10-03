@@ -4,6 +4,7 @@
 require_relative "srb/bump"
 require_relative "srb/coverage"
 require_relative "srb/lsp"
+require_relative "srb/sigs"
 require_relative "srb/tc"
 
 module Spoom
@@ -18,6 +19,9 @@ module Spoom
 
         desc "bump", "Change Sorbet sigils from one strictness to another when no errors"
         subcommand "bump", Spoom::Cli::Srb::Bump
+
+        desc "sigs", "Translate signatures from/to RBI and RBS"
+        subcommand "sigs", Spoom::Cli::Srb::Sigs
 
         desc "tc", "Run typechecking with advanced options"
         subcommand "tc", Spoom::Cli::Srb::Tc
