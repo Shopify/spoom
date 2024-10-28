@@ -1,0 +1,85 @@
+# typed: true
+# frozen_string_literal: true
+
+require "test_with_project"
+
+module Spoom
+  module Cli
+    module Srb
+      class SigsTest < TestWithProject
+        def setup
+          @project.bundle_install!
+        end
+
+        def test_only_supports_translation_from_rbi
+          result = @project.spoom("srb sigs translate --from rbs")
+
+          assert_equal(<<~ERR, result.err)
+            Expected '--from' to be one of rbi; got rbs
+          ERR
+          refute(result.status)
+        end
+
+        def test_only_supports_translation_to_rbs
+          result = @project.spoom("srb sigs translate --to rbi")
+
+          assert_equal(<<~ERR, result.err)
+            Expected '--to' to be one of rbs; got rbi
+          ERR
+          refute(result.status)
+        end
+
+        def test_no_files
+          result = @project.spoom("srb sigs translate --no-color")
+
+          assert_equal(<<~OUT, result.err)
+            Error: No files to translate
+          OUT
+          refute(result.status)
+        end
+
+        def test_only_selected_files
+          @project.write!("a/file1.rb", <<~RB)
+            sig { void }
+            def foo; end
+          RB
+
+          @project.write!("a/file2.rb", <<~RB)
+            sig { void }
+            def foo; end
+          RB
+
+          @project.write!("b/file1.rb", <<~RB)
+            sig { void }
+            def foo; end
+          RB
+
+          result = @project.spoom("srb sigs translate --no-color a/file1.rb b/")
+
+          assert_empty(result.err)
+          assert_equal(<<~OUT, result.out)
+            Translating signatures from `rbi` to `rbs` in `2` files...
+
+            Translated signatures in `2` files.
+          OUT
+          assert(result.status)
+
+          assert_equal(<<~RB, @project.read("a/file1.rb"))
+            #: -> void
+            def foo; end
+          RB
+
+          assert_equal(<<~RB, @project.read("a/file2.rb"))
+            sig { void }
+            def foo; end
+          RB
+
+          assert_equal(<<~RB, @project.read("b/file1.rb"))
+            #: -> void
+            def foo; end
+          RB
+        end
+      end
+    end
+  end
+end
