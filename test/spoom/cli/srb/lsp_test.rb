@@ -147,8 +147,12 @@ module Spoom
           result = @project.spoom("srb lsp --no-color hover lib/hover.rb 12 4")
           assert_equal(<<~MSG, result.out)
             Hovering `lib/hover.rb:12:4`:
+            # HoverTest#foo:
             sig { params(a: Integer).returns(String) }
             def foo(a); end
+
+            # result type:
+            String
           MSG
         end
 
