@@ -6,6 +6,7 @@ require "thor"
 require_relative "cli/helper"
 require_relative "cli/deadcode"
 require_relative "cli/srb"
+require_relative "cli/tests"
 
 module Spoom
   module Cli
@@ -77,6 +78,9 @@ module Spoom
 
         invoke(Cli::Srb::LSP, args, options)
       end
+
+      desc "tests", "Tests related commands"
+      subcommand "tests", Spoom::Cli::Tests
 
       SORT_CODE = "code"
       SORT_LOC = "loc"

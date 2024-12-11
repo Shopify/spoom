@@ -4,6 +4,9 @@
 require "sorbet-runtime"
 require "pathname"
 
+require "coverage"
+Coverage.start
+
 module Spoom
   extend T::Sig
 
