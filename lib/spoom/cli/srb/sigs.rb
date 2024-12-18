@@ -21,25 +21,11 @@ module Spoom
           say("Translating signatures from `#{from}` to `#{to}` " \
             "in `#{files.size}` file#{files.size == 1 ? "" : "s"}...\n\n")
 
-          translated_files = T.let(0, Integer)
-
-          files.each do |file|
-            contents = File.read(file)
-
-            if contents.lines.first&.start_with?("# encoding:")
-              encoding = T.must(contents.lines.first).gsub(/^#\s*encoding:\s*/, "").strip
-              contents = contents.force_encoding(encoding)
-            end
-
-            contents = Spoom::Sorbet::TranslateSigs.rbi_to_rbs(contents)
-            File.write(file, contents)
-            translated_files += 1
-          rescue RBI::Error => error
-            say_warning("Can't parse #{file}: #{error.message}")
-            next
+          transformed_files = transform_files(files) do |_file, contents|
+            Spoom::Sorbet::TranslateSigs.rbi_to_rbs(contents)
           end
 
-          say("Translated signatures in `#{translated_files}` file#{translated_files == 1 ? "" : "s"}.")
+          say("Translated signatures in `#{transformed_files}` file#{transformed_files == 1 ? "" : "s"}.")
         end
 
         desc "strip", "Strip all the signatures from the files"
@@ -64,6 +50,28 @@ module Spoom
             end
 
             files
+          end
+
+          def transform_files(files, &block)
+            transformed_count = 0
+
+            files.each do |file|
+              contents = File.read(file)
+
+              if contents.lines.first&.start_with?("# encoding:")
+                encoding = T.must(contents.lines.first).gsub(/^#\s*encoding:\s*/, "").strip
+                contents = contents.force_encoding(encoding)
+              end
+
+              contents = block.call(file, contents)
+              File.write(file, contents)
+              transformed_count += 1
+            rescue RBI::Error => error
+              say_warning("Can't parse #{file}: #{error.message}")
+              next
+            end
+
+            transformed_count
           end
         end
       end
