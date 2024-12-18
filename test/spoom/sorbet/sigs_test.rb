@@ -6,6 +6,55 @@ require "test_helper"
 module Spoom
   module Sorbet
     class SigsTest < Minitest::Test
+      # strip
+
+      def test_strip_empty
+        contents = ""
+        assert_equal(contents, Sigs.strip(contents))
+      end
+
+      def test_strip_no_sigs
+        contents = <<~RB
+          class A
+            def foo; end
+          end
+        RB
+
+        assert_equal(contents, Sigs.strip(contents))
+      end
+
+      def test_strip_sigs
+        contents = <<~RB
+          class A
+            sig { returns(Integer) }
+            attr_accessor :a
+
+            sig { void }
+            def foo; end
+
+            module B
+              sig { void }
+              sig { returns(Integer) }
+              def bar; end
+            end
+          end
+        RB
+
+        assert_equal(<<~RB, Sigs.strip(contents))
+          class A
+            attr_accessor :a
+
+            def foo; end
+
+            module B
+              def bar; end
+            end
+          end
+        RB
+      end
+
+      # translate
+
       def test_translate_empty
         contents = ""
         assert_equal(contents, Sigs.rbi_to_rbs(contents))

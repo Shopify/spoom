@@ -10,6 +10,18 @@ module Spoom
         extend T::Sig
 
         sig { params(ruby_contents: String).returns(String) }
+        def strip(ruby_contents)
+          sigs = collect_sigs(ruby_contents)
+          lines_to_strip = sigs.flat_map { |sig, _| (sig.loc&.begin_line..sig.loc&.end_line).to_a }
+
+          lines = []
+          ruby_contents.lines.each_with_index do |line, index|
+            lines << line unless lines_to_strip.include?(index + 1)
+          end
+          lines.join
+        end
+
+        sig { params(ruby_contents: String).returns(String) }
         def rbi_to_rbs(ruby_contents)
           ruby_contents = ruby_contents.dup
           sigs = collect_sigs(ruby_contents)

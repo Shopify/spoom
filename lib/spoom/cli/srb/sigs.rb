@@ -29,7 +29,16 @@ module Spoom
         end
 
         desc "strip", "Strip all the signatures from the files"
-        def strip(*path)
+        def strip(*paths)
+          files = collect_files(paths)
+
+          say("Stripping signatures from `#{files.size}` file#{files.size == 1 ? "" : "s"}...\n\n")
+
+          transformed_files = transform_files(files) do |_file, contents|
+            Spoom::Sorbet::Sigs.strip(contents)
+          end
+
+          say("Stripped signatures from `#{transformed_files}` file#{transformed_files == 1 ? "" : "s"}.")
         end
 
         no_commands do
@@ -57,9 +66,10 @@ module Spoom
 
             files.each do |file|
               contents = File.read(file)
+              first_line = contents.lines.first
 
-              if contents.lines.first&.start_with?("# encoding:")
-                encoding = T.must(contents.lines.first).gsub(/^#\s*encoding:\s*/, "").strip
+              if first_line&.start_with?("# encoding:")
+                encoding = T.must(first_line).gsub(/^#\s*encoding:\s*/, "").strip
                 contents = contents.force_encoding(encoding)
               end
 
