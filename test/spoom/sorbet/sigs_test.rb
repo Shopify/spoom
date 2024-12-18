@@ -5,23 +5,23 @@ require "test_helper"
 
 module Spoom
   module Sorbet
-    class TranslateSigsTest < Minitest::Test
-      def test_empty
+    class SigsTest < Minitest::Test
+      def test_translate_empty
         contents = ""
-        assert_equal(contents, TranslateSigs.rbi_to_rbs(contents))
+        assert_equal(contents, Sigs.rbi_to_rbs(contents))
       end
 
-      def test_no_sigs
+      def test_translate_no_sigs
         contents = <<~RBI
           class A
             def foo; end
           end
         RBI
 
-        assert_equal(contents, TranslateSigs.rbi_to_rbs(contents))
+        assert_equal(contents, Sigs.rbi_to_rbs(contents))
       end
 
-      def test_top_level_sig
+      def test_translate_top_level_sig
         contents = <<~RBI
           # typed: true
 
@@ -31,7 +31,7 @@ module Spoom
           end
         RBI
 
-        assert_equal(<<~RBS, TranslateSigs.rbi_to_rbs(contents))
+        assert_equal(<<~RBS, Sigs.rbi_to_rbs(contents))
           # typed: true
 
           #: (Integer a, Integer b) -> Integer
@@ -41,7 +41,7 @@ module Spoom
         RBS
       end
 
-      def test_method_sigs
+      def test_translate_method_sigs
         contents = <<~RBI
           class A
             sig { params(a: Integer).void }
@@ -56,7 +56,7 @@ module Spoom
           end
         RBI
 
-        assert_equal(<<~RBS, TranslateSigs.rbi_to_rbs(contents))
+        assert_equal(<<~RBS, Sigs.rbi_to_rbs(contents))
           class A
             #: (Integer a) -> void
             def initialize(a)
@@ -71,7 +71,7 @@ module Spoom
         RBS
       end
 
-      def test_singleton_method_sigs
+      def test_translate_singleton_method_sigs
         contents = <<~RBI
           class A
             sig { returns(Integer) }
@@ -81,7 +81,7 @@ module Spoom
           end
         RBI
 
-        assert_equal(<<~RBS, TranslateSigs.rbi_to_rbs(contents))
+        assert_equal(<<~RBS, Sigs.rbi_to_rbs(contents))
           class A
             #: -> Integer
             def self.foo
@@ -91,7 +91,7 @@ module Spoom
         RBS
       end
 
-      def test_attr_sigs
+      def test_translate_attr_sigs
         contents = <<~RBI
           class A
             sig { returns(Integer) }
@@ -105,7 +105,7 @@ module Spoom
           end
         RBI
 
-        assert_equal(<<~RBS, TranslateSigs.rbi_to_rbs(contents))
+        assert_equal(<<~RBS, Sigs.rbi_to_rbs(contents))
           class A
             #: Integer
             attr_accessor :a

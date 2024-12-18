@@ -1,7 +1,7 @@
 # typed: true
 # frozen_string_literal: true
 
-require "spoom/sorbet/translate_sigs"
+require "spoom/sorbet/sigs"
 
 module Spoom
   module Cli
@@ -22,7 +22,7 @@ module Spoom
             "in `#{files.size}` file#{files.size == 1 ? "" : "s"}...\n\n")
 
           transformed_files = transform_files(files) do |_file, contents|
-            Spoom::Sorbet::TranslateSigs.rbi_to_rbs(contents)
+            Spoom::Sorbet::Sigs.rbi_to_rbs(contents)
           end
 
           say("Translated signatures in `#{transformed_files}` file#{transformed_files == 1 ? "" : "s"}.")

@@ -5,7 +5,7 @@ require "rbi"
 
 module Spoom
   module Sorbet
-    class TranslateSigs
+    class Sigs
       class << self
         extend T::Sig
 
