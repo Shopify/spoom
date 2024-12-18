@@ -33,7 +33,7 @@ module Spoom
           result = @project.spoom("srb sigs translate --no-color")
 
           assert_equal(<<~OUT, result.err)
-            Error: No files to translate
+            Error: No files to transform
           OUT
           refute(result.status)
         end

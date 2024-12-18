@@ -7,6 +7,7 @@ module Spoom
   module Cli
     module Srb
       class Sigs < Thor
+        extend T::Sig
         include Helper
 
         desc "translate", "Translate signatures from/to RBI and RBS"
@@ -15,20 +16,7 @@ module Spoom
         def translate(*paths)
           from = options[:from]
           to = options[:to]
-          paths << "." if paths.empty?
-
-          files = paths.flat_map do |path|
-            if File.file?(path)
-              [path]
-            else
-              Dir.glob("#{path}/**/*.rb")
-            end
-          end
-
-          if files.empty?
-            say_error("No files to translate")
-            exit(1)
-          end
+          files = collect_files(paths)
 
           say("Translating signatures from `#{from}` to `#{to}` " \
             "in `#{files.size}` file#{files.size == 1 ? "" : "s"}...\n\n")
@@ -52,6 +40,31 @@ module Spoom
           end
 
           say("Translated signatures in `#{translated_files}` file#{translated_files == 1 ? "" : "s"}.")
+        end
+
+        desc "strip", "Strip all the signatures from the files"
+        def strip(*path)
+        end
+
+        no_commands do
+          def collect_files(paths)
+            paths << "." if paths.empty?
+
+            files = paths.flat_map do |path|
+              if File.file?(path)
+                [path]
+              else
+                Dir.glob("#{path}/**/*.rb")
+              end
+            end
+
+            if files.empty?
+              say_error("No files to transform")
+              exit(1)
+            end
+
+            files
+          end
         end
       end
     end
