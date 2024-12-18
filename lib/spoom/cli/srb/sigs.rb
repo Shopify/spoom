@@ -29,7 +29,16 @@ module Spoom
         end
 
         desc "strip", "Strip all the signatures from the files"
-        def strip(*path)
+        def strip(*paths)
+          files = collect_files(paths)
+
+          say("Stripping signatures from `#{files.size}` file#{files.size == 1 ? "" : "s"}...\n\n")
+
+          transformed_files = transform_files(files) do |_file, contents|
+            Spoom::Sorbet::Sigs.strip(contents)
+          end
+
+          say("Stripped signatures from `#{transformed_files}` file#{transformed_files == 1 ? "" : "s"}.")
         end
 
         no_commands do

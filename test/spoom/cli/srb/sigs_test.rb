@@ -11,6 +11,39 @@ module Spoom
           @project.bundle_install!
         end
 
+        # strip
+
+        def test_strip_sigs
+          @project.write!("a/file1.rb", <<~RB)
+            sig { void }
+            def foo; end
+
+            class B
+              sig { void }
+              def bar; end
+            end
+          RB
+
+          result = @project.spoom("srb sigs strip --no-color")
+
+          assert_equal(<<~OUT, result.out)
+            Stripping signatures from `1` file...
+
+            Stripped signatures from `1` file.
+          OUT
+          assert(result.status)
+
+          assert_equal(<<~RB, @project.read("a/file1.rb"))
+            def foo; end
+
+            class B
+              def bar; end
+            end
+          RB
+        end
+
+        # translate
+
         def test_only_supports_translation_from_rbi
           result = @project.spoom("srb sigs translate --from rbs")
 
