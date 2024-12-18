@@ -12,12 +12,7 @@ module Spoom
         sig { params(ruby_contents: String).returns(String) }
         def rbi_to_rbs(ruby_contents)
           ruby_contents = ruby_contents.dup
-
-          tree = RBI::Parser.parse_string(ruby_contents)
-
-          visitor = SigsLocator.new
-          visitor.visit(tree)
-          sigs = visitor.sigs.sort_by { |sig, _rbs_string| -T.must(sig.loc&.begin_line) }
+          sigs = collect_sigs(ruby_contents)
 
           sigs.each do |sig, node|
             scanner = Scanner.new(ruby_contents)
@@ -33,6 +28,16 @@ module Spoom
           end
 
           ruby_contents
+        end
+
+        private
+
+        sig { params(ruby_contents: String).returns(T::Array[[RBI::Sig, T.any(RBI::Method, RBI::Attr)]]) }
+        def collect_sigs(ruby_contents)
+          tree = RBI::Parser.parse_string(ruby_contents)
+          visitor = SigsLocator.new
+          visitor.visit(tree)
+          visitor.sigs.sort_by { |sig, _rbs_string| -T.must(sig.loc&.begin_line) }
         end
       end
 
