@@ -101,13 +101,22 @@ module Spoom
             out = StringIO.new
             p = RBI::RBSPrinter.new(out: out, indent: sig.loc&.begin_column)
 
+            if node.sigs.any?(&:is_final)
+              p.printn("# @final")
+              p.printt
+            end
+
             if node.sigs.any?(&:is_abstract)
               p.printn("# @abstract")
               p.printt
             end
 
             if node.sigs.any?(&:is_override)
-              p.printn("# @override")
+              if node.sigs.any?(&:allow_incompatible_override)
+                p.printn("# @override(allow_incompatible: true)")
+              else
+                p.printn("# @override")
+              end
               p.printt
             end
 
