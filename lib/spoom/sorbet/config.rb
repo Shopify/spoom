@@ -148,7 +148,7 @@ module Spoom
 
         sig { params(line: String).returns(String) }
         def parse_option(line)
-          T.must(line.split("=").last).strip
+          "\"#{T.must(line.split("=").last).strip}\""
         end
       end
     end
