@@ -101,9 +101,6 @@ module Spoom
             when /^--ignore$/
               state = :ignore
               next
-            when /^--ignore=/
-              config.ignore << parse_option(line)
-              next
             when /^--file$/
               next
             when /^--file=/
