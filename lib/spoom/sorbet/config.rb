@@ -95,9 +95,6 @@ module Spoom
             when /^--allowed-extension=/
               config.allowed_extensions << parse_option(line)
               next
-            when /^--ignore=/
-              config.ignore << parse_option(line)
-              next
             when /^--ignore$/
               state = :ignore
               next
