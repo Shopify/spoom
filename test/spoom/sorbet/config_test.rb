@@ -207,7 +207,12 @@ module Spoom
           --allowed-extension=.rb
           --no-stdlib
         CONFIG
-        assert_equal(". --ignore .git/ --ignore vendor/ --allowed-extension .rb --no-stdlib", config.options_string)
+        expected = "'.' " \
+          "--ignore '.git/' " \
+          "--ignore 'vendor/' " \
+          "--allowed-extension '.rb' " \
+          "--no-stdlib"
+        assert_equal(expected, config.options_string)
       end
     end
   end
