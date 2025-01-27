@@ -67,9 +67,9 @@ module Spoom
       sig { returns(String) }
       def options_string
         opts = []
-        opts.concat(paths)
-        opts.concat(ignore.map { |p| "--ignore #{p}" })
-        opts.concat(allowed_extensions.map { |ext| "--allowed-extension #{ext}" })
+        opts.concat(paths.map { |p| "'#{p}'" })
+        opts.concat(ignore.map { |p| "--ignore '#{p}'" })
+        opts.concat(allowed_extensions.map { |ext| "--allowed-extension '#{ext}'" })
         opts << "--no-stdlib" if @no_stdlib
         opts.join(" ")
       end

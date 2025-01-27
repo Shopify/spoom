@@ -488,6 +488,41 @@ module Spoom
           assert_equal("fake-branch", @project.git_current_branch)
         end
 
+        def test_config_options_string
+          # Add ignore path to config to test config options string
+          @project.write!("sorbet/config", "\n--ignore=lib/a.rb\n--ignore=*.rb", append: true)
+
+          result = @project.spoom("srb coverage snapshot")
+          out = censor_sorbet_version(result.out)
+          assert_equal(<<~MSG, out)
+            Sorbet static: X.X.XXXX
+            Sorbet runtime: X.X.XXXX
+
+            Content:
+              files: 3
+              files excluding rbis: 2
+              modules: 3
+              classes: 1
+              methods: 9
+              methods excluding rbis: 9
+
+            Sigils:
+              true: 3 (100%)
+
+            Methods:
+              with signature: 2 (22%)
+              without signature: 7 (78%)
+
+            Methods excluding RBIs
+              with signature: 2 (22%)
+              without signature: 7 (78%)
+
+            Calls:
+              typed: 4 (67%)
+              untyped: 2 (33%)
+          MSG
+        end
+
         private
 
         def create_git_history!
