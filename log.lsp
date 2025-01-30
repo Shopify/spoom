@@ -1,0 +1,359 @@
+getTaskForMessage
+here
+method: initialize
+getTaskForMessage
+here
+method: initialized
+getTaskForMessage
+here
+method: textDocument/hover
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+runLSP
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+runLSP
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+runLSP
+readerThread
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+readerThread
+getTaskForMessage
+here
+method: initialized
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+readerThread
+runLSP
+readerThread
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+readerThread
+runLSP
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+runLSP
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+runLSP
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+runLSP
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: sorbet/error
+runLSP
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: sorbet/error
+runLSP
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: sorbet/error
+runLSP
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: sorbet/error
+runLSP
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+runLSP
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: sorbet/error
+runLSP
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+runLSP
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+runLSP
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+runLSP
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+runLSP
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+runLSP
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+runLSP
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: sorbet/error
+runLSP
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover
+runLSP
+readerThread
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialize
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: initialized
+preprocessAndEnqueue
+getTaskForMessage
+here
+method: textDocument/hover

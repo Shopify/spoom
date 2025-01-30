@@ -29,6 +29,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency("minitest-reporters")
   spec.add_development_dependency("rake", "~> 13.2.1")
 
+  spec.add_dependency("base64", ">= 0.1.1")
   spec.add_dependency("erubi", ">= 1.10.0")
   spec.add_dependency("prism", ">= 0.28.0")
   spec.add_dependency("rbi", ">= 0.2.3")

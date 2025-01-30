@@ -12,6 +12,7 @@ module Spoom
   module LSP
     class Client
       extend T::Sig
+      include Colorize
 
       sig { params(sorbet_bin: String, sorbet_args: String, path: String).void }
       def initialize(sorbet_bin, *sorbet_args, path: ".")
@@ -21,6 +22,21 @@ module Spoom
         @in = T.let(io_in, IO)
         @out = T.let(io_out, IO)
         @err = T.let(io_err, IO)
+
+        Thread.new do
+          while IO.select([@err], nil, nil, 0.1)
+            begin
+              chunk = @err.read_nonblock(4096)
+              $stderr.puts set_color(chunk, Color::LIGHT_BLACK) unless chunk.empty?
+            rescue IO::WaitReadable
+              # Nothing to read right now, continue
+              break
+            rescue EOFError
+              # Stream has been closed
+              break
+            end
+          end
+        end
       end
 
       sig { returns(Integer) }
@@ -30,7 +46,8 @@ module Spoom
 
       sig { params(json_string: String).void }
       def send_raw(json_string)
-        @in.puts("Content-Length:#{json_string.length}\r\n\r\n#{json_string}")
+        # puts "sending: #{json_string}"
+        @in.puts("Content-Length:#{json_string.bytesize}\r\n\r\n#{json_string}")
       end
 
       sig { params(message: Message).returns(T.nilable(T::Hash[T.untyped, T.untyped])) }
@@ -41,7 +58,23 @@ module Spoom
 
       sig { returns(T.nilable(String)) }
       def read_raw
+        # puts "reading..."
         header = @out.gets
+
+        # header = +""
+        # while IO.select([@out], nil, nil, 0.1)
+        #   begin
+        #     c = @out.read_nonblock(1)
+        #     header << c
+        #     break if c == "\n"
+        #   rescue IO::WaitReadable
+        #     # Nothing to read right now, continue
+        #     break
+        #   rescue EOFError
+        #     # Stream has been closed
+        #     break
+        #   end
+        # end
 
         # Sorbet returned an error and forgot to answer
         raise Error::BadHeaders, "bad response headers" unless header&.match?(/Content-Length: /)

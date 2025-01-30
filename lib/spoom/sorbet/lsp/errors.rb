@@ -43,7 +43,7 @@ module Spoom
       sig { returns(Integer) }
       attr_reader :code
 
-      sig { returns(T::Hash[T.untyped, T.untyped]) }
+      sig { returns(T.nilable(T::Hash[T.untyped, T.untyped])) }
       attr_reader :data
 
       class << self
@@ -59,7 +59,7 @@ module Spoom
         end
       end
 
-      sig { params(code: Integer, message: String, data: T::Hash[T.untyped, T.untyped]).void }
+      sig { params(code: Integer, message: String, data: T.nilable(T::Hash[T.untyped, T.untyped])).void }
       def initialize(code, message, data)
         super(message)
         @code = code

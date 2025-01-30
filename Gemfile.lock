@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     spoom (1.5.2)
+      base64 (>= 0.1.1)
       erubi (>= 1.10.0)
       prism (>= 0.28.0)
       rbi (>= 0.2.3)
@@ -13,6 +14,7 @@ GEM
   specs:
     ansi (1.5.0)
     ast (2.4.2)
+    base64 (0.2.0)
     benchmark (0.4.0)
     builder (3.3.0)
     date (3.4.1)

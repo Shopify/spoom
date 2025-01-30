@@ -6,7 +6,7 @@ require "thor"
 require_relative "cli/helper"
 require_relative "cli/deadcode"
 require_relative "cli/srb"
-
+require_relative "cli/stubs"
 module Spoom
   module Cli
     class Main < Thor
@@ -96,6 +96,9 @@ module Spoom
 
         invoke(Cli::Srb::Tc, :tc, paths_to_select, options)
       end
+
+      desc "stubs", "Check stubs"
+      subcommand "stubs", Spoom::Cli::Stubs
 
       desc "--version", "Show version"
       def __print_version
