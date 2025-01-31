@@ -31,7 +31,7 @@ class IdentityClient
   extend T::Sig
 
   sig { params(session: Session).returns(IdentityResult) }
-  def self.check_identity_session(session)
+  def check_identity_session(session)
     IdentityResult.new(success: true)
   end
 end

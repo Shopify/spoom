@@ -8,15 +8,22 @@ module Spoom
   class LSPClient
     class Error < StandardError; end
 
-    def initialize(command)
+    def initialize(command, *args)
       @command = command
       @request_id = 0
-      @stdin, @stdout, @stderr, @wait_thread = Open3.popen3(command)
+      @stdin, @stdout, @stderr, @wait_thread = T.unsafe(Open3).popen3(command, *args)
       @response_handlers = {}
       @diagnostic_handlers = []
 
       # Start reading responses in a separate thread
       @reader_thread = Thread.new { read_responses }
+
+      # Start reading stderr in a separate thread
+      @error_thread = Thread.new do
+        while (line = @stderr.gets)
+          $stderr.puts(line)
+        end
+      end
     end
 
     # Send a request to the LSP server and wait for response\
@@ -71,6 +78,7 @@ module Spoom
       request("shutdown")
       notify("exit")
       @reader_thread.kill
+      @error_thread.kill
       @stdin.close
       @stdout.close
       @stderr.close

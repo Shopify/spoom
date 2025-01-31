@@ -38,14 +38,6 @@ module Spoom
         @returns_node = returns_node
       end
 
-      sig { returns(T.nilable(Spoom::Location)) }
-      def returns_location
-        node_location = @returns_node&.location
-        return unless node_location
-
-        Spoom::Location.from_prism(@location.file, node_location)
-      end
-
       sig { returns(String) }
       def to_s
         <<~STR

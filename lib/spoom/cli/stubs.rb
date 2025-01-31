@@ -1,6 +1,7 @@
 # typed: true
 # frozen_string_literal: true
 
+require_relative "../lsp_client"
 require_relative "../stubs"
 
 module Spoom
@@ -50,8 +51,52 @@ module Spoom
       sig { params(path: String).void }
       def check(path = ".")
         say("Starting LSP client...")
-        lsp_client = T.let(self.lsp_client(path), Spoom::LSP::Client)
+        lsp_client = Spoom::LSPClient.new(
+          Spoom::Sorbet::BIN_PATH,
+          "--lsp",
+          # "--enable-all-experimental-lsp-features",
+          "--disable-watchman",
+          # "--debug-log-file=lsp.log",
+          # "-v",
+          # "-v",
+          # "-v",
+        )
+
+        stubs_ids = T.let({}, T::Hash[Integer, Spoom::Stubs::Call])
+
+        lsp_client.on_diagnostics do |diagnostic|
+          # puts diagnostic["uri"]
+          # diagnostic["diagnostics"].each do |d|
+          #   puts "#{diagnostic["uri"]}:#{d["range"]["start"]["line"]}: #{d["message"]}"
+          # end
+
+          stub = T.must(stubs_ids[diagnostic["uri"].split("/").last.to_i])
+          say_error("Stub `#{stub.location}` has errors:")
+          diagnostic["diagnostics"].each do |error|
+            warn("         * #{highlight(error["message"])} (#{error["code"]})")
+          end
+        end
+
+        lsp_client.request("initialize", {
+          rootPath: File.expand_path(path),
+          rootUri: "file://#{File.expand_path(path)}",
+          capabilities: {},
+        })
+
+        lsp_client.notify("initialized", {})
         say("Started LSP client")
+
+        # say("Starting LSP client...")
+        # lsp_client = T.let(self.lsp_client(path), Spoom::LSP::Client)
+        # say("Started LSP client")
+
+        # puts lsp_client.request(
+        #   "textDocument/hover",
+        #   {
+        #     textDocument: { uri: "file:///#{File.expand_path(path)}/lib/spoom/cli/stubs.rb" },
+        #     position: { line: 137, character: 31 },
+        #   },
+        # )
 
         # lsp_client.hover(
         #   to_uri(
@@ -74,7 +119,7 @@ module Spoom
           ruby = File.read(file)
           node = Spoom.parse_ruby(ruby, file: file)
 
-          file = file.delete_prefix(path)
+          # file = file.delete_prefix(path)
           visitor = Spoom::Stubs::Collector.new(file)
           visitor.visit(node)
 
@@ -83,9 +128,11 @@ module Spoom
         say("Collected `#{stubs.size}` stubs")
 
         say("Checking `#{stubs.size}` stubs...")
-        checker = Spoom::Stubs::Checker.new(path, lsp_client, 4)
+        checker = Spoom::Stubs::Checker.new(File.expand_path(path), lsp_client, 4)
         stubs.each_with_index do |stub, index|
-          say("Checking stub `#{index + 1}/#{stubs.size}`")
+          stubs_ids[stub.object_id] = stub
+
+          say("Checking stub `#{index + 1}/#{stubs.size}`") if index % 100 == 0
 
           errors = checker.check(stub)
           next if errors.empty?
@@ -141,9 +188,9 @@ module Spoom
             Spoom::Sorbet::BIN_PATH,
             "--lsp",
             # "--no-config",
-            "--enable-all-experimental-lsp-features",
+            # "--enable-all-experimental-lsp-features",
             "--disable-watchman",
-            "--debug-log-file=lsp.log",
+            # "--debug-log-file=lsp.log",
             # ".",
             # "-v",
             # "-v",
@@ -161,3 +208,9 @@ module Spoom
     end
   end
 end
+
+# TODO: collect namespaces
+# TODO: create check file
+# TODO: run typechecking
+# TODO: collect diagnostics
+# TODO: print diagnostics
