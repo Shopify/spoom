@@ -24,6 +24,9 @@ module Spoom
       sig { returns(T.nilable(Prism::Node)) }
       attr_reader :returns_node
 
+      sig { returns(T::Boolean) }
+      attr_accessor :any_instance
+
       sig do
         params(
           location: Spoom::Location,
@@ -32,15 +35,17 @@ module Spoom
           expects_node: T.nilable(Prism::Node),
           with_nodes: T::Array[Prism::Node],
           returns_node: T.nilable(Prism::Node),
+          any_instance: T::Boolean,
         ).void
       end
-      def initialize(location:, nesting:, receiver_node:, expects_node:, with_nodes:, returns_node:)
+      def initialize(location:, nesting:, receiver_node:, expects_node:, with_nodes:, returns_node:, any_instance:)
         @location = location
         @nesting = nesting
         @receiver_node = receiver_node
         @expects_node = expects_node
         @with_nodes = with_nodes
         @returns_node = returns_node
+        @any_instance = any_instance
       end
 
       sig { returns(String) }
@@ -51,6 +56,7 @@ module Spoom
               .#{@expects_node&.slice}
               .with(#{@with_nodes.map(&:to_s).join(", ")})
               .returns(#{@returns_node&.slice})
+              #{@any_instance ? ".any_instance" : ""}
         STR
       end
     end

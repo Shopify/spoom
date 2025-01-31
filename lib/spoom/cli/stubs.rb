@@ -65,15 +65,24 @@ module Spoom
         stubs_ids = T.let({}, T::Hash[Integer, Spoom::Stubs::Call])
 
         lsp_client.on_diagnostics do |diagnostic|
+          stub = T.must(stubs_ids[diagnostic["uri"].split("/").last.to_i])
+          next if diagnostic["diagnostics"].reject { |d| d["code"] == 7004 && stub.with_nodes.empty? }.empty?
+
           # puts diagnostic["uri"]
           # diagnostic["diagnostics"].each do |d|
           #   puts "#{diagnostic["uri"]}:#{d["range"]["start"]["line"]}: #{d["message"]}"
           # end
-
-          stub = T.must(stubs_ids[diagnostic["uri"].split("/").last.to_i])
           say_error("Stub `#{stub.location}` has errors:")
           diagnostic["diagnostics"].each do |error|
+            next if error["code"] == 7004 && stub.with_nodes.empty?
+
             warn("         * #{highlight(error["message"])} (#{error["code"]})")
+            next unless error["code"] == 7001
+
+            error["relatedInformation"].each do |related_info|
+              message = related_info["message"]
+              warn("            * #{highlight(message)}") unless message.empty?
+            end
           end
         end
 
@@ -136,6 +145,8 @@ module Spoom
 
           checker.check(stub)
         end
+
+        sleep(1)
       end
 
       no_commands do
@@ -201,8 +212,9 @@ module Spoom
   end
 end
 
-# TODO: collect namespaces
 # TODO: create check file
 # TODO: run typechecking
 # TODO: collect diagnostics
 # TODO: print diagnostics
+#   TODO: reject error Mocha::Mock
+#   TODO: reject error T.untyped

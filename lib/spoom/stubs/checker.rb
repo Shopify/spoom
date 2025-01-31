@@ -15,17 +15,18 @@ module Spoom
           receiver_type: String,
           method_name: String,
           arg_types: T::Array[String],
-          return_type: String,
+          return_type: T.nilable(String),
+          any_instance: T::Boolean,
         ).void
       end
-      def initialize(id:, nesting:, receiver_type:, method_name:, arg_types:, return_type:)
+      def initialize(id:, nesting:, receiver_type:, method_name:, arg_types:, return_type:, any_instance:)
         @id = id
         @nesting = nesting
         @receiver_type = receiver_type
         @method_name = method_name
         @arg_types = arg_types
         @return_type = return_type
-
+        @any_instance = any_instance
         @printer = T.let(Printer.new(out: StringIO.new), Printer)
       end
 
@@ -50,28 +51,41 @@ module Spoom
         @printer.printn
 
         @printer.printt
-        @printer.print("sig { params(stub_recv: #{@receiver_type}")
+        @printer.print("sig { params(recv: ")
+        if @any_instance
+          @printer.print(@receiver_type)
+        else
+          @printer.print("T.class_of(#{@receiver_type})")
+        end
         @arg_types.each_with_index do |type, i|
           @printer.print(", arg#{i}: #{type}")
         end
-        @printer.print(").returns(#{@return_type}) }")
+        @printer.print(", ret: #{@return_type}") if @return_type
+        @printer.print(").void }")
         @printer.printn
 
         @printer.printt
-        @printer.print("def check_stub_#{@id}(stub_recv")
+        @printer.print("def check_stub_#{@id}(recv")
         @arg_types.each_with_index do |_type, i|
           @printer.print(", arg#{i}")
         end
+        @printer.print(", ret") if @return_type
         @printer.print(")")
         @printer.printn
         @printer.indent
         @printer.printt
-        @printer.print("stub_recv.#{@method_name}(")
+        @printer.print("res = ") if @return_type
+        @printer.print("recv.#{@method_name}(")
         @arg_types.each_with_index do |_type, i|
           @printer.print(", ") if i > 0
           @printer.print("arg#{i}")
         end
         @printer.print(")")
+        if @return_type
+          @printer.printn
+          @printer.printt
+          @printer.print("[].each { res = ret }")
+        end
         @printer.printn
         @printer.dedent
         @printer.printt
@@ -156,6 +170,11 @@ module Spoom
           return []
         end
 
+        case returns_type
+        when "T.untyped", "Mocha::Mock"
+          returns_type = nil
+        end
+
         stub_check = StubCheck.new(
           id: stub.object_id,
           nesting: stub.nesting,
@@ -163,11 +182,12 @@ module Spoom
           method_name: method_name,
           arg_types: arg_types,
           return_type: returns_type,
+          any_instance: stub.any_instance,
         )
-        snippet = stub_check.snippet
+        # snippet = stub_check.snippet
 
-        puts snippet
-        send_snippet(stub, snippet)
+        # puts snippet
+        # send_snippet(stub, snippet)
 
         # diagnostics = pull_diagnostics
         # diagnostics.each do |diagnostic|

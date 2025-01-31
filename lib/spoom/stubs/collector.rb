@@ -78,6 +78,7 @@ module Spoom
         expects_node = T.let(nil, T.nilable(Prism::Node))
         returns_node = T.let(nil, T.nilable(Prism::Node))
         with_nodes = T.let([], T::Array[Prism::Node])
+        any_instance = T.let(false, T::Boolean)
 
         receiver = T.let(node, T.nilable(Prism::Node))
         while receiver.is_a?(Prism::CallNode)
@@ -88,6 +89,8 @@ module Spoom
             with_nodes = receiver.arguments&.arguments || []
           when :expects, :stubs
             expects_node = receiver.arguments&.arguments&.first
+          when :any_instance
+            any_instance = true
           end
 
           receiver = receiver.receiver
@@ -106,6 +109,7 @@ module Spoom
           expects_node: expects_node,
           with_nodes: with_nodes,
           returns_node: returns_node,
+          any_instance: any_instance,
         )
       end
 
