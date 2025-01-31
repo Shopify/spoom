@@ -9,6 +9,9 @@ module Spoom
       sig { returns(Spoom::Location) }
       attr_reader :location
 
+      sig { returns(T::Array[T.any(Prism::ClassNode, Prism::ModuleNode)]) }
+      attr_reader :nesting
+
       sig { returns(T.nilable(Prism::Node)) }
       attr_reader :receiver_node
 
@@ -24,14 +27,16 @@ module Spoom
       sig do
         params(
           location: Spoom::Location,
+          nesting: T::Array[T.any(Prism::ClassNode, Prism::ModuleNode)],
           receiver_node: T.nilable(Prism::Node),
           expects_node: T.nilable(Prism::Node),
           with_nodes: T::Array[Prism::Node],
           returns_node: T.nilable(Prism::Node),
         ).void
       end
-      def initialize(location:, receiver_node:, expects_node:, with_nodes:, returns_node:)
+      def initialize(location:, nesting:, receiver_node:, expects_node:, with_nodes:, returns_node:)
         @location = location
+        @nesting = nesting
         @receiver_node = receiver_node
         @expects_node = expects_node
         @with_nodes = with_nodes

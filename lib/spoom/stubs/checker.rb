@@ -5,75 +5,113 @@ require "base64"
 
 module Spoom
   module Stubs
-    class StubError
-      extend T::Sig
-
-      sig { returns(String) }
-      attr_reader :message
-
-      sig { returns(Integer) }
-      attr_reader :code
-
-      sig { params(message: String, code: Integer).void }
-      def initialize(message, code)
-        @message = message
-        @code = code
-      end
-    end
-
     class StubCheck
       extend T::Sig
 
       sig do
         params(
           id: Integer,
+          nesting: T::Array[T.any(Prism::ClassNode, Prism::ModuleNode)],
           receiver_type: String,
           method_name: String,
           arg_types: T::Array[String],
           return_type: String,
         ).void
       end
-      def initialize(id, receiver_type, method_name, arg_types, return_type)
+      def initialize(id:, nesting:, receiver_type:, method_name:, arg_types:, return_type:)
         @id = id
+        @nesting = nesting
         @receiver_type = receiver_type
         @method_name = method_name
         @arg_types = arg_types
         @return_type = return_type
-      end
 
-      sig { returns(String) }
-      def signature
-        sig = +"sig { params(stub_recv: #{@receiver_type}"
-        @arg_types.each_with_index do |type, i|
-          sig << ", arg#{i}: #{type}"
-        end
-        sig << ").returns(#{@return_type}) }"
-        sig
-      end
-
-      sig { returns(String) }
-      def definition
-        rb = +"def check_stub_#{@id}(stub_recv"
-        @arg_types.each_with_index do |_type, i|
-          rb << ", arg#{i}"
-        end
-        rb << ")\n"
-        rb << "  stub_recv.#{@method_name}(#{@arg_types.map.with_index { |_type, i| "arg#{i}" }.join(", ")})\n"
-        rb << "end\n"
-        rb
+        @printer = T.let(Printer.new(out: StringIO.new), Printer)
       end
 
       sig { returns(String) }
       def snippet
-        <<~RUBY
-          # typed: strict
-          # frozen_string_literal: true
+        @printer.printl("# typed: strict")
+        @printer.printl("# frozen_string_literal: true")
+        @printer.printn
 
-          extend T::Sig
+        @nesting.each do |node|
+          kind = case node
+          when Prism::ClassNode
+            "class"
+          when Prism::ModuleNode
+            "module"
+          end
+          @printer.printl("#{kind} #{node.constant_path.slice}")
+          @printer.indent
+        end
 
-          #{signature}
-          #{definition}
-        RUBY
+        @printer.printl("extend T::Sig")
+        @printer.printn
+
+        @printer.printt
+        @printer.print("sig { params(stub_recv: #{@receiver_type}")
+        @arg_types.each_with_index do |type, i|
+          @printer.print(", arg#{i}: #{type}")
+        end
+        @printer.print(").returns(#{@return_type}) }")
+        @printer.printn
+
+        @printer.printt
+        @printer.print("def check_stub_#{@id}(stub_recv")
+        @arg_types.each_with_index do |_type, i|
+          @printer.print(", arg#{i}")
+        end
+        @printer.print(")")
+        @printer.printn
+        @printer.indent
+        @printer.printt
+        @printer.print("stub_recv.#{@method_name}(")
+        @arg_types.each_with_index do |_type, i|
+          @printer.print(", ") if i > 0
+          @printer.print("arg#{i}")
+        end
+        @printer.print(")")
+        @printer.printn
+        @printer.dedent
+        @printer.printt
+        @printer.print("end")
+        @printer.printn
+
+        @nesting.each do |_node|
+          @printer.dedent
+          @printer.printl("end")
+        end
+
+        T.cast(@printer.out, StringIO).string
+      end
+
+      private
+
+      sig { returns(T.nilable(String)) }
+      def scope
+        last = @nesting.last
+        return unless last
+
+        kind = case last
+        when Prism::ClassNode
+          "class"
+        when Prism::ModuleNode
+          "module"
+        end
+
+        namespace = []
+        @nesting.each do |node|
+          case node
+          when Prism::ClassNode, Prism::ModuleNode
+            name = node.constant_path.slice
+
+            namespace.clear if name.start_with?("::")
+            namespace << name
+          end
+        end
+
+        "#{kind} #{namespace.join("::")}\b"
       end
     end
 
@@ -88,7 +126,7 @@ module Spoom
         @request_id = request_id
       end
 
-      sig { params(stub: Call).returns(T::Array[StubError]) }
+      sig { params(stub: Call).void }
       def check(stub)
         recv_node = stub.receiver_node&.slice
         unless recv_node
@@ -118,13 +156,18 @@ module Spoom
           return []
         end
 
-        stub_check = StubCheck.new(stub.object_id, recv_node, method_name, arg_types, returns_type)
+        stub_check = StubCheck.new(
+          id: stub.object_id,
+          nesting: stub.nesting,
+          receiver_type: recv_node,
+          method_name: method_name,
+          arg_types: arg_types,
+          return_type: returns_type,
+        )
         snippet = stub_check.snippet
 
         puts snippet
         send_snippet(stub, snippet)
-
-        errors = []
 
         # diagnostics = pull_diagnostics
         # diagnostics.each do |diagnostic|
@@ -133,8 +176,6 @@ module Spoom
         #   errors << StubError.new(diagnostic.message, diagnostic.code)
         #   # say_error("#{diagnostic.message} (#{diagnostic.code})")
         # end
-
-        errors
       end
 
       private

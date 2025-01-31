@@ -134,15 +134,7 @@ module Spoom
 
           say("Checking stub `#{index + 1}/#{stubs.size}`") if index % 100 == 0
 
-          errors = checker.check(stub)
-          next if errors.empty?
-
-          file = "#{path}/#{stub.location.file}"
-          say_error("Stub `#{file}:#{stub.location.start_line}` has errors:")
-          errors.each do |error|
-            warn("         * #{highlight(error.message)} (#{error.code})")
-          end
-          warn("\n")
+          checker.check(stub)
         end
       end
 

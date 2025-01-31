@@ -9,6 +9,9 @@ module Spoom
       sig { returns(String) }
       attr_reader :file
 
+      sig { returns(T::Array[T.any(Prism::ClassNode, Prism::ModuleNode)]) }
+      attr_reader :nesting
+
       sig { returns(T::Array[Call]) }
       attr_reader :stubs
 
@@ -18,13 +21,23 @@ module Spoom
 
         @file = file
         @stubs = T.let([], T::Array[Call])
+        @nesting = T.let([], T::Array[T.any(Prism::ClassNode, Prism::ModuleNode)])
       end
 
       sig { override.params(node: Prism::ClassNode).void }
       def visit_class_node(node)
-        return unless node.name.end_with?("Test")
+        # return unless node.name.end_with?("Test")
 
+        @nesting << node
         super
+        @nesting.pop
+      end
+
+      sig { override.params(node: Prism::ModuleNode).void }
+      def visit_module_node(node)
+        @nesting << node
+        super
+        @nesting.pop
       end
 
       sig { override.params(node: Prism::CallNode).void }
@@ -88,6 +101,7 @@ module Spoom
             end_line: node.location.end_line,
             end_column: node.location.end_column,
           ),
+          nesting: @subs_visitor.nesting.dup,
           receiver_node: receiver,
           expects_node: expects_node,
           with_nodes: with_nodes,
