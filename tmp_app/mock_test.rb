@@ -63,6 +63,10 @@ class Session; end
 class MockTest # < ActionController::TestCase
   extend T::Sig
 
+  setup do
+    @receiver_node = T.let(nil, T.nilable(T.untyped))
+  end
+
   sig { returns(T::Boolean) }
   def expected
     true
@@ -78,23 +82,28 @@ class MockTest # < ActionController::TestCase
   end
 
   test "SessionController redirects to homepage if identity session is valid" do
-    # # bad
-    IdentityClient.expects(:foo).returns(true)
-    IdentityClient.expects(:check_identity_session_singleton).returns(expected)
-    IdentityClient.expects(:check_identity_session_singleton).with(1, 2, 3).returns(true)
-    IdentityClient.expects(:check_identity_session_singleton).with("").returns(true)
-    IdentityClient.expects(:check_identity_session).with("").returns(true)
-    IdentityClient.any_instance.expects(:check_identity_session_singleton).returns(expected)
-    IdentityClient.any_instance.expects(:foo).returns(true)
-    IdentityClient.any_instance.expects(:check_identity_session).returns(expected)
-    IdentityClient.any_instance.expects(:check_identity_session).with(1, 2, 3).returns(true)
-    IdentityClient.any_instance.expects(:check_identity_session).with("").returns(true)
+    # # # bad
+    # IdentityClient.expects(:foo).returns(true)
+    # IdentityClient.expects(:check_identity_session_singleton).returns(expected)
+    # IdentityClient.expects(:check_identity_session_singleton).with(1, 2, 3).returns(true)
+    # IdentityClient.expects(:check_identity_session_singleton).with("").returns(true)
+    # IdentityClient.expects(:check_identity_session).with("").returns(true)
+    # IdentityClient.any_instance.expects(:check_identity_session_singleton).returns(expected)
+    # IdentityClient.any_instance.expects(:foo).returns(true)
+    # IdentityClient.any_instance.expects(:check_identity_session).returns(expected)
+    # IdentityClient.any_instance.expects(:check_identity_session).with(1, 2, 3).returns(true)
+    # IdentityClient.any_instance.expects(:check_identity_session).with("").returns(true)
 
-    # # good
+    # # # good
     IdentityClient.expects(:check_identity_session_singleton).with(Session.new).returns(IdentityResult.new(success: true))
     IdentityClient.expects(:check_identity_session_singleton).returns(IdentityResult.new(success: true))
+    IdentityClient.expects(:check_identity_session).returns(@var)
     IdentityClient.any_instance.expects(:check_identity_session).with(Session.new).returns(IdentityResult.new(success: true))
     IdentityClient.any_instance.expects(:check_identity_session).returns(untyped)
     IdentityClient.any_instance.expects(:check_identity_session).returns(mock)
+    IdentityClient.any_instance.expects(:check_identity_session).returns(@var)
+
+    # ignored
+    @receiver_node.expects(:foo).returns(true)
   end
 end

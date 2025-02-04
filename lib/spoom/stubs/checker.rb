@@ -11,16 +11,20 @@ module Spoom
       sig do
         params(
           id: Integer,
+          location: Location,
           nesting: T::Array[T.any(Prism::ClassNode, Prism::ModuleNode)],
           receiver_type: String,
           method_name: String,
           arg_types: T::Array[String],
           return_type: T.nilable(String),
           any_instance: T::Boolean,
+          with_location: T::Boolean,
         ).void
       end
-      def initialize(id:, nesting:, receiver_type:, method_name:, arg_types:, return_type:, any_instance:)
+      def initialize(id:, location:, nesting:, receiver_type:, method_name:, arg_types:, return_type:, any_instance:,
+        with_location: true)
         @id = id
+        @location = location
         @nesting = nesting
         @receiver_type = receiver_type
         @method_name = method_name
@@ -28,6 +32,7 @@ module Spoom
         @return_type = return_type
         @any_instance = any_instance
         @printer = T.let(Printer.new(out: StringIO.new), Printer)
+        @with_location = with_location
       end
 
       sig { returns(String) }
@@ -50,6 +55,7 @@ module Spoom
         @printer.printl("extend T::Sig")
         @printer.printn
 
+        @printer.printl("# Test for #{@location}") if @with_location
         @printer.printt
         @printer.print("sig { params(recv: ")
         if @any_instance
@@ -58,7 +64,7 @@ module Spoom
           @printer.print("T.class_of(#{@receiver_type})")
         end
         @arg_types.each_with_index do |type, i|
-          @printer.print(", arg#{i}: #{type}")
+          @printer.print(", arg#{i + 1}: #{type}")
         end
         @printer.print(", ret: #{@return_type}") if @return_type
         @printer.print(").void }")
@@ -67,7 +73,7 @@ module Spoom
         @printer.printt
         @printer.print("def check_stub_#{@id}(recv")
         @arg_types.each_with_index do |_type, i|
-          @printer.print(", arg#{i}")
+          @printer.print(", arg#{i + 1}")
         end
         @printer.print(", ret") if @return_type
         @printer.print(")")
@@ -78,7 +84,7 @@ module Spoom
         @printer.print("recv.#{@method_name}(")
         @arg_types.each_with_index do |_type, i|
           @printer.print(", ") if i > 0
-          @printer.print("arg#{i}")
+          @printer.print("arg#{i + 1}")
         end
         @printer.print(")")
         if @return_type
@@ -133,31 +139,37 @@ module Spoom
       extend T::Sig
       include Colorize
 
-      sig { params(root_dir: String, lsp_client: LSPClient, request_id: Integer).void }
-      def initialize(root_dir, lsp_client, request_id)
+      sig { params(root_dir: String, lsp_client: LSPClient, with_location: T::Boolean).void }
+      def initialize(root_dir, lsp_client, with_location: true)
         @root_dir = root_dir
         @lsp_client = lsp_client
-        @request_id = request_id
+        @with_location = with_location
       end
 
-      sig { params(stub: Call).void }
-      def check(stub)
-        recv_node = stub.receiver_node&.slice
-        unless recv_node
-          say_error("No receiver node for stub at #{stub.location}")
-          return []
+      sig { params(stub: Call).returns(T.nilable(String)) }
+      def generate_snippet(stub)
+        receiver_node = stub.receiver_node
+        recv_node = case receiver_node
+        when Prism::ConstantReadNode, Prism::ConstantPathNode
+          receiver_node.slice
         end
 
-        method_name = stub.expects_node&.slice&.delete_prefix(":")
-        unless method_name
-          say_error("No method name for stub at #{stub.location}")
-          return []
+        unless recv_node
+          say_error("No receiver node for stub at #{stub.location}")
+          return
         end
+
+        expect_node = stub.expects_node
+        unless expect_node.is_a?(Prism::SymbolNode)
+          say_error("Expects node is not a symbol for stub at #{stub.location}")
+          return
+        end
+        method_name = expect_node.slice.delete_prefix(":")
 
         returns_node = stub.returns_node
         unless returns_node
           say_error("No returns node for stub at #{stub.location}")
-          return []
+          return
         end
 
         arg_types = stub.with_nodes.map do |with_node|
@@ -167,7 +179,7 @@ module Spoom
         returns_type = node_type(returns_node, stub.location)
         unless returns_type
           say_error("Failed to get returns type for stub at #{stub.location}")
-          return []
+          return
         end
 
         case returns_type
@@ -177,14 +189,16 @@ module Spoom
 
         stub_check = StubCheck.new(
           id: stub.object_id,
+          location: stub.location,
           nesting: stub.nesting,
           receiver_type: recv_node,
           method_name: method_name,
           arg_types: arg_types,
           return_type: returns_type,
           any_instance: stub.any_instance,
+          with_location: @with_location,
         )
-        # snippet = stub_check.snippet
+        snippet = stub_check.snippet
 
         # puts snippet
         # send_snippet(stub, snippet)
@@ -196,6 +210,8 @@ module Spoom
         #   errors << StubError.new(diagnostic.message, diagnostic.code)
         #   # say_error("#{diagnostic.message} (#{diagnostic.code})")
         # end
+
+        snippet
       end
 
       private
@@ -274,6 +290,8 @@ module Spoom
           "T::Boolean"
         when /T.class_of\((.*)\)/
           T.must(Regexp.last_match(1))
+        when /String(.*)/
+          "String"
         else
           type
         end

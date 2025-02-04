@@ -50,6 +50,24 @@ module Spoom
       desc "check PATH", "Check stubs in PATH"
       sig { params(path: String).void }
       def check(path = ".")
+        say("Collecting files...")
+        files = collect_files([path])
+        say("Collected `#{files.size}` files")
+
+        say("Collecting stubs...")
+        stubs = T.let([], T::Array[Spoom::Stubs::Call])
+        files.each do |file|
+          ruby = File.read(file)
+          node = Spoom.parse_ruby(ruby, file: file)
+
+          # file = file.delete_prefix(path)
+          visitor = Spoom::Stubs::Collector.new(file)
+          visitor.visit(node)
+
+          stubs.concat(visitor.stubs)
+        end
+        say("Collected `#{stubs.size}` stubs")
+
         say("Starting LSP client...")
         lsp_client = Spoom::LSPClient.new(
           Spoom::Sorbet::BIN_PATH,
@@ -61,30 +79,6 @@ module Spoom
           # "-v",
           # "-v",
         )
-
-        stubs_ids = T.let({}, T::Hash[Integer, Spoom::Stubs::Call])
-
-        lsp_client.on_diagnostics do |diagnostic|
-          stub = T.must(stubs_ids[diagnostic["uri"].split("/").last.to_i])
-          next if diagnostic["diagnostics"].reject { |d| d["code"] == 7004 && stub.with_nodes.empty? }.empty?
-
-          # puts diagnostic["uri"]
-          # diagnostic["diagnostics"].each do |d|
-          #   puts "#{diagnostic["uri"]}:#{d["range"]["start"]["line"]}: #{d["message"]}"
-          # end
-          say_error("Stub `#{stub.location}` has errors:")
-          diagnostic["diagnostics"].each do |error|
-            next if error["code"] == 7004 && stub.with_nodes.empty?
-
-            warn("         * #{highlight(error["message"])} (#{error["code"]})")
-            next unless error["code"] == 7001
-
-            error["relatedInformation"].each do |related_info|
-              message = related_info["message"]
-              warn("            * #{highlight(message)}") unless message.empty?
-            end
-          end
-        end
 
         lsp_client.request("initialize", {
           rootPath: File.expand_path(path),
@@ -117,36 +111,72 @@ module Spoom
         # )
         # return
 
-        say("Collecting files...")
-        files = collect_files([path])
-        files = files.select { |file| file.end_with?("_test.rb") }
-        say("Collected `#{files.size}` files")
-
-        say("Collecting stubs...")
-        stubs = T.let([], T::Array[Spoom::Stubs::Call])
-        files.each do |file|
-          ruby = File.read(file)
-          node = Spoom.parse_ruby(ruby, file: file)
-
-          # file = file.delete_prefix(path)
-          visitor = Spoom::Stubs::Collector.new(file)
-          visitor.visit(node)
-
-          stubs.concat(visitor.stubs)
-        end
-        say("Collected `#{stubs.size}` stubs")
-
         say("Checking `#{stubs.size}` stubs...")
-        checker = Spoom::Stubs::Checker.new(File.expand_path(path), lsp_client, 4)
+        FileUtils.rm_rf("_mock_test_snippets")
+        FileUtils.mkdir_p("_mock_test_snippets")
+
+        stubs_snippets = T.let({}, T::Hash[String, Spoom::Stubs::Call])
+
+        checker = Spoom::Stubs::Checker.new(File.expand_path(path), lsp_client)
         stubs.each_with_index do |stub, index|
-          stubs_ids[stub.object_id] = stub
+          # stubs_ids[stub.object_id] = stub
 
-          say("Checking stub `#{index + 1}/#{stubs.size}`") if index % 100 == 0
+          say("Generating snippet for stub `#{index + 1}/#{stubs.size}`") if index % 100 == 0
 
-          checker.check(stub)
+          snippet = checker.generate_snippet(stub)
+          filename = "_mock_test_snippets/#{stub.object_id}.rb"
+          File.write(filename, snippet)
+          stubs_snippets[filename] = stub
         end
 
-        sleep(1)
+        say("Generated `#{stubs.size}` snippets")
+
+        say("Running type checking...")
+
+        error_url_base = Spoom::Sorbet::Errors::DEFAULT_ERROR_URL_BASE
+        result = T.unsafe(context).srb_tc(
+          "--error-url-base=#{error_url_base}",
+          sorbet_bin: Spoom::Sorbet::BIN_PATH,
+          capture_err: true,
+        )
+
+        errors = Spoom::Sorbet::Errors::Parser.parse_string(result.err, error_url_base: error_url_base)
+
+        stub_errors = T.let({}, T::Hash[String, T::Array[String]])
+
+        errors.sort.each do |error|
+          stub = stubs_snippets[T.must(error.file)]
+          next unless stub
+          # say_error("Stub `#{stub.location}` has errors:")
+          # say_error("         * #{highlight(T.must(error.message))} (#{error.code})")
+
+          next if error.code == 7004 && stub.with_nodes.empty?
+
+          (stub_errors[stub.location.to_s] ||= []) << if error.code == 7001
+            lines = error.more.join("\n")
+            # puts lines
+            expected_match = lines.match(/Existing variable has type: `(.*)`/)
+            got_match = lines.match(/Attempting to change type to: `(.*)`/)
+
+            next if expected_match.nil? || got_match.nil?
+
+            expected = expected_match[1]
+            got = got_match[1]
+
+            "Incompatible return type, expected `#{expected}`, got `#{got}`"
+          else
+            T.must(error.message) + " (#{error.file})"
+          end
+        end
+
+        stub_errors.each do |stub_location, errors|
+          say_error("Stub `#{stub_location}` has errors:")
+          errors.each do |error|
+            warn("         * #{highlight(error)}")
+          end
+        end
+
+        say("Found `#{stub_errors.size}` errors")
       end
 
       no_commands do
@@ -161,8 +191,10 @@ module Spoom
             end
           end
 
+          files.select! { |file| file.end_with?("_test.rb") }
+
           if files.empty?
-            say_error("No files to transform")
+            say_error("No test files to check")
             exit(1)
           end
 

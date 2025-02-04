@@ -21,6 +21,9 @@ module Spoom
       # Start reading stderr in a separate thread
       @error_thread = Thread.new do
         while (line = @stderr.gets)
+          next if line == "Pausing\n"
+          next if line == "Resuming\n"
+
           $stderr.puts(line)
         end
       end
