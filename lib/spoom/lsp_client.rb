@@ -54,7 +54,7 @@ module Spoom
 
       # Wait for response with timeout
       mutex.synchronize do
-        condition.wait(mutex, 30) # 30 second timeout
+        condition.wait(mutex, 100) # 30 second timeout
       end
 
       raise Error, "Request timed out" unless response

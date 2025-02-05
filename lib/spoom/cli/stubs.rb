@@ -50,6 +50,8 @@ module Spoom
       desc "check PATH", "Check stubs in PATH"
       sig { params(path: String).void }
       def check(path = ".")
+        FileUtils.rm_rf("_mock_test_snippets")
+
         say("Collecting files...")
         files = collect_files([path])
         say("Collected `#{files.size}` files")
@@ -89,30 +91,7 @@ module Spoom
         lsp_client.notify("initialized", {})
         say("Started LSP client")
 
-        # say("Starting LSP client...")
-        # lsp_client = T.let(self.lsp_client(path), Spoom::LSP::Client)
-        # say("Started LSP client")
-
-        # puts lsp_client.request(
-        #   "textDocument/hover",
-        #   {
-        #     textDocument: { uri: "file:///#{File.expand_path(path)}/lib/spoom/cli/stubs.rb" },
-        #     position: { line: 137, character: 31 },
-        #   },
-        # )
-
-        # lsp_client.hover(
-        #   to_uri(
-        #     path,
-        #     "components/access_and_auth/customer_auth_identity/test/controllers/access_and_auth/customer_auth_identity/concerns/callback_handler_test.rb",
-        #   ),
-        #   358,
-        #   19,
-        # )
-        # return
-
         say("Checking `#{stubs.size}` stubs...")
-        FileUtils.rm_rf("_mock_test_snippets")
         FileUtils.mkdir_p("_mock_test_snippets")
 
         stubs_snippets = T.let({}, T::Hash[String, Spoom::Stubs::Call])
@@ -199,45 +178,6 @@ module Spoom
           end
 
           files
-        end
-
-        def literal?(node)
-          case node
-          when Prism::TrueNode, Prism::FalseNode,
-               Prism::NilNode,
-               Prism::IntegerNode, Prism::FloatNode,
-               Prism::StringNode, Prism::SymbolNode, Prism::InterpolatedStringNode,
-               Prism::ArrayNode, Prism::HashNode, Prism::KeywordHashNode,
-               Prism::ConstantPathNode, Prism::ConstantReadNode
-            true
-          else
-            false
-          end
-        end
-
-        def lsp_client(path)
-          context_requiring_sorbet!
-
-          client = Spoom::LSP::Client.new(
-            # "/Users/at/src/github.com/sorbet/sorbet/bazel-bin/main/sorbet",
-            Spoom::Sorbet::BIN_PATH,
-            "--lsp",
-            # "--no-config",
-            # "--enable-all-experimental-lsp-features",
-            "--disable-watchman",
-            # "--debug-log-file=lsp.log",
-            # ".",
-            # "-v",
-            # "-v",
-            # "-v",
-            path: path,
-          )
-          client.open(File.expand_path(path))
-          client
-        end
-
-        def to_uri(root_path, path)
-          "file://" + File.join(File.expand_path(root_path), path)
         end
       end
     end
