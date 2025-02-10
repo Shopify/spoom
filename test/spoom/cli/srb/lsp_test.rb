@@ -36,6 +36,7 @@ module Spoom
           RB
           result = @project.spoom("srb lsp --no-color find Foo")
           assert_equal(<<~MSG, result.err)
+            `rubyfmt` does not exist, LSP rubyfmt integration will not be enabled
             Error: Sorbet returned typechecking errors for `/errors.rb`
               8:11-8:11: Not enough arguments provided for method `Foo#foo`. Expected: `1`, got: `0` (7004)
               5:2-5:5: Expected `String` but found `NilClass` for method result type (7005)

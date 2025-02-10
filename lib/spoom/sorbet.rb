@@ -3,7 +3,6 @@
 
 require "spoom/sorbet/config"
 require "spoom/sorbet/errors"
-require "spoom/sorbet/lsp"
 require "spoom/sorbet/metrics"
 require "spoom/sorbet/sigils"
 
