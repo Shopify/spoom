@@ -120,16 +120,28 @@ module Spoom
         RBS
       end
 
+      def test_does_not_translate_abstract_methods
+        contents = <<~RBI
+          sig { abstract.void }
+          def foo; end
+        RBI
+
+        assert_equal(<<~RBS, Sigs.rbi_to_rbs(contents))
+          sig { abstract.void }
+          def foo; end
+        RBS
+      end
+
       def test_translate_method_sigs_with_annotations
         contents = <<~RBI
-          sig(:final) { abstract.override(allow_incompatible: true).void }
+          sig(:final) { overridable.override(allow_incompatible: true).void }
           def foo; end
         RBI
 
         assert_equal(<<~RBS, Sigs.rbi_to_rbs(contents))
           # @final
-          # @abstract
           # @override(allow_incompatible: true)
+          # @overridable
           #: -> void
           def foo; end
         RBS
