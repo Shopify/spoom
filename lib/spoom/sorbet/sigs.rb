@@ -72,6 +72,8 @@ module Spoom
           case node
           when RBI::Method, RBI::Attr
             node.sigs.each do |sig|
+              next if sig.is_abstract
+
               @sigs << [sig, node]
             end
           when RBI::Tree
