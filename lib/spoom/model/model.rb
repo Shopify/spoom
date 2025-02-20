@@ -16,33 +16,34 @@ module Spoom
       extend T::Sig
 
       # The full, unique name of this symbol
-      sig { returns(String) }
+      #: String
       attr_reader :full_name
 
       # The definitions of this symbol (where it exists in the code)
-      sig { returns(T::Array[SymbolDef]) }
+      #: Array[SymbolDef]
       attr_reader :definitions
 
-      sig { params(full_name: String).void }
+      #: (String full_name) -> void
       def initialize(full_name)
         @full_name = full_name
         @definitions = T.let([], T::Array[SymbolDef])
       end
 
       # The short name of this symbol
-      sig { returns(String) }
+      #: -> String
       def name
         T.must(@full_name.split("::").last)
       end
 
-      sig { returns(String) }
+      #: -> String
       def to_s
         @full_name
       end
     end
 
     class UnresolvedSymbol < Symbol
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def to_s
         "<#{@full_name}>"
       end
@@ -59,18 +60,18 @@ module Spoom
       abstract!
 
       # The symbol this definition belongs to
-      sig { returns(Symbol) }
+      #: Symbol
       attr_reader :symbol
 
       # The enclosing namespace this definition belongs to
-      sig { returns(T.nilable(Namespace)) }
+      #: Namespace?
       attr_reader :owner
 
       # The actual code location of this definition
-      sig { returns(Location) }
+      #: Location
       attr_reader :location
 
-      sig { params(symbol: Symbol, owner: T.nilable(Namespace), location: Location).void }
+      #: (Symbol symbol, owner: Namespace?, location: Location) -> void
       def initialize(symbol, owner:, location:)
         @symbol = symbol
         @owner = owner
@@ -81,13 +82,13 @@ module Spoom
       end
 
       # The full name of the symbol this definition belongs to
-      sig { returns(String) }
+      #: -> String
       def full_name
         @symbol.full_name
       end
 
       # The short name of the symbol this definition belongs to
-      sig { returns(String) }
+      #: -> String
       def name
         @symbol.name
       end
@@ -97,13 +98,13 @@ module Spoom
     class Namespace < SymbolDef
       abstract!
 
-      sig { returns(T::Array[SymbolDef]) }
+      #: Array[SymbolDef]
       attr_reader :children
 
-      sig { returns(T::Array[Mixin]) }
+      #: Array[Mixin]
       attr_reader :mixins
 
-      sig { params(symbol: Symbol, owner: T.nilable(Namespace), location: Location).void }
+      #: (Symbol symbol, owner: Namespace?, location: Location) -> void
       def initialize(symbol, owner:, location:)
         super(symbol, owner: owner, location: location)
 
@@ -115,17 +116,10 @@ module Spoom
     class SingletonClass < Namespace; end
 
     class Class < Namespace
-      sig { returns(T.nilable(String)) }
+      #: String?
       attr_accessor :superclass_name
 
-      sig do
-        params(
-          symbol: Symbol,
-          owner: T.nilable(Namespace),
-          location: Location,
-          superclass_name: T.nilable(String),
-        ).void
-      end
+      #: (Symbol symbol, owner: Namespace?, location: Location, ?superclass_name: String?) -> void
       def initialize(symbol, owner:, location:, superclass_name: nil)
         super(symbol, owner: owner, location: location)
 
@@ -136,10 +130,10 @@ module Spoom
     class Module < Namespace; end
 
     class Constant < SymbolDef
-      sig { returns(String) }
+      #: String
       attr_reader :value
 
-      sig { params(symbol: Symbol, owner: T.nilable(Namespace), location: Location, value: String).void }
+      #: (Symbol symbol, owner: Namespace?, location: Location, value: String) -> void
       def initialize(symbol, owner:, location:, value:)
         super(symbol, owner: owner, location: location)
 
@@ -151,21 +145,13 @@ module Spoom
     class Property < SymbolDef
       abstract!
 
-      sig { returns(Visibility) }
+      #: Visibility
       attr_reader :visibility
 
-      sig { returns(T::Array[Sig]) }
+      #: Array[Sig]
       attr_reader :sigs
 
-      sig do
-        params(
-          symbol: Symbol,
-          owner: T.nilable(Namespace),
-          location: Location,
-          visibility: Visibility,
-          sigs: T::Array[Sig],
-        ).void
-      end
+      #: (Symbol symbol, owner: Namespace?, location: Location, visibility: Visibility, ?sigs: Array[Sig]) -> void
       def initialize(symbol, owner:, location:, visibility:, sigs: [])
         super(symbol, owner: owner, location: location)
 
@@ -199,10 +185,10 @@ module Spoom
 
       abstract!
 
-      sig { returns(String) }
+      #: String
       attr_reader :name
 
-      sig { params(name: String).void }
+      #: (String name) -> void
       def initialize(name)
         @name = name
       end
@@ -216,10 +202,10 @@ module Spoom
     class Sig
       extend T::Sig
 
-      sig { returns(String) }
+      #: String
       attr_reader :string
 
-      sig { params(string: String).void }
+      #: (String string) -> void
       def initialize(string)
         @string = string
       end
@@ -228,13 +214,13 @@ module Spoom
     # Model
 
     # All the symbols registered in this model
-    sig { returns(T::Hash[String, Symbol]) }
+    #: Hash[String, Symbol]
     attr_reader :symbols
 
-    sig { returns(Poset[Symbol]) }
+    #: Poset[Symbol]
     attr_reader :symbols_hierarchy
 
-    sig { void }
+    #: -> void
     def initialize
       @symbols = T.let({}, T::Hash[String, Symbol])
       @symbols_hierarchy = T.let(Poset[Symbol].new, Poset[Symbol])
@@ -243,7 +229,7 @@ module Spoom
     # Get a symbol by it's full name
     #
     # Raises an error if the symbol is not found
-    sig { params(full_name: String).returns(Symbol) }
+    #: (String full_name) -> Symbol
     def [](full_name)
       symbol = @symbols[full_name]
       raise Error, "Symbol not found: #{full_name}" unless symbol
@@ -254,12 +240,12 @@ module Spoom
     # Register a new symbol by it's full name
     #
     # If the symbol already exists, it will be returned.
-    sig { params(full_name: String).returns(Symbol) }
+    #: (String full_name) -> Symbol
     def register_symbol(full_name)
       @symbols[full_name] ||= Symbol.new(full_name)
     end
 
-    sig { params(full_name: String, context: Symbol).returns(Symbol) }
+    #: (String full_name, context: Symbol) -> Symbol
     def resolve_symbol(full_name, context:)
       if full_name.start_with?("::")
         full_name = full_name.delete_prefix("::")
@@ -280,26 +266,26 @@ module Spoom
       @symbols[full_name] = UnresolvedSymbol.new(full_name)
     end
 
-    sig { params(symbol: Symbol).returns(T::Array[Symbol]) }
+    #: (Symbol symbol) -> Array[Symbol]
     def supertypes(symbol)
       poe = @symbols_hierarchy[symbol]
       poe.ancestors
     end
 
-    sig { params(symbol: Symbol).returns(T::Array[Symbol]) }
+    #: (Symbol symbol) -> Array[Symbol]
     def subtypes(symbol)
       poe = @symbols_hierarchy[symbol]
       poe.descendants
     end
 
-    sig { void }
+    #: -> void
     def finalize!
       compute_symbols_hierarchy!
     end
 
     private
 
-    sig { void }
+    #: -> void
     def compute_symbols_hierarchy!
       @symbols.dup.each do |_full_name, symbol|
         symbol.definitions.each do |definition|

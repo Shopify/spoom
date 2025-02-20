@@ -5,7 +5,7 @@ module Spoom
   class FileCollector
     extend T::Sig
 
-    sig { returns(T::Array[String]) }
+    #: Array[String]
     attr_reader :files
 
     # Initialize a new file collector
@@ -16,13 +16,7 @@ module Spoom
     # If `allow_mime_types` is empty, all files are collected.
     # If `allow_mime_types` is an array of mimetypes, files without an extension are collected if their mimetype is in
     # the list.
-    sig do
-      params(
-        allow_extensions: T::Array[String],
-        allow_mime_types: T::Array[String],
-        exclude_patterns: T::Array[String],
-      ).void
-    end
+    #: (?allow_extensions: Array[String], ?allow_mime_types: Array[String], ?exclude_patterns: Array[String]) -> void
     def initialize(allow_extensions: [], allow_mime_types: [], exclude_patterns: [])
       @files = T.let([], T::Array[String])
       @allow_extensions = allow_extensions
@@ -30,12 +24,12 @@ module Spoom
       @exclude_patterns = exclude_patterns
     end
 
-    sig { params(paths: T::Array[String]).void }
+    #: (Array[String] paths) -> void
     def visit_paths(paths)
       paths.each { |path| visit_path(path) }
     end
 
-    sig { params(path: String).void }
+    #: (String path) -> void
     def visit_path(path)
       path = clean_path(path)
 
@@ -52,24 +46,24 @@ module Spoom
 
     private
 
-    sig { params(path: String).returns(String) }
+    #: (String path) -> String
     def clean_path(path)
       Pathname.new(path).cleanpath.to_s
     end
 
-    sig { params(path: String).void }
+    #: (String path) -> void
     def visit_file(path)
       return if excluded_file?(path)
 
       @files << path
     end
 
-    sig { params(path: String).void }
+    #: (String path) -> void
     def visit_directory(path)
       visit_paths(Dir.glob("#{path}/*"))
     end
 
-    sig { params(path: String).returns(T::Boolean) }
+    #: (String path) -> bool
     def excluded_file?(path)
       return false if @allow_extensions.empty?
 
@@ -84,7 +78,7 @@ module Spoom
       end
     end
 
-    sig { params(path: String).returns(T::Boolean) }
+    #: (String path) -> bool
     def excluded_path?(path)
       @exclude_patterns.any? do |pattern|
         # Use `FNM_PATHNAME` so patterns do not match directory separators
@@ -93,7 +87,7 @@ module Spoom
       end
     end
 
-    sig { params(path: String).returns(T.nilable(String)) }
+    #: (String path) -> String?
     def mime_type_for(path)
       # The `file` command appears to be hanging on MacOS for some files so we timeout after 1s.
       %x{timeout 1s file --mime-type -b '#{path}'}.split("; ").first&.strip

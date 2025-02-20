@@ -9,7 +9,7 @@ module Spoom
   class << self
     extend T::Sig
 
-    sig { params(ruby: String, file: String).returns(Prism::Node) }
+    #: (String ruby, file: String) -> Prism::Node
     def parse_ruby(ruby, file:)
       result = Prism.parse(ruby)
       unless result.success?

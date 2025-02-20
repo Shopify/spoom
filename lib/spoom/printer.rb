@@ -10,10 +10,10 @@ module Spoom
 
     include Colorize
 
-    sig { returns(T.any(IO, StringIO)) }
+    #: (IO | StringIO)
     attr_accessor :out
 
-    sig { params(out: T.any(IO, StringIO), colors: T::Boolean, indent_level: Integer).void }
+    #: (?out: (IO | StringIO), ?colors: bool, ?indent_level: Integer) -> void
     def initialize(out: $stdout, colors: true, indent_level: 0)
       @out = out
       @colors = colors
@@ -21,19 +21,19 @@ module Spoom
     end
 
     # Increase indent level
-    sig { void }
+    #: -> void
     def indent
       @indent_level += 2
     end
 
     # Decrease indent level
-    sig { void }
+    #: -> void
     def dedent
       @indent_level -= 2
     end
 
     # Print `string` into `out`
-    sig { params(string: T.nilable(String)).void }
+    #: (String? string) -> void
     def print(string)
       return unless string
 
@@ -43,7 +43,7 @@ module Spoom
     # Print `string` colored with `color` into `out`
     #
     # Does not use colors unless `@colors`.
-    sig { params(string: T.nilable(String), color: Color).void }
+    #: (String? string, *Color color) -> void
     def print_colored(string, *color)
       return unless string
 
@@ -52,13 +52,13 @@ module Spoom
     end
 
     # Print a new line into `out`
-    sig { void }
+    #: -> void
     def printn
       print("\n")
     end
 
     # Print `string` with indent and newline
-    sig { params(string: T.nilable(String)).void }
+    #: (String? string) -> void
     def printl(string)
       return unless string
 
@@ -68,13 +68,13 @@ module Spoom
     end
 
     # Print an indent space into `out`
-    sig { void }
+    #: -> void
     def printt
       print(" " * @indent_level)
     end
 
     # Colorize `string` with color if `@colors`
-    sig { params(string: String, color: Spoom::Color).returns(String) }
+    #: (String string, *Spoom::Color color) -> String
     def colorize(string, *color)
       return string unless @colors
 

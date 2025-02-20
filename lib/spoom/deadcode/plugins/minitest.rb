@@ -18,13 +18,15 @@ module Spoom
           "teardown",
         )
 
-        sig { override.params(definition: Model::Method).void }
+        # @override
+        #: (Model::Method definition) -> void
         def on_define_method(definition)
           file = definition.location.file
           @index.ignore(definition) if file.match?(%r{test/.*test\.rb$}) && definition.name.match?(/^test_/)
         end
 
-        sig { override.params(send: Send).void }
+        # @override
+        #: (Send send) -> void
         def on_send(send)
           case send.name
           when "assert_predicate", "refute_predicate"

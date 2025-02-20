@@ -57,7 +57,7 @@ module Spoom
     class << self
       extend T::Sig
 
-      sig { params(context: Context).returns(T::Set[T.class_of(Plugins::Base)]) }
+      #: (Context context) -> Set[singleton(Plugins::Base)]
       def plugins_from_gemfile_lock(context)
         # These plugins are always loaded
         plugin_classes = DEFAULT_PLUGINS.dup
@@ -71,7 +71,7 @@ module Spoom
         plugin_classes
       end
 
-      sig { params(context: Context).returns(T::Array[T.class_of(Plugins::Base)]) }
+      #: (Context context) -> Array[singleton(Plugins::Base)]
       def load_custom_plugins(context)
         context.glob("#{DEFAULT_CUSTOM_PLUGINS_PATH}/*.rb").each do |path|
           require("#{context.absolute_path}/#{path}")

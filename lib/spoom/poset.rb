@@ -14,7 +14,7 @@ module Spoom
 
     E = type_member { { upper: Object } }
 
-    sig { void }
+    #: -> void
     def initialize
       @elements = T.let({}, T::Hash[E, Element[E]])
     end
@@ -22,7 +22,7 @@ module Spoom
     # Get the POSet element for a given value
     #
     # Raises if the element is not found
-    sig { params(value: E).returns(Element[E]) }
+    #: (E value) -> Element[E]
     def [](value)
       element = @elements[value]
       raise Error, "POSet::Element not found for #{value}" unless element
@@ -31,7 +31,7 @@ module Spoom
     end
 
     # Add an element to the POSet
-    sig { params(value: E).returns(Element[E]) }
+    #: (E value) -> Element[E]
     def add_element(value)
       element = @elements[value]
       return element if element
@@ -40,7 +40,7 @@ module Spoom
     end
 
     # Is the given value a element in the POSet?
-    sig { params(value: E).returns(T::Boolean) }
+    #: (E value) -> bool
     def element?(value)
       @elements.key?(value)
     end
@@ -50,7 +50,7 @@ module Spoom
     # Transitive edges (transitive closure) are automatically computed.
     # Adds the elements if they don't exist.
     # If the direct edge already exists, nothing is done.
-    sig { params(from: E, to: E).void }
+    #: (E from, E to) -> void
     def add_direct_edge(from, to)
       from_element = add_element(from)
       to_element = add_element(to)
@@ -88,7 +88,7 @@ module Spoom
     end
 
     # Is there an edge (direct or indirect) from `from` to `to`?
-    sig { params(from: E, to: E).returns(T::Boolean) }
+    #: (E from, E to) -> bool
     def edge?(from, to)
       from_element = @elements[from]
       return false unless from_element
@@ -97,13 +97,13 @@ module Spoom
     end
 
     # Is there a direct edge from `from` to `to`?
-    sig { params(from: E, to: E).returns(T::Boolean) }
+    #: (E from, E to) -> bool
     def direct_edge?(from, to)
       self[from].parents.include?(to)
     end
 
     # Show the POSet as a DOT graph using xdot (used for debugging)
-    sig { params(direct: T::Boolean, transitive: T::Boolean).void }
+    #: (?direct: bool, ?transitive: bool) -> void
     def show_dot(direct: true, transitive: true)
       Open3.popen3("xdot -") do |stdin, _stdout, _stderr, _thread|
         stdin.write(to_dot(direct: direct, transitive: transitive))
@@ -112,7 +112,7 @@ module Spoom
     end
 
     # Return the POSet as a DOT graph
-    sig { params(direct: T::Boolean, transitive: T::Boolean).returns(String) }
+    #: (?direct: bool, ?transitive: bool) -> String
     def to_dot(direct: true, transitive: true)
       dot = +"digraph {\n"
       dot << "  rankdir=BT;\n"
@@ -141,14 +141,14 @@ module Spoom
       E = type_member { { upper: Object } }
 
       # The value held by this element
-      sig { returns(E) }
+      #: E
       attr_reader :value
 
       # Edges (direct and indirect) from this element to other elements in the same POSet
-      sig { returns(T::Set[Element[E]]) }
+      #: Set[Element[E]]
       attr_reader :dtos, :tos, :dfroms, :froms
 
-      sig { params(value: E).void }
+      #: (E value) -> void
       def initialize(value)
         @value = value
         @dtos = T.let(Set.new, T::Set[Element[E]])
@@ -157,7 +157,7 @@ module Spoom
         @froms = T.let(Set.new, T::Set[Element[E]])
       end
 
-      sig { params(other: T.untyped).returns(T.nilable(Integer)) }
+      #: (untyped other) -> Integer?
       def <=>(other)
         return unless other.is_a?(Element)
         return 0 if self == other
@@ -170,25 +170,25 @@ module Spoom
       end
 
       # Direct parents of this element
-      sig { returns(T::Array[E]) }
+      #: -> Array[E]
       def parents
         @dtos.map(&:value)
       end
 
       # Direct and indirect ancestors of this element
-      sig { returns(T::Array[E]) }
+      #: -> Array[E]
       def ancestors
         @tos.map(&:value)
       end
 
       # Direct children of this element
-      sig { returns(T::Array[E]) }
+      #: -> Array[E]
       def children
         @dfroms.map(&:value)
       end
 
       # Direct and indirect descendants of this element
-      sig { returns(T::Array[E]) }
+      #: -> Array[E]
       def descendants
         @froms.map(&:value)
       end

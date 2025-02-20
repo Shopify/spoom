@@ -14,7 +14,7 @@ module Spoom
 
         # Indexing
 
-        sig { params(plugin_classes: T::Array[T.class_of(Deadcode::Plugins::Base)]).returns(Deadcode::Index) }
+        #: (?plugin_classes: Array[singleton(Deadcode::Plugins::Base)]) -> Deadcode::Index
         def deadcode_index(plugin_classes: [])
           files = project.collect_files(
             allow_extensions: [".rb", ".erb", ".rake", ".rakefile", ".gemspec"],
@@ -42,25 +42,25 @@ module Spoom
 
         # Assertions
 
-        sig { params(index: Deadcode::Index, name: String).void }
+        #: (Deadcode::Index index, String name) -> void
         def assert_alive(index, name)
           defs = definitions_for_name(index, name)
           assert(defs.all?(&:alive?), "Expected all definitions for `#{name}` to be alive")
         end
 
-        sig { params(index: Deadcode::Index, name: String).void }
+        #: (Deadcode::Index index, String name) -> void
         def assert_dead(index, name)
           defs = definitions_for_name(index, name)
           assert(defs.all?(&:dead?), "Expected all definitions for `#{name}` to be dead")
         end
 
-        sig { params(index: Deadcode::Index, name: String).void }
+        #: (Deadcode::Index index, String name) -> void
         def assert_ignored(index, name)
           defs = definitions_for_name(index, name)
           assert(defs.all?(&:ignored?), "Expected all definitions for `#{name}` to be ignored")
         end
 
-        sig { params(index: Deadcode::Index, name: String).void }
+        #: (Deadcode::Index index, String name) -> void
         def refute_ignored(index, name)
           defs = definitions_for_name(index, name)
           assert(defs.none?(&:ignored?), "Expected all definitions for `#{name}` to not be ignored")
@@ -68,7 +68,7 @@ module Spoom
 
         private
 
-        sig { params(index: Deadcode::Index, name: String).returns(T::Array[Deadcode::Definition]) }
+        #: (Deadcode::Index index, String name) -> Array[Deadcode::Definition]
         def definitions_for_name(index, name)
           defs = index.definitions_for_name(name)
           refute_empty(defs, "No indexed definition found for `#{name}`")

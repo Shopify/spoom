@@ -9,22 +9,24 @@ module Spoom
       extend T::Sig
 
       class NamespacesForLocs < NamespaceVisitor
-        sig { returns(T::Hash[String, String]) }
+        #: Hash[String, String]
         attr_reader :namespaces_for_locs
 
-        sig { void }
+        #: -> void
         def initialize
           super()
           @namespaces_for_locs = T.let({}, T::Hash[String, String])
         end
 
-        sig { override.params(node: Prism::ClassNode).void }
+        # @override
+        #: (Prism::ClassNode node) -> void
         def visit_class_node(node)
           @namespaces_for_locs[loc_string(node.location)] = @names_nesting.join("::")
           super
         end
 
-        sig { override.params(node: Prism::ModuleNode).void }
+        # @override
+        #: (Prism::ModuleNode node) -> void
         def visit_module_node(node)
           @namespaces_for_locs[loc_string(node.location)] = @names_nesting.join("::")
           super
@@ -32,7 +34,7 @@ module Spoom
 
         private
 
-        sig { params(loc: Prism::Location).returns(String) }
+        #: (Prism::Location loc) -> String
         def loc_string(loc)
           Location.from_prism("-", loc).to_s
         end
@@ -99,7 +101,7 @@ module Spoom
 
       private
 
-      sig { params(rb: String).returns(T::Hash[String, String]) }
+      #: (String rb) -> Hash[String, String]
       def namespaces_for_locs(rb)
         node = Spoom.parse_ruby(rb, file: "foo.rb")
 

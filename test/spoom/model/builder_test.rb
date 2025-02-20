@@ -425,7 +425,7 @@ module Spoom
 
       private
 
-      sig { params(rb: String).returns(Model) }
+      #: (String rb) -> Model
       def model(rb)
         node = Spoom.parse_ruby(rb, file: "foo.rb")
 
@@ -435,7 +435,7 @@ module Spoom
         model
       end
 
-      sig { params(obj: Object).returns(String) }
+      #: (Object obj) -> String
       def class_name(obj)
         T.must(obj.class.name&.split("::")&.last)
       end

@@ -20,12 +20,12 @@ module Spoom
       class << self
         extend T::Sig
 
-        sig { params(name: String, location: Spoom::Location).returns(Reference) }
+        #: (String name, Spoom::Location location) -> Reference
         def constant(name, location)
           new(name: name, kind: Kind::Constant, location: location)
         end
 
-        sig { params(name: String, location: Spoom::Location).returns(Reference) }
+        #: (String name, Spoom::Location location) -> Reference
         def method(name, location)
           new(name: name, kind: Kind::Method, location: location)
         end
@@ -35,12 +35,12 @@ module Spoom
       const :name, String
       const :location, Spoom::Location
 
-      sig { returns(T::Boolean) }
+      #: -> bool
       def constant?
         kind == Kind::Constant
       end
 
-      sig { returns(T::Boolean) }
+      #: -> bool
       def method?
         kind == Kind::Method
       end

@@ -103,14 +103,7 @@ module Spoom
 
       private
 
-      sig do
-        params(
-          context: Context,
-          allow_extensions: T::Array[String],
-          allow_mime_types: T::Array[String],
-          exclude_patterns: T::Array[String],
-        ).returns(T::Array[String])
-      end
+      #: (Context context, ?allow_extensions: Array[String], ?allow_mime_types: Array[String], ?exclude_patterns: Array[String]) -> Array[String]
       def collect_files(context, allow_extensions: [], allow_mime_types: [], exclude_patterns: [])
         # Since we work in the context directory, we need to prefix the patterns with it
         exclude_patterns = exclude_patterns.map { |p| File.join(context.absolute_path, p) }

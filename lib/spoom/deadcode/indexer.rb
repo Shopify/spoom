@@ -6,13 +6,13 @@ module Spoom
     class Indexer < Visitor
       extend T::Sig
 
-      sig { returns(String) }
+      #: String
       attr_reader :path
 
-      sig { returns(Index) }
+      #: Index
       attr_reader :index
 
-      sig { params(path: String, index: Index, plugins: T::Array[Plugins::Base]).void }
+      #: (String path, Index index, ?plugins: Array[Plugins::Base]) -> void
       def initialize(path, index, plugins: [])
         super()
 
@@ -23,7 +23,8 @@ module Spoom
 
       # Visit
 
-      sig { override.params(node: Prism::CallNode).void }
+      # @override
+      #: (Prism::CallNode node) -> void
       def visit_call_node(node)
         visit(node.receiver)
 

@@ -68,12 +68,12 @@ module Spoom
 
         private
 
-        sig { returns(Deadcode::Index) }
+        #: -> Deadcode::Index
         def index_with_plugins
           deadcode_index(plugin_classes: [Plugins::Rubocop])
         end
 
-        sig { params(index: Deadcode::Index).returns(T::Array[Location]) }
+        #: (Deadcode::Index index) -> Array[Location]
         def ignored_locations(index)
           index.all_definitions.select(&:constant?).select(&:ignored?).map(&:location)
         end

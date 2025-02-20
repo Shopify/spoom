@@ -9,7 +9,7 @@ module Spoom
       class << self
         extend T::Sig
 
-        sig { params(ruby_contents: String).returns(String) }
+        #: (String ruby_contents) -> String
         def strip(ruby_contents)
           sigs = collect_sigs(ruby_contents)
           lines_to_strip = sigs.flat_map { |sig, _| (sig.loc&.begin_line..sig.loc&.end_line).to_a }
@@ -21,7 +21,7 @@ module Spoom
           lines.join
         end
 
-        sig { params(ruby_contents: String).returns(String) }
+        #: (String ruby_contents) -> String
         def rbi_to_rbs(ruby_contents)
           ruby_contents = ruby_contents.dup
           sigs = collect_sigs(ruby_contents)
@@ -44,7 +44,7 @@ module Spoom
 
         private
 
-        sig { params(ruby_contents: String).returns(T::Array[[RBI::Sig, T.any(RBI::Method, RBI::Attr)]]) }
+        #: (String ruby_contents) -> Array[[RBI::Sig, (RBI::Method | RBI::Attr)]]
         def collect_sigs(ruby_contents)
           tree = RBI::Parser.parse_string(ruby_contents)
           visitor = SigsLocator.new
@@ -56,16 +56,17 @@ module Spoom
       class SigsLocator < RBI::Visitor
         extend T::Sig
 
-        sig { returns(T::Array[[RBI::Sig, T.any(RBI::Method, RBI::Attr)]]) }
+        #: Array[[RBI::Sig, (RBI::Method | RBI::Attr)]]
         attr_reader :sigs
 
-        sig { void }
+        #: -> void
         def initialize
           super
           @sigs = T.let([], T::Array[[RBI::Sig, T.any(RBI::Method, RBI::Attr)]])
         end
 
-        sig { override.params(node: T.nilable(RBI::Node)).void }
+        # @override
+        #: (RBI::Node? node) -> void
         def visit(node)
           return unless node
 
@@ -86,7 +87,7 @@ module Spoom
         class << self
           extend T::Sig
 
-          sig { params(sig: RBI::Sig, node: T.any(RBI::Method, RBI::Attr)).returns(String) }
+          #: (RBI::Sig sig, (RBI::Method | RBI::Attr) node) -> String
           def translate(sig, node)
             case node
             when RBI::Method
@@ -98,7 +99,7 @@ module Spoom
 
           private
 
-          sig { params(sig: RBI::Sig, node: RBI::Method).returns(String) }
+          #: (RBI::Sig sig, RBI::Method node) -> String
           def translate_method_sig(sig, node)
             out = StringIO.new
             p = RBI::RBSPrinter.new(out: out, indent: sig.loc&.begin_column)
@@ -133,7 +134,7 @@ module Spoom
             out.string
           end
 
-          sig { params(sig: RBI::Sig, node: RBI::Attr).returns(String) }
+          #: (RBI::Sig sig, RBI::Attr node) -> String
           def translate_attr_sig(sig, node)
             out = StringIO.new
             p = RBI::RBSPrinter.new(out: out)
@@ -149,7 +150,7 @@ module Spoom
 
         LINE_BREAK = T.let(0x0A, Integer)
 
-        sig { params(source: String).void }
+        #: (String source) -> void
         def initialize(source)
           @current_line = T.let(0, Integer)
           @pos = T.let(0, Integer)
@@ -157,7 +158,7 @@ module Spoom
         end
 
         # Finds the character index inside the source string for a given line and column
-        sig { params(line: Integer, character: Integer).returns(Integer) }
+        #: (Integer line, Integer character) -> Integer
         def find_char_position(line, character)
           # Find the character index for the beginning of the requested line
           until @current_line == line

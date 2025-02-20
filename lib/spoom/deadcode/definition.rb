@@ -37,66 +37,66 @@ module Spoom
 
       # Kind
 
-      sig { returns(T::Boolean) }
+      #: -> bool
       def attr_reader?
         kind == Kind::AttrReader
       end
 
-      sig { returns(T::Boolean) }
+      #: -> bool
       def attr_writer?
         kind == Kind::AttrWriter
       end
 
-      sig { returns(T::Boolean) }
+      #: -> bool
       def class?
         kind == Kind::Class
       end
 
-      sig { returns(T::Boolean) }
+      #: -> bool
       def constant?
         kind == Kind::Constant
       end
 
-      sig { returns(T::Boolean) }
+      #: -> bool
       def method?
         kind == Kind::Method
       end
 
-      sig { returns(T::Boolean) }
+      #: -> bool
       def module?
         kind == Kind::Module
       end
 
       # Status
 
-      sig { returns(T::Boolean) }
+      #: -> bool
       def alive?
         status == Status::ALIVE
       end
 
-      sig { void }
+      #: -> void
       def alive!
         @status = Status::ALIVE
       end
 
-      sig { returns(T::Boolean) }
+      #: -> bool
       def dead?
         status == Status::DEAD
       end
 
-      sig { returns(T::Boolean) }
+      #: -> bool
       def ignored?
         status == Status::IGNORED
       end
 
-      sig { void }
+      #: -> void
       def ignored!
         @status = Status::IGNORED
       end
 
       # Utils
 
-      sig { params(args: T.untyped).returns(String) }
+      #: (*untyped args) -> String
       def to_json(*args)
         {
           kind: kind,

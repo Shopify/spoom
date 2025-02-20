@@ -10,7 +10,7 @@ module Spoom
         class << self
           extend T::Sig
 
-          sig { returns(String) }
+          #: -> String
           def header_style
             <<~CSS
               .node {
@@ -36,7 +36,7 @@ module Spoom
             CSS
           end
 
-          sig { returns(String) }
+          #: -> String
           def header_script
             <<~JS
               function treeHeight(root, height = 0) {
@@ -55,7 +55,8 @@ module Spoom
           end
         end
 
-        sig { override.returns(String) }
+        # @override
+        #: -> String
         def script
           <<~JS
             var root = {children: #{@data.to_json}}
@@ -148,21 +149,14 @@ module Spoom
         class Sigils < CircleMap
           extend T::Sig
 
-          sig do
-            params(
-              id: String,
-              file_tree: FileTree,
-              nodes_strictnesses: T::Hash[FileTree::Node, T.nilable(String)],
-              nodes_scores: T::Hash[FileTree::Node, Float],
-            ).void
-          end
+          #: (String id, FileTree file_tree, Hash[FileTree::Node, String?] nodes_strictnesses, Hash[FileTree::Node, Float] nodes_scores) -> void
           def initialize(id, file_tree, nodes_strictnesses, nodes_scores)
             @nodes_strictnesses = nodes_strictnesses
             @nodes_scores = nodes_scores
             super(id, file_tree.roots.map { |r| tree_node_to_json(r) })
           end
 
-          sig { params(node: FileTree::Node).returns(T::Hash[Symbol, T.untyped]) }
+          #: (FileTree::Node node) -> Hash[Symbol, untyped]
           def tree_node_to_json(node)
             if node.children.empty?
               {

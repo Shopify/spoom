@@ -27,7 +27,8 @@ module Spoom
           T::Array[String],
         )
 
-        sig { override.params(definition: Model::Method).void }
+        # @override
+        #: (Model::Method definition) -> void
         def on_define_method(definition)
           owner = definition.owner
           return unless owner.is_a?(Model::Class)
@@ -35,7 +36,8 @@ module Spoom
           @index.ignore(definition) if ignored_subclass?(owner)
         end
 
-        sig { override.params(send: Send).void }
+        # @override
+        #: (Send send) -> void
         def on_send(send)
           return unless send.recv.nil? && CALLBACKS.include?(send.name)
 

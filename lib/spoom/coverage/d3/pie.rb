@@ -12,7 +12,7 @@ module Spoom
 
         abstract!
 
-        sig { params(id: String, title: String, data: T.untyped).void }
+        #: (String id, String title, untyped data) -> void
         def initialize(id, title, data)
           super(id, data)
           @title = title
@@ -21,7 +21,7 @@ module Spoom
         class << self
           extend T::Sig
 
-          sig { returns(String) }
+          #: -> String
           def header_style
             <<~CSS
               .pie .title {
@@ -39,7 +39,7 @@ module Spoom
             CSS
           end
 
-          sig { returns(String) }
+          #: -> String
           def header_script
             <<~JS
               function tooltipPie(d, title, kind, sum) {
@@ -52,7 +52,8 @@ module Spoom
           end
         end
 
-        sig { override.returns(String) }
+        # @override
+        #: -> String
         def script
           <<~JS
             #{tooltip}
@@ -123,12 +124,13 @@ module Spoom
         class Sigils < Pie
           extend T::Sig
 
-          sig { params(id: String, title: String, snapshot: Snapshot).void }
+          #: (String id, String title, Snapshot snapshot) -> void
           def initialize(id, title, snapshot)
             super(id, title, snapshot.sigils_excluding_rbis.select { |_k, v| v })
           end
 
-          sig { override.returns(String) }
+          # @override
+          #: -> String
           def tooltip
             <<~JS
               function tooltip_#{id}(d) {
@@ -141,12 +143,13 @@ module Spoom
         class Calls < Pie
           extend T::Sig
 
-          sig { params(id: String, title: String, snapshot: Snapshot).void }
+          #: (String id, String title, Snapshot snapshot) -> void
           def initialize(id, title, snapshot)
             super(id, title, { true: snapshot.calls_typed, false: snapshot.calls_untyped })
           end
 
-          sig { override.returns(String) }
+          # @override
+          #: -> String
           def tooltip
             <<~JS
               function tooltip_#{id}(d) {
@@ -159,7 +162,7 @@ module Spoom
         class Sigs < Pie
           extend T::Sig
 
-          sig { params(id: String, title: String, snapshot: Snapshot).void }
+          #: (String id, String title, Snapshot snapshot) -> void
           def initialize(id, title, snapshot)
             super(
               id,
@@ -168,7 +171,8 @@ module Spoom
             )
           end
 
-          sig { override.returns(String) }
+          # @override
+          #: -> String
           def tooltip
             <<~JS
               function tooltip_#{id}(d) {

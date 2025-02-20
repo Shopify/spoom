@@ -28,7 +28,7 @@ module Spoom
       LIGHT_WHITE     = new("\e[97m")
     end
 
-    sig { returns(String) }
+    #: -> String
     def ansi_code
       serialize
     end
@@ -37,7 +37,7 @@ module Spoom
   module Colorize
     extend T::Sig
 
-    sig { params(string: String, color: Color).returns(String) }
+    #: (String string, *Color color) -> String
     def set_color(string, *color)
       "#{color.map(&:ansi_code).join}#{string}#{Color::CLEAR.ansi_code}"
     end

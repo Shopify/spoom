@@ -5,7 +5,7 @@ module Spoom
   class Timeline
     extend T::Sig
 
-    sig { params(context: Context, from: Time, to: Time).void }
+    #: (Context context, Time from, Time to) -> void
     def initialize(context, from, to)
       @context = context
       @from = from
@@ -13,13 +13,13 @@ module Spoom
     end
 
     # Return one commit for each month between `from` and `to`
-    sig { returns(T::Array[Git::Commit]) }
+    #: -> Array[Git::Commit]
     def ticks
       commits_for_dates(months)
     end
 
     # Return all months between `from` and `to`
-    sig { returns(T::Array[Time]) }
+    #: -> Array[Time]
     def months
       d = Date.new(@from.year, @from.month, 1)
       to = Date.new(@to.year, @to.month, 1)
@@ -32,7 +32,7 @@ module Spoom
     end
 
     # Return one commit for each date in `dates`
-    sig { params(dates: T::Array[Time]).returns(T::Array[Git::Commit]) }
+    #: (Array[Time] dates) -> Array[Git::Commit]
     def commits_for_dates(dates)
       dates.map do |t|
         result = @context.git_log(

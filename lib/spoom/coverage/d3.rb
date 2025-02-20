@@ -17,7 +17,7 @@ module Spoom
       class << self
         extend T::Sig
 
-        sig { returns(String) }
+        #: -> String
         def header_style
           <<~CSS
             svg {
@@ -57,7 +57,7 @@ module Spoom
           CSS
         end
 
-        sig { params(palette: ColorPalette).returns(String) }
+        #: (ColorPalette palette) -> String
         def header_script(palette)
           <<~JS
             var parseDate = d3.timeParse("%s");

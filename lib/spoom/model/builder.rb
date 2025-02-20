@@ -7,7 +7,7 @@ module Spoom
     class Builder < NamespaceVisitor
       extend T::Sig
 
-      sig { params(model: Model, file: String).void }
+      #: (Model model, String file) -> void
       def initialize(model, file)
         super()
 
@@ -20,7 +20,8 @@ module Spoom
 
       # Classes
 
-      sig { override.params(node: Prism::ClassNode).void }
+      # @override
+      #: (Prism::ClassNode node) -> void
       def visit_class_node(node)
         @namespace_nesting << Class.new(
           @model.register_symbol(@names_nesting.join("::")),
@@ -35,7 +36,8 @@ module Spoom
         @last_sigs.clear
       end
 
-      sig { override.params(node: Prism::SingletonClassNode).void }
+      # @override
+      #: (Prism::SingletonClassNode node) -> void
       def visit_singleton_class_node(node)
         @namespace_nesting << SingletonClass.new(
           @model.register_symbol(@names_nesting.join("::")),
@@ -51,7 +53,8 @@ module Spoom
 
       # Modules
 
-      sig { override.params(node: Prism::ModuleNode).void }
+      # @override
+      #: (Prism::ModuleNode node) -> void
       def visit_module_node(node)
         @namespace_nesting << Module.new(
           @model.register_symbol(@names_nesting.join("::")),
@@ -67,7 +70,8 @@ module Spoom
 
       # Constants
 
-      sig { override.params(node: Prism::ConstantPathWriteNode).void }
+      # @override
+      #: (Prism::ConstantPathWriteNode node) -> void
       def visit_constant_path_write_node(node)
         @last_sigs.clear
 
@@ -88,7 +92,8 @@ module Spoom
         super
       end
 
-      sig { override.params(node: Prism::ConstantWriteNode).void }
+      # @override
+      #: (Prism::ConstantWriteNode node) -> void
       def visit_constant_write_node(node)
         @last_sigs.clear
 
@@ -102,7 +107,8 @@ module Spoom
         super
       end
 
-      sig { override.params(node: Prism::MultiWriteNode).void }
+      # @override
+      #: (Prism::MultiWriteNode node) -> void
       def visit_multi_write_node(node)
         @last_sigs.clear
 
@@ -123,7 +129,8 @@ module Spoom
 
       # Methods
 
-      sig { override.params(node: Prism::DefNode).void }
+      # @override
+      #: (Prism::DefNode node) -> void
       def visit_def_node(node)
         recv = node.receiver
 
@@ -142,7 +149,8 @@ module Spoom
 
       # Accessors
 
-      sig { override.params(node: Prism::CallNode).void }
+      # @override
+      #: (Prism::CallNode node) -> void
       def visit_call_node(node)
         return if node.receiver && !node.receiver.is_a?(Prism::SelfNode)
 
@@ -225,19 +233,19 @@ module Spoom
 
       private
 
-      sig { returns(Visibility) }
+      #: -> Visibility
       def current_visibility
         T.must(@visibility_stack.last)
       end
 
-      sig { returns(T::Array[Sig]) }
+      #: -> Array[Sig]
       def collect_sigs
         sigs = @last_sigs
         @last_sigs = []
         sigs
       end
 
-      sig { params(node: Prism::Node).returns(Location) }
+      #: (Prism::Node node) -> Location
       def node_location(node)
         Location.from_prism(@file, node.location)
       end

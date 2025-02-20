@@ -8,14 +8,15 @@ module Spoom
 
       abstract!
 
-      sig { void }
+      #: -> void
       def initialize
         super()
 
         @names_nesting = T.let([], T::Array[String])
       end
 
-      sig { override.params(node: T.nilable(Prism::Node)).void }
+      # @override
+      #: (Prism::Node? node) -> void
       def visit(node)
         case node
         when Prism::ClassNode, Prism::ModuleNode

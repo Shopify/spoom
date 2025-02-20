@@ -11,7 +11,7 @@ module Spoom
       requires_ancestor { Context }
 
       # Run `bundle exec srb` in this context directory
-      sig { params(arg: String, sorbet_bin: T.nilable(String), capture_err: T::Boolean).returns(ExecResult) }
+      #: (*String arg, ?sorbet_bin: String?, ?capture_err: bool) -> ExecResult
       def srb(*arg, sorbet_bin: nil, capture_err: true)
         res = if sorbet_bin
           exec("#{sorbet_bin} #{arg.join(" ")}", capture_err: capture_err)
@@ -29,19 +29,13 @@ module Spoom
         res
       end
 
-      sig { params(arg: String, sorbet_bin: T.nilable(String), capture_err: T::Boolean).returns(ExecResult) }
+      #: (*String arg, ?sorbet_bin: String?, ?capture_err: bool) -> ExecResult
       def srb_tc(*arg, sorbet_bin: nil, capture_err: true)
         arg.prepend("tc") unless sorbet_bin
         T.unsafe(self).srb(*arg, sorbet_bin: sorbet_bin, capture_err: capture_err)
       end
 
-      sig do
-        params(
-          arg: String,
-          sorbet_bin: T.nilable(String),
-          capture_err: T::Boolean,
-        ).returns(T.nilable(T::Hash[String, Integer]))
-      end
+      #: (*String arg, ?sorbet_bin: String?, ?capture_err: bool) -> Hash[String, Integer]?
       def srb_metrics(*arg, sorbet_bin: nil, capture_err: true)
         metrics_file = "metrics.tmp"
 
@@ -61,7 +55,7 @@ module Spoom
       end
 
       # List all files typechecked by Sorbet from its `config`
-      sig { params(with_config: T.nilable(Spoom::Sorbet::Config), include_rbis: T::Boolean).returns(T::Array[String]) }
+      #: (?with_config: Spoom::Sorbet::Config?, ?include_rbis: bool) -> Array[String]
       def srb_files(with_config: nil, include_rbis: true)
         config = with_config || sorbet_config
 
@@ -94,19 +88,13 @@ module Spoom
       end
 
       # List all files typechecked by Sorbet from its `config` that matches `strictness`
-      sig do
-        params(
-          strictness: String,
-          with_config: T.nilable(Spoom::Sorbet::Config),
-          include_rbis: T::Boolean,
-        ).returns(T::Array[String])
-      end
+      #: (String strictness, ?with_config: Spoom::Sorbet::Config?, ?include_rbis: bool) -> Array[String]
       def srb_files_with_strictness(strictness, with_config: nil, include_rbis: true)
         srb_files(with_config: with_config, include_rbis: include_rbis)
           .select { |file| read_file_strictness(file) == strictness }
       end
 
-      sig { params(arg: String, sorbet_bin: T.nilable(String), capture_err: T::Boolean).returns(T.nilable(String)) }
+      #: (*String arg, ?sorbet_bin: String?, ?capture_err: bool) -> String?
       def srb_version(*arg, sorbet_bin: nil, capture_err: true)
         res = T.unsafe(self).srb_tc("--no-config", "--version", *arg, sorbet_bin: sorbet_bin, capture_err: capture_err)
         return unless res.status
@@ -115,36 +103,36 @@ module Spoom
       end
 
       # Does this context has a `sorbet/config` file?
-      sig { returns(T::Boolean) }
+      #: -> bool
       def has_sorbet_config?
         file?(Spoom::Sorbet::CONFIG_PATH)
       end
 
-      sig { returns(Spoom::Sorbet::Config) }
+      #: -> Spoom::Sorbet::Config
       def sorbet_config
         Spoom::Sorbet::Config.parse_string(read_sorbet_config)
       end
 
       # Read the contents of `sorbet/config` in this context directory
-      sig { returns(String) }
+      #: -> String
       def read_sorbet_config
         read(Spoom::Sorbet::CONFIG_PATH)
       end
 
       # Set the `contents` of `sorbet/config` in this context directory
-      sig { params(contents: String, append: T::Boolean).void }
+      #: (String contents, ?append: bool) -> void
       def write_sorbet_config!(contents, append: false)
         write!(Spoom::Sorbet::CONFIG_PATH, contents, append: append)
       end
 
       # Read the strictness sigil from the file at `relative_path` (returns `nil` if no sigil)
-      sig { params(relative_path: String).returns(T.nilable(String)) }
+      #: (String relative_path) -> String?
       def read_file_strictness(relative_path)
         Spoom::Sorbet::Sigils.file_strictness(absolute_path_to(relative_path))
       end
 
       # Get the commit introducing the `sorbet/config` file
-      sig { returns(T.nilable(Spoom::Git::Commit)) }
+      #: -> Spoom::Git::Commit?
       def sorbet_intro_commit
         res = git_log("--diff-filter=A --format='%h %at' -1 -- sorbet/config")
         return unless res.status
@@ -156,7 +144,7 @@ module Spoom
       end
 
       # Get the commit removing the `sorbet/config` file
-      sig { returns(T.nilable(Spoom::Git::Commit)) }
+      #: -> Spoom::Git::Commit?
       def sorbet_removal_commit
         res = git_log("--diff-filter=D --format='%h %at' -1 -- sorbet/config")
         return unless res.status

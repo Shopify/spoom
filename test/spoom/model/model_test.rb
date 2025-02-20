@@ -104,7 +104,7 @@ module Spoom
 
       private
 
-      sig { params(rb: String).returns(Model) }
+      #: (String rb) -> Model
       def model(rb)
         node = Spoom.parse_ruby(rb, file: "foo.rb")
 

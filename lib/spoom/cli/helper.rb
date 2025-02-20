@@ -16,7 +16,7 @@ module Spoom
       requires_ancestor { Thor }
 
       # Print `message` on `$stdout`
-      sig { params(message: String).void }
+      #: (String message) -> void
       def say(message)
         buffer = StringIO.new
         buffer << highlight(message)
@@ -29,13 +29,7 @@ module Spoom
       # Print `message` on `$stderr`
       #
       # The message is prefixed by a status (default: `Error`).
-      sig do
-        params(
-          message: String,
-          status: T.nilable(String),
-          nl: T::Boolean,
-        ).void
-      end
+      #: (String message, ?status: String?, ?nl: bool) -> void
       def say_error(message, status: "Error", nl: true)
         buffer = StringIO.new
         buffer << "#{red(status)}: " if status
@@ -49,13 +43,7 @@ module Spoom
       # Print `message` on `$stderr`
       #
       # The message is prefixed by a status (default: `Warning`).
-      sig do
-        params(
-          message: String,
-          status: T.nilable(String),
-          nl: T::Boolean,
-        ).void
-      end
+      #: (String message, ?status: String?, ?nl: bool) -> void
       def say_warning(message, status: "Warning", nl: true)
         buffer = StringIO.new
         buffer << "#{yellow(status)}: " if status
@@ -67,13 +55,13 @@ module Spoom
       end
 
       # Returns the context at `--path` (by default the current working directory)
-      sig { returns(Context) }
+      #: -> Context
       def context
         @context ||= T.let(Context.new(exec_path), T.nilable(Context))
       end
 
       # Raise if `spoom` is not ran inside a context with a `sorbet/config` file
-      sig { returns(Context) }
+      #: -> Context
       def context_requiring_sorbet!
         context = self.context
         unless context.has_sorbet_config?
@@ -88,7 +76,7 @@ module Spoom
       end
 
       # Return the path specified through `--path`
-      sig { returns(String) }
+      #: -> String
       def exec_path
         options[:path]
       end
@@ -99,12 +87,12 @@ module Spoom
       HIGHLIGHT_COLOR = T.let(Spoom::Color::BLUE, Spoom::Color)
 
       # Is the `--color` option true?
-      sig { returns(T::Boolean) }
+      #: -> bool
       def color?
         options[:color]
       end
 
-      sig { params(string: String).returns(String) }
+      #: (String string) -> String
       def highlight(string)
         return string unless color?
 
@@ -128,39 +116,39 @@ module Spoom
       end
 
       # Colorize a string if `color?`
-      sig { params(string: String, color: Color).returns(String) }
+      #: (String string, *Color color) -> String
       def colorize(string, *color)
         return string unless color?
 
         T.unsafe(self).set_color(string, *color)
       end
 
-      sig { params(string: String).returns(String) }
+      #: (String string) -> String
       def blue(string)
         colorize(string, Color::BLUE)
       end
 
-      sig { params(string: String).returns(String) }
+      #: (String string) -> String
       def cyan(string)
         colorize(string, Color::CYAN)
       end
 
-      sig { params(string: String).returns(String) }
+      #: (String string) -> String
       def gray(string)
         colorize(string, Color::LIGHT_BLACK)
       end
 
-      sig { params(string: String).returns(String) }
+      #: (String string) -> String
       def green(string)
         colorize(string, Color::GREEN)
       end
 
-      sig { params(string: String).returns(String) }
+      #: (String string) -> String
       def red(string)
         colorize(string, Color::RED)
       end
 
-      sig { params(string: String).returns(String) }
+      #: (String string) -> String
       def yellow(string)
         colorize(string, Color::YELLOW)
       end

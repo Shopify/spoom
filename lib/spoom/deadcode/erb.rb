@@ -29,7 +29,7 @@ module Spoom
     class ERB < ::Erubi::Engine
       extend T::Sig
 
-      sig { params(input: T.untyped, properties: T.untyped).void }
+      #: (untyped input, ?untyped properties) -> void
       def initialize(input, properties = {})
         @newline_pending = 0
 
@@ -44,7 +44,8 @@ module Spoom
 
       private
 
-      sig { override.params(text: T.untyped).void }
+      # @override
+      #: (untyped text) -> void
       def add_text(text)
         return if text.empty?
 
@@ -62,7 +63,8 @@ module Spoom
 
       BLOCK_EXPR = /\s*((\s+|\))do|\{)(\s*\|[^|]*\|)?\s*\Z/
 
-      sig { override.params(indicator: T.untyped, code: T.untyped).void }
+      # @override
+      #: (untyped indicator, untyped code) -> void
       def add_expression(indicator, code)
         flush_newline_if_pending(src)
 
@@ -79,19 +81,21 @@ module Spoom
         end
       end
 
-      sig { override.params(code: T.untyped).void }
+      # @override
+      #: (untyped code) -> void
       def add_code(code)
         flush_newline_if_pending(src)
         super
       end
 
-      sig { override.params(_: T.untyped).void }
+      # @override
+      #: (untyped _) -> void
       def add_postamble(_)
         flush_newline_if_pending(src)
         super
       end
 
-      sig { params(src: T.untyped).void }
+      #: (untyped src) -> void
       def flush_newline_if_pending(src)
         if @newline_pending > 0
           src << bufvar << ".safe_append='#{"\n" * @newline_pending}'.freeze;"

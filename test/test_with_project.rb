@@ -11,16 +11,16 @@ module Spoom
 
     abstract!
 
-    sig { returns(TestProject) }
+    #: TestProject
     attr_reader :project
 
-    sig { params(args: T.untyped).void }
+    #: (*untyped args) -> void
     def initialize(*args)
       super
       @project = T.let(new_project, TestProject)
     end
 
-    sig { void }
+    #: -> void
     def teardown
       @project.destroy!
     end

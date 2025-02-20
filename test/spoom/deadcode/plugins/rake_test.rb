@@ -21,7 +21,7 @@ module Spoom
 
         private
 
-        sig { returns(Deadcode::Index) }
+        #: -> Deadcode::Index
         def index_with_plugins
           deadcode_index(plugin_classes: [Plugins::Rake])
         end

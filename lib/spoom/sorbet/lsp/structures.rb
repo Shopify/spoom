@@ -26,7 +26,7 @@ module Spoom
       class << self
         extend T::Sig
 
-        sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Hover) }
+        #: (Hash[untyped, untyped] json) -> Hover
         def from_json(json)
           Hover.new(
             contents: json["contents"]["value"],
@@ -35,13 +35,14 @@ module Spoom
         end
       end
 
-      sig { override.params(printer: SymbolPrinter).void }
+      # @override
+      #: (SymbolPrinter printer) -> void
       def accept_printer(printer)
         printer.print("#{contents}\n")
         printer.print_object(range) if range
       end
 
-      sig { returns(String) }
+      #: -> String
       def to_s
         "#{contents} (#{range})."
       end
@@ -57,7 +58,7 @@ module Spoom
       class << self
         extend T::Sig
 
-        sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Position) }
+        #: (Hash[untyped, untyped] json) -> Position
         def from_json(json)
           Position.new(
             line: json["line"].to_i,
@@ -66,12 +67,13 @@ module Spoom
         end
       end
 
-      sig { override.params(printer: SymbolPrinter).void }
+      # @override
+      #: (SymbolPrinter printer) -> void
       def accept_printer(printer)
         printer.print_colored("#{line}:#{char}", Color::LIGHT_BLACK)
       end
 
-      sig { returns(String) }
+      #: -> String
       def to_s
         "#{line}:#{char}"
       end
@@ -87,7 +89,7 @@ module Spoom
       class << self
         extend T::Sig
 
-        sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Range) }
+        #: (Hash[untyped, untyped] json) -> Range
         def from_json(json)
           Range.new(
             start: Position.from_json(json["start"]),
@@ -96,14 +98,15 @@ module Spoom
         end
       end
 
-      sig { override.params(printer: SymbolPrinter).void }
+      # @override
+      #: (SymbolPrinter printer) -> void
       def accept_printer(printer)
         printer.print_object(start)
         printer.print_colored("-", Color::LIGHT_BLACK)
         printer.print_object(self.end)
       end
 
-      sig { returns(String) }
+      #: -> String
       def to_s
         "#{start}-#{self.end}"
       end
@@ -119,7 +122,7 @@ module Spoom
       class << self
         extend T::Sig
 
-        sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Location) }
+        #: (Hash[untyped, untyped] json) -> Location
         def from_json(json)
           Location.new(
             uri: json["uri"],
@@ -128,13 +131,14 @@ module Spoom
         end
       end
 
-      sig { override.params(printer: SymbolPrinter).void }
+      # @override
+      #: (SymbolPrinter printer) -> void
       def accept_printer(printer)
         printer.print_colored("#{printer.clean_uri(uri)}:", Color::LIGHT_BLACK)
         printer.print_object(range)
       end
 
-      sig { returns(String) }
+      #: -> String
       def to_s
         "#{uri}:#{range}"
       end
@@ -151,7 +155,7 @@ module Spoom
       class << self
         extend T::Sig
 
-        sig { params(json: T::Hash[T.untyped, T.untyped]).returns(SignatureHelp) }
+        #: (Hash[untyped, untyped] json) -> SignatureHelp
         def from_json(json)
           SignatureHelp.new(
             label: json["label"],
@@ -161,7 +165,8 @@ module Spoom
         end
       end
 
-      sig { override.params(printer: SymbolPrinter).void }
+      # @override
+      #: (SymbolPrinter printer) -> void
       def accept_printer(printer)
         printer.print(label)
         printer.print("(")
@@ -169,7 +174,7 @@ module Spoom
         printer.print(")")
       end
 
-      sig { returns(String) }
+      #: -> String
       def to_s
         "#{label}(#{params})."
       end
@@ -187,7 +192,7 @@ module Spoom
       class << self
         extend T::Sig
 
-        sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Diagnostic) }
+        #: (Hash[untyped, untyped] json) -> Diagnostic
         def from_json(json)
           Diagnostic.new(
             range: Range.from_json(json["range"]),
@@ -198,12 +203,13 @@ module Spoom
         end
       end
 
-      sig { override.params(printer: SymbolPrinter).void }
+      # @override
+      #: (SymbolPrinter printer) -> void
       def accept_printer(printer)
         printer.print(to_s)
       end
 
-      sig { returns(String) }
+      #: -> String
       def to_s
         "Error: #{message} (#{code})."
       end
@@ -223,7 +229,7 @@ module Spoom
       class << self
         extend T::Sig
 
-        sig { params(json: T::Hash[T.untyped, T.untyped]).returns(DocumentSymbol) }
+        #: (Hash[untyped, untyped] json) -> DocumentSymbol
         def from_json(json)
           DocumentSymbol.new(
             name: json["name"],
@@ -236,7 +242,8 @@ module Spoom
         end
       end
 
-      sig { override.params(printer: SymbolPrinter).void }
+      # @override
+      #: (SymbolPrinter printer) -> void
       def accept_printer(printer)
         h = serialize.hash
         return if printer.seen.include?(h)
@@ -263,12 +270,12 @@ module Spoom
         # TODO: also display details?
       end
 
-      sig { returns(String) }
+      #: -> String
       def to_s
         "#{name} (#{range})"
       end
 
-      sig { returns(String) }
+      #: -> String
       def kind_string
         SYMBOL_KINDS[kind] || "<unknown:#{kind}>"
       end
@@ -309,20 +316,13 @@ module Spoom
     class SymbolPrinter < Printer
       extend T::Sig
 
-      sig { returns(T::Set[Integer]) }
+      #: Set[Integer]
       attr_reader :seen
 
-      sig { returns(T.nilable(String)) }
+      #: String?
       attr_accessor :prefix
 
-      sig do
-        params(
-          out: T.any(IO, StringIO),
-          colors: T::Boolean,
-          indent_level: Integer,
-          prefix: T.nilable(String),
-        ).void
-      end
+      #: (?out: (IO | StringIO), ?colors: bool, ?indent_level: Integer, ?prefix: String?) -> void
       def initialize(out: $stdout, colors: true, indent_level: 0, prefix: nil)
         super(out: out, colors: colors, indent_level: indent_level)
         @seen = T.let(Set.new, T::Set[Integer])
@@ -332,19 +332,19 @@ module Spoom
         @prefix = prefix
       end
 
-      sig { params(object: T.nilable(PrintableSymbol)).void }
+      #: (PrintableSymbol? object) -> void
       def print_object(object)
         return unless object
 
         object.accept_printer(self)
       end
 
-      sig { params(objects: T::Array[PrintableSymbol]).void }
+      #: (Array[PrintableSymbol] objects) -> void
       def print_objects(objects)
         objects.each { |object| print_object(object) }
       end
 
-      sig { params(uri: String).returns(String) }
+      #: (String uri) -> String
       def clean_uri(uri)
         prefix = self.prefix
         return uri unless prefix
@@ -352,7 +352,7 @@ module Spoom
         uri.delete_prefix(prefix)
       end
 
-      sig { params(objects: T::Array[PrintableSymbol]).void }
+      #: (Array[PrintableSymbol] objects) -> void
       def print_list(objects)
         objects.each do |object|
           printt

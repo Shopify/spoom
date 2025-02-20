@@ -14,18 +14,14 @@ module Spoom
       const :block, T.nilable(Prism::Node), default: nil
       const :location, Location
 
-      sig do
-        type_parameters(:T)
-          .params(arg_type: T::Class[T.type_parameter(:T)], block: T.proc.params(arg: T.type_parameter(:T)).void)
-          .void
-      end
+      #: [T] (Class[T] arg_type) { (T arg) -> void } -> void
       def each_arg(arg_type, &block)
         args.each do |arg|
           yield(T.unsafe(arg)) if arg.is_a?(arg_type)
         end
       end
 
-      sig { params(block: T.proc.params(key: Prism::Node, value: T.nilable(Prism::Node)).void).void }
+      #: { (Prism::Node key, Prism::Node? value) -> void } -> void
       def each_arg_assoc(&block)
         args.each do |arg|
           next unless arg.is_a?(Prism::KeywordHashNode) || arg.is_a?(Prism::HashNode)

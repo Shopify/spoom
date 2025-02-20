@@ -7,7 +7,8 @@ module Spoom
       class ActionMailer < Base
         extend T::Sig
 
-        sig { override.params(send: Send).void }
+        # @override
+        #: (Send send) -> void
         def on_send(send)
           return unless send.recv.nil? && ActionPack::CALLBACKS.include?(send.name)
 

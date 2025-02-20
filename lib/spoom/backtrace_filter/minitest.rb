@@ -10,7 +10,8 @@ module Spoom
 
       SORBET_PATHS = T.let(Gem.loaded_specs["sorbet-runtime"].full_require_paths.freeze, T::Array[String])
 
-      sig { override.params(bt: T.nilable(T::Array[String])).returns(T::Array[String]) }
+      # @override
+      #: (Array[String]? bt) -> Array[String]
       def filter(bt)
         super.select do |line|
           SORBET_PATHS.none? { |path| line.include?(path) }

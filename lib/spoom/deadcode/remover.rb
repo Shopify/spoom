@@ -8,12 +8,12 @@ module Spoom
 
       class Error < Spoom::Error; end
 
-      sig { params(context: Context).void }
+      #: (Context context) -> void
       def initialize(context)
         @context = context
       end
 
-      sig { params(kind: T.nilable(Definition::Kind), location: Location).returns(String) }
+      #: (Definition::Kind? kind, Location location) -> String
       def remove_location(kind, location)
         file = location.file
 
@@ -29,10 +29,10 @@ module Spoom
       class NodeRemover
         extend T::Sig
 
-        sig { returns(String) }
+        #: String
         attr_reader :new_source
 
-        sig { params(source: String, kind: T.nilable(Definition::Kind), location: Location).void }
+        #: (String source, Definition::Kind? kind, Location location) -> void
         def initialize(source, kind, location)
           @old_source = source
           @new_source = T.let(source.dup, String)
@@ -42,7 +42,7 @@ module Spoom
           @node_context = T.let(NodeFinder.find(source, location, kind), NodeContext)
         end
 
-        sig { void }
+        #: -> void
         def apply_edit
           sclass_context = @node_context.sclass_context
           if sclass_context
@@ -69,7 +69,7 @@ module Spoom
 
         private
 
-        sig { params(context: NodeContext).void }
+        #: (NodeContext context) -> void
         def delete_constant_assignment(context)
           case context.node
           when Prism::ConstantWriteNode, Prism::ConstantOperatorWriteNode,
@@ -149,7 +149,7 @@ module Spoom
           end
         end
 
-        sig { params(context: NodeContext).void }
+        #: (NodeContext context) -> void
         def delete_attr_accessor(context)
           args_context = context.parent_context
           send_context = args_context.parent_context
@@ -208,13 +208,7 @@ module Spoom
           insert_accessor(context.node, send_context, was_removed: false) if need_accessor
         end
 
-        sig do
-          params(
-            node: Prism::Node,
-            send_context: NodeContext,
-            was_removed: T::Boolean,
-          ).void
-        end
+        #: (Prism::Node node, NodeContext send_context, was_removed: bool) -> void
         def insert_accessor(node, send_context, was_removed:)
           name = node.slice
           code = case @kind
@@ -257,7 +251,7 @@ module Spoom
           @new_source = lines.join
         end
 
-        sig { params(context: NodeContext).void }
+        #: (NodeContext context) -> void
         def delete_node_and_comments_and_sigs(context)
           start_line = context.node.location.start_line
           end_line = context.node.location.end_line
@@ -320,24 +314,24 @@ module Spoom
           delete_lines(start_line, end_line)
         end
 
-        sig { params(start_line: Integer, end_line: Integer).void }
+        #: (Integer start_line, Integer end_line) -> void
         def delete_lines(start_line, end_line)
           lines = @new_source.lines
           lines[start_line - 1...end_line] = []
           @new_source = lines.join
         end
 
-        sig { params(start_char: Integer, end_char: Integer).void }
+        #: (Integer start_char, Integer end_char) -> void
         def delete_chars(start_char, end_char)
           @new_source[start_char...end_char] = ""
         end
 
-        sig { params(start_char: Integer, end_char: Integer, replacement: String).void }
+        #: (Integer start_char, Integer end_char, String replacement) -> void
         def replace_chars(start_char, end_char, replacement)
           @new_source[start_char...end_char] = replacement
         end
 
-        sig { params(node: Prism::CallNode, name: String, kind: T.nilable(Definition::Kind)).returns(String) }
+        #: (Prism::CallNode node, name: String, kind: Definition::Kind?) -> String
         def transform_sig(node, name:, kind:)
           type = T.let(nil, T.nilable(String))
 
@@ -372,23 +366,16 @@ module Spoom
       class NodeContext
         extend T::Sig
 
-        sig { returns(T::Hash[Integer, Prism::Comment]) }
+        #: Hash[Integer, Prism::Comment]
         attr_reader :comments
 
-        sig { returns(Prism::Node) }
+        #: Prism::Node
         attr_reader :node
 
-        sig { returns(T::Array[Prism::Node]) }
+        #: Array[Prism::Node]
         attr_accessor :nesting
 
-        sig do
-          params(
-            source: String,
-            comments: T::Hash[Integer, Prism::Comment],
-            node: Prism::Node,
-            nesting: T::Array[Prism::Node],
-          ).void
-        end
+        #: (String source, Hash[Integer, Prism::Comment] comments, Prism::Node node, Array[Prism::Node] nesting) -> void
         def initialize(source, comments, node, nesting)
           @source = source
           @comments = comments
@@ -396,7 +383,7 @@ module Spoom
           @nesting = nesting
         end
 
-        sig { returns(Prism::Node) }
+        #: -> Prism::Node
         def parent_node
           parent = @nesting.last
           raise Error, "No parent for node #{node}" unless parent
@@ -404,7 +391,7 @@ module Spoom
           parent
         end
 
-        sig { returns(NodeContext) }
+        #: -> NodeContext
         def parent_context
           nesting = @nesting.dup
           parent = nesting.pop
@@ -413,7 +400,7 @@ module Spoom
           NodeContext.new(@source, @comments, parent, nesting)
         end
 
-        sig { returns(T::Array[Prism::Node]) }
+        #: -> Array[Prism::Node]
         def previous_nodes
           parent = parent_node
           child_nodes = parent.child_nodes.compact
@@ -424,12 +411,12 @@ module Spoom
           T.must(child_nodes[0...index])
         end
 
-        sig { returns(T.nilable(Prism::Node)) }
+        #: -> Prism::Node?
         def previous_node
           previous_nodes.last
         end
 
-        sig { returns(T::Array[Prism::Node]) }
+        #: -> Array[Prism::Node]
         def next_nodes
           parent = parent_node
           child_nodes = parent.child_nodes.compact
@@ -440,12 +427,12 @@ module Spoom
           T.must(child_nodes.compact[(index + 1)..-1])
         end
 
-        sig { returns(T.nilable(Prism::Node)) }
+        #: -> Prism::Node?
         def next_node
           next_nodes.first
         end
 
-        sig { returns(T.nilable(NodeContext)) }
+        #: -> NodeContext?
         def sclass_context
           sclass = T.let(nil, T.nilable(Prism::SingletonClassNode))
 
@@ -473,12 +460,12 @@ module Spoom
           nil
         end
 
-        sig { params(node: T.nilable(Prism::Node)).returns(T::Boolean) }
+        #: (Prism::Node? node) -> bool
         def sorbet_signature?(node)
           node.is_a?(Prism::CallNode) && node.name == :sig
         end
 
-        sig { params(node: T.nilable(Prism::Node)).returns(T::Boolean) }
+        #: (Prism::Node? node) -> bool
         def sorbet_extend_sig?(node)
           return false unless node.is_a?(Prism::CallNode)
           return false unless node.name == :extend
@@ -490,7 +477,7 @@ module Spoom
           args.arguments.first&.slice == "T::Sig"
         end
 
-        sig { params(start_line: Integer, end_line: Integer).returns(T::Array[Prism::Comment]) }
+        #: (Integer start_line, Integer end_line) -> Array[Prism::Comment]
         def comments_between_lines(start_line, end_line)
           comments = T.let([], T::Array[Prism::Comment])
 
@@ -502,7 +489,7 @@ module Spoom
           comments
         end
 
-        sig { params(node: Prism::Node).returns(T::Array[Prism::Comment]) }
+        #: (Prism::Node node) -> Array[Prism::Comment]
         def attached_comments(node)
           comments = T.let([], T::Array[Prism::Comment])
 
@@ -517,7 +504,7 @@ module Spoom
           comments.reverse
         end
 
-        sig { returns(T::Array[Prism::Node]) }
+        #: -> Array[Prism::Node]
         def attached_sigs
           nodes = T.let([], T::Array[Prism::Node])
 
@@ -530,7 +517,7 @@ module Spoom
           nodes.reverse
         end
 
-        sig { returns(T.nilable(Prism::CallNode)) }
+        #: -> Prism::CallNode?
         def attached_sig
           previous_nodes.reverse_each do |node|
             if node.is_a?(Prism::Comment)
@@ -552,7 +539,7 @@ module Spoom
         class << self
           extend T::Sig
 
-          sig { params(source: String, location: Location, kind: T.nilable(Definition::Kind)).returns(NodeContext) }
+          #: (String source, Location location, Definition::Kind? kind) -> NodeContext
           def find(source, location, kind)
             result = Prism.parse(source)
 
@@ -586,7 +573,7 @@ module Spoom
             NodeContext.new(source, comments_by_line, node, visitor.nodes_nesting)
           end
 
-          sig { params(node: Prism::Node, kind: Definition::Kind).returns(T::Boolean) }
+          #: (Prism::Node node, Definition::Kind kind) -> bool
           def node_match_kind?(node, kind)
             case kind
             when Definition::Kind::AttrReader, Definition::Kind::AttrWriter
@@ -611,13 +598,13 @@ module Spoom
           end
         end
 
-        sig { returns(T.nilable(Prism::Node)) }
+        #: Prism::Node?
         attr_reader :node
 
-        sig { returns(T::Array[Prism::Node]) }
+        #: Array[Prism::Node]
         attr_reader :nodes_nesting
 
-        sig { params(location: Location, kind: T.nilable(Definition::Kind)).void }
+        #: (Location location, Definition::Kind? kind) -> void
         def initialize(location, kind)
           super()
           @location = location
@@ -626,7 +613,8 @@ module Spoom
           @nodes_nesting = T.let([], T::Array[Prism::Node])
         end
 
-        sig { override.params(node: T.nilable(Prism::Node)).void }
+        # @override
+        #: (Prism::Node? node) -> void
         def visit(node)
           return unless node
 

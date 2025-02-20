@@ -17,15 +17,10 @@ module Spoom
       class Killed < Error; end
       class Segfault < Error; end
 
-      sig { returns(ExecResult) }
+      #: ExecResult
       attr_reader :result
 
-      sig do
-        params(
-          message: String,
-          result: ExecResult,
-        ).void
-      end
+      #: (String message, ExecResult result) -> void
       def initialize(message, result)
         super(message)
 

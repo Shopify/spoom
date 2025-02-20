@@ -12,7 +12,7 @@ module Spoom
 
         abstract!
 
-        sig { params(id: String, data: T.untyped, keys: T::Array[String]).void }
+        #: (String id, untyped data, Array[String] keys) -> void
         def initialize(id, data, keys)
           super(id, data)
           @keys = keys
@@ -21,7 +21,7 @@ module Spoom
         class << self
           extend T::Sig
 
-          sig { returns(String) }
+          #: -> String
           def header_style
             <<~CSS
               .domain {
@@ -75,7 +75,7 @@ module Spoom
             CSS
           end
 
-          sig { returns(String) }
+          #: -> String
           def header_script
             <<~JS
               var parseVersion = function(version) {
@@ -97,7 +97,8 @@ module Spoom
           end
         end
 
-        sig { override.returns(String) }
+        # @override
+        #: -> String
         def script
           <<~HTML
             #{tooltip}
@@ -125,7 +126,7 @@ module Spoom
         sig { abstract.returns(String) }
         def plot; end
 
-        sig { returns(String) }
+        #: -> String
         def x_scale
           <<~HTML
             var xScale_#{id} = d3.scaleTime()
@@ -141,7 +142,7 @@ module Spoom
           HTML
         end
 
-        sig { returns(String) }
+        #: -> String
         def x_ticks
           <<~HTML
             svg_#{id}.append("g")
@@ -154,7 +155,7 @@ module Spoom
           HTML
         end
 
-        sig { params(min: String, max: String, ticks: String).returns(String) }
+        #: (min: String, max: String, ticks: String) -> String
         def y_scale(min:, max:, ticks:)
           <<~HTML
             var yScale_#{id} = d3.scaleLinear()
@@ -170,7 +171,7 @@ module Spoom
           HTML
         end
 
-        sig { params(ticks: String, format: String, padding: Integer).returns(String) }
+        #: (ticks: String, format: String, padding: Integer) -> String
         def y_ticks(ticks:, format:, padding:)
           <<~HTML
             svg_#{id}.append("g")
@@ -183,7 +184,7 @@ module Spoom
           HTML
         end
 
-        sig { params(y: String, color: String, curve: String).returns(String) }
+        #: (y: String, ?color: String, ?curve: String) -> String
         def area(y:, color: "#ccc", curve: "curveCatmullRom.alpha(1)")
           <<~HTML
             svg_#{id}.append("path")
@@ -199,7 +200,7 @@ module Spoom
           HTML
         end
 
-        sig { params(y: String, color: String, curve: String).returns(String) }
+        #: (y: String, ?color: String, ?curve: String) -> String
         def line(y:, color: "#ccc", curve: "curveCatmullRom.alpha(1)")
           <<~HTML
             svg_#{id}.append("path")
@@ -213,7 +214,7 @@ module Spoom
           HTML
         end
 
-        sig { params(y: String).returns(String) }
+        #: (y: String) -> String
         def points(y:)
           <<~HTML
             svg_#{id}.selectAll("circle")
@@ -232,7 +233,7 @@ module Spoom
         class Versions < Timeline
           extend T::Sig
 
-          sig { params(id: String, snapshots: T::Array[Snapshot]).void }
+          #: (String id, Array[Snapshot] snapshots) -> void
           def initialize(id, snapshots)
             data = snapshots.map do |snapshot|
               {
@@ -245,7 +246,8 @@ module Spoom
             super(id, data, [])
           end
 
-          sig { override.returns(String) }
+          # @override
+          #: -> String
           def tooltip
             <<~JS
               function tooltip_#{id}(d) {
@@ -259,7 +261,8 @@ module Spoom
             JS
           end
 
-          sig { override.returns(String) }
+          # @override
+          #: -> String
           def plot
             <<~JS
               #{x_scale}
@@ -282,7 +285,7 @@ module Spoom
         class Runtimes < Timeline
           extend T::Sig
 
-          sig { params(id: String, snapshots: T::Array[Snapshot]).void }
+          #: (String id, Array[Snapshot] snapshots) -> void
           def initialize(id, snapshots)
             data = snapshots.map do |snapshot|
               {
@@ -294,7 +297,8 @@ module Spoom
             super(id, data, [])
           end
 
-          sig { override.returns(String) }
+          # @override
+          #: -> String
           def tooltip
             <<~JS
               function tooltip_#{id}(d) {
@@ -307,7 +311,8 @@ module Spoom
             JS
           end
 
-          sig { override.returns(String) }
+          # @override
+          #: -> String
           def plot
             <<~JS
               #{x_scale}
@@ -332,7 +337,8 @@ module Spoom
 
           abstract!
 
-          sig { override.returns(String) }
+          # @override
+          #: -> String
           def script
             <<~JS
               #{tooltip}
@@ -373,7 +379,8 @@ module Spoom
             JS
           end
 
-          sig { override.returns(String) }
+          # @override
+          #: -> String
           def plot
             <<~JS
               #{x_scale}
@@ -384,7 +391,8 @@ module Spoom
             JS
           end
 
-          sig { override.params(y: String, color: String, curve: String).returns(String) }
+          # @override
+          #: (y: String, ?color: String, ?curve: String) -> String
           def line(y:, color: "strictnessColor(d.key)", curve: "curveCatmullRom.alpha(1)")
             <<~JS
               var area_#{id} = d3.area()
@@ -421,7 +429,7 @@ module Spoom
         class Sigils < Stacked
           extend T::Sig
 
-          sig { params(id: String, snapshots: T::Array[Snapshot]).void }
+          #: (String id, Array[Snapshot] snapshots) -> void
           def initialize(id, snapshots)
             keys = Snapshot::STRICTNESSES
             data = snapshots.map do |snapshot|
@@ -435,7 +443,8 @@ module Spoom
             super(id, data, keys)
           end
 
-          sig { override.returns(String) }
+          # @override
+          #: -> String
           def tooltip
             <<~JS
               function tooltip_#{id}(d) {
@@ -448,7 +457,7 @@ module Spoom
         class Calls < Stacked
           extend T::Sig
 
-          sig { params(id: String, snapshots: T::Array[Snapshot]).void }
+          #: (String id, Array[Snapshot] snapshots) -> void
           def initialize(id, snapshots)
             keys = ["false", "true"]
             data = snapshots.map do |snapshot|
@@ -462,7 +471,8 @@ module Spoom
             super(id, data, keys)
           end
 
-          sig { override.returns(String) }
+          # @override
+          #: -> String
           def tooltip
             <<~JS
               function tooltip_#{id}(d) {
@@ -475,7 +485,7 @@ module Spoom
         class Sigs < Stacked
           extend T::Sig
 
-          sig { params(id: String, snapshots: T::Array[Snapshot]).void }
+          #: (String id, Array[Snapshot] snapshots) -> void
           def initialize(id, snapshots)
             keys = ["false", "true"]
             data = snapshots.map do |snapshot|
@@ -492,7 +502,8 @@ module Spoom
             super(id, data, keys)
           end
 
-          sig { override.returns(String) }
+          # @override
+          #: -> String
           def tooltip
             <<~JS
               function tooltip_#{id}(d) {
@@ -505,7 +516,7 @@ module Spoom
         class RBIs < Stacked
           extend T::Sig
 
-          sig { params(id: String, snapshots: T::Array[Snapshot]).void }
+          #: (String id, Array[Snapshot] snapshots) -> void
           def initialize(id, snapshots)
             keys = ["rbis", "files"]
             data = snapshots.map do |snapshot|
@@ -519,7 +530,8 @@ module Spoom
             super(id, data, keys)
           end
 
-          sig { override.returns(String) }
+          # @override
+          #: -> String
           def tooltip
             <<~JS
               function tooltip_#{id}(d) {
@@ -533,7 +545,8 @@ module Spoom
             JS
           end
 
-          sig { override.returns(String) }
+          # @override
+          #: -> String
           def script
             <<~JS
               #{tooltip}
@@ -573,7 +586,8 @@ module Spoom
             JS
           end
 
-          sig { override.params(y: String, color: String, curve: String).returns(String) }
+          # @override
+          #: (y: String, ?color: String, ?curve: String) -> String
           def line(y:, color: "strictnessColor(d.key)", curve: "curveCatmullRom.alpha(1)")
             <<~JS
               var area_#{id} = d3.area()
@@ -613,7 +627,8 @@ module Spoom
             JS
           end
 
-          sig { override.returns(String) }
+          # @override
+          #: -> String
           def plot
             <<~JS
               #{x_scale}
