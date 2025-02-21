@@ -10,16 +10,16 @@ module Spoom
       class Diagnostics < Error
         extend T::Sig
 
-        sig { returns(String) }
+        #: String
         attr_reader :uri
 
-        sig { returns(T::Array[Diagnostic]) }
+        #: Array[Diagnostic]
         attr_reader :diagnostics
 
         class << self
           extend T::Sig
 
-          sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Diagnostics) }
+          #: (Hash[untyped, untyped] json) -> Diagnostics
           def from_json(json)
             Diagnostics.new(
               json["uri"],
@@ -28,7 +28,7 @@ module Spoom
           end
         end
 
-        sig { params(uri: String, diagnostics: T::Array[Diagnostic]).void }
+        #: (String uri, Array[Diagnostic] diagnostics) -> void
         def initialize(uri, diagnostics)
           @uri = uri
           @diagnostics = diagnostics
@@ -40,16 +40,16 @@ module Spoom
     class ResponseError < Error
       extend T::Sig
 
-      sig { returns(Integer) }
+      #: Integer
       attr_reader :code
 
-      sig { returns(T::Hash[T.untyped, T.untyped]) }
+      #: Hash[untyped, untyped]
       attr_reader :data
 
       class << self
         extend T::Sig
 
-        sig { params(json: T::Hash[T.untyped, T.untyped]).returns(ResponseError) }
+        #: (Hash[untyped, untyped] json) -> ResponseError
         def from_json(json)
           ResponseError.new(
             json["code"],
@@ -59,7 +59,7 @@ module Spoom
         end
       end
 
-      sig { params(code: Integer, message: String, data: T::Hash[T.untyped, T.untyped]).void }
+      #: (Integer code, String message, Hash[untyped, untyped] data) -> void
       def initialize(code, message, data)
         super(message)
         @code = code

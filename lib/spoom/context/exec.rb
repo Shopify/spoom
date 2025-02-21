@@ -10,7 +10,7 @@ module Spoom
     const :status, T::Boolean
     const :exit_code, Integer
 
-    sig { returns(String) }
+    #: -> String
     def to_s
       <<~STR
         ########## STDOUT ##########
@@ -31,7 +31,7 @@ module Spoom
       requires_ancestor { Context }
 
       # Run a command in this context directory
-      sig { params(command: String, capture_err: T::Boolean).returns(ExecResult) }
+      #: (String command, ?capture_err: bool) -> ExecResult
       def exec(command, capture_err: true)
         Bundler.with_unbundled_env do
           opts = T.let({ chdir: absolute_path }, T::Hash[Symbol, T.untyped])

@@ -10,7 +10,7 @@ module Spoom
         extend T::Sig
 
         # Parse a line formatted as `%h %at` into a `Commit`
-        sig { params(string: String).returns(T.nilable(Commit)) }
+        #: (String string) -> Commit?
         def parse_line(string)
           sha, epoch = string.split(" ", 2)
           return unless sha && epoch
@@ -23,7 +23,7 @@ module Spoom
       const :sha, String
       const :time, Time
 
-      sig { returns(Integer) }
+      #: -> Integer
       def timestamp
         time.to_i
       end
@@ -39,7 +39,7 @@ module Spoom
       requires_ancestor { Context }
 
       # Run a command prefixed by `git` in this context directory
-      sig { params(command: String).returns(ExecResult) }
+      #: (String command) -> ExecResult
       def git(command)
         exec("git #{command}")
       end
@@ -48,7 +48,7 @@ module Spoom
       #
       # Warning: passing a branch will run `git init -b <branch>` which is only available in git 2.28+.
       # In older versions, use `git_init!` followed by `git("checkout -b <branch>")`.
-      sig { params(branch: T.nilable(String)).returns(ExecResult) }
+      #: (?branch: String?) -> ExecResult
       def git_init!(branch: nil)
         if branch
           git("init -b #{branch}")
@@ -58,13 +58,13 @@ module Spoom
       end
 
       # Run `git checkout` in this context directory
-      sig { params(ref: String).returns(ExecResult) }
+      #: (?ref: String) -> ExecResult
       def git_checkout!(ref: "main")
         git("checkout #{ref}")
       end
 
       # Run `git checkout -b <branch-name> <ref>` in this context directory
-      sig { params(branch_name: String, ref: T.nilable(String)).returns(ExecResult) }
+      #: (String branch_name, ?ref: String?) -> ExecResult
       def git_checkout_new_branch!(branch_name, ref: nil)
         if ref
           git("checkout -b #{branch_name} #{ref}")
@@ -74,7 +74,7 @@ module Spoom
       end
 
       # Run `git add . && git commit` in this context directory
-      sig { params(message: String, time: Time, allow_empty: T::Boolean).returns(ExecResult) }
+      #: (?message: String, ?time: Time, ?allow_empty: bool) -> ExecResult
       def git_commit!(message: "message", time: Time.now.utc, allow_empty: false)
         git("add --all")
 
@@ -85,7 +85,7 @@ module Spoom
       end
 
       # Get the current git branch in this context directory
-      sig { returns(T.nilable(String)) }
+      #: -> String?
       def git_current_branch
         res = git("branch --show-current")
         return unless res.status
@@ -94,13 +94,13 @@ module Spoom
       end
 
       # Run `git diff` in this context directory
-      sig { params(arg: String).returns(ExecResult) }
+      #: (*String arg) -> ExecResult
       def git_diff(*arg)
         git("diff #{arg.join(" ")}")
       end
 
       # Get the last commit in the currently checked out branch
-      sig { params(short_sha: T::Boolean).returns(T.nilable(Spoom::Git::Commit)) }
+      #: (?short_sha: bool) -> Spoom::Git::Commit?
       def git_last_commit(short_sha: true)
         res = git_log("HEAD --format='%#{short_sha ? "h" : "H"} %at' -1")
         return unless res.status
@@ -111,24 +111,24 @@ module Spoom
         Spoom::Git::Commit.parse_line(out)
       end
 
-      sig { params(arg: String).returns(ExecResult) }
+      #: (*String arg) -> ExecResult
       def git_log(*arg)
         git("log #{arg.join(" ")}")
       end
 
       # Run `git push <remote> <ref>` in this context directory
-      sig { params(remote: String, ref: String, force: T::Boolean).returns(ExecResult) }
+      #: (String remote, String ref, ?force: bool) -> ExecResult
       def git_push!(remote, ref, force: false)
         git("push #{force ? "-f" : ""} #{remote} #{ref}")
       end
 
-      sig { params(arg: String).returns(ExecResult) }
+      #: (*String arg) -> ExecResult
       def git_show(*arg)
         git("show #{arg.join(" ")}")
       end
 
       # Is there uncommitted changes in this context directory?
-      sig { params(path: String).returns(T::Boolean) }
+      #: (?path: String) -> bool
       def git_workdir_clean?(path: ".")
         git_diff("HEAD").out.empty?
       end

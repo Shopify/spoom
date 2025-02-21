@@ -30,7 +30,7 @@ module Spoom
           #   )
           # end
           # ~~~
-          sig { params(names: T.any(String, Regexp)).void }
+          #: (*(String | Regexp) names) -> void
           def ignore_classes_named(*names)
             save_names_and_patterns(names, :@ignored_class_names, :@ignored_class_patterns)
           end
@@ -48,7 +48,7 @@ module Spoom
           #   )
           # end
           # ~~~
-          sig { params(names: T.any(String, Regexp)).void }
+          #: (*(String | Regexp) names) -> void
           def ignore_classes_inheriting_from(*names)
             save_names_and_patterns(names, :@ignored_subclasses_of_names, :@ignored_subclasses_of_patterns)
           end
@@ -66,7 +66,7 @@ module Spoom
           #   )
           # end
           # ~~~
-          sig { params(names: T.any(String, Regexp)).void }
+          #: (*(String | Regexp) names) -> void
           def ignore_constants_named(*names)
             save_names_and_patterns(names, :@ignored_constant_names, :@ignored_constant_patterns)
           end
@@ -84,7 +84,7 @@ module Spoom
           #   )
           # end
           # ~~~
-          sig { params(names: T.any(String, Regexp)).void }
+          #: (*(String | Regexp) names) -> void
           def ignore_methods_named(*names)
             save_names_and_patterns(names, :@ignored_method_names, :@ignored_method_patterns)
           end
@@ -102,14 +102,14 @@ module Spoom
           #   )
           # end
           # ~~~
-          sig { params(names: T.any(String, Regexp)).void }
+          #: (*(String | Regexp) names) -> void
           def ignore_modules_named(*names)
             save_names_and_patterns(names, :@ignored_module_names, :@ignored_module_patterns)
           end
 
           private
 
-          sig { params(names: T::Array[T.any(String, Regexp)], names_variable: Symbol, patterns_variable: Symbol).void }
+          #: (Array[(String | Regexp)] names, Symbol names_variable, Symbol patterns_variable) -> void
           def save_names_and_patterns(names, names_variable, patterns_variable)
             ignored_names = instance_variable_set(names_variable, Set.new)
             ignored_patterns = instance_variable_set(patterns_variable, [])
@@ -125,10 +125,10 @@ module Spoom
           end
         end
 
-        sig { returns(Index) }
+        #: Index
         attr_reader :index
 
-        sig { params(index: Index).void }
+        #: (Index index) -> void
         def initialize(index)
           @index = index
         end
@@ -148,13 +148,13 @@ module Spoom
         #   end
         # end
         # ~~~
-        sig { params(definition: Model::Attr).void }
+        #: (Model::Attr definition) -> void
         def on_define_accessor(definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_accessor` instead.
-        sig { params(definition: Model::Attr).void }
+        #: (Model::Attr definition) -> void
         def internal_on_define_accessor(definition)
           on_define_accessor(definition)
         end
@@ -172,13 +172,13 @@ module Spoom
         #   end
         # end
         # ~~~
-        sig { params(definition: Model::Class).void }
+        #: (Model::Class definition) -> void
         def on_define_class(definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_class` instead.
-        sig { params(definition: Model::Class).void }
+        #: (Model::Class definition) -> void
         def internal_on_define_class(definition)
           if ignored_class_name?(definition.name)
             @index.ignore(definition)
@@ -202,13 +202,13 @@ module Spoom
         #   end
         # end
         # ~~~
-        sig { params(definition: Model::Constant).void }
+        #: (Model::Constant definition) -> void
         def on_define_constant(definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_constant` instead.
-        sig { params(definition: Model::Constant).void }
+        #: (Model::Constant definition) -> void
         def internal_on_define_constant(definition)
           @index.ignore(definition) if ignored_constant_name?(definition.name)
 
@@ -228,13 +228,13 @@ module Spoom
         #   end
         # end
         # ~~~
-        sig { params(definition: Model::Method).void }
+        #: (Model::Method definition) -> void
         def on_define_method(definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_method` instead.
-        sig { params(definition: Model::Method).void }
+        #: (Model::Method definition) -> void
         def internal_on_define_method(definition)
           @index.ignore(definition) if ignored_method_name?(definition.name)
 
@@ -254,13 +254,13 @@ module Spoom
         #   end
         # end
         # ~~~
-        sig { params(definition: Model::Module).void }
+        #: (Model::Module definition) -> void
         def on_define_module(definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_module` instead.
-        sig { params(definition: Model::Module).void }
+        #: (Model::Module definition) -> void
         def internal_on_define_module(definition)
           @index.ignore(definition) if ignored_module_name?(definition.name)
 
@@ -280,7 +280,7 @@ module Spoom
         #   end
         # end
         # ~~~
-        sig { params(send: Send).void }
+        #: (Send send) -> void
         def on_send(send)
           # no-op
         end
@@ -289,7 +289,7 @@ module Spoom
 
         # DSL support
 
-        sig { params(definition: Model::Namespace, superclass_name: String).returns(T::Boolean) }
+        #: (Model::Namespace definition, String superclass_name) -> bool
         def subclass_of?(definition, superclass_name)
           superclass_symbol = @index.model.symbols[superclass_name]
           return false unless superclass_symbol
@@ -297,14 +297,14 @@ module Spoom
           @index.model.symbols_hierarchy.edge?(definition.symbol, superclass_symbol)
         end
 
-        sig { params(name: T.nilable(String)).returns(T::Boolean) }
+        #: (String? name) -> bool
         def ignored_class_name?(name)
           return false unless name
 
           ignored_name?(name, :@ignored_class_names, :@ignored_class_patterns)
         end
 
-        sig { params(definition: Model::Class).returns(T::Boolean) }
+        #: (Model::Class definition) -> bool
         def ignored_subclass?(definition)
           superclass_name = definition.superclass_name
           return true if superclass_name && ignored_name?(
@@ -316,39 +316,39 @@ module Spoom
           names(:@ignored_subclasses_of_names).any? { |superclass_name| subclass_of?(definition, superclass_name) }
         end
 
-        sig { params(name: String).returns(T::Boolean) }
+        #: (String name) -> bool
         def ignored_constant_name?(name)
           ignored_name?(name, :@ignored_constant_names, :@ignored_constant_patterns)
         end
 
-        sig { params(name: String).returns(T::Boolean) }
+        #: (String name) -> bool
         def ignored_method_name?(name)
           ignored_name?(name, :@ignored_method_names, :@ignored_method_patterns)
         end
 
-        sig { params(name: String).returns(T::Boolean) }
+        #: (String name) -> bool
         def ignored_module_name?(name)
           ignored_name?(name, :@ignored_module_names, :@ignored_module_patterns)
         end
 
-        sig { params(name: String, names_variable: Symbol, patterns_variable: Symbol).returns(T::Boolean) }
+        #: (String name, Symbol names_variable, Symbol patterns_variable) -> bool
         def ignored_name?(name, names_variable, patterns_variable)
           names(names_variable).include?(name) || patterns(patterns_variable).any? { |pattern| pattern.match?(name) }
         end
 
-        sig { params(const: Symbol).returns(T::Set[String]) }
+        #: (Symbol const) -> Set[String]
         def names(const)
           self.class.instance_variable_get(const) || Set.new
         end
 
-        sig { params(const: Symbol).returns(T::Array[Regexp]) }
+        #: (Symbol const) -> Array[Regexp]
         def patterns(const)
           self.class.instance_variable_get(const) || []
         end
 
         # Plugin utils
 
-        sig { params(name: String).returns(String) }
+        #: (String name) -> String
         def camelize(name)
           name = T.must(name.split("::").last)
           name = T.must(name.split("/").last)

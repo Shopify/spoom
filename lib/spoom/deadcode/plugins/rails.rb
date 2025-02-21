@@ -9,19 +9,21 @@ module Spoom
 
         ignore_constants_named("APP_PATH", "ENGINE_PATH", "ENGINE_ROOT")
 
-        sig { override.params(definition: Model::Class).void }
+        # @override
+        #: (Model::Class definition) -> void
         def on_define_class(definition)
           @index.ignore(definition) if file_is_helper?(definition)
         end
 
-        sig { override.params(definition: Model::Module).void }
+        # @override
+        #: (Model::Module definition) -> void
         def on_define_module(definition)
           @index.ignore(definition) if file_is_helper?(definition)
         end
 
         private
 
-        sig { params(symbol_def: Model::Namespace).returns(T::Boolean) }
+        #: (Model::Namespace symbol_def) -> bool
         def file_is_helper?(symbol_def)
           symbol_def.location.file.match?(%r{app/helpers/.*\.rb$})
         end

@@ -7,10 +7,10 @@ module Spoom
     class ReferencesVisitor < Visitor
       extend T::Sig
 
-      sig { returns(T::Array[Reference]) }
+      #: Array[Reference]
       attr_reader :references
 
-      sig { params(file: String).void }
+      #: (String file) -> void
       def initialize(file)
         super()
 
@@ -18,18 +18,21 @@ module Spoom
         @references = T.let([], T::Array[Reference])
       end
 
-      sig { override.params(node: Prism::AliasMethodNode).void }
+      # @override
+      #: (Prism::AliasMethodNode node) -> void
       def visit_alias_method_node(node)
         reference_method(node.old_name.slice, node)
       end
 
-      sig { override.params(node: Prism::AndNode).void }
+      # @override
+      #: (Prism::AndNode node) -> void
       def visit_and_node(node)
         reference_method(node.operator_loc.slice, node)
         super
       end
 
-      sig { override.params(node: Prism::BlockArgumentNode).void }
+      # @override
+      #: (Prism::BlockArgumentNode node) -> void
       def visit_block_argument_node(node)
         expression = node.expression
         case expression
@@ -40,7 +43,8 @@ module Spoom
         end
       end
 
-      sig { override.params(node: Prism::CallAndWriteNode).void }
+      # @override
+      #: (Prism::CallAndWriteNode node) -> void
       def visit_call_and_write_node(node)
         visit(node.receiver)
         reference_method(node.read_name.to_s, node)
@@ -48,7 +52,8 @@ module Spoom
         visit(node.value)
       end
 
-      sig { override.params(node: Prism::CallOperatorWriteNode).void }
+      # @override
+      #: (Prism::CallOperatorWriteNode node) -> void
       def visit_call_operator_write_node(node)
         visit(node.receiver)
         reference_method(node.read_name.to_s, node)
@@ -56,7 +61,8 @@ module Spoom
         visit(node.value)
       end
 
-      sig { override.params(node: Prism::CallOrWriteNode).void }
+      # @override
+      #: (Prism::CallOrWriteNode node) -> void
       def visit_call_or_write_node(node)
         visit(node.receiver)
         reference_method(node.read_name.to_s, node)
@@ -64,7 +70,8 @@ module Spoom
         visit(node.value)
       end
 
-      sig { override.params(node: Prism::CallNode).void }
+      # @override
+      #: (Prism::CallNode node) -> void
       def visit_call_node(node)
         visit(node.receiver)
 
@@ -81,53 +88,62 @@ module Spoom
         visit(node.block)
       end
 
-      sig { override.params(node: Prism::ClassNode).void }
+      # @override
+      #: (Prism::ClassNode node) -> void
       def visit_class_node(node)
         visit(node.superclass) if node.superclass
         visit(node.body)
       end
 
-      sig { override.params(node: Prism::ConstantAndWriteNode).void }
+      # @override
+      #: (Prism::ConstantAndWriteNode node) -> void
       def visit_constant_and_write_node(node)
         reference_constant(node.name.to_s, node)
         visit(node.value)
       end
 
-      sig { override.params(node: Prism::ConstantOperatorWriteNode).void }
+      # @override
+      #: (Prism::ConstantOperatorWriteNode node) -> void
       def visit_constant_operator_write_node(node)
         reference_constant(node.name.to_s, node)
         visit(node.value)
       end
 
-      sig { override.params(node: Prism::ConstantOrWriteNode).void }
+      # @override
+      #: (Prism::ConstantOrWriteNode node) -> void
       def visit_constant_or_write_node(node)
         reference_constant(node.name.to_s, node)
         visit(node.value)
       end
 
-      sig { override.params(node: Prism::ConstantPathNode).void }
+      # @override
+      #: (Prism::ConstantPathNode node) -> void
       def visit_constant_path_node(node)
         visit(node.parent)
         reference_constant(node.name.to_s, node)
       end
 
-      sig { override.params(node: Prism::ConstantPathWriteNode).void }
+      # @override
+      #: (Prism::ConstantPathWriteNode node) -> void
       def visit_constant_path_write_node(node)
         visit(node.target.parent)
         visit(node.value)
       end
 
-      sig { override.params(node: Prism::ConstantReadNode).void }
+      # @override
+      #: (Prism::ConstantReadNode node) -> void
       def visit_constant_read_node(node)
         reference_constant(node.name.to_s, node)
       end
 
-      sig { override.params(node: Prism::ConstantWriteNode).void }
+      # @override
+      #: (Prism::ConstantWriteNode node) -> void
       def visit_constant_write_node(node)
         visit(node.value)
       end
 
-      sig { override.params(node: Prism::LocalVariableAndWriteNode).void }
+      # @override
+      #: (Prism::LocalVariableAndWriteNode node) -> void
       def visit_local_variable_and_write_node(node)
         name = node.name.to_s
         reference_method(name, node)
@@ -135,7 +151,8 @@ module Spoom
         visit(node.value)
       end
 
-      sig { override.params(node: Prism::LocalVariableOperatorWriteNode).void }
+      # @override
+      #: (Prism::LocalVariableOperatorWriteNode node) -> void
       def visit_local_variable_operator_write_node(node)
         name = node.name.to_s
         reference_method(name, node)
@@ -143,7 +160,8 @@ module Spoom
         visit(node.value)
       end
 
-      sig { override.params(node: Prism::LocalVariableOrWriteNode).void }
+      # @override
+      #: (Prism::LocalVariableOrWriteNode node) -> void
       def visit_local_variable_or_write_node(node)
         name = node.name.to_s
         reference_method(name, node)
@@ -151,18 +169,21 @@ module Spoom
         visit(node.value)
       end
 
-      sig { override.params(node: Prism::LocalVariableWriteNode).void }
+      # @override
+      #: (Prism::LocalVariableWriteNode node) -> void
       def visit_local_variable_write_node(node)
         reference_method("#{node.name}=", node)
         visit(node.value)
       end
 
-      sig { override.params(node: Prism::ModuleNode).void }
+      # @override
+      #: (Prism::ModuleNode node) -> void
       def visit_module_node(node)
         visit(node.body)
       end
 
-      sig { override.params(node: Prism::MultiWriteNode).void }
+      # @override
+      #: (Prism::MultiWriteNode node) -> void
       def visit_multi_write_node(node)
         node.lefts.each do |const|
           case const
@@ -173,7 +194,8 @@ module Spoom
         visit(node.value)
       end
 
-      sig { override.params(node: Prism::OrNode).void }
+      # @override
+      #: (Prism::OrNode node) -> void
       def visit_or_node(node)
         reference_method(node.operator_loc.slice, node)
         super
@@ -181,17 +203,17 @@ module Spoom
 
       private
 
-      sig { params(name: String, node: Prism::Node).void }
+      #: (String name, Prism::Node node) -> void
       def reference_constant(name, node)
         @references << Reference.constant(name, node_location(node))
       end
 
-      sig { params(name: String, node: Prism::Node).void }
+      #: (String name, Prism::Node node) -> void
       def reference_method(name, node)
         @references << Reference.method(name, node_location(node))
       end
 
-      sig { params(node: Prism::Node).returns(Location) }
+      #: (Prism::Node node) -> Location
       def node_location(node)
         Location.from_prism(@file, node.location)
       end

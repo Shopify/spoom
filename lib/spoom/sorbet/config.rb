@@ -28,13 +28,13 @@ module Spoom
 
       DEFAULT_ALLOWED_EXTENSIONS = T.let([".rb", ".rbi"].freeze, T::Array[String])
 
-      sig { returns(T::Array[String]) }
+      #: Array[String]
       attr_accessor :paths, :ignore, :allowed_extensions
 
-      sig { returns(T::Boolean) }
+      #: bool
       attr_accessor :no_stdlib
 
-      sig { void }
+      #: -> void
       def initialize
         @paths = T.let([], T::Array[String])
         @ignore = T.let([], T::Array[String])
@@ -42,7 +42,7 @@ module Spoom
         @no_stdlib = T.let(false, T::Boolean)
       end
 
-      sig { returns(Config) }
+      #: -> Config
       def copy
         new_config = Sorbet::Config.new
         new_config.paths.concat(@paths)
@@ -64,7 +64,7 @@ module Spoom
       #
       # puts config.options_string # "/foo /bar --ignore /baz --allowed-extension .rb"
       # ~~~
-      sig { returns(String) }
+      #: -> String
       def options_string
         opts = []
         opts.concat(paths.map { |p| "'#{p}'" })
@@ -77,12 +77,12 @@ module Spoom
       class << self
         extend T::Sig
 
-        sig { params(sorbet_config_path: String).returns(Spoom::Sorbet::Config) }
+        #: (String sorbet_config_path) -> Spoom::Sorbet::Config
         def parse_file(sorbet_config_path)
           parse_string(File.read(sorbet_config_path))
         end
 
-        sig { params(sorbet_config: String).returns(Spoom::Sorbet::Config) }
+        #: (String sorbet_config) -> Spoom::Sorbet::Config
         def parse_string(sorbet_config)
           config = Config.new
           state = T.let(nil, T.nilable(Symbol))
@@ -143,7 +143,7 @@ module Spoom
 
         private
 
-        sig { params(line: String).returns(String) }
+        #: (String line) -> String
         def parse_option(line)
           T.must(line.split("=").last).strip
         end

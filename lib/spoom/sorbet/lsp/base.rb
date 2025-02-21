@@ -12,12 +12,12 @@ module Spoom
     class Message
       extend T::Sig
 
-      sig { void }
+      #: -> void
       def initialize
         @jsonrpc = T.let("2.0", String)
       end
 
-      sig { returns(T::Hash[T.untyped, T.untyped]) }
+      #: -> Hash[untyped, untyped]
       def as_json
         instance_variables.each_with_object({}) do |var, obj|
           val = instance_variable_get(var)
@@ -25,7 +25,7 @@ module Spoom
         end
       end
 
-      sig { params(args: T.untyped).returns(String) }
+      #: (*untyped args) -> String
       def to_json(*args)
         T.unsafe(as_json).to_json(*args)
       end
@@ -37,13 +37,13 @@ module Spoom
     class Request < Message
       extend T::Sig
 
-      sig { returns(Integer) }
+      #: Integer
       attr_reader :id
 
-      sig { returns(T::Hash[T.untyped, T.untyped]) }
+      #: Hash[untyped, untyped]
       attr_reader :params
 
-      sig { params(id: Integer, method: String, params: T::Hash[T.untyped, T.untyped]).void }
+      #: (Integer id, String method, Hash[untyped, untyped] params) -> void
       def initialize(id, method, params)
         super()
         @id = id
@@ -58,13 +58,13 @@ module Spoom
     class Notification < Message
       extend T::Sig
 
-      sig { returns(String) }
+      #: String
       attr_reader :method
 
-      sig { returns(T::Hash[T.untyped, T.untyped]) }
+      #: Hash[untyped, untyped]
       attr_reader :params
 
-      sig { params(method: String, params: T::Hash[T.untyped, T.untyped]).void }
+      #: (String method, Hash[untyped, untyped] params) -> void
       def initialize(method, params)
         super()
         @method = method

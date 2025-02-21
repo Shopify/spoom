@@ -12,7 +12,7 @@ module Spoom
     class << self
       extend T::Sig
 
-      sig { params(location_string: String).returns(Location) }
+      #: (String location_string) -> Location
       def from_string(location_string)
         file, rest = location_string.split(":", 2)
         raise LocationError, "Invalid location string `#{location_string}`: missing file name" unless file
@@ -43,7 +43,7 @@ module Spoom
         )
       end
 
-      sig { params(file: String, location: Prism::Location).returns(Location) }
+      #: (String file, Prism::Location location) -> Location
       def from_prism(file, location)
         new(
           file,
@@ -55,21 +55,13 @@ module Spoom
       end
     end
 
-    sig { returns(String) }
+    #: String
     attr_reader :file
 
-    sig { returns(T.nilable(Integer)) }
+    #: Integer?
     attr_reader :start_line, :start_column, :end_line, :end_column
 
-    sig do
-      params(
-        file: String,
-        start_line: T.nilable(Integer),
-        start_column: T.nilable(Integer),
-        end_line: T.nilable(Integer),
-        end_column: T.nilable(Integer),
-      ).void
-    end
+    #: (String file, ?start_line: Integer?, ?start_column: Integer?, ?end_line: Integer?, ?end_column: Integer?) -> void
     def initialize(file, start_line: nil, start_column: nil, end_line: nil, end_column: nil)
       raise LocationError,
         "Invalid location: end line is required if start line is provided" if start_line && !end_line
@@ -89,7 +81,7 @@ module Spoom
       @end_column = end_column
     end
 
-    sig { params(other: Location).returns(T::Boolean) }
+    #: (Location other) -> bool
     def include?(other)
       return false unless @file == other.file
       return false if (@start_line || -Float::INFINITY) > (other.start_line || -Float::INFINITY)
@@ -102,7 +94,8 @@ module Spoom
       true
     end
 
-    sig { override.params(other: BasicObject).returns(T.nilable(Integer)) }
+    # @override
+    #: (BasicObject other) -> Integer?
     def <=>(other)
       return unless Location === other
 
@@ -125,7 +118,7 @@ module Spoom
       comparison_array_self <=> comparison_array_other
     end
 
-    sig { returns(String) }
+    #: -> String
     def to_s
       if @start_line && @start_column
         "#{@file}:#{@start_line}:#{@start_column}-#{@end_line}:#{@end_column}"

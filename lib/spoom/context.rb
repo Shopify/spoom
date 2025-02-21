@@ -33,21 +33,21 @@ module Spoom
       #
       # `name` is used as prefix to the temporary directory name.
       # The directory will be created if it doesn't exist.
-      sig { params(name: T.nilable(String)).returns(T.attached_class) }
+      #: (?String? name) -> instance
       def mktmp!(name = nil)
         new(::Dir.mktmpdir(name))
       end
     end
 
     # The absolute path to the directory this context is about
-    sig { returns(String) }
+    #: String
     attr_reader :absolute_path
 
     # Create a new context about `absolute_path`
     #
     # The directory will not be created if it doesn't exist.
     # Call `#make!` to create it.
-    sig { params(absolute_path: String).void }
+    #: (String absolute_path) -> void
     def initialize(absolute_path)
       @absolute_path = T.let(::File.expand_path(absolute_path), String)
     end

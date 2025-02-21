@@ -1609,7 +1609,7 @@ module Spoom
 
       private
 
-      sig { params(ruby_string: String, def_name: String).returns(String) }
+      #: (String ruby_string, String def_name) -> String
       def remove(ruby_string, def_name)
         file = "file.rb"
         context = Context.mktmp!

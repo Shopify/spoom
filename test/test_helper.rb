@@ -14,7 +14,7 @@ module Spoom
 
     requires_ancestor { Minitest::Test }
 
-    sig { params(name: T.nilable(String)).returns(TestProject) }
+    #: (?String? name) -> TestProject
     def new_project(name = nil)
       project = TestProject.mktmp!(name || self.name)
       project.write_gemfile!(spoom_gemfile)
@@ -24,7 +24,7 @@ module Spoom
     end
 
     # Default Gemfile contents requiring only Spoom
-    sig { returns(String) }
+    #: -> String
     def spoom_gemfile
       <<~GEMFILE
         source("https://rubygems.org")
@@ -37,7 +37,7 @@ module Spoom
     end
 
     # Replace all sorbet-like version "0.5.5888" in `test` by "X.X.XXXX"
-    sig { params(text: String).returns(String) }
+    #: (String text) -> String
     def censor_sorbet_version(text)
       text.gsub(/\d\.\d\.\d{4,5}/, "X.X.XXXX")
     end

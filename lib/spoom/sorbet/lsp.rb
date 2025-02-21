@@ -13,7 +13,7 @@ module Spoom
     class Client
       extend T::Sig
 
-      sig { params(sorbet_bin: String, sorbet_args: String, path: String).void }
+      #: (String sorbet_bin, *String sorbet_args, ?path: String) -> void
       def initialize(sorbet_bin, *sorbet_args, path: ".")
         @id = T.let(0, Integer)
         @open = T.let(false, T::Boolean)
@@ -23,23 +23,23 @@ module Spoom
         @err = T.let(io_err, IO)
       end
 
-      sig { returns(Integer) }
+      #: -> Integer
       def next_id
         @id += 1
       end
 
-      sig { params(json_string: String).void }
+      #: (String json_string) -> void
       def send_raw(json_string)
         @in.puts("Content-Length:#{json_string.length}\r\n\r\n#{json_string}")
       end
 
-      sig { params(message: Message).returns(T.nilable(T::Hash[T.untyped, T.untyped])) }
+      #: (Message message) -> Hash[untyped, untyped]?
       def send(message)
         send_raw(message.to_json)
         read if message.is_a?(Request)
       end
 
-      sig { returns(T.nilable(String)) }
+      #: -> String?
       def read_raw
         header = @out.gets
 
@@ -50,7 +50,7 @@ module Spoom
         @out.read(len + 2) # +2 'cause of the final \r\n
       end
 
-      sig { returns(T.nilable(T::Hash[T.untyped, T.untyped])) }
+      #: -> Hash[untyped, untyped]?
       def read
         raw_string = read_raw
         return unless raw_string
@@ -68,7 +68,7 @@ module Spoom
 
       # LSP requests
 
-      sig { params(workspace_path: String).void }
+      #: (String workspace_path) -> void
       def open(workspace_path)
         raise Error::AlreadyOpen, "Error: CLI already opened" if @open
 
@@ -85,7 +85,7 @@ module Spoom
         @open = true
       end
 
-      sig { params(uri: String, line: Integer, column: Integer).returns(T.nilable(Hover)) }
+      #: (String uri, Integer line, Integer column) -> Hover?
       def hover(uri, line, column)
         json = send(Request.new(
           next_id,
@@ -106,7 +106,7 @@ module Spoom
         Hover.from_json(json["result"])
       end
 
-      sig { params(uri: String, line: Integer, column: Integer).returns(T::Array[SignatureHelp]) }
+      #: (String uri, Integer line, Integer column) -> Array[SignatureHelp]
       def signatures(uri, line, column)
         json = send(Request.new(
           next_id,
@@ -127,7 +127,7 @@ module Spoom
         json["result"]["signatures"].map { |loc| SignatureHelp.from_json(loc) }
       end
 
-      sig { params(uri: String, line: Integer, column: Integer).returns(T::Array[Location]) }
+      #: (String uri, Integer line, Integer column) -> Array[Location]
       def definitions(uri, line, column)
         json = send(Request.new(
           next_id,
@@ -148,7 +148,7 @@ module Spoom
         json["result"].map { |loc| Location.from_json(loc) }
       end
 
-      sig { params(uri: String, line: Integer, column: Integer).returns(T::Array[Location]) }
+      #: (String uri, Integer line, Integer column) -> Array[Location]
       def type_definitions(uri, line, column)
         json = send(Request.new(
           next_id,
@@ -169,7 +169,7 @@ module Spoom
         json["result"].map { |loc| Location.from_json(loc) }
       end
 
-      sig { params(uri: String, line: Integer, column: Integer, include_decl: T::Boolean).returns(T::Array[Location]) }
+      #: (String uri, Integer line, Integer column, ?bool include_decl) -> Array[Location]
       def references(uri, line, column, include_decl = true)
         json = send(Request.new(
           next_id,
@@ -193,7 +193,7 @@ module Spoom
         json["result"].map { |loc| Location.from_json(loc) }
       end
 
-      sig { params(query: String).returns(T::Array[DocumentSymbol]) }
+      #: (String query) -> Array[DocumentSymbol]
       def symbols(query)
         json = send(Request.new(
           next_id,
@@ -208,7 +208,7 @@ module Spoom
         json["result"].map { |loc| DocumentSymbol.from_json(loc) }
       end
 
-      sig { params(uri: String).returns(T::Array[DocumentSymbol]) }
+      #: (String uri) -> Array[DocumentSymbol]
       def document_symbols(uri)
         json = send(Request.new(
           next_id,
@@ -225,7 +225,7 @@ module Spoom
         json["result"].map { |loc| DocumentSymbol.from_json(loc) }
       end
 
-      sig { void }
+      #: -> void
       def close
         send(Request.new(next_id, "shutdown", {}))
         @in.close

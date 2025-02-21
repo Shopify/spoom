@@ -29,13 +29,13 @@ module Spoom
       # The strictness name as found in the Sorbet metrics file
       STRICTNESSES = T.let(["ignore", "false", "true", "strict", "strong", "stdlib"].freeze, T::Array[String])
 
-      sig { params(out: T.any(IO, StringIO), colors: T::Boolean, indent_level: Integer).void }
+      #: (?out: (IO | StringIO), ?colors: bool, ?indent_level: Integer) -> void
       def print(out: $stdout, colors: true, indent_level: 0)
         printer = SnapshotPrinter.new(out: out, colors: colors, indent_level: indent_level)
         printer.print_snapshot(self)
       end
 
-      sig { params(arg: T.untyped).returns(String) }
+      #: (*untyped arg) -> String
       def to_json(*arg)
         serialize.to_json(*arg)
       end
@@ -43,12 +43,12 @@ module Spoom
       class << self
         extend T::Sig
 
-        sig { params(json: String).returns(Snapshot) }
+        #: (String json) -> Snapshot
         def from_json(json)
           from_obj(JSON.parse(json))
         end
 
-        sig { params(obj: T::Hash[String, T.untyped]).returns(Snapshot) }
+        #: (Hash[String, untyped] obj) -> Snapshot
         def from_obj(obj)
           snapshot = Snapshot.new
           snapshot.timestamp = obj.fetch("timestamp", 0)
@@ -95,7 +95,7 @@ module Spoom
     class SnapshotPrinter < Spoom::Printer
       extend T::Sig
 
-      sig { params(snapshot: Snapshot).void }
+      #: (Snapshot snapshot) -> void
       def print_snapshot(snapshot)
         methods = snapshot.methods_with_sig + snapshot.methods_without_sig
         methods_excluding_rbis = snapshot.methods_with_sig_excluding_rbis + snapshot.methods_without_sig_excluding_rbis
@@ -143,7 +143,7 @@ module Spoom
 
       private
 
-      sig { params(hash: T::Hash[String, Integer], total: Integer).void }
+      #: (Hash[String, Integer] hash, Integer total) -> void
       def print_map(hash, total)
         indent
         hash.each do |key, value|
@@ -154,7 +154,7 @@ module Spoom
         dedent
       end
 
-      sig { params(value: T.nilable(Integer), total: T.nilable(Integer)).returns(String) }
+      #: (Integer? value, Integer? total) -> String
       def percent(value, total)
         return "" if value.nil? || total.nil? || total == 0
 

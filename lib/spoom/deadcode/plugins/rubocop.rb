@@ -14,7 +14,8 @@ module Spoom
           "RuboCop::Cop::Base",
         )
 
-        sig { override.params(definition: Model::Constant).void }
+        # @override
+        #: (Model::Constant definition) -> void
         def on_define_constant(definition)
           owner = definition.owner
           return false unless owner.is_a?(Model::Class)
@@ -22,7 +23,8 @@ module Spoom
           @index.ignore(definition) if ignored_subclass?(owner) && RUBOCOP_CONSTANTS.include?(definition.name)
         end
 
-        sig { override.params(definition: Model::Method).void }
+        # @override
+        #: (Model::Method definition) -> void
         def on_define_method(definition)
           return unless definition.name == "on_send"
 

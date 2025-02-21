@@ -9,7 +9,8 @@ module Spoom
 
         ignore_classes_inheriting_from("ActionMailer::Preview")
 
-        sig { override.params(definition: Model::Method).void }
+        # @override
+        #: (Model::Method definition) -> void
         def on_define_method(definition)
           owner = definition.owner
           return unless owner.is_a?(Model::Class)

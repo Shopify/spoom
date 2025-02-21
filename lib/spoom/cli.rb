@@ -54,7 +54,7 @@ module Spoom
         default: false,
         desc: "Count the number of errors if all files were bumped"
       option :sorbet_options, type: :string, default: "", desc: "Pass options to Sorbet"
-      sig { params(directory: String).void }
+      #: (?String directory) -> void
       def bump(directory = ".")
         say_warning("This command is deprecated. Please use `spoom srb bump` instead.")
 

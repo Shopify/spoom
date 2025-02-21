@@ -7,747 +7,896 @@ module Spoom
   class Visitor < Prism::Visitor
     extend T::Sig
 
-    sig { override.params(node: Prism::Node).void }
+    # @override
+    #: (Prism::Node node) -> void
     def visit_child_nodes(node)
       node.child_nodes.compact.each { |node| visit(node) }
     end
 
-    sig { override.params(node: Prism::AliasGlobalVariableNode).void }
+    # @override
+    #: (Prism::AliasGlobalVariableNode node) -> void
     def visit_alias_global_variable_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::AliasMethodNode).void }
+    # @override
+    #: (Prism::AliasMethodNode node) -> void
     def visit_alias_method_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::AlternationPatternNode).void }
+    # @override
+    #: (Prism::AlternationPatternNode node) -> void
     def visit_alternation_pattern_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::AndNode).void }
+    # @override
+    #: (Prism::AndNode node) -> void
     def visit_and_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ArgumentsNode).void }
+    # @override
+    #: (Prism::ArgumentsNode node) -> void
     def visit_arguments_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ArrayNode).void }
+    # @override
+    #: (Prism::ArrayNode node) -> void
     def visit_array_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ArrayPatternNode).void }
+    # @override
+    #: (Prism::ArrayPatternNode node) -> void
     def visit_array_pattern_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::AssocNode).void }
+    # @override
+    #: (Prism::AssocNode node) -> void
     def visit_assoc_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::AssocSplatNode).void }
+    # @override
+    #: (Prism::AssocSplatNode node) -> void
     def visit_assoc_splat_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::BackReferenceReadNode).void }
+    # @override
+    #: (Prism::BackReferenceReadNode node) -> void
     def visit_back_reference_read_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::BeginNode).void }
+    # @override
+    #: (Prism::BeginNode node) -> void
     def visit_begin_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::BlockArgumentNode).void }
+    # @override
+    #: (Prism::BlockArgumentNode node) -> void
     def visit_block_argument_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::BlockLocalVariableNode).void }
+    # @override
+    #: (Prism::BlockLocalVariableNode node) -> void
     def visit_block_local_variable_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::BlockNode).void }
+    # @override
+    #: (Prism::BlockNode node) -> void
     def visit_block_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::BlockParameterNode).void }
+    # @override
+    #: (Prism::BlockParameterNode node) -> void
     def visit_block_parameter_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::BlockParametersNode).void }
+    # @override
+    #: (Prism::BlockParametersNode node) -> void
     def visit_block_parameters_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::BreakNode).void }
+    # @override
+    #: (Prism::BreakNode node) -> void
     def visit_break_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::CallAndWriteNode).void }
+    # @override
+    #: (Prism::CallAndWriteNode node) -> void
     def visit_call_and_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::CallNode).void }
+    # @override
+    #: (Prism::CallNode node) -> void
     def visit_call_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::CallOperatorWriteNode).void }
+    # @override
+    #: (Prism::CallOperatorWriteNode node) -> void
     def visit_call_operator_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::CallOrWriteNode).void }
+    # @override
+    #: (Prism::CallOrWriteNode node) -> void
     def visit_call_or_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::CallTargetNode).void }
+    # @override
+    #: (Prism::CallTargetNode node) -> void
     def visit_call_target_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::CapturePatternNode).void }
+    # @override
+    #: (Prism::CapturePatternNode node) -> void
     def visit_capture_pattern_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::CaseMatchNode).void }
+    # @override
+    #: (Prism::CaseMatchNode node) -> void
     def visit_case_match_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::CaseNode).void }
+    # @override
+    #: (Prism::CaseNode node) -> void
     def visit_case_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ClassNode).void }
+    # @override
+    #: (Prism::ClassNode node) -> void
     def visit_class_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ClassVariableAndWriteNode).void }
+    # @override
+    #: (Prism::ClassVariableAndWriteNode node) -> void
     def visit_class_variable_and_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ClassVariableOperatorWriteNode).void }
+    # @override
+    #: (Prism::ClassVariableOperatorWriteNode node) -> void
     def visit_class_variable_operator_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ClassVariableOrWriteNode).void }
+    # @override
+    #: (Prism::ClassVariableOrWriteNode node) -> void
     def visit_class_variable_or_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ClassVariableReadNode).void }
+    # @override
+    #: (Prism::ClassVariableReadNode node) -> void
     def visit_class_variable_read_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ClassVariableTargetNode).void }
+    # @override
+    #: (Prism::ClassVariableTargetNode node) -> void
     def visit_class_variable_target_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ClassVariableWriteNode).void }
+    # @override
+    #: (Prism::ClassVariableWriteNode node) -> void
     def visit_class_variable_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ConstantAndWriteNode).void }
+    # @override
+    #: (Prism::ConstantAndWriteNode node) -> void
     def visit_constant_and_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ConstantOperatorWriteNode).void }
+    # @override
+    #: (Prism::ConstantOperatorWriteNode node) -> void
     def visit_constant_operator_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ConstantOrWriteNode).void }
+    # @override
+    #: (Prism::ConstantOrWriteNode node) -> void
     def visit_constant_or_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ConstantPathAndWriteNode).void }
+    # @override
+    #: (Prism::ConstantPathAndWriteNode node) -> void
     def visit_constant_path_and_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ConstantPathNode).void }
+    # @override
+    #: (Prism::ConstantPathNode node) -> void
     def visit_constant_path_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ConstantPathOperatorWriteNode).void }
+    # @override
+    #: (Prism::ConstantPathOperatorWriteNode node) -> void
     def visit_constant_path_operator_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ConstantPathOrWriteNode).void }
+    # @override
+    #: (Prism::ConstantPathOrWriteNode node) -> void
     def visit_constant_path_or_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ConstantPathTargetNode).void }
+    # @override
+    #: (Prism::ConstantPathTargetNode node) -> void
     def visit_constant_path_target_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ConstantPathWriteNode).void }
+    # @override
+    #: (Prism::ConstantPathWriteNode node) -> void
     def visit_constant_path_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ConstantReadNode).void }
+    # @override
+    #: (Prism::ConstantReadNode node) -> void
     def visit_constant_read_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ConstantTargetNode).void }
+    # @override
+    #: (Prism::ConstantTargetNode node) -> void
     def visit_constant_target_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ConstantWriteNode).void }
+    # @override
+    #: (Prism::ConstantWriteNode node) -> void
     def visit_constant_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::DefNode).void }
+    # @override
+    #: (Prism::DefNode node) -> void
     def visit_def_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::DefinedNode).void }
+    # @override
+    #: (Prism::DefinedNode node) -> void
     def visit_defined_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ElseNode).void }
+    # @override
+    #: (Prism::ElseNode node) -> void
     def visit_else_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::EmbeddedStatementsNode).void }
+    # @override
+    #: (Prism::EmbeddedStatementsNode node) -> void
     def visit_embedded_statements_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::EmbeddedVariableNode).void }
+    # @override
+    #: (Prism::EmbeddedVariableNode node) -> void
     def visit_embedded_variable_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::EnsureNode).void }
+    # @override
+    #: (Prism::EnsureNode node) -> void
     def visit_ensure_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::FalseNode).void }
+    # @override
+    #: (Prism::FalseNode node) -> void
     def visit_false_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::FindPatternNode).void }
+    # @override
+    #: (Prism::FindPatternNode node) -> void
     def visit_find_pattern_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::FlipFlopNode).void }
+    # @override
+    #: (Prism::FlipFlopNode node) -> void
     def visit_flip_flop_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::FloatNode).void }
+    # @override
+    #: (Prism::FloatNode node) -> void
     def visit_float_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ForNode).void }
+    # @override
+    #: (Prism::ForNode node) -> void
     def visit_for_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ForwardingArgumentsNode).void }
+    # @override
+    #: (Prism::ForwardingArgumentsNode node) -> void
     def visit_forwarding_arguments_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ForwardingParameterNode).void }
+    # @override
+    #: (Prism::ForwardingParameterNode node) -> void
     def visit_forwarding_parameter_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ForwardingSuperNode).void }
+    # @override
+    #: (Prism::ForwardingSuperNode node) -> void
     def visit_forwarding_super_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::GlobalVariableAndWriteNode).void }
+    # @override
+    #: (Prism::GlobalVariableAndWriteNode node) -> void
     def visit_global_variable_and_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::GlobalVariableOperatorWriteNode).void }
+    # @override
+    #: (Prism::GlobalVariableOperatorWriteNode node) -> void
     def visit_global_variable_operator_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::GlobalVariableOrWriteNode).void }
+    # @override
+    #: (Prism::GlobalVariableOrWriteNode node) -> void
     def visit_global_variable_or_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::GlobalVariableReadNode).void }
+    # @override
+    #: (Prism::GlobalVariableReadNode node) -> void
     def visit_global_variable_read_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::GlobalVariableTargetNode).void }
+    # @override
+    #: (Prism::GlobalVariableTargetNode node) -> void
     def visit_global_variable_target_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::GlobalVariableWriteNode).void }
+    # @override
+    #: (Prism::GlobalVariableWriteNode node) -> void
     def visit_global_variable_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::HashNode).void }
+    # @override
+    #: (Prism::HashNode node) -> void
     def visit_hash_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::HashPatternNode).void }
+    # @override
+    #: (Prism::HashPatternNode node) -> void
     def visit_hash_pattern_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::IfNode).void }
+    # @override
+    #: (Prism::IfNode node) -> void
     def visit_if_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ImaginaryNode).void }
+    # @override
+    #: (Prism::ImaginaryNode node) -> void
     def visit_imaginary_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ImplicitNode).void }
+    # @override
+    #: (Prism::ImplicitNode node) -> void
     def visit_implicit_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ImplicitRestNode).void }
+    # @override
+    #: (Prism::ImplicitRestNode node) -> void
     def visit_implicit_rest_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::InNode).void }
+    # @override
+    #: (Prism::InNode node) -> void
     def visit_in_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::IndexAndWriteNode).void }
+    # @override
+    #: (Prism::IndexAndWriteNode node) -> void
     def visit_index_and_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::IndexOperatorWriteNode).void }
+    # @override
+    #: (Prism::IndexOperatorWriteNode node) -> void
     def visit_index_operator_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::IndexOrWriteNode).void }
+    # @override
+    #: (Prism::IndexOrWriteNode node) -> void
     def visit_index_or_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::IndexTargetNode).void }
+    # @override
+    #: (Prism::IndexTargetNode node) -> void
     def visit_index_target_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::InstanceVariableAndWriteNode).void }
+    # @override
+    #: (Prism::InstanceVariableAndWriteNode node) -> void
     def visit_instance_variable_and_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::InstanceVariableOperatorWriteNode).void }
+    # @override
+    #: (Prism::InstanceVariableOperatorWriteNode node) -> void
     def visit_instance_variable_operator_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::InstanceVariableOrWriteNode).void }
+    # @override
+    #: (Prism::InstanceVariableOrWriteNode node) -> void
     def visit_instance_variable_or_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::InstanceVariableReadNode).void }
+    # @override
+    #: (Prism::InstanceVariableReadNode node) -> void
     def visit_instance_variable_read_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::InstanceVariableTargetNode).void }
+    # @override
+    #: (Prism::InstanceVariableTargetNode node) -> void
     def visit_instance_variable_target_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::InstanceVariableWriteNode).void }
+    # @override
+    #: (Prism::InstanceVariableWriteNode node) -> void
     def visit_instance_variable_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::IntegerNode).void }
+    # @override
+    #: (Prism::IntegerNode node) -> void
     def visit_integer_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::InterpolatedMatchLastLineNode).void }
+    # @override
+    #: (Prism::InterpolatedMatchLastLineNode node) -> void
     def visit_interpolated_match_last_line_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::InterpolatedRegularExpressionNode).void }
+    # @override
+    #: (Prism::InterpolatedRegularExpressionNode node) -> void
     def visit_interpolated_regular_expression_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::InterpolatedStringNode).void }
+    # @override
+    #: (Prism::InterpolatedStringNode node) -> void
     def visit_interpolated_string_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::InterpolatedSymbolNode).void }
+    # @override
+    #: (Prism::InterpolatedSymbolNode node) -> void
     def visit_interpolated_symbol_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::InterpolatedXStringNode).void }
+    # @override
+    #: (Prism::InterpolatedXStringNode node) -> void
     def visit_interpolated_x_string_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::KeywordHashNode).void }
+    # @override
+    #: (Prism::KeywordHashNode node) -> void
     def visit_keyword_hash_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::KeywordRestParameterNode).void }
+    # @override
+    #: (Prism::KeywordRestParameterNode node) -> void
     def visit_keyword_rest_parameter_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::LambdaNode).void }
+    # @override
+    #: (Prism::LambdaNode node) -> void
     def visit_lambda_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::LocalVariableAndWriteNode).void }
+    # @override
+    #: (Prism::LocalVariableAndWriteNode node) -> void
     def visit_local_variable_and_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::LocalVariableOperatorWriteNode).void }
+    # @override
+    #: (Prism::LocalVariableOperatorWriteNode node) -> void
     def visit_local_variable_operator_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::LocalVariableOrWriteNode).void }
+    # @override
+    #: (Prism::LocalVariableOrWriteNode node) -> void
     def visit_local_variable_or_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::LocalVariableReadNode).void }
+    # @override
+    #: (Prism::LocalVariableReadNode node) -> void
     def visit_local_variable_read_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::LocalVariableTargetNode).void }
+    # @override
+    #: (Prism::LocalVariableTargetNode node) -> void
     def visit_local_variable_target_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::LocalVariableWriteNode).void }
+    # @override
+    #: (Prism::LocalVariableWriteNode node) -> void
     def visit_local_variable_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::MatchLastLineNode).void }
+    # @override
+    #: (Prism::MatchLastLineNode node) -> void
     def visit_match_last_line_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::MatchPredicateNode).void }
+    # @override
+    #: (Prism::MatchPredicateNode node) -> void
     def visit_match_predicate_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::MatchRequiredNode).void }
+    # @override
+    #: (Prism::MatchRequiredNode node) -> void
     def visit_match_required_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::MatchWriteNode).void }
+    # @override
+    #: (Prism::MatchWriteNode node) -> void
     def visit_match_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::MissingNode).void }
+    # @override
+    #: (Prism::MissingNode node) -> void
     def visit_missing_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ModuleNode).void }
+    # @override
+    #: (Prism::ModuleNode node) -> void
     def visit_module_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::MultiTargetNode).void }
+    # @override
+    #: (Prism::MultiTargetNode node) -> void
     def visit_multi_target_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::MultiWriteNode).void }
+    # @override
+    #: (Prism::MultiWriteNode node) -> void
     def visit_multi_write_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::NextNode).void }
+    # @override
+    #: (Prism::NextNode node) -> void
     def visit_next_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::NilNode).void }
+    # @override
+    #: (Prism::NilNode node) -> void
     def visit_nil_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::NoKeywordsParameterNode).void }
+    # @override
+    #: (Prism::NoKeywordsParameterNode node) -> void
     def visit_no_keywords_parameter_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::NumberedParametersNode).void }
+    # @override
+    #: (Prism::NumberedParametersNode node) -> void
     def visit_numbered_parameters_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::NumberedReferenceReadNode).void }
+    # @override
+    #: (Prism::NumberedReferenceReadNode node) -> void
     def visit_numbered_reference_read_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::OptionalKeywordParameterNode).void }
+    # @override
+    #: (Prism::OptionalKeywordParameterNode node) -> void
     def visit_optional_keyword_parameter_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::OptionalParameterNode).void }
+    # @override
+    #: (Prism::OptionalParameterNode node) -> void
     def visit_optional_parameter_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::OrNode).void }
+    # @override
+    #: (Prism::OrNode node) -> void
     def visit_or_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ParametersNode).void }
+    # @override
+    #: (Prism::ParametersNode node) -> void
     def visit_parameters_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ParenthesesNode).void }
+    # @override
+    #: (Prism::ParenthesesNode node) -> void
     def visit_parentheses_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::PinnedExpressionNode).void }
+    # @override
+    #: (Prism::PinnedExpressionNode node) -> void
     def visit_pinned_expression_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::PinnedVariableNode).void }
+    # @override
+    #: (Prism::PinnedVariableNode node) -> void
     def visit_pinned_variable_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::PostExecutionNode).void }
+    # @override
+    #: (Prism::PostExecutionNode node) -> void
     def visit_post_execution_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::PreExecutionNode).void }
+    # @override
+    #: (Prism::PreExecutionNode node) -> void
     def visit_pre_execution_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ProgramNode).void }
+    # @override
+    #: (Prism::ProgramNode node) -> void
     def visit_program_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::RangeNode).void }
+    # @override
+    #: (Prism::RangeNode node) -> void
     def visit_range_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::RationalNode).void }
+    # @override
+    #: (Prism::RationalNode node) -> void
     def visit_rational_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::RedoNode).void }
+    # @override
+    #: (Prism::RedoNode node) -> void
     def visit_redo_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::RegularExpressionNode).void }
+    # @override
+    #: (Prism::RegularExpressionNode node) -> void
     def visit_regular_expression_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::RequiredKeywordParameterNode).void }
+    # @override
+    #: (Prism::RequiredKeywordParameterNode node) -> void
     def visit_required_keyword_parameter_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::RequiredParameterNode).void }
+    # @override
+    #: (Prism::RequiredParameterNode node) -> void
     def visit_required_parameter_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::RescueModifierNode).void }
+    # @override
+    #: (Prism::RescueModifierNode node) -> void
     def visit_rescue_modifier_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::RescueNode).void }
+    # @override
+    #: (Prism::RescueNode node) -> void
     def visit_rescue_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::RestParameterNode).void }
+    # @override
+    #: (Prism::RestParameterNode node) -> void
     def visit_rest_parameter_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::RetryNode).void }
+    # @override
+    #: (Prism::RetryNode node) -> void
     def visit_retry_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::ReturnNode).void }
+    # @override
+    #: (Prism::ReturnNode node) -> void
     def visit_return_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::SelfNode).void }
+    # @override
+    #: (Prism::SelfNode node) -> void
     def visit_self_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::SingletonClassNode).void }
+    # @override
+    #: (Prism::SingletonClassNode node) -> void
     def visit_singleton_class_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::SourceEncodingNode).void }
+    # @override
+    #: (Prism::SourceEncodingNode node) -> void
     def visit_source_encoding_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::SourceFileNode).void }
+    # @override
+    #: (Prism::SourceFileNode node) -> void
     def visit_source_file_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::SourceLineNode).void }
+    # @override
+    #: (Prism::SourceLineNode node) -> void
     def visit_source_line_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::SplatNode).void }
+    # @override
+    #: (Prism::SplatNode node) -> void
     def visit_splat_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::StatementsNode).void }
+    # @override
+    #: (Prism::StatementsNode node) -> void
     def visit_statements_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::StringNode).void }
+    # @override
+    #: (Prism::StringNode node) -> void
     def visit_string_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::SuperNode).void }
+    # @override
+    #: (Prism::SuperNode node) -> void
     def visit_super_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::SymbolNode).void }
+    # @override
+    #: (Prism::SymbolNode node) -> void
     def visit_symbol_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::TrueNode).void }
+    # @override
+    #: (Prism::TrueNode node) -> void
     def visit_true_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::UndefNode).void }
+    # @override
+    #: (Prism::UndefNode node) -> void
     def visit_undef_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::UnlessNode).void }
+    # @override
+    #: (Prism::UnlessNode node) -> void
     def visit_unless_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::UntilNode).void }
+    # @override
+    #: (Prism::UntilNode node) -> void
     def visit_until_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::WhenNode).void }
+    # @override
+    #: (Prism::WhenNode node) -> void
     def visit_when_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::WhileNode).void }
+    # @override
+    #: (Prism::WhileNode node) -> void
     def visit_while_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::XStringNode).void }
+    # @override
+    #: (Prism::XStringNode node) -> void
     def visit_x_string_node(node)
       visit_child_nodes(node)
     end
 
-    sig { override.params(node: Prism::YieldNode).void }
+    # @override
+    #: (Prism::YieldNode node) -> void
     def visit_yield_node(node)
       visit_child_nodes(node)
     end

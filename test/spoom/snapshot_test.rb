@@ -83,7 +83,7 @@ module Spoom
         project.destroy!
       end
 
-      sig { returns(TestProject) }
+      #: -> TestProject
       def project
         project = new_project
         project.bundle_install!

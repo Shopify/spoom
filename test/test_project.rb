@@ -6,7 +6,7 @@ module Spoom
     extend T::Sig
     extend T::Helpers
 
-    sig { params(command: String).returns(ExecResult) }
+    #: (String command) -> ExecResult
     def spoom(command)
       bundle_exec("spoom #{command}")
     end

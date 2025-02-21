@@ -12,7 +12,7 @@ module Spoom
     class << self
       extend T::Sig
 
-      sig { params(context: Context, rbi: T::Boolean, sorbet_bin: T.nilable(String)).returns(Snapshot) }
+      #: (Context context, ?rbi: bool, ?sorbet_bin: String?) -> Snapshot
       def snapshot(context, rbi: true, sorbet_bin: nil)
         config = context.sorbet_config
         config.allowed_extensions.push(".rb", ".rbi") if config.allowed_extensions.empty?
@@ -79,7 +79,7 @@ module Spoom
         snapshot
       end
 
-      sig { params(context: Context, snapshots: T::Array[Snapshot], palette: D3::ColorPalette).returns(Report) }
+      #: (Context context, Array[Snapshot] snapshots, palette: D3::ColorPalette) -> Report
       def report(context, snapshots, palette:)
         intro_commit = context.sorbet_intro_commit
 
@@ -99,7 +99,7 @@ module Spoom
         )
       end
 
-      sig { params(context: Context).returns(FileTree) }
+      #: (Context context) -> FileTree
       def file_tree(context)
         config = context.sorbet_config
         config.ignore += ["test"]

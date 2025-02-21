@@ -34,32 +34,32 @@ module Spoom
         extend T::Sig
 
         # returns the full sigil comment string for the passed strictness
-        sig { params(strictness: String).returns(String) }
+        #: (String strictness) -> String
         def sigil_string(strictness)
           "# typed: #{strictness}"
         end
 
         # returns true if the passed string is a valid strictness (else false)
-        sig { params(strictness: String).returns(T::Boolean) }
+        #: (String strictness) -> bool
         def valid_strictness?(strictness)
           VALID_STRICTNESS.include?(strictness.strip)
         end
 
         # returns the strictness of a sigil in the passed file content string (nil if no sigil)
-        sig { params(content: String).returns(T.nilable(String)) }
+        #: (String content) -> String?
         def strictness_in_content(content)
           SIGIL_REGEXP.match(content)&.[](1)
         end
 
         # returns a string which is the passed content but with the sigil updated to a new strictness
-        sig { params(content: String, new_strictness: String).returns(String) }
+        #: (String content, String new_strictness) -> String
         def update_sigil(content, new_strictness)
           content.sub(SIGIL_REGEXP, sigil_string(new_strictness))
         end
 
         # returns a string containing the strictness of a sigil in a file at the passed path
         # * returns nil if no sigil
-        sig { params(path: T.any(String, Pathname)).returns(T.nilable(String)) }
+        #: ((String | Pathname) path) -> String?
         def file_strictness(path)
           return unless File.file?(path)
 
@@ -68,7 +68,7 @@ module Spoom
         end
 
         # changes the sigil in the file at the passed path to the specified new strictness
-        sig { params(path: T.any(String, Pathname), new_strictness: String).returns(T::Boolean) }
+        #: ((String | Pathname) path, String new_strictness) -> bool
         def change_sigil_in_file(path, new_strictness)
           content = File.read(path, encoding: Encoding::ASCII_8BIT)
           new_content = update_sigil(content, new_strictness)
@@ -79,7 +79,7 @@ module Spoom
         end
 
         # changes the sigil to have a new strictness in a list of files
-        sig { params(path_list: T::Array[String], new_strictness: String).returns(T::Array[String]) }
+        #: (Array[String] path_list, String new_strictness) -> Array[String]
         def change_sigil_in_files(path_list, new_strictness)
           path_list.filter do |path|
             change_sigil_in_file(path, new_strictness)

@@ -9,23 +9,23 @@ module Spoom
       class Error < Spoom::Error
         extend T::Sig
 
-        sig { params(message: String, parent: Exception).void }
+        #: (String message, parent: Exception) -> void
         def initialize(message, parent:)
           super(message)
           set_backtrace(parent.backtrace)
         end
       end
 
-      sig { returns(Model) }
+      #: Model
       attr_reader :model
 
-      sig { returns(T::Hash[String, T::Array[Definition]]) }
+      #: Hash[String, Array[Definition]]
       attr_reader :definitions
 
-      sig { returns(T::Hash[String, T::Array[Model::Reference]]) }
+      #: Hash[String, Array[Model::Reference]]
       attr_reader :references
 
-      sig { params(model: Model).void }
+      #: (Model model) -> void
       def initialize(model)
         @model = model
         @definitions = T.let({}, T::Hash[String, T::Array[Definition]])
@@ -35,7 +35,7 @@ module Spoom
 
       # Indexing
 
-      sig { params(file: String, plugins: T::Array[Plugins::Base]).void }
+      #: (String file, ?plugins: Array[Plugins::Base]) -> void
       def index_file(file, plugins: [])
         if file.end_with?(".erb")
           erb = File.read(file)
@@ -46,12 +46,12 @@ module Spoom
         end
       end
 
-      sig { params(erb: String, file: String, plugins: T::Array[Plugins::Base]).void }
+      #: (String erb, file: String, ?plugins: Array[Plugins::Base]) -> void
       def index_erb(erb, file:, plugins: [])
         index_ruby(Deadcode::ERB.new(erb).src, file: file, plugins: plugins)
       end
 
-      sig { params(rb: String, file: String, plugins: T::Array[Plugins::Base]).void }
+      #: (String rb, file: String, ?plugins: Array[Plugins::Base]) -> void
       def index_ruby(rb, file:, plugins: [])
         node = Spoom.parse_ruby(rb, file: file)
 
@@ -75,27 +75,27 @@ module Spoom
         raise Error.new("Error while indexing #{file} (#{e.message})", parent: e)
       end
 
-      sig { params(definition: Definition).void }
+      #: (Definition definition) -> void
       def define(definition)
         (@definitions[definition.name] ||= []) << definition
       end
 
-      sig { params(name: String, location: Location).void }
+      #: (String name, Location location) -> void
       def reference_constant(name, location)
         (@references[name] ||= []) << Model::Reference.constant(name, location)
       end
 
-      sig { params(name: String, location: Location).void }
+      #: (String name, Location location) -> void
       def reference_method(name, location)
         (@references[name] ||= []) << Model::Reference.method(name, location)
       end
 
-      sig { params(symbol_def: Model::SymbolDef).void }
+      #: (Model::SymbolDef symbol_def) -> void
       def ignore(symbol_def)
         @ignored << symbol_def
       end
 
-      sig { params(plugins: T::Array[Plugins::Base]).void }
+      #: (Array[Plugins::Base] plugins) -> void
       def apply_plugins!(plugins)
         @model.symbols.each do |_full_name, symbol|
           symbol.definitions.each do |symbol_def|
@@ -118,7 +118,7 @@ module Spoom
       # Mark all definitions having a reference of the same name as `alive`
       #
       # To be called once all the files have been indexed and all the definitions and references discovered.
-      sig { void }
+      #: -> void
       def finalize!
         @model.symbols.each do |_full_name, symbol|
           symbol.definitions.each do |symbol_def|
@@ -210,17 +210,17 @@ module Spoom
 
       # Utils
 
-      sig { params(name: String).returns(T::Array[Definition]) }
+      #: (String name) -> Array[Definition]
       def definitions_for_name(name)
         @definitions[name] || []
       end
 
-      sig { returns(T::Array[Definition]) }
+      #: -> Array[Definition]
       def all_definitions
         @definitions.values.flatten
       end
 
-      sig { returns(T::Array[Model::Reference]) }
+      #: -> Array[Model::Reference]
       def all_references
         @references.values.flatten
       end

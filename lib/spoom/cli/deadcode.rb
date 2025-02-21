@@ -48,7 +48,7 @@ module Spoom
         default: "name",
         enum: ["name", "location"],
         desc: "Sort the output by name or location"
-      sig { params(paths: String).void }
+      #: (*String paths) -> void
       def deadcode(*paths)
         context = self.context
 

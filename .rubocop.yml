@@ -12,6 +12,13 @@ AllCops:
   Exclude:
   - 'vendor/**/*'
 
+Layout/LeadingCommentSpace:
+  AllowRBSInlineAnnotation: true
+
+Layout/LineLength:
+  Max: 120
+  AllowedPatterns: ['\A\s*#:']
+
 Sorbet:
   Enabled: true
 

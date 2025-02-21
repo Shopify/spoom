@@ -10,10 +10,10 @@ module Spoom
 
         abstract!
 
-        sig { returns(String) }
+        #: String
         attr_reader :id
 
-        sig { params(id: String, data: T.untyped).void }
+        #: (String id, untyped data) -> void
         def initialize(id, data)
           @id = id
           @data = data
@@ -22,18 +22,18 @@ module Spoom
         class << self
           extend T::Sig
 
-          sig { returns(String) }
+          #: -> String
           def header_style
             ""
           end
 
-          sig { returns(String) }
+          #: -> String
           def header_script
             ""
           end
         end
 
-        sig { returns(String) }
+        #: -> String
         def html
           <<~HTML
             <svg id="#{id}"></svg>
@@ -41,7 +41,7 @@ module Spoom
           HTML
         end
 
-        sig { returns(String) }
+        #: -> String
         def tooltip
           ""
         end

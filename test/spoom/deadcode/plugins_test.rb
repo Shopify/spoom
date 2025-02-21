@@ -106,7 +106,7 @@ module Spoom
 
       private
 
-      sig { params(gemfile_string: String).returns(T::Array[T.class_of(Plugins::Base)]) }
+      #: (String gemfile_string) -> Array[singleton(Plugins::Base)]
       def plugins_classes_for_gemfile(gemfile_string)
         context = Context.mktmp!
         context.write_gemfile!(gemfile_string)

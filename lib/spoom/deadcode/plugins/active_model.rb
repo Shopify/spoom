@@ -10,7 +10,8 @@ module Spoom
         ignore_classes_inheriting_from("ActiveModel::EachValidator")
         ignore_methods_named("validate_each", "persisted?")
 
-        sig { override.params(send: Send).void }
+        # @override
+        #: (Send send) -> void
         def on_send(send)
           return if send.recv
 
