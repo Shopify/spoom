@@ -836,12 +836,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::StringNode node) -> void
-    def visit_string_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::SuperNode node) -> void
     def visit_super_node(node)
       visit_child_nodes(node)
