@@ -80,12 +80,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::BlockArgumentNode node) -> void
-    def visit_block_argument_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::BlockLocalVariableNode node) -> void
     def visit_block_local_variable_node(node)
       visit_child_nodes(node)
