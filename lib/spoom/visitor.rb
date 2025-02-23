@@ -326,12 +326,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::FlipFlopNode node) -> void
-    def visit_flip_flop_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::FloatNode node) -> void
     def visit_float_node(node)
       visit_child_nodes(node)
