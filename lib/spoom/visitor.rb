@@ -848,12 +848,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::SymbolNode node) -> void
-    def visit_symbol_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::TrueNode node) -> void
     def visit_true_node(node)
       visit_child_nodes(node)
