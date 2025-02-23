@@ -19,13 +19,6 @@ module Spoom
         end
 
         # @override
-        #: (Prism::ClassNode node) -> void
-        def visit_class_node(node)
-          @namespaces_for_locs[loc_string(node.location)] = @names_nesting.join("::")
-          super
-        end
-
-        # @override
         #: (Prism::ModuleNode node) -> void
         def visit_module_node(node)
           @namespaces_for_locs[loc_string(node.location)] = @names_nesting.join("::")
