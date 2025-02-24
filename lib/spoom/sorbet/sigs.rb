@@ -99,10 +99,10 @@ module Spoom
 
           private
 
-          #: (RBI::Sig sig, RBI::Method node) -> String
-          def translate_method_sig(sig, node)
+          #: (RBI::Sig sig, RBI::Method node, positional_names: bool) -> String
+          def translate_method_sig(sig, node, positional_names: true)
             out = StringIO.new
-            p = RBI::RBSPrinter.new(out: out, indent: sig.loc&.begin_column)
+            p = RBI::RBSPrinter.new(out: out, indent: sig.loc&.begin_column, positional_names: positional_names)
 
             if node.sigs.any?(&:is_final)
               p.printn("# @final")
