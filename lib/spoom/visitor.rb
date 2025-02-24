@@ -266,12 +266,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::ConstantTargetNode node) -> void
-    def visit_constant_target_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::ConstantWriteNode node) -> void
     def visit_constant_write_node(node)
       visit_child_nodes(node)
