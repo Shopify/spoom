@@ -51,7 +51,7 @@ module Spoom
           RB
         end
 
-        # translate
+        # translate --from rbi --to rbs
 
         def test_translate_from_and_to_cannot_be_the_same
           result = @project.spoom("srb sigs translate --from rbs --to rbs --no-color")
@@ -159,6 +159,23 @@ module Spoom
             # Some content with accentuated characters: éàèù
             #: -> void
             def foo; end
+          RB
+        end
+
+        def test_translate_without_positional_names
+          @project.write!("file.rb", <<~RB)
+            sig { params(a: Integer, b: Integer, c: Integer, d: Integer, e: Integer, f: Integer).void }
+            def foo(a, b = 42, *c, d:, e: 42, **f); end
+          RB
+
+          result = @project.spoom("srb sigs translate --no-color file.rb --no-positional-names")
+
+          assert_empty(result.err)
+          assert(result.status)
+
+          assert_equal(<<~RB, @project.read("file.rb"))
+            #: (Integer, ?Integer, *Integer, d: Integer, ?e: Integer, **Integer f) -> void
+            def foo(a, b = 42, *c, d:, e: 42, **f); end
           RB
         end
 

@@ -20,8 +20,8 @@ module Spoom
           lines.join
         end
 
-        #: (String ruby_contents) -> String
-        def rbi_to_rbs(ruby_contents)
+        #: (String ruby_contents, positional_names: bool) -> String
+        def rbi_to_rbs(ruby_contents, positional_names: true)
           ruby_contents = ruby_contents.dup
           sigs = collect_sorbet_sigs(ruby_contents)
 
@@ -35,7 +35,8 @@ module Spoom
               sig.loc&.end_line&.pred,
               T.must(sig.loc).end_column,
             )
-            ruby_contents[start_index...end_index] = RBIToRBSTranslator.translate(sig, node)
+            rbs = RBIToRBSTranslator.translate(sig, node, positional_names: positional_names)
+            ruby_contents[start_index...end_index] = rbs
           end
 
           ruby_contents
@@ -118,22 +119,22 @@ module Spoom
 
       class RBIToRBSTranslator
         class << self
-          #: (RBI::Sig sig, (RBI::Method | RBI::Attr) node) -> String
-          def translate(sig, node)
+          #: (RBI::Sig sig, (RBI::Method | RBI::Attr) node, positional_names: bool) -> String
+          def translate(sig, node, positional_names: true)
             case node
             when RBI::Method
-              translate_method_sig(sig, node)
+              translate_method_sig(sig, node, positional_names: positional_names)
             when RBI::Attr
-              translate_attr_sig(sig, node)
+              translate_attr_sig(sig, node, positional_names: positional_names)
             end
           end
 
           private
 
-          #: (RBI::Sig sig, RBI::Method node) -> String
-          def translate_method_sig(sig, node)
+          #: (RBI::Sig sig, RBI::Method node, positional_names: bool) -> String
+          def translate_method_sig(sig, node, positional_names: true)
             out = StringIO.new
-            p = RBI::RBSPrinter.new(out: out, indent: sig.loc&.begin_column)
+            p = RBI::RBSPrinter.new(out: out, indent: sig.loc&.begin_column, positional_names: positional_names)
 
             if node.sigs.any?(&:is_final)
               p.printn("# @final")
@@ -165,10 +166,10 @@ module Spoom
             out.string
           end
 
-          #: (RBI::Sig sig, RBI::Attr node) -> String
-          def translate_attr_sig(sig, node)
+          #: (RBI::Sig sig, RBI::Attr node, positional_names: bool) -> String
+          def translate_attr_sig(sig, node, positional_names: true)
             out = StringIO.new
-            p = RBI::RBSPrinter.new(out: out)
+            p = RBI::RBSPrinter.new(out: out, positional_names: positional_names)
             p.print_attr_sig(node, sig)
             "#: #{out.string}"
           end

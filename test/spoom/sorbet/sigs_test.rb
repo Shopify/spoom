@@ -132,6 +132,22 @@ module Spoom
         RBS
       end
 
+      def test_translate_method_sigs_to_rbs_without_positional_names
+        contents = <<~RBI
+          class A
+            sig { params(a: Integer, b: Integer, c: Integer, d: Integer, e: Integer, f: Integer).void }
+            def initialize(a, b = 42, *c, d:, e: 42, **f); end
+          end
+        RBI
+
+        assert_equal(<<~RBS, Sigs.rbi_to_rbs(contents, positional_names: false))
+          class A
+            #: (Integer, ?Integer, *Integer, d: Integer, ?e: Integer, **Integer f) -> void
+            def initialize(a, b = 42, *c, d:, e: 42, **f); end
+          end
+        RBS
+      end
+
       def test_translate_to_rbs_method_sigs_with_annotations
         contents = <<~RB
           sig(:final) { overridable.override(allow_incompatible: true).void }
