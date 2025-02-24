@@ -5,6 +5,8 @@ source "https://rubygems.org"
 
 gemspec
 
+gem "rbi", github: "Shopify/rbi", branch: "at-rbs-printer-names"
+
 group :development do
   gem "debug"
   gem "rubocop-shopify", require: false
