@@ -458,12 +458,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::IndexTargetNode node) -> void
-    def visit_index_target_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::InstanceVariableAndWriteNode node) -> void
     def visit_instance_variable_and_write_node(node)
       visit_child_nodes(node)
