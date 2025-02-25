@@ -704,12 +704,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::PinnedVariableNode node) -> void
-    def visit_pinned_variable_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::PostExecutionNode node) -> void
     def visit_post_execution_node(node)
       visit_child_nodes(node)
