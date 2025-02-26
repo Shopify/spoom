@@ -103,6 +103,30 @@ module Spoom
           refute_ignored(index, "dead3")
         end
 
+        def test_ignore_sorbet_override_comments
+          @project.write!("foo.rb", <<~RB)
+            def dead1; end
+
+            sig { void }
+            def dead2; end
+
+            # @override
+            def ignored1; end
+
+            # @overridable
+            def ignored2; end
+
+            def dead3; end
+          RB
+
+          index = index_with_plugins
+          assert_ignored(index, "ignored1")
+          assert_ignored(index, "ignored2")
+          refute_ignored(index, "dead1")
+          refute_ignored(index, "dead2")
+          refute_ignored(index, "dead3")
+        end
+
         private
 
         #: -> Deadcode::Index
