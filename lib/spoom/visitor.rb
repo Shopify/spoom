@@ -644,12 +644,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::NilNode node) -> void
-    def visit_nil_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::NoKeywordsParameterNode node) -> void
     def visit_no_keywords_parameter_node(node)
       visit_child_nodes(node)
