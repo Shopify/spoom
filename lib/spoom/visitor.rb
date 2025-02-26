@@ -158,12 +158,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::CaseNode node) -> void
-    def visit_case_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::ClassNode node) -> void
     def visit_class_node(node)
       visit_child_nodes(node)
