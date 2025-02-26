@@ -7,12 +7,18 @@ module Spoom
     class Builder < NamespaceVisitor
       extend T::Sig
 
-      #: (Model model, String file) -> void
-      def initialize(model, file)
+      #: (Model model, String file, ?comments: Array[Prism::Comment]) -> void
+      def initialize(model, file, comments:)
         super()
 
         @model = model
         @file = file
+        @comments_by_line = T.let(
+          comments.to_h do |c|
+            [c.location.start_line, c]
+          end,
+          T::Hash[Integer, Prism::Comment],
+        )
         @namespace_nesting = T.let([], T::Array[Namespace])
         @visibility_stack = T.let([Visibility::Public], T::Array[Visibility])
         @last_sigs = T.let([], T::Array[Sig])
@@ -28,6 +34,7 @@ module Spoom
           owner: @namespace_nesting.last,
           location: node_location(node),
           superclass_name: node.superclass&.slice,
+          comments: node_comments(node),
         )
         @visibility_stack << Visibility::Public
         super
@@ -43,6 +50,7 @@ module Spoom
           @model.register_symbol(@names_nesting.join("::")),
           owner: @namespace_nesting.last,
           location: node_location(node),
+          comments: node_comments(node),
         )
         @visibility_stack << Visibility::Public
         super
@@ -60,6 +68,7 @@ module Spoom
           @model.register_symbol(@names_nesting.join("::")),
           owner: @namespace_nesting.last,
           location: node_location(node),
+          comments: node_comments(node),
         )
         @visibility_stack << Visibility::Public
         super
@@ -87,6 +96,7 @@ module Spoom
           owner: @namespace_nesting.last,
           location: node_location(node),
           value: node.value.slice,
+          comments: node_comments(node),
         )
 
         super
@@ -102,6 +112,7 @@ module Spoom
           owner: @namespace_nesting.last,
           location: node_location(node),
           value: node.value.slice,
+          comments: node_comments(node),
         )
 
         super
@@ -120,6 +131,7 @@ module Spoom
               owner: @namespace_nesting.last,
               location: node_location(const),
               value: node.value.slice,
+              comments: node_comments(const),
             )
           end
         end
@@ -141,6 +153,7 @@ module Spoom
             location: node_location(node),
             visibility: current_visibility,
             sigs: collect_sigs,
+            comments: node_comments(node),
           )
         end
 
@@ -168,6 +181,7 @@ module Spoom
               location: node_location(arg),
               visibility: current_visibility,
               sigs: sigs,
+              comments: node_comments(node),
             )
           end
         when :attr_reader
@@ -181,6 +195,7 @@ module Spoom
               location: node_location(arg),
               visibility: current_visibility,
               sigs: sigs,
+              comments: node_comments(node),
             )
           end
         when :attr_writer
@@ -194,6 +209,7 @@ module Spoom
               location: node_location(arg),
               visibility: current_visibility,
               sigs: sigs,
+              comments: node_comments(node),
             )
           end
         when :include
@@ -248,6 +264,29 @@ module Spoom
       #: (Prism::Node node) -> Location
       def node_location(node)
         Location.from_prism(@file, node.location)
+      end
+
+      #: (Prism::Node node) -> Array[Comment]
+      def node_comments(node)
+        comments = []
+
+        start_line = node.location.start_line
+        start_line -= 1 unless @comments_by_line.key?(start_line)
+
+        start_line.downto(1) do |line|
+          comment = @comments_by_line[line]
+          break unless comment
+
+          spoom_comment = Comment.new(
+            comment.slice.gsub(/^#\s?/, "").rstrip,
+            Location.from_prism(@file, comment.location),
+          )
+
+          comments.unshift(spoom_comment)
+          @comments_by_line.delete(line)
+        end
+
+        comments
       end
     end
   end

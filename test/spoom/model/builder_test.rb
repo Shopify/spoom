@@ -423,14 +423,52 @@ module Spoom
         )
       end
 
+      def test_comments
+        model = model(<<~RB)
+          # not comment
+
+          # comment1
+          # comment2
+          class C1; end
+
+          # not comment
+
+          # comment3
+          # comment4
+          module C2; end
+
+          # not comment
+
+          # comment5
+          # comment6
+          C3 = 42
+
+          #  comment7
+          C4::C5 = 42
+
+          # not comment
+
+          #    comment8
+          def m1; end
+
+          # not comment
+        RB
+
+        assert_equal(["comment1", "comment2"], comments_for(model, "C1"))
+        assert_equal(["comment3", "comment4"], comments_for(model, "C2"))
+        assert_equal(["comment5", "comment6"], comments_for(model, "C3"))
+        assert_equal([" comment7"], comments_for(model, "C4::C5"))
+        assert_equal(["   comment8"], comments_for(model, "m1"))
+      end
+
       private
 
       #: (String rb) -> Model
       def model(rb)
-        node = Spoom.parse_ruby(rb, file: "foo.rb")
-
+        file = "foo.rb"
+        node, comments = Spoom.parse_ruby_with_comments(rb, file: file)
         model = Model.new
-        builder = Builder.new(model, "foo.rb")
+        builder = Builder.new(model, "foo.rb", comments: comments)
         builder.visit(node)
         model
       end
@@ -438,6 +476,11 @@ module Spoom
       #: (Object obj) -> String
       def class_name(obj)
         T.must(obj.class.name&.split("::")&.last)
+      end
+
+      #: (Model model, String symbol_name) -> Array[String]
+      def comments_for(model, symbol_name)
+        T.must(model.symbols[symbol_name]).definitions.map(&:comments).flatten.map(&:string)
       end
     end
   end

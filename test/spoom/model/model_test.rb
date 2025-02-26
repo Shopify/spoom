@@ -106,10 +106,10 @@ module Spoom
 
       #: (String rb) -> Model
       def model(rb)
-        node = Spoom.parse_ruby(rb, file: "foo.rb")
+        node, comments = Spoom.parse_ruby_with_comments(rb, file: "foo.rb")
 
         model = Model.new
-        builder = Builder.new(model, "foo.rb")
+        builder = Builder.new(model, "foo.rb", comments: comments)
         builder.visit(node)
         model.finalize!
         model
