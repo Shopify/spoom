@@ -1,0 +1,58 @@
+# typed: true
+# frozen_string_literal: true
+
+require "spoom/sorbet/annotations"
+
+module Spoom
+  module Cli
+    module Srb
+      class Annotations < Thor
+        extend T::Sig
+        include Helper
+
+        desc "translate", "Translate annotations from/to RBI and RBS"
+        option :from, type: :string, aliases: :f, desc: "From format", enum: ["rbi"], default: "rbi"
+        option :to, type: :string, aliases: :t, desc: "To format", enum: ["rbs"], default: "rbs"
+        def translate(*paths)
+          from = options[:from]
+          to = options[:to]
+          files = collect_files(paths)
+
+          say("Translating annotations from `#{from}` to `#{to}` " \
+            "in `#{files.size}` file#{files.size == 1 ? "" : "s"}...\n\n")
+
+          transformed_files = transform_files(files) do |file, contents|
+            Spoom::Sorbet::Annotations.rbi_to_rbs(contents, file: file)
+          end
+
+          say("Translated annotations in `#{transformed_files}` file#{transformed_files == 1 ? "" : "s"}.")
+        end
+
+        no_commands do
+          def transform_files(files, &block)
+            transformed_count = 0
+
+            files.each do |file|
+              contents = File.read(file)
+              first_line = contents.lines.first
+
+              if first_line&.start_with?("# encoding:")
+                encoding = T.must(first_line).gsub(/^#\s*encoding:\s*/, "").strip
+                contents = contents.force_encoding(encoding)
+              end
+
+              contents = block.call(file, contents)
+              File.write(file, contents)
+              transformed_count += 1
+            rescue Spoom::ParseError => error
+              say_warning("Can't parse #{file}: #{error.message}")
+              next
+            end
+
+            transformed_count
+          end
+        end
+      end
+    end
+  end
+end
