@@ -7,6 +7,22 @@ module Spoom
 
     class Error < Spoom::Error; end
 
+    class Comment
+      extend T::Sig
+
+      #: String
+      attr_reader :string
+
+      #: Location
+      attr_reader :location
+
+      #: (String string, Location location) -> void
+      def initialize(string, location)
+        @string = string
+        @location = location
+      end
+    end
+
     # A Symbol is a uniquely named entity in the Ruby codebase
     #
     # A symbol can have multiple definitions, e.g. a class can be reopened.
@@ -71,11 +87,16 @@ module Spoom
       #: Location
       attr_reader :location
 
-      #: (Symbol symbol, owner: Namespace?, location: Location) -> void
-      def initialize(symbol, owner:, location:)
+      # The comments associated with this definition
+      #: Array[Comment]
+      attr_reader :comments
+
+      #: (Symbol symbol, owner: Namespace?, location: Location, ?comments: Array[Comment]) -> void
+      def initialize(symbol, owner:, location:, comments:)
         @symbol = symbol
         @owner = owner
         @location = location
+        @comments = comments
 
         symbol.definitions << self
         owner.children << self if owner
@@ -104,9 +125,9 @@ module Spoom
       #: Array[Mixin]
       attr_reader :mixins
 
-      #: (Symbol symbol, owner: Namespace?, location: Location) -> void
-      def initialize(symbol, owner:, location:)
-        super(symbol, owner: owner, location: location)
+      #: (Symbol symbol, owner: Namespace?, location: Location, ?comments: Array[Comment]) -> void
+      def initialize(symbol, owner:, location:, comments: [])
+        super(symbol, owner: owner, location: location, comments: comments)
 
         @children = T.let([], T::Array[SymbolDef])
         @mixins = T.let([], T::Array[Mixin])
@@ -119,9 +140,9 @@ module Spoom
       #: String?
       attr_accessor :superclass_name
 
-      #: (Symbol symbol, owner: Namespace?, location: Location, ?superclass_name: String?) -> void
-      def initialize(symbol, owner:, location:, superclass_name: nil)
-        super(symbol, owner: owner, location: location)
+      #: (Symbol symbol, owner: Namespace?, location: Location, ?superclass_name: String?, ?comments: Array[Comment]) -> void
+      def initialize(symbol, owner:, location:, superclass_name: nil, comments: [])
+        super(symbol, owner: owner, location: location, comments: comments)
 
         @superclass_name = superclass_name
       end
@@ -133,9 +154,9 @@ module Spoom
       #: String
       attr_reader :value
 
-      #: (Symbol symbol, owner: Namespace?, location: Location, value: String) -> void
-      def initialize(symbol, owner:, location:, value:)
-        super(symbol, owner: owner, location: location)
+      #: (Symbol symbol, owner: Namespace?, location: Location, value: String, ?comments: Array[Comment]) -> void
+      def initialize(symbol, owner:, location:, value:, comments: [])
+        super(symbol, owner: owner, location: location, comments: comments)
 
         @value = value
       end
@@ -151,9 +172,9 @@ module Spoom
       #: Array[Sig]
       attr_reader :sigs
 
-      #: (Symbol symbol, owner: Namespace?, location: Location, visibility: Visibility, ?sigs: Array[Sig]) -> void
-      def initialize(symbol, owner:, location:, visibility:, sigs: [])
-        super(symbol, owner: owner, location: location)
+      #: (Symbol symbol, owner: Namespace?, location: Location, visibility: Visibility, ?sigs: Array[Sig], ?comments: Array[Comment]) -> void
+      def initialize(symbol, owner:, location:, visibility:, sigs: [], comments: [])
+        super(symbol, owner: owner, location: location, comments: comments)
 
         @visibility = visibility
         @sigs = sigs

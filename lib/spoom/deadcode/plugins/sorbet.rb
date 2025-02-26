@@ -16,7 +16,13 @@ module Spoom
         # @override
         #: (Model::Method definition) -> void
         def on_define_method(definition)
+          # Ignore signatures containing `override` or `overridable`, like `sig { override.void }`
           @index.ignore(definition) if definition.sigs.any? { |sig| sig.string =~ /(override|overridable)/ }
+
+          # Ignore comments `@override` and `@overridable`
+          @index.ignore(definition) if definition.comments.any? do |comment|
+            comment.string == "@override" || comment.string == "@overridable"
+          end
         end
 
         private
