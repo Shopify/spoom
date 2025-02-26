@@ -81,6 +81,27 @@ module Spoom
         options[:path]
       end
 
+      # Collect files from `paths`, defaulting to `exec_path`
+      #: (Array[String] paths) -> Array[String]
+      def collect_files(paths)
+        paths << exec_path if paths.empty?
+
+        files = paths.flat_map do |path|
+          if File.file?(path)
+            path
+          else
+            Dir.glob("#{path}/**/*.rb")
+          end
+        end
+
+        if files.empty?
+          say_error("No files found")
+          exit(1)
+        end
+
+        files
+      end
+
       # Colors
 
       # Color used to highlight expressions in backticks
