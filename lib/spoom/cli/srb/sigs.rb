@@ -42,25 +42,6 @@ module Spoom
         end
 
         no_commands do
-          def collect_files(paths)
-            paths << "." if paths.empty?
-
-            files = paths.flat_map do |path|
-              if File.file?(path)
-                [path]
-              else
-                Dir.glob("#{path}/**/*.rb")
-              end
-            end
-
-            if files.empty?
-              say_error("No files to transform")
-              exit(1)
-            end
-
-            files
-          end
-
           def transform_files(files, &block)
             transformed_count = 0
 
