@@ -506,12 +506,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::InterpolatedMatchLastLineNode node) -> void
-    def visit_interpolated_match_last_line_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::InterpolatedRegularExpressionNode node) -> void
     def visit_interpolated_regular_expression_node(node)
       visit_child_nodes(node)
