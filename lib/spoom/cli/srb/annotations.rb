@@ -1,16 +1,16 @@
 # typed: true
 # frozen_string_literal: true
 
-require "spoom/sorbet/sigs"
+require "spoom/sorbet/annotations"
 
 module Spoom
   module Cli
     module Srb
-      class Sigs < Thor
+      class Annotations < Thor
         extend T::Sig
         include Helper
 
-        desc "translate", "Translate signatures from/to RBI and RBS"
+        desc "translate", "Translate annotations from/to RBI and RBS"
         option :from, type: :string, aliases: :f, desc: "From format", enum: ["rbi"], default: "rbi"
         option :to, type: :string, aliases: :t, desc: "To format", enum: ["rbs"], default: "rbs"
         def translate(*paths)
@@ -18,27 +18,14 @@ module Spoom
           to = options[:to]
           files = collect_files(paths)
 
-          say("Translating signatures from `#{from}` to `#{to}` " \
+          say("Translating annotations from `#{from}` to `#{to}` " \
             "in `#{files.size}` file#{files.size == 1 ? "" : "s"}...\n\n")
 
-          transformed_files = transform_files(files) do |_file, contents|
-            Spoom::Sorbet::Sigs.rbi_to_rbs(contents)
+          transformed_files = transform_files(files) do |file, contents|
+            Spoom::Sorbet::Annotations.rbi_to_rbs(contents, file: file)
           end
 
-          say("Translated signatures in `#{transformed_files}` file#{transformed_files == 1 ? "" : "s"}.")
-        end
-
-        desc "strip", "Strip all the signatures from the files"
-        def strip(*paths)
-          files = collect_files(paths)
-
-          say("Stripping signatures from `#{files.size}` file#{files.size == 1 ? "" : "s"}...\n\n")
-
-          transformed_files = transform_files(files) do |_file, contents|
-            Spoom::Sorbet::Sigs.strip(contents)
-          end
-
-          say("Stripped signatures from `#{transformed_files}` file#{transformed_files == 1 ? "" : "s"}.")
+          say("Translated annotations in `#{transformed_files}` file#{transformed_files == 1 ? "" : "s"}.")
         end
 
         no_commands do
@@ -57,7 +44,7 @@ module Spoom
               contents = block.call(file, contents)
               File.write(file, contents)
               transformed_count += 1
-            rescue RBI::Error => error
+            rescue Spoom::ParseError => error
               say_warning("Can't parse #{file}: #{error.message}")
               next
             end

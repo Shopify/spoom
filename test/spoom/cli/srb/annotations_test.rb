@@ -6,43 +6,29 @@ require "test_with_project"
 module Spoom
   module Cli
     module Srb
-      class SigsTest < TestWithProject
+      class AnnotationsTest < TestWithProject
         def setup
           @project.bundle_install!
         end
 
-        # strip
-
-        def test_strip_sigs
+        def test_translate_from_rbi_to_rbs
           @project.write!("a/file1.rb", <<~RB)
-            sig { void }
-            def foo; end
-
-            class B
-              sig { void }
-              def bar; end
-            end
+            x = T.let(nil, T.nilable(String))
           RB
 
-          result = @project.spoom("srb sigs strip --no-color")
-
+          result = @project.spoom("srb annotations translate --no-color")
+          assert_empty(result.err)
           assert_equal(<<~OUT, result.out)
-            Stripping signatures from `1` file...
+            Translating annotations from `rbi` to `rbs` in `1` file...
 
-            Stripped signatures from `1` file.
+            Translated annotations in `1` file.
           OUT
           assert(result.status)
 
-          assert_equal(<<~RB, @project.read("a/file1.rb"))
-            def foo; end
-
-            class B
-              def bar; end
-            end
+          assert_equal(<<~RB, File.read(@project.absolute_path_to("a/file1.rb")))
+            x = nil #: String?
           RB
         end
-
-        # translate
 
         def test_only_supports_translation_from_rbi
           result = @project.spoom("srb sigs translate --from rbs")
@@ -60,57 +46,6 @@ module Spoom
             Expected '--to' to be one of rbs; got rbi
           ERR
           refute(result.status)
-        end
-
-        def test_no_files
-          result = @project.spoom("srb sigs translate --no-color")
-
-          assert_equal(<<~OUT, result.err)
-            Error: No files found
-          OUT
-          refute(result.status)
-        end
-
-        def test_only_selected_files
-          @project.write!("a/file1.rb", <<~RB)
-            sig { void }
-            def foo; end
-          RB
-
-          @project.write!("a/file2.rb", <<~RB)
-            sig { void }
-            def foo; end
-          RB
-
-          @project.write!("b/file1.rb", <<~RB)
-            sig { void }
-            def foo; end
-          RB
-
-          result = @project.spoom("srb sigs translate --no-color a/file1.rb b/")
-
-          assert_empty(result.err)
-          assert_equal(<<~OUT, result.out)
-            Translating signatures from `rbi` to `rbs` in `2` files...
-
-            Translated signatures in `2` files.
-          OUT
-          assert(result.status)
-
-          assert_equal(<<~RB, @project.read("a/file1.rb"))
-            #: -> void
-            def foo; end
-          RB
-
-          assert_equal(<<~RB, @project.read("a/file2.rb"))
-            sig { void }
-            def foo; end
-          RB
-
-          assert_equal(<<~RB, @project.read("b/file1.rb"))
-            #: -> void
-            def foo; end
-          RB
         end
 
         def test_encoding_support
