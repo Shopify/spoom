@@ -122,12 +122,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::CallNode node) -> void
-    def visit_call_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::CallOperatorWriteNode node) -> void
     def visit_call_operator_write_node(node)
       visit_child_nodes(node)
