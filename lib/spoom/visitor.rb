@@ -38,12 +38,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::ArgumentsNode node) -> void
-    def visit_arguments_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::ArrayNode node) -> void
     def visit_array_node(node)
       visit_child_nodes(node)
