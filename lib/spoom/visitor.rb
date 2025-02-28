@@ -44,12 +44,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::ArrayNode node) -> void
-    def visit_array_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::ArrayPatternNode node) -> void
     def visit_array_pattern_node(node)
       visit_child_nodes(node)
