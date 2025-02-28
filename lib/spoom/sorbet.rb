@@ -1,6 +1,7 @@
 # typed: strict
 # frozen_string_literal: true
 
+require "spoom/sorbet/assertions"
 require "spoom/sorbet/config"
 require "spoom/sorbet/errors"
 require "spoom/sorbet/lsp"
