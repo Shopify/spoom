@@ -752,12 +752,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::RequiredKeywordParameterNode node) -> void
-    def visit_required_keyword_parameter_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::RequiredParameterNode node) -> void
     def visit_required_parameter_node(node)
       visit_child_nodes(node)
