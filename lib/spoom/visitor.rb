@@ -614,12 +614,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::MissingNode node) -> void
-    def visit_missing_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::ModuleNode node) -> void
     def visit_module_node(node)
       visit_child_nodes(node)
