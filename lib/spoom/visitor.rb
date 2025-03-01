@@ -224,12 +224,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::ConstantPathAndWriteNode node) -> void
-    def visit_constant_path_and_write_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::ConstantPathNode node) -> void
     def visit_constant_path_node(node)
       visit_child_nodes(node)
