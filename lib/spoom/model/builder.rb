@@ -61,22 +61,6 @@ module Spoom
 
       # Modules
 
-      # @override
-      #: (Prism::ModuleNode node) -> void
-      def visit_module_node(node)
-        @namespace_nesting << Module.new(
-          @model.register_symbol(@names_nesting.join("::")),
-          owner: @namespace_nesting.last,
-          location: node_location(node),
-          comments: node_comments(node),
-        )
-        @visibility_stack << Visibility::Public
-        super
-        @visibility_stack.pop
-        @namespace_nesting.pop
-        @last_sigs.clear
-      end
-
       # Constants
 
       # @override
