@@ -62,12 +62,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::AssocSplatNode node) -> void
-    def visit_assoc_splat_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::BackReferenceReadNode node) -> void
     def visit_back_reference_read_node(node)
       visit_child_nodes(node)
