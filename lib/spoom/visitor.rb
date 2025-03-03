@@ -494,12 +494,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::InstanceVariableWriteNode node) -> void
-    def visit_instance_variable_write_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::IntegerNode node) -> void
     def visit_integer_node(node)
       visit_child_nodes(node)
