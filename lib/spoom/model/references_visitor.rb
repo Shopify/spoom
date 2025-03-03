@@ -177,12 +177,6 @@ module Spoom
       end
 
       # @override
-      #: (Prism::ModuleNode node) -> void
-      def visit_module_node(node)
-        visit(node.body)
-      end
-
-      # @override
       #: (Prism::MultiWriteNode node) -> void
       def visit_multi_write_node(node)
         node.lefts.each do |const|
