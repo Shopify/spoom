@@ -740,12 +740,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::RedoNode node) -> void
-    def visit_redo_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::RegularExpressionNode node) -> void
     def visit_regular_expression_node(node)
       visit_child_nodes(node)
