@@ -71,24 +71,6 @@ module Spoom
       end
 
       # @override
-      #: (Prism::CallNode node) -> void
-      def visit_call_node(node)
-        visit(node.receiver)
-
-        name = node.name.to_s
-        reference_method(name, node)
-
-        case name
-        when "<", ">", "<=", ">="
-          # For comparison operators, we also reference the `<=>` method
-          reference_method("<=>", node)
-        end
-
-        visit(node.arguments)
-        visit(node.block)
-      end
-
-      # @override
       #: (Prism::ClassNode node) -> void
       def visit_class_node(node)
         visit(node.superclass) if node.superclass
