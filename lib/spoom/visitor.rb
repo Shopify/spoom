@@ -620,12 +620,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::ModuleNode node) -> void
-    def visit_module_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::MultiTargetNode node) -> void
     def visit_multi_target_node(node)
       visit_child_nodes(node)
