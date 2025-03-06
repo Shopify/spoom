@@ -21,8 +21,8 @@ module Spoom
           lines.join
         end
 
-        #: (String ruby_contents) -> String
-        def rbi_to_rbs(ruby_contents)
+        #: (String ruby_contents, positional_names: bool) -> String
+        def rbi_to_rbs(ruby_contents, positional_names: true)
           ruby_contents = ruby_contents.dup
           sigs = collect_sigs(ruby_contents)
 
@@ -36,7 +36,8 @@ module Spoom
               sig.loc&.end_line&.pred,
               T.must(sig.loc).end_column,
             )
-            ruby_contents[start_index...end_index] = SigTranslator.translate(sig, node)
+            ruby_contents[start_index...end_index] =
+              SigTranslator.translate(sig, node, positional_names: positional_names)
           end
 
           ruby_contents
@@ -87,13 +88,13 @@ module Spoom
         class << self
           extend T::Sig
 
-          #: (RBI::Sig sig, (RBI::Method | RBI::Attr) node) -> String
-          def translate(sig, node)
+          #: (RBI::Sig sig, (RBI::Method | RBI::Attr) node, positional_names: bool) -> String
+          def translate(sig, node, positional_names: true)
             case node
             when RBI::Method
-              translate_method_sig(sig, node)
+              translate_method_sig(sig, node, positional_names: positional_names)
             when RBI::Attr
-              translate_attr_sig(sig, node)
+              translate_attr_sig(sig, node, positional_names: positional_names)
             end
           end
 
@@ -134,10 +135,10 @@ module Spoom
             out.string
           end
 
-          #: (RBI::Sig sig, RBI::Attr node) -> String
-          def translate_attr_sig(sig, node)
+          #: (RBI::Sig sig, RBI::Attr node, positional_names: bool) -> String
+          def translate_attr_sig(sig, node, positional_names: true)
             out = StringIO.new
-            p = RBI::RBSPrinter.new(out: out)
+            p = RBI::RBSPrinter.new(out: out, positional_names: positional_names)
             p.print_attr_sig(node, sig)
             "#: #{out.string}"
           end

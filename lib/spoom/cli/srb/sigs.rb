@@ -13,6 +13,7 @@ module Spoom
         desc "translate", "Translate signatures from/to RBI and RBS"
         option :from, type: :string, aliases: :f, desc: "From format", enum: ["rbi"], default: "rbi"
         option :to, type: :string, aliases: :t, desc: "To format", enum: ["rbs"], default: "rbs"
+        option :positional_names, type: :boolean, aliases: :p, desc: "Use positional names", default: true
         def translate(*paths)
           from = options[:from]
           to = options[:to]
@@ -22,7 +23,7 @@ module Spoom
             "in `#{files.size}` file#{files.size == 1 ? "" : "s"}...\n\n")
 
           transformed_files = transform_files(files) do |_file, contents|
-            Spoom::Sorbet::Sigs.rbi_to_rbs(contents)
+            Spoom::Sorbet::Sigs.rbi_to_rbs(contents, positional_names: options[:positional_names])
           end
 
           say("Translated signatures in `#{transformed_files}` file#{transformed_files == 1 ? "" : "s"}.")
