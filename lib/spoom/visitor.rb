@@ -698,12 +698,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::PinnedExpressionNode node) -> void
-    def visit_pinned_expression_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::PinnedVariableNode node) -> void
     def visit_pinned_variable_node(node)
       visit_child_nodes(node)
