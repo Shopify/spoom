@@ -272,7 +272,10 @@ module Spoom
         RB
 
         assert_equal(<<~RB, Sigs.rbs_to_rbi(contents))
-          sig(:final) { overridable.override(allow_incompatible: true).void }
+          # @final
+          # @override(allow_incompatible: true)
+          # @overridable
+          sig(:final) { override(allow_incompatible: true).overridable.void }
           def foo; end
         RB
       end

@@ -197,12 +197,31 @@ module Spoom
 
           private
 
-          #: (RBI::RBSComment comment, RBI::Method node) -> String
-          def translate_method_sig(comment, node)
-            method_type = ::RBS::Parser.parse_method_type(comment.text)
+          #: (RBI::RBSComment rbs_comment, RBI::Method node) -> String
+          def translate_method_sig(rbs_comment, node)
+            method_type = ::RBS::Parser.parse_method_type(rbs_comment.text)
             translator = RBI::RBS::MethodTypeTranslator.new(node)
             translator.visit(method_type)
-            translator.result.string.strip
+
+            # TODO: move this to `rbi`
+            res = translator.result
+            node.comments.each do |comment|
+              case comment.text
+              when "@abstract"
+                res.is_abstract = true
+              when "@final"
+                res.is_final = true
+              when "@override"
+                res.is_override = true
+              when "@override(allow_incompatible: true)"
+                res.is_override = true
+                res.allow_incompatible_override = true
+              when "@overridable"
+                res.is_overridable = true
+              end
+            end
+
+            res.string.strip
           end
 
           #: (RBI::RBSComment comment, RBI::Attr node) -> String
