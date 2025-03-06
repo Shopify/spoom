@@ -3,8 +3,6 @@
 
 module Spoom
   class TestProject < Context
-    extend T::Helpers
-
     #: (String command) -> ExecResult
     def spoom(command)
       bundle_exec("spoom #{command}")
