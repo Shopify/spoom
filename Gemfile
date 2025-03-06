@@ -5,7 +5,7 @@ source "https://rubygems.org"
 
 gemspec
 
-gem "rbi", github: "Shopify/rbi", branch: "main"
+gem "rbi", github: "Shopify/rbi", branch: "at-fix-rbs-generic"
 
 group :development do
   gem "debug"
