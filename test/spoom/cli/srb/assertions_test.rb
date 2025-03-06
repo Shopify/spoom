@@ -12,8 +12,9 @@ module Spoom
         end
 
         def test_translate_from_rbi_to_rbs
-          @project.write!("a/file1.rb", <<~RB)
+          @project.write!("file.rb", <<~RB)
             x = T.let(nil, T.nilable(String))
+            y = T.cast(ARGV.first, String)
           RB
 
           result = @project.spoom("srb assertions translate --no-color")
@@ -25,8 +26,39 @@ module Spoom
           OUT
           assert(result.status)
 
-          assert_equal(<<~RB, File.read(@project.absolute_path_to("a/file1.rb")))
+          assert_equal(<<~RB, @project.read("file.rb"))
             x = nil #: String?
+            y = ARGV.first #: as String
+          RB
+        end
+
+        def test_translate_from_rbi_to_rbs_no_let
+          @project.write!("file.rb", <<~RB)
+            x = T.let(nil, T.nilable(String))
+            y = T.cast(ARGV.first, String)
+          RB
+
+          result = @project.spoom("srb assertions translate --no-color --no-let")
+          assert(result.status)
+
+          assert_equal(<<~RB, @project.read("file.rb"))
+            x = T.let(nil, T.nilable(String))
+            y = ARGV.first #: as String
+          RB
+        end
+
+        def test_translate_from_rbi_to_rbs_no_cast
+          @project.write!("file.rb", <<~RB)
+            x = T.let(nil, T.nilable(String))
+            y = T.cast(ARGV.first, String)
+          RB
+
+          result = @project.spoom("srb assertions translate --no-color --no-cast")
+          assert(result.status)
+
+          assert_equal(<<~RB, @project.read("file.rb"))
+            x = nil #: String?
+            y = T.cast(ARGV.first, String)
           RB
         end
 

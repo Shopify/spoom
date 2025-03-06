@@ -11,6 +11,8 @@ module Spoom
         desc "translate", "Translate type assertions from/to RBI and RBS"
         option :from, type: :string, aliases: :f, desc: "From format", enum: ["rbi"], default: "rbi"
         option :to, type: :string, aliases: :t, desc: "To format", enum: ["rbs"], default: "rbs"
+        option :let, type: :boolean, desc: "Translate `T.let` to `nil #: String?`", default: true
+        option :cast, type: :boolean, desc: "Translate `T.cast` to `# as String`", default: true
         def translate(*paths)
           from = options[:from]
           to = options[:to]
@@ -20,7 +22,7 @@ module Spoom
             "in `#{files.size}` file#{files.size == 1 ? "" : "s"}...\n\n")
 
           transformed_files = transform_files(files) do |file, contents|
-            Spoom::Sorbet::Assertions.rbi_to_rbs(contents, file: file)
+            Spoom::Sorbet::Assertions.rbi_to_rbs(contents, file: file, let: options[:let], cast: options[:cast])
           end
 
           say("Translated type assertions in `#{transformed_files}` file#{transformed_files == 1 ? "" : "s"}.")
