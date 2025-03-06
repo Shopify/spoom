@@ -6,16 +6,18 @@ require "rbi"
 module Spoom
   module Sorbet
     class Assertions
+      class Error < Spoom::Error; end
+
       class << self
         extend T::Sig
 
-        #: (String, file: String) -> String
-        def rbi_to_rbs(ruby_contents, file:)
+        #: (String, file: String, ?let: bool, ?cast: bool) -> String
+        def rbi_to_rbs(ruby_contents, file:, let: true, cast: true)
           old_encoding = ruby_contents.encoding
           ruby_contents = ruby_contents.encode("UTF-8") unless old_encoding == "UTF-8"
           ruby_bytes = ruby_contents.bytes
 
-          assigns = collect_assigns(ruby_contents, file: file)
+          assigns = collect_assigns(ruby_contents, file: file, let: let, cast: cast)
 
           assigns.reverse.each do |assign|
             # Adjust the end offset to locate the end of the line:
@@ -31,7 +33,9 @@ module Spoom
             # This is important to avoid translating the `nil` as `nil` instead of `nil #: String?`
             end_offset = assign.node.location.end_offset
             end_offset += 1 while (ruby_bytes[end_offset] != "\n".ord) && (end_offset < ruby_bytes.size)
-            T.unsafe(ruby_bytes).insert(end_offset, *" #: #{assign.rbs_type}".bytes)
+
+            # Insert the comment at the end of the line:
+            T.unsafe(ruby_bytes).insert(end_offset, *" #{assign.rbs_comment}".bytes)
 
             # Rewrite the value
             start_offset = assign.operator_loc.end_offset
@@ -44,10 +48,10 @@ module Spoom
 
         private
 
-        #: (String, file: String) -> Array[AssignNode]
-        def collect_assigns(ruby_contents, file:)
+        #: (String, file: String, let: bool, cast: bool) -> Array[AssignNode]
+        def collect_assigns(ruby_contents, file:, let:, cast:)
           node = Spoom.parse_ruby(ruby_contents, file: file)
-          visitor = Locator.new
+          visitor = Locator.new(let: let, cast: cast)
           visitor.visit(node)
           visitor.assigns
         end
@@ -124,6 +128,8 @@ module Spoom
       class AssignNode
         extend T::Sig
 
+        ALLOWED_KINDS = T.let([:let, :cast], T::Array[Symbol])
+
         #: AssignType
         attr_reader :node
 
@@ -133,31 +139,51 @@ module Spoom
         #: Prism::Node
         attr_reader :value, :type
 
-        #: (AssignType, Prism::Location, Prism::Node, Prism::Node) -> void
-        def initialize(node, operator_loc, value, type)
+        #: Symbol
+        attr_reader :kind # should be one of [:let, :cast]
+
+        #: (AssignType, Prism::Location, Prism::Node, Prism::Node, Symbol) -> void
+        def initialize(node, operator_loc, value, type, kind)
           @node = node
           @operator_loc = operator_loc
           @value = value
           @type = type
+
+          unless ALLOWED_KINDS.include?(kind)
+            raise Error, "Unknown assign kind: `#{kind}`, expected one of #{ALLOWED_KINDS.inspect}"
+          end
+
+          @kind = kind
         end
 
         #: -> String
-        def rbs_type
-          RBI::Type.parse_node(type).rbs_string
+        def rbs_comment
+          rbs_type = RBI::Type.parse_node(type).rbs_string
+
+          case kind
+          when :let
+            "#: #{rbs_type}"
+          when :cast
+            "#: as #{rbs_type}"
+          else
+            raise Error, "Unknown assign kind: #{kind}"
+          end
         end
       end
 
       class Locator < Spoom::Visitor
         extend T::Sig
 
-        ANNOTATION_METHODS = T.let([:let], T::Array[Symbol])
-
         #: Array[AssignNode]
         attr_reader :assigns
 
-        #: -> void
-        def initialize
-          super
+        #: (let: bool, cast: bool) -> void
+        def initialize(let:, cast:)
+          @annotation_methods = T.let([], T::Array[Symbol])
+          @annotation_methods << :let if let
+          @annotation_methods << :cast if cast
+
+          super()
           @assigns = T.let([], T::Array[AssignNode])
         end
 
@@ -189,6 +215,7 @@ module Spoom
             operator_loc,
             value,
             T.must(call.arguments&.arguments&.last),
+            call.name,
           )
         end
 
@@ -241,7 +268,7 @@ module Spoom
         #: (Prism::CallNode) -> bool
         def t_annotation?(node)
           return false unless t?(node.receiver)
-          return false unless ANNOTATION_METHODS.include?(node.name)
+          return false unless @annotation_methods.include?(node.name)
           return false unless node.arguments&.arguments&.size == 2
 
           true

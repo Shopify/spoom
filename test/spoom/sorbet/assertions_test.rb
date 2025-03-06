@@ -6,10 +6,13 @@ require "test_helper"
 module Spoom
   module Sorbet
     class AssertionsTest < Minitest::Test
+      # T.let assertions
+
       def test_translate_ignore_non_assigns
         rb = <<~RB
           T.let(42, Integer)
           ::T.let(nil, String)
+          T.cast(ARGV.first, String)
         RB
 
         assert_equal(rb, rbi_to_rbs(rb))
@@ -20,7 +23,6 @@ module Spoom
           ignored1 = 42
           ignored2 = T.let
           ignored3 = T::T.let(nil, T.nilable(String))
-          ignored4 = T.cast(nil)
           ignored5 = foo(T.let(nil, T.nilable(String)))
           @ignored6 = 42
           @@ignored7 = 42
@@ -281,11 +283,56 @@ module Spoom
         RB
       end
 
+      def test_translate_none
+        rb = <<~RB
+          a = T.let(nil, T.nilable(String))
+          b = T.cast(ARGV.first, String)
+        RB
+
+        assert_equal(rb, rbi_to_rbs(rb, let: false, cast: false))
+      end
+
+      def test_translate_only_let
+        rb = <<~RB
+          a = T.let(nil, T.nilable(String))
+          b = T.cast(ARGV.first, String)
+        RB
+
+        assert_equal(<<~RB, rbi_to_rbs(rb, let: true, cast: false))
+          a = nil #: String?
+          b = T.cast(ARGV.first, String)
+        RB
+      end
+
+      def test_translate_only_cast
+        rb = <<~RB
+          a = T.let(nil, T.nilable(String))
+          b = T.cast(ARGV.first, String)
+        RB
+
+        assert_equal(<<~RB, rbi_to_rbs(rb, let: false, cast: true))
+          a = T.let(nil, T.nilable(String))
+          b = ARGV.first #: as String
+        RB
+      end
+
+      def test_translate_both
+        rb = <<~RB
+          a = T.let(nil, T.nilable(String))
+          b = T.cast(ARGV.first, String)
+        RB
+
+        assert_equal(<<~RB, rbi_to_rbs(rb, let: true, cast: true))
+          a = nil #: String?
+          b = ARGV.first #: as String
+        RB
+      end
+
       private
 
-      #: (String) -> String
-      def rbi_to_rbs(ruby_contents)
-        Assertions.rbi_to_rbs(ruby_contents, file: "foo.rb")
+      #: (String, ?let: bool, ?cast: bool) -> String
+      def rbi_to_rbs(ruby_contents, let: true, cast: true)
+        Assertions.rbi_to_rbs(ruby_contents, file: "foo.rb", let: let, cast: cast)
       end
     end
   end
