@@ -5,8 +5,6 @@ module Spoom
   module Deadcode
     module Plugins
       class ActiveModel < Base
-        extend T::Sig
-
         ignore_classes_inheriting_from("ActiveModel::EachValidator")
         ignore_methods_named("validate_each", "persisted?")
 

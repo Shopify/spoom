@@ -3,8 +3,6 @@
 
 module Spoom
   class Timeline
-    extend T::Sig
-
     #: (Context context, Time from, Time to) -> void
     def initialize(context, from, to)
       @context = context

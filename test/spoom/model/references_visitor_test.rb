@@ -6,8 +6,6 @@ require "test_helper"
 module Spoom
   class Model
     class ReferencesVisitorTest < Minitest::Test
-      extend T::Sig
-
       def test_visit_constant_references
         refs = visit(<<~RB)
           puts C1

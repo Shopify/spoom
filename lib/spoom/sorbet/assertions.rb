@@ -7,8 +7,6 @@ module Spoom
   module Sorbet
     class Assertions
       class << self
-        extend T::Sig
-
         #: (String, file: String) -> String
         def rbi_to_rbs(ruby_contents, file:)
           old_encoding = ruby_contents.encoding
@@ -122,8 +120,6 @@ module Spoom
       end
 
       class AssignNode
-        extend T::Sig
-
         #: AssignType
         attr_reader :node
 
@@ -148,8 +144,6 @@ module Spoom
       end
 
       class Locator < Spoom::Visitor
-        extend T::Sig
-
         ANNOTATION_METHODS = T.let([:let], T::Array[Symbol])
 
         #: Array[AssignNode]
@@ -255,8 +249,6 @@ module Spoom
         end
 
         class HeredocVisitor < Spoom::Visitor
-          extend T::Sig
-
           #: bool
           attr_reader :contains_heredoc
 

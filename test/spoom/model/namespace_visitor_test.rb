@@ -6,8 +6,6 @@ require "test_helper"
 module Spoom
   class Model
     class NamespaceVisitorTest < Minitest::Test
-      extend T::Sig
-
       class NamespacesForLocs < NamespaceVisitor
         #: Hash[String, String]
         attr_reader :namespaces_for_locs

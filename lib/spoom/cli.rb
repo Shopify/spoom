@@ -10,7 +10,6 @@ require_relative "cli/srb"
 module Spoom
   module Cli
     class Main < Thor
-      extend T::Sig
       include Helper
 
       class_option :color, type: :boolean, default: true, desc: "Use colors"

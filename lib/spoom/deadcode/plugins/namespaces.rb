@@ -5,8 +5,6 @@ module Spoom
   module Deadcode
     module Plugins
       class Namespaces < Base
-        extend T::Sig
-
         # @override
         #: (Model::Class definition) -> void
         def on_define_class(definition)

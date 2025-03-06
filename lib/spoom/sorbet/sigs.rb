@@ -7,8 +7,6 @@ module Spoom
   module Sorbet
     class Sigs
       class << self
-        extend T::Sig
-
         #: (String ruby_contents) -> String
         def strip(ruby_contents)
           sigs = collect_sigs(ruby_contents)
@@ -54,8 +52,6 @@ module Spoom
       end
 
       class SigsLocator < RBI::Visitor
-        extend T::Sig
-
         #: Array[[RBI::Sig, (RBI::Method | RBI::Attr)]]
         attr_reader :sigs
 
@@ -85,8 +81,6 @@ module Spoom
 
       class SigTranslator
         class << self
-          extend T::Sig
-
           #: (RBI::Sig sig, (RBI::Method | RBI::Attr) node) -> String
           def translate(sig, node)
             case node
@@ -146,8 +140,6 @@ module Spoom
 
       # From https://github.com/Shopify/ruby-lsp/blob/9154bfc6ef/lib/ruby_lsp/document.rb#L127
       class Scanner
-        extend T::Sig
-
         LINE_BREAK = T.let(0x0A, Integer)
 
         #: (String source) -> void

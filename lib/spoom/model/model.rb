@@ -3,13 +3,9 @@
 
 module Spoom
   class Model
-    extend T::Sig
-
     class Error < Spoom::Error; end
 
     class Comment
-      extend T::Sig
-
       #: String
       attr_reader :string
 
@@ -29,8 +25,6 @@ module Spoom
     # Sometimes a symbol can have multiple definitions of different types,
     # e.g. `foo` method can be defined both as a method and as an attribute accessor.
     class Symbol
-      extend T::Sig
-
       # The full, unique name of this symbol
       #: String
       attr_reader :full_name
@@ -70,7 +64,6 @@ module Spoom
     # It can be a class, module, constant, method, etc.
     # A SymbolDef has a location pointing to the actual code that defines the symbol.
     class SymbolDef
-      extend T::Sig
       extend T::Helpers
 
       abstract!
@@ -201,7 +194,6 @@ module Spoom
 
     # A mixin (include, prepend, extend) to a namespace
     class Mixin
-      extend T::Sig
       extend T::Helpers
 
       abstract!
@@ -221,8 +213,6 @@ module Spoom
 
     # A Sorbet signature (sig block)
     class Sig
-      extend T::Sig
-
       #: String
       attr_reader :string
 

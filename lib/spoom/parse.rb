@@ -7,8 +7,6 @@ module Spoom
   class ParseError < Error; end
 
   class << self
-    extend T::Sig
-
     #: (String ruby, file: String) -> Prism::Node
     def parse_ruby(ruby, file:)
       result = Prism.parse(ruby)

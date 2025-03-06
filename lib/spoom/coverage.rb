@@ -10,8 +10,6 @@ require "date"
 module Spoom
   module Coverage
     class << self
-      extend T::Sig
-
       #: (Context context, ?rbi: bool, ?sorbet_bin: String?) -> Snapshot
       def snapshot(context, rbi: true, sorbet_bin: nil)
         config = context.sorbet_config

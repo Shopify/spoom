@@ -3,15 +3,11 @@
 
 module Spoom
   class Location
-    extend T::Sig
-
     include Comparable
 
     class LocationError < Spoom::Error; end
 
     class << self
-      extend T::Sig
-
       #: (String location_string) -> Location
       def from_string(location_string)
         file, rest = location_string.split(":", 2)

@@ -4,11 +4,7 @@
 module Spoom
   module Git
     class Commit < T::Struct
-      extend T::Sig
-
       class << self
-        extend T::Sig
-
         # Parse a line formatted as `%h %at` into a `Commit`
         #: (String string) -> Commit?
         def parse_line(string)
@@ -33,7 +29,6 @@ module Spoom
   class Context
     # Git features for a context
     module Git
-      extend T::Sig
       extend T::Helpers
 
       requires_ancestor { Context }

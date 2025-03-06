@@ -6,8 +6,6 @@ require "test_helper"
 module Spoom
   class Model
     class ModelTest < Minitest::Test
-      extend T::Sig
-
       def test_resolve_symbol
         model = model(<<~RB)
           module Foo

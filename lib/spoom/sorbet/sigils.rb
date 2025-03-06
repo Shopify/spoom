@@ -7,8 +7,6 @@
 module Spoom
   module Sorbet
     module Sigils
-      extend T::Sig
-
       STRICTNESS_IGNORE = "ignore"
       STRICTNESS_FALSE = "false"
       STRICTNESS_TRUE = "true"
@@ -31,8 +29,6 @@ module Spoom
       SIGIL_REGEXP = T.let(/^#[[:blank:]]*typed:[[:blank:]]*(\S*)/, Regexp)
 
       class << self
-        extend T::Sig
-
         # returns the full sigil comment string for the passed strictness
         #: (String strictness) -> String
         def sigil_string(strictness)

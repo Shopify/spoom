@@ -7,7 +7,6 @@ module Spoom
   module Cli
     module Srb
       class CoverageTest < TestWithProject
-        extend T::Sig
         include Spoom::TestHelper
 
         def setup

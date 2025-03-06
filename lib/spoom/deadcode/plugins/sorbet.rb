@@ -5,8 +5,6 @@ module Spoom
   module Deadcode
     module Plugins
       class Sorbet < Base
-        extend T::Sig
-
         # @override
         #: (Model::Constant definition) -> void
         def on_define_constant(definition)

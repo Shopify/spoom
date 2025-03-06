@@ -27,8 +27,6 @@ module Spoom
   module Deadcode
     # Custom engine to handle ERB templates as used by Rails
     class ERB < ::Erubi::Engine
-      extend T::Sig
-
       #: (untyped input, ?untyped properties) -> void
       def initialize(input, properties = {})
         @newline_pending = 0

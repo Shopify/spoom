@@ -3,8 +3,6 @@
 
 module Spoom
   class FileCollector
-    extend T::Sig
-
     #: Array[String]
     attr_reader :files
 

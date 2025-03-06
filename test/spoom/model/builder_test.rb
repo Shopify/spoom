@@ -6,8 +6,6 @@ require "test_helper"
 module Spoom
   class Model
     class BuilderTest < Minitest::Test
-      extend T::Sig
-
       def test_empty
         model = model("")
 

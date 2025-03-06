@@ -24,8 +24,6 @@ module Spoom
     # puts config.ignore  # "c"
     # ```
     class Config
-      extend T::Sig
-
       DEFAULT_ALLOWED_EXTENSIONS = T.let([".rb", ".rbi"].freeze, T::Array[String])
 
       #: Array[String]
@@ -75,8 +73,6 @@ module Spoom
       end
 
       class << self
-        extend T::Sig
-
         #: (String sorbet_config_path) -> Spoom::Sorbet::Config
         def parse_file(sorbet_config_path)
           parse_string(File.read(sorbet_config_path))

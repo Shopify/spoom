@@ -18,8 +18,6 @@ module Spoom
   # A context maps to a directory in the file system.
   # It is used to manipulate files and run commands in the context of this directory.
   class Context
-    extend T::Sig
-
     include Bundle
     include Exec
     include FileSystem
@@ -27,8 +25,6 @@ module Spoom
     include Sorbet
 
     class << self
-      extend T::Sig
-
       # Create a new context in the system's temporary directory
       #
       # `name` is used as prefix to the temporary directory name.

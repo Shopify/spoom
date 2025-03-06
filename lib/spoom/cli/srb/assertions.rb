@@ -5,7 +5,6 @@ module Spoom
   module Cli
     module Srb
       class Assertions < Thor
-        extend T::Sig
         include Helper
 
         desc "translate", "Translate type assertions from/to RBI and RBS"

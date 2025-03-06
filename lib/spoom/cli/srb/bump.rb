@@ -8,7 +8,6 @@ module Spoom
   module Cli
     module Srb
       class Bump < Thor
-        extend T::Sig
         include Helper
 
         default_task :bump

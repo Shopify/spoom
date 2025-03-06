@@ -7,7 +7,6 @@ module Spoom
   # The partial order relation is a binary relation that is reflexive, antisymmetric, and transitive.
   # It can be used to represent a hierarchy of classes or modules, the dependencies between gems, etc.
   class Poset
-    extend T::Sig
     extend T::Generic
 
     class Error < Spoom::Error; end
@@ -134,7 +133,6 @@ module Spoom
 
     # An element in a POSet
     class Element
-      extend T::Sig
       extend T::Generic
       include Comparable
 

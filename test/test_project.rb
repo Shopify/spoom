@@ -3,7 +3,6 @@
 
 module Spoom
   class TestProject < Context
-    extend T::Sig
     extend T::Helpers
 
     #: (String command) -> ExecResult

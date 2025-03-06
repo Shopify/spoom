@@ -4,8 +4,6 @@
 module Spoom
   module Deadcode
     class Remover
-      extend T::Sig
-
       class Error < Spoom::Error; end
 
       #: (Context context) -> void
@@ -27,8 +25,6 @@ module Spoom
       end
 
       class NodeRemover
-        extend T::Sig
-
         #: String
         attr_reader :new_source
 
@@ -364,8 +360,6 @@ module Spoom
       end
 
       class NodeContext
-        extend T::Sig
-
         #: Hash[Integer, Prism::Comment]
         attr_reader :comments
 
@@ -534,11 +528,7 @@ module Spoom
       end
 
       class NodeFinder < Visitor
-        extend T::Sig
-
         class << self
-          extend T::Sig
-
           #: (String source, Location location, Definition::Kind? kind) -> NodeContext
           def find(source, location, kind)
             result = Prism.parse(source)

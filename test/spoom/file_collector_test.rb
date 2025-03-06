@@ -6,8 +6,6 @@ require "test_helper"
 module Spoom
   module Sorbet
     class FileCollectorTest < Minitest::Test
-      extend T::Sig
-
       def test_collect_files_empty_dir
         context = Context.mktmp!
 

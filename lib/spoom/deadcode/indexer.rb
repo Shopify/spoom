@@ -4,8 +4,6 @@
 module Spoom
   module Deadcode
     class Indexer < Visitor
-      extend T::Sig
-
       #: String
       attr_reader :path
 

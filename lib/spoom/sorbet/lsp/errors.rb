@@ -8,8 +8,6 @@ module Spoom
       class BadHeaders < Error; end
 
       class Diagnostics < Error
-        extend T::Sig
-
         #: String
         attr_reader :uri
 
@@ -17,8 +15,6 @@ module Spoom
         attr_reader :diagnostics
 
         class << self
-          extend T::Sig
-
           #: (Hash[untyped, untyped] json) -> Diagnostics
           def from_json(json)
             Diagnostics.new(
@@ -38,8 +34,6 @@ module Spoom
     end
 
     class ResponseError < Error
-      extend T::Sig
-
       #: Integer
       attr_reader :code
 
@@ -47,8 +41,6 @@ module Spoom
       attr_reader :data
 
       class << self
-        extend T::Sig
-
         #: (Hash[untyped, untyped] json) -> ResponseError
         def from_json(json)
           ResponseError.new(

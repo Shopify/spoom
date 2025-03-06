@@ -5,8 +5,6 @@ module Spoom
   module Deadcode
     module Plugins
       class GraphQL < Base
-        extend T::Sig
-
         ignore_classes_inheriting_from(
           "GraphQL::Schema::Enum",
           "GraphQL::Schema::Object",

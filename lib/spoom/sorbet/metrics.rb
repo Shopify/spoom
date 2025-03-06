@@ -9,8 +9,6 @@ module Spoom
       DEFAULT_PREFIX = "ruby_typer.unknown."
 
       class << self
-        extend T::Sig
-
         #: (String path, ?String prefix) -> Hash[String, Integer]
         def parse_file(path, prefix = DEFAULT_PREFIX)
           parse_string(File.read(path), prefix)

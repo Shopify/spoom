@@ -7,7 +7,6 @@ module Spoom
   module Cli
     module Srb
       class Sigs < Thor
-        extend T::Sig
         include Helper
 
         desc "translate", "Translate signatures from/to RBI and RBS"
