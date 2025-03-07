@@ -512,12 +512,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::InterpolatedRegularExpressionNode node) -> void
-    def visit_interpolated_regular_expression_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::InterpolatedStringNode node) -> void
     def visit_interpolated_string_node(node)
       visit_child_nodes(node)
