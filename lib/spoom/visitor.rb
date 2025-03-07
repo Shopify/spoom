@@ -758,12 +758,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::RequiredParameterNode node) -> void
-    def visit_required_parameter_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::RescueModifierNode node) -> void
     def visit_rescue_modifier_node(node)
       visit_child_nodes(node)
