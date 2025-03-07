@@ -20,8 +20,6 @@ module Spoom
         end
 
         class << self
-          extend T::Sig
-
           #: -> String
           def header_style
             ""

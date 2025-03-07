@@ -5,7 +5,6 @@ module Spoom
   class Context
     # Bundle features for a context
     module Bundle
-      extend T::Sig
       extend T::Helpers
 
       requires_ancestor { Context }

@@ -7,7 +7,6 @@ module Spoom
   module Test
     module Helpers
       module DeadcodeHelper
-        extend T::Sig
         extend T::Helpers
 
         requires_ancestor { TestWithProject }

@@ -9,7 +9,6 @@ require "test_project"
 
 module Spoom
   module TestHelper
-    extend T::Sig
     extend T::Helpers
 
     requires_ancestor { Minitest::Test }

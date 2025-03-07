@@ -7,14 +7,11 @@ module Spoom
   module Deadcode
     module Plugins
       class Base
-        extend T::Sig
         extend T::Helpers
 
         abstract!
 
         class << self
-          extend T::Sig
-
           # Plugins DSL
 
           # Mark classes matching `names` as ignored.

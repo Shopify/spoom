@@ -5,8 +5,6 @@ module Spoom
   module Deadcode
     module Plugins
       class ActionPack < Base
-        extend T::Sig
-
         ignore_classes_inheriting_from("ApplicationController")
 
         CALLBACKS = T.let(

@@ -5,8 +5,6 @@ module Spoom
   module Deadcode
     # A definition is a class, module, method, constant, etc. being defined in the code
     class Definition < T::Struct
-      extend T::Sig
-
       class Kind < T::Enum
         enums do
           AttrReader = new("attr_reader")

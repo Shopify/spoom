@@ -7,7 +7,6 @@ module Spoom
   module Coverage
     module D3
       class Timeline < Base
-        extend T::Sig
         extend T::Helpers
 
         abstract!
@@ -19,8 +18,6 @@ module Spoom
         end
 
         class << self
-          extend T::Sig
-
           #: -> String
           def header_style
             <<~CSS
@@ -231,8 +228,6 @@ module Spoom
         end
 
         class Versions < Timeline
-          extend T::Sig
-
           #: (String id, Array[Snapshot] snapshots) -> void
           def initialize(id, snapshots)
             data = snapshots.map do |snapshot|
@@ -283,8 +278,6 @@ module Spoom
         end
 
         class Runtimes < Timeline
-          extend T::Sig
-
           #: (String id, Array[Snapshot] snapshots) -> void
           def initialize(id, snapshots)
             data = snapshots.map do |snapshot|
@@ -332,7 +325,6 @@ module Spoom
         end
 
         class Stacked < Timeline
-          extend T::Sig
           extend T::Helpers
 
           abstract!
@@ -427,8 +419,6 @@ module Spoom
         end
 
         class Sigils < Stacked
-          extend T::Sig
-
           #: (String id, Array[Snapshot] snapshots) -> void
           def initialize(id, snapshots)
             keys = Snapshot::STRICTNESSES
@@ -455,8 +445,6 @@ module Spoom
         end
 
         class Calls < Stacked
-          extend T::Sig
-
           #: (String id, Array[Snapshot] snapshots) -> void
           def initialize(id, snapshots)
             keys = ["false", "true"]
@@ -483,8 +471,6 @@ module Spoom
         end
 
         class Sigs < Stacked
-          extend T::Sig
-
           #: (String id, Array[Snapshot] snapshots) -> void
           def initialize(id, snapshots)
             keys = ["false", "true"]
@@ -514,8 +500,6 @@ module Spoom
         end
 
         class RBIs < Stacked
-          extend T::Sig
-
           #: (String id, Array[Snapshot] snapshots) -> void
           def initialize(id, snapshots)
             keys = ["rbis", "files"]

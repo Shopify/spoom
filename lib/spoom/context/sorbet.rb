@@ -5,7 +5,6 @@ module Spoom
   class Context
     # Sorbet features for a context
     module Sorbet
-      extend T::Sig
       extend T::Helpers
 
       requires_ancestor { Context }

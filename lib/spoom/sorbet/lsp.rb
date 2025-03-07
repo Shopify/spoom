@@ -11,8 +11,6 @@ require_relative "lsp/errors"
 module Spoom
   module LSP
     class Client
-      extend T::Sig
-
       #: (String sorbet_bin, *String sorbet_args, ?path: String) -> void
       def initialize(sorbet_bin, *sorbet_args, path: ".")
         @id = T.let(0, Integer)

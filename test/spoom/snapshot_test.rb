@@ -6,7 +6,6 @@ require "test_helper"
 module Spoom
   module Sorbet
     class SnapshotTest < Minitest::Test
-      extend T::Sig
       include Spoom::TestHelper
 
       def test_serialize_snapshot_empty

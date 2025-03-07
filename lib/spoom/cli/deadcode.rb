@@ -6,7 +6,6 @@ require_relative "../deadcode"
 module Spoom
   module Cli
     class Deadcode < Thor
-      extend T::Sig
       include Helper
 
       default_task :deadcode

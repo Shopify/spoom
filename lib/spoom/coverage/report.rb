@@ -8,7 +8,6 @@ require "erb"
 module Spoom
   module Coverage
     class Template
-      extend T::Sig
       extend T::Helpers
 
       abstract!
@@ -103,7 +102,6 @@ module Spoom
       end
 
       class Erb < Card
-        extend T::Sig
         extend T::Helpers
 
         abstract!
@@ -122,8 +120,6 @@ module Spoom
       end
 
       class Snapshot < Card
-        extend T::Sig
-
         TEMPLATE = T.let("#{Spoom::SPOOM_PATH}/templates/card_snapshot.erb", String)
 
         #: Coverage::Snapshot
@@ -152,8 +148,6 @@ module Spoom
       end
 
       class Map < Card
-        extend T::Sig
-
         #: (file_tree: FileTree, nodes_strictnesses: Hash[FileTree::Node, String?], nodes_strictness_scores: Hash[FileTree::Node, Float], ?title: String) -> void
         def initialize(file_tree:, nodes_strictnesses:, nodes_strictness_scores:, title: "Strictness Map")
           super(
@@ -169,16 +163,12 @@ module Spoom
       end
 
       class Timeline < Card
-        extend T::Sig
-
         #: (title: String, timeline: D3::Timeline) -> void
         def initialize(title:, timeline:)
           super(title: title, body: timeline.html)
         end
 
         class Sigils < Timeline
-          extend T::Sig
-
           #: (snapshots: Array[Coverage::Snapshot], ?title: String) -> void
           def initialize(snapshots:, title: "Sigils Timeline")
             super(title: title, timeline: D3::Timeline::Sigils.new("timeline_sigils", snapshots))
@@ -186,8 +176,6 @@ module Spoom
         end
 
         class Calls < Timeline
-          extend T::Sig
-
           #: (snapshots: Array[Coverage::Snapshot], ?title: String) -> void
           def initialize(snapshots:, title: "Calls Timeline")
             super(title: title, timeline: D3::Timeline::Calls.new("timeline_calls", snapshots))
@@ -195,8 +183,6 @@ module Spoom
         end
 
         class Sigs < Timeline
-          extend T::Sig
-
           #: (snapshots: Array[Coverage::Snapshot], ?title: String) -> void
           def initialize(snapshots:, title: "Signatures Timeline")
             super(title: title, timeline: D3::Timeline::Sigs.new("timeline_sigs", snapshots))
@@ -204,8 +190,6 @@ module Spoom
         end
 
         class RBIs < Timeline
-          extend T::Sig
-
           #: (snapshots: Array[Coverage::Snapshot], ?title: String) -> void
           def initialize(snapshots:, title: "RBIs Timeline")
             super(title: title, timeline: D3::Timeline::RBIs.new("timeline_rbis", snapshots))
@@ -213,8 +197,6 @@ module Spoom
         end
 
         class Versions < Timeline
-          extend T::Sig
-
           #: (snapshots: Array[Coverage::Snapshot], ?title: String) -> void
           def initialize(snapshots:, title: "Sorbet Versions Timeline")
             super(title: title, timeline: D3::Timeline::Versions.new("timeline_versions", snapshots))
@@ -222,8 +204,6 @@ module Spoom
         end
 
         class Runtimes < Timeline
-          extend T::Sig
-
           #: (snapshots: Array[Coverage::Snapshot], ?title: String) -> void
           def initialize(snapshots:, title: "Sorbet Typechecking Time")
             super(title: title, timeline: D3::Timeline::Runtimes.new("timeline_runtimes", snapshots))
@@ -232,8 +212,6 @@ module Spoom
       end
 
       class SorbetIntro < Erb
-        extend T::Sig
-
         #: (?sorbet_intro_commit: String?, ?sorbet_intro_date: Time?) -> void
         def initialize(sorbet_intro_commit: nil, sorbet_intro_date: nil) # rubocop:disable Lint/MissingSuper
           @sorbet_intro_commit = sorbet_intro_commit
@@ -254,8 +232,6 @@ module Spoom
     end
 
     class Report < Page
-      extend T::Sig
-
       #: (project_name: String, palette: D3::ColorPalette, snapshots: Array[Snapshot], file_tree: FileTree, nodes_strictnesses: Hash[FileTree::Node, String?], nodes_strictness_scores: Hash[FileTree::Node, Float], ?sorbet_intro_commit: String?, ?sorbet_intro_date: Time?) -> void
       def initialize(
         project_name:,

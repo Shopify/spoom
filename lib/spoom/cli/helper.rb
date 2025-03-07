@@ -8,7 +8,6 @@ require "stringio"
 module Spoom
   module Cli
     module Helper
-      extend T::Sig
       extend T::Helpers
 
       include Colorize

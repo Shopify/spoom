@@ -5,7 +5,6 @@ module Spoom
   class Context
     # File System features for a context
     module FileSystem
-      extend T::Sig
       extend T::Helpers
 
       requires_ancestor { Context }

@@ -5,9 +5,6 @@ require "stringio"
 
 module Spoom
   class Printer
-    extend T::Sig
-    extend T::Helpers
-
     include Colorize
 
     #: (IO | StringIO)

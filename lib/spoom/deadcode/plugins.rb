@@ -55,8 +55,6 @@ module Spoom
     )
 
     class << self
-      extend T::Sig
-
       #: (Context context) -> Set[singleton(Plugins::Base)]
       def plugins_from_gemfile_lock(context)
         # These plugins are always loaded

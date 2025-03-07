@@ -5,8 +5,6 @@ module Spoom
   module Deadcode
     # An abstraction to simplify handling of Prism::CallNode nodes.
     class Send < T::Struct
-      extend T::Sig
-
       const :node, Prism::CallNode
       const :name, String
       const :recv, T.nilable(Prism::Node), default: nil

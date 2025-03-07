@@ -10,8 +10,6 @@ module Spoom
     #
     # The language server protocol always uses `"2.0"` as the `jsonrpc` version.
     class Message
-      extend T::Sig
-
       #: -> void
       def initialize
         @jsonrpc = T.let("2.0", String)
@@ -35,8 +33,6 @@ module Spoom
     #
     # Every processed request must send a response back to the sender of the request.
     class Request < Message
-      extend T::Sig
-
       #: Integer
       attr_reader :id
 
@@ -56,8 +52,6 @@ module Spoom
     #
     # A processed notification message must not send a response back. They work like events.
     class Notification < Message
-      extend T::Sig
-
       #: String
       attr_reader :method
 

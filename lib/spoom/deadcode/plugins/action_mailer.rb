@@ -5,8 +5,6 @@ module Spoom
   module Deadcode
     module Plugins
       class ActionMailer < Base
-        extend T::Sig
-
         # @override
         #: (Send send) -> void
         def on_send(send)

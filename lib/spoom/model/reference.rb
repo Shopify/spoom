@@ -8,8 +8,6 @@ module Spoom
     # Constants could be classes, modules, or actual constants.
     # Methods could be accessors, instance or class methods, aliases, etc.
     class Reference < T::Struct
-      extend T::Sig
-
       class Kind < T::Enum
         enums do
           Constant = new("constant")
@@ -18,8 +16,6 @@ module Spoom
       end
 
       class << self
-        extend T::Sig
-
         #: (String name, Spoom::Location location) -> Reference
         def constant(name, location)
           new(name: name, kind: Kind::Constant, location: location)

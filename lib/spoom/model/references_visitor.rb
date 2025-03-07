@@ -5,8 +5,6 @@ module Spoom
   class Model
     # Visit a file to collect all the references to constants and methods
     class ReferencesVisitor < Visitor
-      extend T::Sig
-
       #: Array[Reference]
       attr_reader :references
 

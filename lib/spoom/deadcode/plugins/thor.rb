@@ -5,8 +5,6 @@ module Spoom
   module Deadcode
     module Plugins
       class Thor < Base
-        extend T::Sig
-
         ignore_methods_named("exit_on_failure?")
 
         # @override

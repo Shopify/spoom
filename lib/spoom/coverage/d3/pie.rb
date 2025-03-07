@@ -7,7 +7,6 @@ module Spoom
   module Coverage
     module D3
       class Pie < Base
-        extend T::Sig
         extend T::Helpers
 
         abstract!
@@ -19,8 +18,6 @@ module Spoom
         end
 
         class << self
-          extend T::Sig
-
           #: -> String
           def header_style
             <<~CSS
@@ -122,8 +119,6 @@ module Spoom
         end
 
         class Sigils < Pie
-          extend T::Sig
-
           #: (String id, String title, Snapshot snapshot) -> void
           def initialize(id, title, snapshot)
             super(id, title, snapshot.sigils_excluding_rbis.select { |_k, v| v })
@@ -141,8 +136,6 @@ module Spoom
         end
 
         class Calls < Pie
-          extend T::Sig
-
           #: (String id, String title, Snapshot snapshot) -> void
           def initialize(id, title, snapshot)
             super(id, title, { true: snapshot.calls_typed, false: snapshot.calls_untyped })
@@ -160,8 +153,6 @@ module Spoom
         end
 
         class Sigs < Pie
-          extend T::Sig
-
           #: (String id, String title, Snapshot snapshot) -> void
           def initialize(id, title, snapshot)
             super(

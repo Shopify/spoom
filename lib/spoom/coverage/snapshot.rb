@@ -4,8 +4,6 @@
 module Spoom
   module Coverage
     class Snapshot < T::Struct
-      extend T::Sig
-
       prop :timestamp, Integer, default: Time.new.getutc.to_i
       prop :version_static, T.nilable(String), default: nil
       prop :version_runtime, T.nilable(String), default: nil
@@ -41,8 +39,6 @@ module Spoom
       end
 
       class << self
-        extend T::Sig
-
         #: (String json) -> Snapshot
         def from_json(json)
           from_obj(JSON.parse(json))
@@ -93,8 +89,6 @@ module Spoom
     end
 
     class SnapshotPrinter < Spoom::Printer
-      extend T::Sig
-
       #: (Snapshot snapshot) -> void
       def print_snapshot(snapshot)
         methods = snapshot.methods_with_sig + snapshot.methods_without_sig

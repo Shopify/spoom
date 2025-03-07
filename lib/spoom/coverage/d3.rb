@@ -15,8 +15,6 @@ module Spoom
       COLOR_STRONG = "#064828"
 
       class << self
-        extend T::Sig
-
         #: -> String
         def header_style
           <<~CSS

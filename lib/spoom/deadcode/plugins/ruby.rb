@@ -5,8 +5,6 @@ module Spoom
   module Deadcode
     module Plugins
       class Ruby < Base
-        extend T::Sig
-
         ignore_methods_named(
           "==",
           "extended",

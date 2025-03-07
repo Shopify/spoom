@@ -5,8 +5,6 @@ module Spoom
   module Deadcode
     module Plugins
       class Minitest < Base
-        extend T::Sig
-
         ignore_classes_named(/Test$/)
 
         ignore_methods_named(

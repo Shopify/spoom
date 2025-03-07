@@ -5,8 +5,6 @@ require "prism"
 
 module Spoom
   class Visitor < Prism::Visitor
-    extend T::Sig
-
     # @override
     #: (Prism::Node node) -> void
     def visit_child_nodes(node)

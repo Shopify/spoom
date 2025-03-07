@@ -5,8 +5,6 @@ require "sorbet-runtime"
 require "pathname"
 
 module Spoom
-  extend T::Sig
-
   SPOOM_PATH = T.let((Pathname.new(__FILE__) / ".." / "..").to_s, String)
 
   class Error < StandardError; end

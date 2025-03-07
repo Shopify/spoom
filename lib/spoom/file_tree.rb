@@ -4,8 +4,6 @@
 module Spoom
   # Build a file hierarchy from a set of file paths.
   class FileTree
-    extend T::Sig
-
     #: (?T::Enumerable[String] paths) -> void
     def initialize(paths = [])
       @roots = T.let({}, T::Hash[String, Node])
@@ -76,8 +74,6 @@ module Spoom
 
     # A node representing either a file or a directory inside a FileTree
     class Node < T::Struct
-      extend T::Sig
-
       # Node parent or `nil` if the node is a root one
       const :parent, T.nilable(Node)
 
@@ -99,7 +95,6 @@ module Spoom
 
     # An abstract visitor for FileTree
     class Visitor
-      extend T::Sig
       extend T::Helpers
 
       abstract!
@@ -122,8 +117,6 @@ module Spoom
 
     # A visitor that collects all the nodes in a tree
     class CollectNodes < Visitor
-      extend T::Sig
-
       #: Array[FileTree::Node]
       attr_reader :nodes
 
@@ -143,8 +136,6 @@ module Spoom
 
     # A visitor that collects the strictness of each node in a tree
     class CollectStrictnesses < Visitor
-      extend T::Sig
-
       #: Hash[Node, String?]
       attr_reader :strictnesses
 
@@ -167,8 +158,6 @@ module Spoom
 
     # A visitor that collects the typing score of each node in a tree
     class CollectScores < CollectStrictnesses
-      extend T::Sig
-
       #: Hash[Node, Float]
       attr_reader :scores
 
@@ -213,8 +202,6 @@ module Spoom
     #
     # See `FileTree#print`
     class Printer < Visitor
-      extend T::Sig
-
       #: (Hash[FileTree::Node, String?] strictnesses, ?out: (IO | StringIO), ?colors: bool) -> void
       def initialize(strictnesses, out: $stdout, colors: true)
         super()

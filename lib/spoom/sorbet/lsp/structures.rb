@@ -17,15 +17,12 @@ module Spoom
     end
 
     class Hover < T::Struct
-      extend T::Sig
       include PrintableSymbol
 
       const :contents, String
       const :range, T.nilable(Range)
 
       class << self
-        extend T::Sig
-
         #: (Hash[untyped, untyped] json) -> Hover
         def from_json(json)
           Hover.new(
@@ -49,15 +46,12 @@ module Spoom
     end
 
     class Position < T::Struct
-      extend T::Sig
       include PrintableSymbol
 
       const :line, Integer
       const :char, Integer
 
       class << self
-        extend T::Sig
-
         #: (Hash[untyped, untyped] json) -> Position
         def from_json(json)
           Position.new(
@@ -80,15 +74,12 @@ module Spoom
     end
 
     class Range < T::Struct
-      extend T::Sig
       include PrintableSymbol
 
       const :start, Position
       const :end, Position
 
       class << self
-        extend T::Sig
-
         #: (Hash[untyped, untyped] json) -> Range
         def from_json(json)
           Range.new(
@@ -113,15 +104,12 @@ module Spoom
     end
 
     class Location < T::Struct
-      extend T::Sig
       include PrintableSymbol
 
       const :uri, String
       const :range, LSP::Range
 
       class << self
-        extend T::Sig
-
         #: (Hash[untyped, untyped] json) -> Location
         def from_json(json)
           Location.new(
@@ -145,7 +133,6 @@ module Spoom
     end
 
     class SignatureHelp < T::Struct
-      extend T::Sig
       include PrintableSymbol
 
       const :label, T.nilable(String)
@@ -153,8 +140,6 @@ module Spoom
       const :params, T::Array[T.untyped] # TODO
 
       class << self
-        extend T::Sig
-
         #: (Hash[untyped, untyped] json) -> SignatureHelp
         def from_json(json)
           SignatureHelp.new(
@@ -181,7 +166,6 @@ module Spoom
     end
 
     class Diagnostic < T::Struct
-      extend T::Sig
       include PrintableSymbol
 
       const :range, LSP::Range
@@ -190,8 +174,6 @@ module Spoom
       const :information, Object
 
       class << self
-        extend T::Sig
-
         #: (Hash[untyped, untyped] json) -> Diagnostic
         def from_json(json)
           Diagnostic.new(
@@ -216,7 +198,6 @@ module Spoom
     end
 
     class DocumentSymbol < T::Struct
-      extend T::Sig
       include PrintableSymbol
 
       const :name, String
@@ -227,8 +208,6 @@ module Spoom
       const :children, T::Array[DocumentSymbol]
 
       class << self
-        extend T::Sig
-
         #: (Hash[untyped, untyped] json) -> DocumentSymbol
         def from_json(json)
           DocumentSymbol.new(
@@ -314,8 +293,6 @@ module Spoom
     end
 
     class SymbolPrinter < Printer
-      extend T::Sig
-
       #: Set[Integer]
       attr_reader :seen
 

@@ -4,11 +4,7 @@
 module Spoom
   module Deadcode
     class Index
-      extend T::Sig
-
       class Error < Spoom::Error
-        extend T::Sig
-
         #: (String message, parent: Exception) -> void
         def initialize(message, parent:)
           super(message)

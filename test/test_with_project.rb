@@ -5,7 +5,6 @@ require "test_helper"
 
 module Spoom
   class TestWithProject < Minitest::Test
-    extend T::Sig
     extend T::Helpers
     include TestHelper
 

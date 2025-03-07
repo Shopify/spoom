@@ -3,8 +3,6 @@
 
 module Spoom
   class ExecResult < T::Struct
-    extend T::Sig
-
     const :out, String
     const :err, T.nilable(String)
     const :status, T::Boolean
@@ -25,7 +23,6 @@ module Spoom
   class Context
     # Execution features for a context
     module Exec
-      extend T::Sig
       extend T::Helpers
 
       requires_ancestor { Context }

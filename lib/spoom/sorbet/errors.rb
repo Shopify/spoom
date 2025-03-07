@@ -7,8 +7,6 @@ module Spoom
       DEFAULT_ERROR_URL_BASE = "https://srb.help/"
 
       class << self
-        extend T::Sig
-
         #: (Array[Error] errors) -> Array[Error]
         def sort_errors_by_code(errors)
           errors.sort_by { |e| [e.code, e.file, e.line, e.message] }
@@ -16,8 +14,6 @@ module Spoom
       end
       # Parse errors from Sorbet output
       class Parser
-        extend T::Sig
-
         class ParseError < Spoom::Error; end
 
         HEADER = T.let(
@@ -32,8 +28,6 @@ module Spoom
         )
 
         class << self
-          extend T::Sig
-
           #: (String output, ?error_url_base: String) -> Array[Error]
           def parse_string(output, error_url_base: DEFAULT_ERROR_URL_BASE)
             parser = Spoom::Sorbet::Errors::Parser.new(error_url_base: error_url_base)
@@ -126,7 +120,6 @@ module Spoom
 
       class Error
         include Comparable
-        extend T::Sig
 
         #: String?
         attr_reader :file, :message

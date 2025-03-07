@@ -3,8 +3,6 @@
 
 module Spoom
   class Color < T::Enum
-    extend T::Sig
-
     enums do
       CLEAR           = new("\e[0m")
       BOLD            = new("\e[1m")
@@ -35,8 +33,6 @@ module Spoom
   end
 
   module Colorize
-    extend T::Sig
-
     #: (String string, *Color color) -> String
     def set_color(string, *color)
       "#{color.map(&:ansi_code).join}#{string}#{Color::CLEAR.ansi_code}"
