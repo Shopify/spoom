@@ -590,12 +590,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::MatchLastLineNode node) -> void
-    def visit_match_last_line_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::MatchPredicateNode node) -> void
     def visit_match_predicate_node(node)
       visit_child_nodes(node)
