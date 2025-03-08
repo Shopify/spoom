@@ -348,12 +348,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::ForwardingParameterNode node) -> void
-    def visit_forwarding_parameter_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::ForwardingSuperNode node) -> void
     def visit_forwarding_super_node(node)
       visit_child_nodes(node)
