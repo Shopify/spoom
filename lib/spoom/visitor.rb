@@ -528,12 +528,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::InterpolatedXStringNode node) -> void
-    def visit_interpolated_x_string_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::KeywordHashNode node) -> void
     def visit_keyword_hash_node(node)
       visit_child_nodes(node)
