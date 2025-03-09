@@ -30,18 +30,6 @@ module Spoom
       end
 
       # @override
-      #: (Prism::BlockArgumentNode node) -> void
-      def visit_block_argument_node(node)
-        expression = node.expression
-        case expression
-        when Prism::SymbolNode
-          reference_method(expression.unescaped, expression)
-        else
-          visit(expression)
-        end
-      end
-
-      # @override
       #: (Prism::CallAndWriteNode node) -> void
       def visit_call_and_write_node(node)
         visit(node.receiver)
