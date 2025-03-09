@@ -282,12 +282,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::DefinedNode node) -> void
-    def visit_defined_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::ElseNode node) -> void
     def visit_else_node(node)
       visit_child_nodes(node)
