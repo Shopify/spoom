@@ -396,12 +396,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::HashNode node) -> void
-    def visit_hash_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::HashPatternNode node) -> void
     def visit_hash_pattern_node(node)
       visit_child_nodes(node)
