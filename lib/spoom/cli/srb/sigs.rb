@@ -10,18 +10,31 @@ module Spoom
         include Helper
 
         desc "translate", "Translate signatures from/to RBI and RBS"
-        option :from, type: :string, aliases: :f, desc: "From format", enum: ["rbi"], default: "rbi"
-        option :to, type: :string, aliases: :t, desc: "To format", enum: ["rbs"], default: "rbs"
+        option :from, type: :string, aliases: :f, desc: "From format", enum: ["rbi", "rbs"], default: "rbi"
+        option :to, type: :string, aliases: :t, desc: "To format", enum: ["rbi", "rbs"], default: "rbs"
         def translate(*paths)
           from = options[:from]
           to = options[:to]
+
+          if from == to
+            say_error("Can't translate signatures from `#{from}` to `#{to}`")
+            exit(1)
+          end
+
           files = collect_files(paths)
 
           say("Translating signatures from `#{from}` to `#{to}` " \
             "in `#{files.size}` file#{files.size == 1 ? "" : "s"}...\n\n")
 
-          transformed_files = transform_files(files) do |_file, contents|
-            Spoom::Sorbet::Sigs.rbi_to_rbs(contents)
+          case from
+          when "rbi"
+            transformed_files = transform_files(files) do |_file, contents|
+              Spoom::Sorbet::Sigs.rbi_to_rbs(contents)
+            end
+          when "rbs"
+            transformed_files = transform_files(files) do |_file, contents|
+              Spoom::Sorbet::Sigs.rbs_to_rbi(contents)
+            end
           end
 
           say("Translated signatures in `#{transformed_files}` file#{transformed_files == 1 ? "" : "s"}.")
