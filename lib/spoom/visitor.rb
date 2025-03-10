@@ -810,12 +810,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::SourceFileNode node) -> void
-    def visit_source_file_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::SourceLineNode node) -> void
     def visit_source_line_node(node)
       visit_child_nodes(node)
