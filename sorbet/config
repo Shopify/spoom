@@ -1,4 +1,5 @@
 .
 --ignore=vendor/
+--ignore=rbi/spoom.rbi
 --enable-experimental-requires-ancestor
 --enable-experimental-rbs-signatures

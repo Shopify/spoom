@@ -32,3 +32,5 @@ jobs:
     - run: bin/test
     - name: Run style
       run: bin/style
+    - name: Check exported RBI file
+      run: bin/export-rbi --check-sync

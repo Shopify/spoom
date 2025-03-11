@@ -20,7 +20,10 @@ Gem::Specification.new do |spec|
   spec.executables   = ["spoom"]
   spec.require_paths = ["lib"]
 
-  spec.files         = Dir.glob(["lib/**/*.rb", "templates/**/*.erb"]) + ["README.md", "Gemfile", "Rakefile"]
+  spec.files         = Dir.glob([
+    "lib/**/*.rb",
+    "templates/**/*.erb",
+  ]) + ["README.md", "Gemfile", "Rakefile", "rbi/spoom.rbi"]
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
 
