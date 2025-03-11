@@ -44,25 +44,21 @@ module Spoom
 
         # translate
 
-        def test_only_supports_translation_from_rbi
-          result = @project.spoom("srb sigs translate --from rbs")
-
+        def test_translate_from_and_to_cannot_be_the_same
+          result = @project.spoom("srb sigs translate --from rbs --to rbs --no-color")
           assert_equal(<<~ERR, result.err)
-            Expected '--from' to be one of rbi; got rbs
+            Error: Can't translate signatures from `rbs` to `rbs`
+          ERR
+          refute(result.status)
+
+          result = @project.spoom("srb sigs translate --from rbi --to rbi --no-color")
+          assert_equal(<<~ERR, result.err)
+            Error: Can't translate signatures from `rbi` to `rbi`
           ERR
           refute(result.status)
         end
 
-        def test_only_supports_translation_to_rbs
-          result = @project.spoom("srb sigs translate --to rbi")
-
-          assert_equal(<<~ERR, result.err)
-            Expected '--to' to be one of rbs; got rbi
-          ERR
-          refute(result.status)
-        end
-
-        def test_no_files
+        def test_translate_no_files
           result = @project.spoom("srb sigs translate --no-color")
 
           assert_equal(<<~OUT, result.err)
@@ -71,7 +67,7 @@ module Spoom
           refute(result.status)
         end
 
-        def test_only_selected_files
+        def test_translate_only_selected_files
           @project.write!("a/file1.rb", <<~RB)
             sig { void }
             def foo; end
@@ -113,7 +109,7 @@ module Spoom
           RB
         end
 
-        def test_encoding_support
+        def test_translate_encoding_support
           utf8_path = @project.absolute_path_to("file.rb")
           File.write(utf8_path, <<~RB)
             # 👋
@@ -153,6 +149,30 @@ module Spoom
 
             # Some content with accentuated characters: éàèù
             #: -> void
+            def foo; end
+          RB
+        end
+
+        # translate --from rbs --to rbi
+
+        def test_translate_from_rbs_to_rbi
+          @project.write!("file.rb", <<~RB)
+            #: -> void
+            def foo; end
+          RB
+
+          result = @project.spoom("srb sigs translate --from rbs --to rbi --no-color")
+
+          assert_empty(result.err)
+          assert_equal(<<~OUT, result.out)
+            Translating signatures from `rbs` to `rbi` in `1` file...
+
+            Translated signatures in `1` file.
+          OUT
+          assert(result.status)
+
+          assert_equal(<<~RB, @project.read("file.rb"))
+            sig { void }
             def foo; end
           RB
         end

@@ -6,10 +6,11 @@ require "rbi"
 module Spoom
   module Sorbet
     class Sigs
+      class Error < Spoom::Error; end
       class << self
         #: (String ruby_contents) -> String
         def strip(ruby_contents)
-          sigs = collect_sigs(ruby_contents)
+          sigs = collect_sorbet_sigs(ruby_contents)
           lines_to_strip = sigs.flat_map { |sig, _| (sig.loc&.begin_line..sig.loc&.end_line).to_a }
 
           lines = []
@@ -22,7 +23,7 @@ module Spoom
         #: (String ruby_contents) -> String
         def rbi_to_rbs(ruby_contents)
           ruby_contents = ruby_contents.dup
-          sigs = collect_sigs(ruby_contents)
+          sigs = collect_sorbet_sigs(ruby_contents)
 
           sigs.each do |sig, node|
             scanner = Scanner.new(ruby_contents)
@@ -34,7 +35,28 @@ module Spoom
               sig.loc&.end_line&.pred,
               T.must(sig.loc).end_column,
             )
-            ruby_contents[start_index...end_index] = SigTranslator.translate(sig, node)
+            ruby_contents[start_index...end_index] = RBIToRBSTranslator.translate(sig, node)
+          end
+
+          ruby_contents
+        end
+
+        #: (String ruby_contents) -> String
+        def rbs_to_rbi(ruby_contents)
+          ruby_contents = ruby_contents.dup
+          rbs_comments = collect_rbs_comments(ruby_contents)
+
+          rbs_comments.each do |rbs_comment, node|
+            scanner = Scanner.new(ruby_contents)
+            start_index = scanner.find_char_position(
+              T.must(rbs_comment.loc&.begin_line&.pred),
+              T.must(rbs_comment.loc).begin_column,
+            )
+            end_index = scanner.find_char_position(
+              rbs_comment.loc&.end_line&.pred,
+              T.must(rbs_comment.loc).end_column,
+            )
+            ruby_contents[start_index...end_index] = RBSToRBITranslator.translate(rbs_comment, node)
           end
 
           ruby_contents
@@ -43,11 +65,19 @@ module Spoom
         private
 
         #: (String ruby_contents) -> Array[[RBI::Sig, (RBI::Method | RBI::Attr)]]
-        def collect_sigs(ruby_contents)
+        def collect_sorbet_sigs(ruby_contents)
           tree = RBI::Parser.parse_string(ruby_contents)
           visitor = SigsLocator.new
           visitor.visit(tree)
-          visitor.sigs.sort_by { |sig, _rbs_string| -T.must(sig.loc&.begin_line) }
+          visitor.sigs.sort_by { |sig, _node| -T.must(sig.loc&.begin_line) }
+        end
+
+        #: (String ruby_contents) -> Array[[RBI::RBSComment, (RBI::Method | RBI::Attr)]]
+        def collect_rbs_comments(ruby_contents)
+          tree = RBI::Parser.parse_string(ruby_contents)
+          visitor = SigsLocator.new
+          visitor.visit(tree)
+          visitor.rbs_comments.sort_by { |comment, _node| -T.must(comment.loc&.begin_line) }
         end
       end
 
@@ -55,10 +85,14 @@ module Spoom
         #: Array[[RBI::Sig, (RBI::Method | RBI::Attr)]]
         attr_reader :sigs
 
+        #: Array[[RBI::RBSComment, (RBI::Method | RBI::Attr)]]
+        attr_reader :rbs_comments
+
         #: -> void
         def initialize
           super
           @sigs = T.let([], T::Array[[RBI::Sig, T.any(RBI::Method, RBI::Attr)]])
+          @rbs_comments = T.let([], T::Array[[RBI::RBSComment, T.any(RBI::Method, RBI::Attr)]])
         end
 
         # @override
@@ -73,13 +107,16 @@ module Spoom
 
               @sigs << [sig, node]
             end
+            node.comments.grep(RBI::RBSComment).each do |rbs_comment|
+              @rbs_comments << [rbs_comment, node]
+            end
           when RBI::Tree
             visit_all(node.nodes)
           end
         end
       end
 
-      class SigTranslator
+      class RBIToRBSTranslator
         class << self
           #: (RBI::Sig sig, (RBI::Method | RBI::Attr) node) -> String
           def translate(sig, node)
@@ -134,6 +171,69 @@ module Spoom
             p = RBI::RBSPrinter.new(out: out)
             p.print_attr_sig(node, sig)
             "#: #{out.string}"
+          end
+        end
+      end
+
+      class RBSToRBITranslator
+        class << self
+          extend T::Sig
+
+          #: (RBI::RBSComment comment, (RBI::Method | RBI::Attr) node) -> String
+          def translate(comment, node)
+            case node
+            when RBI::Method
+              translate_method_sig(comment, node)
+            when RBI::Attr
+              translate_attr_sig(comment, node)
+            end
+          end
+
+          private
+
+          #: (RBI::RBSComment rbs_comment, RBI::Method node) -> String
+          def translate_method_sig(rbs_comment, node)
+            method_type = ::RBS::Parser.parse_method_type(rbs_comment.text)
+            translator = RBI::RBS::MethodTypeTranslator.new(node)
+            translator.visit(method_type)
+
+            # TODO: move this to `rbi`
+            res = translator.result
+            node.comments.each do |comment|
+              case comment.text
+              when "@abstract"
+                res.is_abstract = true
+              when "@final"
+                res.is_final = true
+              when "@override"
+                res.is_override = true
+              when "@override(allow_incompatible: true)"
+                res.is_override = true
+                res.allow_incompatible_override = true
+              when "@overridable"
+                res.is_overridable = true
+              end
+            end
+
+            res.string.strip
+          end
+
+          #: (RBI::RBSComment comment, RBI::Attr node) -> String
+          def translate_attr_sig(comment, node)
+            attr_type = ::RBS::Parser.parse_type(comment.text)
+            sig = RBI::Sig.new
+
+            if node.is_a?(RBI::AttrWriter)
+              if node.names.size != 1
+                raise Error, "AttrWriter must have exactly one name"
+              end
+
+              name = T.must(node.names.first)
+              sig.params << RBI::SigParam.new(name.to_s, RBI::RBS::TypeTranslator.translate(attr_type))
+            end
+
+            sig.return_type = RBI::RBS::TypeTranslator.translate(attr_type)
+            sig.string.strip
           end
         end
       end

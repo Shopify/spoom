@@ -53,32 +53,32 @@ module Spoom
         RB
       end
 
-      # translate
+      # translate RBI to RBS
 
-      def test_translate_empty
+      def test_translate_to_rbs_empty
         contents = ""
         assert_equal(contents, Sigs.rbi_to_rbs(contents))
       end
 
-      def test_translate_no_sigs
-        contents = <<~RBI
+      def test_translate_to_rbs_no_sigs
+        contents = <<~RB
           class A
             def foo; end
           end
-        RBI
+        RB
 
         assert_equal(contents, Sigs.rbi_to_rbs(contents))
       end
 
-      def test_translate_top_level_sig
-        contents = <<~RBI
+      def test_translate_to_rbs_top_level_sig
+        contents = <<~RB
           # typed: true
 
           sig { params(a: Integer, b: Integer).returns(Integer) }
           def foo(a, b)
             a + b
           end
-        RBI
+        RB
 
         assert_equal(<<~RBS, Sigs.rbi_to_rbs(contents))
           # typed: true
@@ -90,8 +90,8 @@ module Spoom
         RBS
       end
 
-      def test_translate_method_sigs
-        contents = <<~RBI
+      def test_translate_to_rbs_method_sigs
+        contents = <<~RB
           class A
             sig { params(a: Integer).void }
             def initialize(a)
@@ -103,7 +103,7 @@ module Spoom
               @a
             end
           end
-        RBI
+        RB
 
         assert_equal(<<~RBS, Sigs.rbi_to_rbs(contents))
           class A
@@ -120,11 +120,11 @@ module Spoom
         RBS
       end
 
-      def test_does_not_translate_abstract_methods
-        contents = <<~RBI
+      def test_does_not_translate_to_rbs_abstract_methods
+        contents = <<~RB
           sig { abstract.void }
           def foo; end
-        RBI
+        RB
 
         assert_equal(<<~RBS, Sigs.rbi_to_rbs(contents))
           sig { abstract.void }
@@ -132,11 +132,11 @@ module Spoom
         RBS
       end
 
-      def test_translate_method_sigs_with_annotations
-        contents = <<~RBI
+      def test_translate_to_rbs_method_sigs_with_annotations
+        contents = <<~RB
           sig(:final) { overridable.override(allow_incompatible: true).void }
           def foo; end
-        RBI
+        RB
 
         assert_equal(<<~RBS, Sigs.rbi_to_rbs(contents))
           # @final
@@ -147,15 +147,15 @@ module Spoom
         RBS
       end
 
-      def test_translate_singleton_method_sigs
-        contents = <<~RBI
+      def test_translate_to_rbs_singleton_method_sigs
+        contents = <<~RB
           class A
             sig { returns(Integer) }
             def self.foo
               42
             end
           end
-        RBI
+        RB
 
         assert_equal(<<~RBS, Sigs.rbi_to_rbs(contents))
           class A
@@ -167,8 +167,8 @@ module Spoom
         RBS
       end
 
-      def test_translate_attr_sigs
-        contents = <<~RBI
+      def test_translate_to_rbs_attr_sigs
+        contents = <<~RB
           class A
             sig { returns(Integer) }
             attr_accessor :a
@@ -179,7 +179,7 @@ module Spoom
             sig { params(d: Integer).void }
             attr_writer :d, :e
           end
-        RBI
+        RB
 
         assert_equal(<<~RBS, Sigs.rbi_to_rbs(contents))
           class A
@@ -193,6 +193,150 @@ module Spoom
             attr_writer :d, :e
           end
         RBS
+      end
+
+      # translate RBS to RBI
+
+      def test_translate_to_rbi_empty
+        contents = ""
+        assert_equal(contents, Sigs.rbs_to_rbi(contents))
+      end
+
+      def test_translate_to_rbi_no_sigs
+        contents = <<~RB
+          class A
+            def foo; end
+          end
+        RB
+
+        assert_equal(contents, Sigs.rbs_to_rbi(contents))
+      end
+
+      def test_translate_to_rbi_top_level_sig
+        contents = <<~RB
+          # typed: true
+
+          #: (Integer a, Integer b) -> Integer
+          def foo(a, b)
+            a + b
+          end
+        RB
+
+        assert_equal(<<~RB, Sigs.rbs_to_rbi(contents))
+          # typed: true
+
+          sig { params(a: Integer, b: Integer).returns(Integer) }
+          def foo(a, b)
+            a + b
+          end
+        RB
+      end
+
+      def test_translate_to_rbi_method_sigs
+        contents = <<~RB
+          class A
+            #: (Integer a) -> void
+            def initialize(a)
+              @a = a
+            end
+
+            #: -> Integer
+            def a
+              @a
+            end
+          end
+        RB
+
+        assert_equal(<<~RB, Sigs.rbs_to_rbi(contents))
+          class A
+            sig { params(a: Integer).void }
+            def initialize(a)
+              @a = a
+            end
+
+            sig { returns(Integer) }
+            def a
+              @a
+            end
+          end
+        RB
+      end
+
+      def test_translate_to_rbi_method_sigs_with_annotations
+        contents = <<~RB
+          # @final
+          # @override(allow_incompatible: true)
+          # @overridable
+          #: -> void
+          def foo; end
+        RB
+
+        assert_equal(<<~RB, Sigs.rbs_to_rbi(contents))
+          # @final
+          # @override(allow_incompatible: true)
+          # @overridable
+          sig(:final) { override(allow_incompatible: true).overridable.void }
+          def foo; end
+        RB
+      end
+
+      def test_translate_to_rbi_singleton_method_sigs
+        contents = <<~RB
+          class A
+            #: -> Integer
+            def self.foo
+              42
+            end
+          end
+        RB
+
+        assert_equal(<<~RB, Sigs.rbs_to_rbi(contents))
+          class A
+            sig { returns(Integer) }
+            def self.foo
+              42
+            end
+          end
+        RB
+      end
+
+      def test_translate_to_rbi_attr_sigs
+        contents = <<~RB
+          class A
+            #: Integer
+            attr_accessor :a, :b
+
+            #: Integer
+            attr_reader :c, :d
+
+            #: Integer
+            attr_writer :e
+          end
+        RB
+
+        assert_equal(<<~RB, Sigs.rbs_to_rbi(contents))
+          class A
+            sig { returns(Integer) }
+            attr_accessor :a, :b
+
+            sig { returns(Integer) }
+            attr_reader :c, :d
+
+            sig { params(e: Integer).returns(Integer) }
+            attr_writer :e
+          end
+        RB
+      end
+
+      def test_translate_to_rbi_attr_sigs_raises_on_writer_with_multiple_names
+        contents = <<~RB
+          #: Integer
+          attr_writer :a, b
+        RB
+
+        assert_raises(Sigs::Error) do
+          Sigs.rbs_to_rbi(contents)
+        end
       end
     end
   end
