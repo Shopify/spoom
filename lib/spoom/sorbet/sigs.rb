@@ -57,7 +57,10 @@ module Spoom
               rbs_comment.loc&.end_line&.pred,
               T.must(rbs_comment.loc).end_column,
             )
-            ruby_contents[start_index...end_index] = RBSToRBITranslator.translate(rbs_comment, node)
+            rbi = RBSToRBITranslator.translate(rbs_comment, node)
+            next unless rbi
+
+            ruby_contents[start_index...end_index] = rbi
           end
 
           ruby_contents
@@ -180,7 +183,7 @@ module Spoom
         class << self
           extend T::Sig
 
-          #: (RBI::RBSComment comment, (RBI::Method | RBI::Attr) node) -> String
+          #: (RBI::RBSComment comment, (RBI::Method | RBI::Attr) node) -> String?
           def translate(comment, node)
             case node
             when RBI::Method
@@ -188,6 +191,8 @@ module Spoom
             when RBI::Attr
               translate_attr_sig(comment, node)
             end
+          rescue RBS::ParsingError
+            nil
           end
 
           private

@@ -354,6 +354,31 @@ module Spoom
           Sigs.rbs_to_rbi(contents)
         end
       end
+
+      def test_translate_to_rbi_skips_sigs_with_errors
+        contents = <<~RB
+          class A
+            #: foo
+            def foo; end
+          end
+        RB
+
+        assert_equal(contents, Sigs.rbs_to_rbi(contents))
+      end
+
+      def test_translate_to_rbi_ignores_yard_comments
+        contents = <<~RB
+          class A
+            #:nodoc:
+            def foo; end
+
+            #:yields:
+            def bar; end
+          end
+        RB
+
+        assert_equal(contents, Sigs.rbs_to_rbi(contents))
+      end
     end
   end
 end
