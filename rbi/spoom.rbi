@@ -3461,7 +3461,7 @@ end
 
 class Spoom::Sorbet::Sigs::RBSToRBITranslator
   class << self
-    sig { params(comment: ::RBI::RBSComment, node: T.any(::RBI::Attr, ::RBI::Method)).returns(::String) }
+    sig { params(comment: ::RBI::RBSComment, node: T.any(::RBI::Attr, ::RBI::Method)).returns(T.nilable(::String)) }
     def translate(comment, node); end
 
     private
