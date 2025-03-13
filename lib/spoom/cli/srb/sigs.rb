@@ -12,6 +12,11 @@ module Spoom
         desc "translate", "Translate signatures from/to RBI and RBS"
         option :from, type: :string, aliases: :f, desc: "From format", enum: ["rbi", "rbs"], default: "rbi"
         option :to, type: :string, aliases: :t, desc: "To format", enum: ["rbi", "rbs"], default: "rbs"
+        option :positional_names,
+          type: :boolean,
+          aliases: :p,
+          desc: "Use positional names when translating from RBI to RBS",
+          default: true
         def translate(*paths)
           from = options[:from]
           to = options[:to]
@@ -29,7 +34,7 @@ module Spoom
           case from
           when "rbi"
             transformed_files = transform_files(files) do |_file, contents|
-              Spoom::Sorbet::Sigs.rbi_to_rbs(contents)
+              Spoom::Sorbet::Sigs.rbi_to_rbs(contents, positional_names: options[:positional_names])
             end
           when "rbs"
             transformed_files = transform_files(files) do |_file, contents|

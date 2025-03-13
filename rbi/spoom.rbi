@@ -3417,8 +3417,8 @@ Spoom::Sorbet::Sigils::VALID_STRICTNESS = T.let(T.unsafe(nil), Array)
 
 class Spoom::Sorbet::Sigs
   class << self
-    sig { params(ruby_contents: ::String).returns(::String) }
-    def rbi_to_rbs(ruby_contents); end
+    sig { params(ruby_contents: ::String, positional_names: T::Boolean).returns(::String) }
+    def rbi_to_rbs(ruby_contents, positional_names: T.unsafe(nil)); end
 
     sig { params(ruby_contents: ::String).returns(::String) }
     def rbs_to_rbi(ruby_contents); end
@@ -3440,16 +3440,22 @@ class Spoom::Sorbet::Sigs::Error < ::Spoom::Error; end
 
 class Spoom::Sorbet::Sigs::RBIToRBSTranslator
   class << self
-    sig { params(sig: ::RBI::Sig, node: T.any(::RBI::Attr, ::RBI::Method)).returns(::String) }
-    def translate(sig, node); end
+    sig do
+      params(
+        sig: ::RBI::Sig,
+        node: T.any(::RBI::Attr, ::RBI::Method),
+        positional_names: T::Boolean
+      ).returns(::String)
+    end
+    def translate(sig, node, positional_names: T.unsafe(nil)); end
 
     private
 
-    sig { params(sig: ::RBI::Sig, node: ::RBI::Attr).returns(::String) }
-    def translate_attr_sig(sig, node); end
+    sig { params(sig: ::RBI::Sig, node: ::RBI::Attr, positional_names: T::Boolean).returns(::String) }
+    def translate_attr_sig(sig, node, positional_names: T.unsafe(nil)); end
 
-    sig { params(sig: ::RBI::Sig, node: ::RBI::Method).returns(::String) }
-    def translate_method_sig(sig, node); end
+    sig { params(sig: ::RBI::Sig, node: ::RBI::Method, positional_names: T::Boolean).returns(::String) }
+    def translate_method_sig(sig, node, positional_names: T.unsafe(nil)); end
   end
 end
 
