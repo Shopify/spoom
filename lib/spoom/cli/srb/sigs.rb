@@ -17,6 +17,7 @@ module Spoom
           aliases: :p,
           desc: "Use positional names when translating from RBI to RBS",
           default: true
+        option :include_rbi_files, type: :boolean, desc: "Include RBI files", default: false
         def translate(*paths)
           from = options[:from]
           to = options[:to]
@@ -26,7 +27,7 @@ module Spoom
             exit(1)
           end
 
-          files = collect_files(paths)
+          files = collect_files(paths, include_rbi_files: options[:include_rbi_files])
 
           say("Translating signatures from `#{from}` to `#{to}` " \
             "in `#{files.size}` file#{files.size == 1 ? "" : "s"}...\n\n")
