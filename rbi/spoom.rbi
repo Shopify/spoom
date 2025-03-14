@@ -36,8 +36,8 @@ module Spoom::Cli::Helper
   def blue(string); end
 
   # Collect files from `paths`, defaulting to `exec_path`
-  sig { params(paths: T::Array[::String]).returns(T::Array[::String]) }
-  def collect_files(paths); end
+  sig { params(paths: T::Array[::String], include_rbi_files: T::Boolean).returns(T::Array[::String]) }
+  def collect_files(paths, include_rbi_files: T.unsafe(nil)); end
 
   # Is the `--color` option true?
   sig { returns(T::Boolean) }
