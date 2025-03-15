@@ -762,12 +762,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::RescueModifierNode node) -> void
-    def visit_rescue_modifier_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::RescueNode node) -> void
     def visit_rescue_node(node)
       visit_child_nodes(node)
