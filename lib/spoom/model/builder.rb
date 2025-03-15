@@ -139,25 +139,6 @@ module Spoom
 
       # Methods
 
-      # @override
-      #: (Prism::DefNode node) -> void
-      def visit_def_node(node)
-        recv = node.receiver
-
-        if !recv || recv.is_a?(Prism::SelfNode)
-          Method.new(
-            @model.register_symbol([*@names_nesting, node.name.to_s].join("::")),
-            owner: @namespace_nesting.last,
-            location: node_location(node),
-            visibility: current_visibility,
-            sigs: collect_sigs,
-            comments: node_comments(node),
-          )
-        end
-
-        super
-      end
-
       # Accessors
 
       # @override
