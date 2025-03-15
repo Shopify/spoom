@@ -372,12 +372,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::GlobalVariableOrWriteNode node) -> void
-    def visit_global_variable_or_write_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::GlobalVariableReadNode node) -> void
     def visit_global_variable_read_node(node)
       visit_child_nodes(node)
