@@ -192,12 +192,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::ClassVariableTargetNode node) -> void
-    def visit_class_variable_target_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::ClassVariableWriteNode node) -> void
     def visit_class_variable_write_node(node)
       visit_child_nodes(node)
