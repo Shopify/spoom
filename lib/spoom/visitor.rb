@@ -720,12 +720,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::ProgramNode node) -> void
-    def visit_program_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::RangeNode node) -> void
     def visit_range_node(node)
       visit_child_nodes(node)
