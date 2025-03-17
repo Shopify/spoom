@@ -150,15 +150,6 @@ module Spoom
       end
 
       # @override
-      #: (Prism::LocalVariableOperatorWriteNode node) -> void
-      def visit_local_variable_operator_write_node(node)
-        name = node.name.to_s
-        reference_method(name, node)
-        reference_method("#{name}=", node)
-        visit(node.value)
-      end
-
-      # @override
       #: (Prism::LocalVariableOrWriteNode node) -> void
       def visit_local_variable_or_write_node(node)
         name = node.name.to_s
