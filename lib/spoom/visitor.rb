@@ -24,12 +24,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::AlternationPatternNode node) -> void
-    def visit_alternation_pattern_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::AndNode node) -> void
     def visit_and_node(node)
       visit_child_nodes(node)
