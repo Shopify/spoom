@@ -102,12 +102,6 @@ module Spoom
     end
 
     # @override
-    #: (Prism::BlockParametersNode node) -> void
-    def visit_block_parameters_node(node)
-      visit_child_nodes(node)
-    end
-
-    # @override
     #: (Prism::BreakNode node) -> void
     def visit_break_node(node)
       visit_child_nodes(node)
