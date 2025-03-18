@@ -90,35 +90,6 @@ module Spoom
         end
       end
 
-      AssignType = T.type_alias do
-        T.any(
-          Prism::ClassVariableAndWriteNode,
-          Prism::ClassVariableOrWriteNode,
-          Prism::ClassVariableOperatorWriteNode,
-          Prism::ClassVariableWriteNode,
-          Prism::ConstantAndWriteNode,
-          Prism::ConstantOrWriteNode,
-          Prism::ConstantOperatorWriteNode,
-          Prism::ConstantWriteNode,
-          Prism::ConstantPathAndWriteNode,
-          Prism::ConstantPathOrWriteNode,
-          Prism::ConstantPathOperatorWriteNode,
-          Prism::ConstantPathWriteNode,
-          Prism::GlobalVariableAndWriteNode,
-          Prism::GlobalVariableOrWriteNode,
-          Prism::GlobalVariableOperatorWriteNode,
-          Prism::GlobalVariableWriteNode,
-          Prism::InstanceVariableAndWriteNode,
-          Prism::InstanceVariableOperatorWriteNode,
-          Prism::InstanceVariableOrWriteNode,
-          Prism::InstanceVariableWriteNode,
-          Prism::LocalVariableAndWriteNode,
-          Prism::LocalVariableOperatorWriteNode,
-          Prism::LocalVariableOrWriteNode,
-          Prism::LocalVariableWriteNode,
-        )
-      end
-
       class AssignNode
         #: AssignType
         attr_reader :node
