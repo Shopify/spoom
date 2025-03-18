@@ -15,6 +15,7 @@ module Spoom
           @project.write!("file.rb", <<~RB)
             x = T.let(nil, T.nilable(String))
             y = T.cast(ARGV.first, String)
+            z = T.must(ARGV.first)
           RB
 
           result = @project.spoom("srb assertions translate --no-color")
@@ -29,6 +30,7 @@ module Spoom
           assert_equal(<<~RB, @project.read("file.rb"))
             x = nil #: String?
             y = ARGV.first #: as String
+            z = ARGV.first #: as !nil
           RB
         end
 
@@ -36,6 +38,7 @@ module Spoom
           @project.write!("file.rb", <<~RB)
             x = T.let(nil, T.nilable(String))
             y = T.cast(ARGV.first, String)
+            z = T.must(ARGV.first)
           RB
 
           result = @project.spoom("srb assertions translate --no-color --no-let")
@@ -44,6 +47,7 @@ module Spoom
           assert_equal(<<~RB, @project.read("file.rb"))
             x = T.let(nil, T.nilable(String))
             y = ARGV.first #: as String
+            z = ARGV.first #: as !nil
           RB
         end
 
@@ -51,6 +55,7 @@ module Spoom
           @project.write!("file.rb", <<~RB)
             x = T.let(nil, T.nilable(String))
             y = T.cast(ARGV.first, String)
+            z = T.must(ARGV.first)
           RB
 
           result = @project.spoom("srb assertions translate --no-color --no-cast")
@@ -59,6 +64,24 @@ module Spoom
           assert_equal(<<~RB, @project.read("file.rb"))
             x = nil #: String?
             y = T.cast(ARGV.first, String)
+            z = ARGV.first #: as !nil
+          RB
+        end
+
+        def test_translate_from_rbi_to_rbs_no_must
+          @project.write!("file.rb", <<~RB)
+            x = T.let(nil, T.nilable(String))
+            y = T.cast(ARGV.first, String)
+            z = T.must(ARGV.first)
+          RB
+
+          result = @project.spoom("srb assertions translate --no-color --no-must")
+          assert(result.status)
+
+          assert_equal(<<~RB, @project.read("file.rb"))
+            x = nil #: String?
+            y = ARGV.first #: as String
+            z = T.must(ARGV.first)
           RB
         end
 
