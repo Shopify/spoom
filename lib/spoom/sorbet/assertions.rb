@@ -11,13 +11,13 @@ module Spoom
       class << self
         extend T::Sig
 
-        #: (String, file: String, ?let: bool, ?cast: bool) -> String
-        def rbi_to_rbs(ruby_contents, file:, let: true, cast: true)
+        #: (String, file: String, ?let: bool, ?cast: bool, ?must: bool) -> String
+        def rbi_to_rbs(ruby_contents, file:, let: true, cast: true, must: true)
           old_encoding = ruby_contents.encoding
           ruby_contents = ruby_contents.encode("UTF-8") unless old_encoding == "UTF-8"
           ruby_bytes = ruby_contents.bytes
 
-          assigns = collect_assigns(ruby_contents, file: file, let: let, cast: cast)
+          assigns = collect_assigns(ruby_contents, file: file, let: let, cast: cast, must: must)
 
           assigns.reverse.each do |assign|
             # Adjust the end offset to locate the end of the line:
@@ -48,10 +48,10 @@ module Spoom
 
         private
 
-        #: (String, file: String, let: bool, cast: bool) -> Array[AssignNode]
-        def collect_assigns(ruby_contents, file:, let:, cast:)
+        #: (String, file: String, let: bool, cast: bool, must: bool) -> Array[AssignNode]
+        def collect_assigns(ruby_contents, file:, let:, cast:, must:)
           node = Spoom.parse_ruby(ruby_contents, file: file)
-          visitor = Locator.new(let: let, cast: cast)
+          visitor = Locator.new(let: let, cast: cast, must: must)
           visitor.visit(node)
           visitor.assigns
         end
@@ -128,7 +128,7 @@ module Spoom
       class AssignNode
         extend T::Sig
 
-        ALLOWED_KINDS = T.let([:let, :cast], T::Array[Symbol])
+        ALLOWED_KINDS = T.let([:let, :cast, :must], T::Array[Symbol])
 
         #: AssignType
         attr_reader :node
@@ -137,12 +137,15 @@ module Spoom
         attr_reader :operator_loc
 
         #: Prism::Node
-        attr_reader :value, :type
+        attr_reader :value
+
+        #: Prism::Node?
+        attr_reader :type
 
         #: Symbol
-        attr_reader :kind # should be one of [:let, :cast]
+        attr_reader :kind # should be one of [:let, :cast, :must]
 
-        #: (AssignType, Prism::Location, Prism::Node, Prism::Node, Symbol) -> void
+        #: (AssignType, Prism::Location, Prism::Node, Prism::Node?, Symbol) -> void
         def initialize(node, operator_loc, value, type, kind)
           @node = node
           @operator_loc = operator_loc
@@ -158,13 +161,17 @@ module Spoom
 
         #: -> String
         def rbs_comment
-          rbs_type = RBI::Type.parse_node(type).rbs_string
-
           case kind
           when :let
+            type = T.must(self.type)
+            rbs_type = RBI::Type.parse_node(type).rbs_string
             "#: #{rbs_type}"
           when :cast
+            type = T.must(self.type)
+            rbs_type = RBI::Type.parse_node(type).rbs_string
             "#: as #{rbs_type}"
+          when :must
+            "#: as !nil"
           else
             raise Error, "Unknown assign kind: #{kind}"
           end
@@ -177,11 +184,12 @@ module Spoom
         #: Array[AssignNode]
         attr_reader :assigns
 
-        #: (let: bool, cast: bool) -> void
-        def initialize(let:, cast:)
+        #: (let: bool, cast: bool, must: bool) -> void
+        def initialize(let:, cast:, must:)
           @annotation_methods = T.let([], T::Array[Symbol])
           @annotation_methods << :let if let
           @annotation_methods << :cast if cast
+          @annotation_methods << :must if must
 
           super()
           @assigns = T.let([], T::Array[AssignNode])
@@ -269,7 +277,15 @@ module Spoom
         def t_annotation?(node)
           return false unless t?(node.receiver)
           return false unless @annotation_methods.include?(node.name)
-          return false unless node.arguments&.arguments&.size == 2
+
+          case node.name
+          when :let, :cast
+            return false unless node.arguments&.arguments&.size == 2
+          when :must
+            return false unless node.arguments&.arguments&.size == 1
+          else
+            return false
+          end
 
           true
         end

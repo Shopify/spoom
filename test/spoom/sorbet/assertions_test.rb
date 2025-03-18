@@ -287,20 +287,23 @@ module Spoom
         rb = <<~RB
           a = T.let(nil, T.nilable(String))
           b = T.cast(ARGV.first, String)
+          c = T.must(ARGV.first)
         RB
 
-        assert_equal(rb, rbi_to_rbs(rb, let: false, cast: false))
+        assert_equal(rb, rbi_to_rbs(rb, let: false, cast: false, must: false))
       end
 
       def test_translate_only_let
         rb = <<~RB
           a = T.let(nil, T.nilable(String))
           b = T.cast(ARGV.first, String)
+          c = T.must(ARGV.first)
         RB
 
-        assert_equal(<<~RB, rbi_to_rbs(rb, let: true, cast: false))
+        assert_equal(<<~RB, rbi_to_rbs(rb, let: true, cast: false, must: false))
           a = nil #: String?
           b = T.cast(ARGV.first, String)
+          c = T.must(ARGV.first)
         RB
       end
 
@@ -308,31 +311,49 @@ module Spoom
         rb = <<~RB
           a = T.let(nil, T.nilable(String))
           b = T.cast(ARGV.first, String)
+          c = T.must(ARGV.first)
         RB
 
-        assert_equal(<<~RB, rbi_to_rbs(rb, let: false, cast: true))
+        assert_equal(<<~RB, rbi_to_rbs(rb, let: false, cast: true, must: false))
           a = T.let(nil, T.nilable(String))
           b = ARGV.first #: as String
+          c = T.must(ARGV.first)
         RB
       end
 
-      def test_translate_both
+      def test_translate_only_must
         rb = <<~RB
           a = T.let(nil, T.nilable(String))
           b = T.cast(ARGV.first, String)
+          c = T.must(ARGV.first)
         RB
 
-        assert_equal(<<~RB, rbi_to_rbs(rb, let: true, cast: true))
+        assert_equal(<<~RB, rbi_to_rbs(rb, let: false, cast: false, must: true))
+          a = T.let(nil, T.nilable(String))
+          b = T.cast(ARGV.first, String)
+          c = ARGV.first #: as !nil
+        RB
+      end
+
+      def test_translate_all
+        rb = <<~RB
+          a = T.let(nil, T.nilable(String))
+          b = T.cast(ARGV.first, String)
+          c = T.must(ARGV.first)
+        RB
+
+        assert_equal(<<~RB, rbi_to_rbs(rb, let: true, cast: true, must: true))
           a = nil #: String?
           b = ARGV.first #: as String
+          c = ARGV.first #: as !nil
         RB
       end
 
       private
 
-      #: (String, ?let: bool, ?cast: bool) -> String
-      def rbi_to_rbs(ruby_contents, let: true, cast: true)
-        Assertions.rbi_to_rbs(ruby_contents, file: "foo.rb", let: let, cast: cast)
+      #: (String, ?let: bool, ?cast: bool, ?must: bool) -> String
+      def rbi_to_rbs(ruby_contents, let: true, cast: true, must: true)
+        Assertions.rbi_to_rbs(ruby_contents, file: "foo.rb", let: let, cast: cast, must: must)
       end
     end
   end
