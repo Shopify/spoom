@@ -179,6 +179,33 @@ module Spoom
           RB
         end
 
+        def test_translate_includes_rbi_files
+          @project.write!("file.rb", <<~RB)
+            sig { void }
+            def foo; end
+          RB
+
+          @project.write!("file.rbi", <<~RB)
+            sig { void }
+            def foo; end
+          RB
+
+          result = @project.spoom("srb sigs translate --no-color --include-rbi-files")
+
+          assert_empty(result.err)
+          assert(result.status)
+
+          assert_equal(<<~RB, @project.read("file.rb"))
+            #: -> void
+            def foo; end
+          RB
+
+          assert_equal(<<~RB, @project.read("file.rbi"))
+            #: -> void
+            def foo; end
+          RB
+        end
+
         # translate --from rbs --to rbi
 
         def test_translate_from_rbs_to_rbi
