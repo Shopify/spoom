@@ -6,7 +6,7 @@ require "minitest"
 module Spoom
   module BacktraceFilter
     class Minitest < ::Minitest::BacktraceFilter
-      SORBET_PATHS = T.let(Gem.loaded_specs["sorbet-runtime"].full_require_paths.freeze, T::Array[String])
+      SORBET_PATHS = Gem.loaded_specs["sorbet-runtime"].full_require_paths.freeze #: Array[String]
 
       # @override
       #: (Array[String]? bt) -> Array[String]

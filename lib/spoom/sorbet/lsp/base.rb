@@ -12,7 +12,7 @@ module Spoom
     class Message
       #: -> void
       def initialize
-        @jsonrpc = T.let("2.0", String)
+        @jsonrpc = "2.0" #: String
       end
 
       #: -> Hash[untyped, untyped]

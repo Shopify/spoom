@@ -56,7 +56,7 @@ module Spoom
       # Returns the context at `--path` (by default the current working directory)
       #: -> Context
       def context
-        @context ||= T.let(Context.new(exec_path), T.nilable(Context))
+        @context ||= Context.new(exec_path) #: Context?
       end
 
       # Raise if `spoom` is not ran inside a context with a `sorbet/config` file
@@ -106,7 +106,7 @@ module Spoom
       # Colors
 
       # Color used to highlight expressions in backticks
-      HIGHLIGHT_COLOR = T.let(Spoom::Color::BLUE, Spoom::Color)
+      HIGHLIGHT_COLOR = Spoom::Color::BLUE #: Spoom::Color
 
       # Is the `--color` option true?
       #: -> bool
@@ -120,7 +120,7 @@ module Spoom
 
         res = StringIO.new
         word = StringIO.new
-        in_ticks = T.let(false, T::Boolean)
+        in_ticks = false #: bool
         string.chars.each do |c|
           if c == "`" && !in_ticks
             in_ticks = true

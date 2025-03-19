@@ -15,58 +15,49 @@ module Spoom
           "to_param",
         )
 
-        CALLBACKS = T.let(
-          [
-            "after_commit",
-            "after_create_commit",
-            "after_create",
-            "after_destroy_commit",
-            "after_destroy",
-            "after_find",
-            "after_initialize",
-            "after_rollback",
-            "after_save_commit",
-            "after_save",
-            "after_touch",
-            "after_update_commit",
-            "after_update",
-            "after_validation",
-            "around_create",
-            "around_destroy",
-            "around_save",
-            "around_update",
-            "before_create",
-            "before_destroy",
-            "before_save",
-            "before_update",
-            "before_validation",
-          ].freeze,
-          T::Array[String],
-        )
+        CALLBACKS = [
+          "after_commit",
+          "after_create_commit",
+          "after_create",
+          "after_destroy_commit",
+          "after_destroy",
+          "after_find",
+          "after_initialize",
+          "after_rollback",
+          "after_save_commit",
+          "after_save",
+          "after_touch",
+          "after_update_commit",
+          "after_update",
+          "after_validation",
+          "around_create",
+          "around_destroy",
+          "around_save",
+          "around_update",
+          "before_create",
+          "before_destroy",
+          "before_save",
+          "before_update",
+          "before_validation",
+        ].freeze #: Array[String]
 
-        CRUD_METHODS = T.let(
-          [
-            "assign_attributes",
-            "create",
-            "create!",
-            "insert",
-            "insert!",
-            "new",
-            "update",
-            "update!",
-            "upsert",
-          ].freeze,
-          T::Array[String],
-        )
+        CRUD_METHODS = [
+          "assign_attributes",
+          "create",
+          "create!",
+          "insert",
+          "insert!",
+          "new",
+          "update",
+          "update!",
+          "upsert",
+        ].freeze #: Array[String]
 
-        ARRAY_METHODS = T.let(
-          [
-            "insert_all",
-            "insert_all!",
-            "upsert_all",
-          ].freeze,
-          T::Array[String],
-        )
+        ARRAY_METHODS = [
+          "insert_all",
+          "insert_all!",
+          "upsert_all",
+        ].freeze #: Array[String]
 
         # @override
         #: (Send send) -> void

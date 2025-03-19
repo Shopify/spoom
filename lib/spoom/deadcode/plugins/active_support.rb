@@ -16,7 +16,7 @@ module Spoom
           "before_teardown",
         )
 
-        SETUP_AND_TEARDOWN_METHODS = T.let(["setup", "teardown"], T::Array[String])
+        SETUP_AND_TEARDOWN_METHODS = ["setup", "teardown"] #: Array[String]
 
         # @override
         #: (Send send) -> void
