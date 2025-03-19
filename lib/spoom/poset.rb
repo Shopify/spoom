@@ -15,7 +15,7 @@ module Spoom
 
     #: -> void
     def initialize
-      @elements = T.let({}, T::Hash[E, Element[E]])
+      @elements = {} #: Hash[E, Element[E]]
     end
 
     # Get the POSet element for a given value
@@ -149,10 +149,10 @@ module Spoom
       #: (E value) -> void
       def initialize(value)
         @value = value
-        @dtos = T.let(Set.new, T::Set[Element[E]])
-        @tos = T.let(Set.new, T::Set[Element[E]])
-        @dfroms = T.let(Set.new, T::Set[Element[E]])
-        @froms = T.let(Set.new, T::Set[Element[E]])
+        @dtos = Set.new #: Set[Element[E]]
+        @tos = Set.new #: Set[Element[E]]
+        @dfroms = Set.new #: Set[Element[E]]
+        @froms = Set.new #: Set[Element[E]]
       end
 
       #: (untyped other) -> Integer?

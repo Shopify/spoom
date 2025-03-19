@@ -5,7 +5,7 @@ require "sorbet-runtime"
 require "pathname"
 
 module Spoom
-  SPOOM_PATH = T.let((Pathname.new(__FILE__) / ".." / "..").to_s, String)
+  SPOOM_PATH = (Pathname.new(__FILE__) / ".." / "..").to_s #: String
 
   class Error < StandardError; end
 end

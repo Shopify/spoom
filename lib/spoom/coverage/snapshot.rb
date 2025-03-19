@@ -25,7 +25,7 @@ module Spoom
       prop :sigils_excluding_rbis, T::Hash[String, Integer], default: Hash.new(0)
 
       # The strictness name as found in the Sorbet metrics file
-      STRICTNESSES = T.let(["ignore", "false", "true", "strict", "strong", "stdlib"].freeze, T::Array[String])
+      STRICTNESSES = ["ignore", "false", "true", "strict", "strong", "stdlib"].freeze #: Array[String]
 
       #: (?out: (IO | StringIO), ?colors: bool, ?indent_level: Integer) -> void
       def print(out: $stdout, colors: true, indent_level: 0)

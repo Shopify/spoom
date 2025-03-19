@@ -95,8 +95,8 @@ module Spoom
         #: -> void
         def initialize
           super
-          @sigs = T.let([], T::Array[[RBI::Sig, T.any(RBI::Method, RBI::Attr)]])
-          @rbs_comments = T.let([], T::Array[[RBI::RBSComment, T.any(RBI::Method, RBI::Attr)]])
+          @sigs = [] #: Array[[RBI::Sig, (RBI::Method | RBI::Attr)]]
+          @rbs_comments = [] #: Array[[RBI::RBSComment, (RBI::Method | RBI::Attr)]]
         end
 
         # @override
@@ -246,13 +246,13 @@ module Spoom
 
       # From https://github.com/Shopify/ruby-lsp/blob/9154bfc6ef/lib/ruby_lsp/document.rb#L127
       class Scanner
-        LINE_BREAK = T.let(0x0A, Integer)
+        LINE_BREAK = 0x0A #: Integer
 
         #: (String source) -> void
         def initialize(source)
-          @current_line = T.let(0, Integer)
-          @pos = T.let(0, Integer)
-          @source = T.let(source.codepoints, T::Array[Integer])
+          @current_line = 0 #: Integer
+          @pos = 0 #: Integer
+          @source = source.codepoints #: Array[Integer]
         end
 
         # Finds the character index inside the source string for a given line and column

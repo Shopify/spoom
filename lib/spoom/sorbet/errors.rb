@@ -16,16 +16,13 @@ module Spoom
       class Parser
         class ParseError < Spoom::Error; end
 
-        HEADER = T.let(
-          [
-            "👋 Hey there! Heads up that this is not a release build of sorbet.",
-            "Release builds are faster and more well-supported by the Sorbet team.",
-            "Check out the README to learn how to build Sorbet in release mode.",
-            "To forcibly silence this error, either pass --silence-dev-message,",
-            "or set SORBET_SILENCE_DEV_MESSAGE=1 in your shell environment.",
-          ],
-          T::Array[String],
-        )
+        HEADER = [
+          "👋 Hey there! Heads up that this is not a release build of sorbet.",
+          "Release builds are faster and more well-supported by the Sorbet team.",
+          "Check out the README to learn how to build Sorbet in release mode.",
+          "To forcibly silence this error, either pass --silence-dev-message,",
+          "or set SORBET_SILENCE_DEV_MESSAGE=1 in your shell environment.",
+        ] #: Array[String]
 
         class << self
           #: (String output, ?error_url_base: String) -> Array[Error]
@@ -37,9 +34,9 @@ module Spoom
 
         #: (?error_url_base: String) -> void
         def initialize(error_url_base: DEFAULT_ERROR_URL_BASE)
-          @errors = T.let([], T::Array[Error])
-          @error_line_match_regex = T.let(error_line_match_regexp(error_url_base), Regexp)
-          @current_error = T.let(nil, T.nilable(Error))
+          @errors = [] #: Array[Error]
+          @error_line_match_regex = error_line_match_regexp(error_url_base) #: Regexp
+          @current_error = nil #: Error?
         end
 
         #: (String output) -> Array[Error]
@@ -141,7 +138,7 @@ module Spoom
           @message = message
           @code = code
           @more = more
-          @files_from_error_sections = T.let(Set.new, T::Set[String])
+          @files_from_error_sections = Set.new #: Set[String]
         end
 
         # By default errors are sorted by location
