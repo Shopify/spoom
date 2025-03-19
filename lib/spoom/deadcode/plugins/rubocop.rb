@@ -5,7 +5,7 @@ module Spoom
   module Deadcode
     module Plugins
       class Rubocop < Base
-        RUBOCOP_CONSTANTS = T.let(["MSG", "RESTRICT_ON_SEND"].to_set.freeze, T::Set[String])
+        RUBOCOP_CONSTANTS = ["MSG", "RESTRICT_ON_SEND"].to_set.freeze #: Set[String]
 
         ignore_classes_inheriting_from(
           "RuboCop::Cop::Cop",

@@ -16,7 +16,7 @@ module Spoom
     #: (*untyped args) -> void
     def initialize(*args)
       super
-      @project = T.let(new_project, TestProject)
+      @project = new_project #: TestProject
     end
 
     #: -> void

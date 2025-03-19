@@ -14,19 +14,16 @@ module Spoom
       STRICTNESS_STRONG = "strong"
       STRICTNESS_INTERNAL = "__STDLIB_INTERNAL"
 
-      VALID_STRICTNESS = T.let(
-        [
-          STRICTNESS_IGNORE,
-          STRICTNESS_FALSE,
-          STRICTNESS_TRUE,
-          STRICTNESS_STRICT,
-          STRICTNESS_STRONG,
-          STRICTNESS_INTERNAL,
-        ].freeze,
-        T::Array[String],
-      )
+      VALID_STRICTNESS = [
+        STRICTNESS_IGNORE,
+        STRICTNESS_FALSE,
+        STRICTNESS_TRUE,
+        STRICTNESS_STRICT,
+        STRICTNESS_STRONG,
+        STRICTNESS_INTERNAL,
+      ].freeze #: Array[String]
 
-      SIGIL_REGEXP = T.let(/^#[[:blank:]]*typed:[[:blank:]]*(\S*)/, Regexp)
+      SIGIL_REGEXP = /^#[[:blank:]]*typed:[[:blank:]]*(\S*)/ #: Regexp
 
       class << self
         # returns the full sigil comment string for the passed strictness

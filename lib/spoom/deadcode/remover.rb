@@ -31,11 +31,11 @@ module Spoom
         #: (String source, Definition::Kind? kind, Location location) -> void
         def initialize(source, kind, location)
           @old_source = source
-          @new_source = T.let(source.dup, String)
+          @new_source = source.dup #: String
           @kind = kind
           @location = location
 
-          @node_context = T.let(NodeFinder.find(source, location, kind), NodeContext)
+          @node_context = NodeFinder.find(source, location, kind) #: NodeContext
         end
 
         #: -> void
@@ -275,7 +275,7 @@ module Spoom
 
           # Adjust the lines to remove to include previous blank lines
           prev_context = NodeContext.new(@old_source, @node_context.comments, first_node, context.nesting)
-          before = T.let(prev_context.previous_node, T.nilable(T.any(Prism::Node, Prism::Comment)))
+          before = prev_context.previous_node #: (Prism::Node | Prism::Comment)?
 
           # There may be an unrelated comment between the current node and the one before
           # if there is, we only want to delete lines up to the last comment found
@@ -329,7 +329,7 @@ module Spoom
 
         #: (Prism::CallNode node, name: String, kind: Definition::Kind?) -> String
         def transform_sig(node, name:, kind:)
-          type = T.let(nil, T.nilable(String))
+          type = nil #: String?
 
           block = T.cast(node.block, Prism::BlockNode)
           statements = T.cast(block.body, Prism::StatementsNode)
@@ -428,7 +428,7 @@ module Spoom
 
         #: -> NodeContext?
         def sclass_context
-          sclass = T.let(nil, T.nilable(Prism::SingletonClassNode))
+          sclass = nil #: Prism::SingletonClassNode?
 
           nesting = @nesting.dup
           until nesting.empty? || sclass
@@ -473,7 +473,7 @@ module Spoom
 
         #: (Integer start_line, Integer end_line) -> Array[Prism::Comment]
         def comments_between_lines(start_line, end_line)
-          comments = T.let([], T::Array[Prism::Comment])
+          comments = [] #: Array[Prism::Comment]
 
           (start_line + 1).upto(end_line - 1) do |line|
             comment = @comments[line]
@@ -485,7 +485,7 @@ module Spoom
 
         #: (Prism::Node node) -> Array[Prism::Comment]
         def attached_comments(node)
-          comments = T.let([], T::Array[Prism::Comment])
+          comments = [] #: Array[Prism::Comment]
 
           start_line = node.location.start_line - 1
           start_line.downto(1) do |line|
@@ -500,7 +500,7 @@ module Spoom
 
         #: -> Array[Prism::Node]
         def attached_sigs
-          nodes = T.let([], T::Array[Prism::Node])
+          nodes = [] #: Array[Prism::Node]
 
           previous_nodes.reverse_each do |prev_node|
             break unless sorbet_signature?(prev_node)
@@ -553,12 +553,9 @@ module Spoom
               raise Error, "Can't find node at #{location}, expected #{kind} but got #{node.class}"
             end
 
-            comments_by_line = T.let(
-              result.comments.to_h do |comment|
-                [comment.location.start_line, comment]
-              end,
-              T::Hash[Integer, Prism::Comment],
-            )
+            comments_by_line = result.comments.to_h do |comment|
+              [comment.location.start_line, comment]
+            end #: Hash[Integer, Prism::Comment]
 
             NodeContext.new(source, comments_by_line, node, visitor.nodes_nesting)
           end
@@ -599,8 +596,8 @@ module Spoom
           super()
           @location = location
           @kind = kind
-          @node = T.let(nil, T.nilable(Prism::Node))
-          @nodes_nesting = T.let([], T::Array[Prism::Node])
+          @node = nil #: Prism::Node?
+          @nodes_nesting = [] #: Array[Prism::Node]
         end
 
         # @override

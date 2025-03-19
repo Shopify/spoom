@@ -25,34 +25,28 @@ module Spoom
   module Deadcode
     DEFAULT_CUSTOM_PLUGINS_PATH = ".spoom/deadcode/plugins"
 
-    DEFAULT_PLUGINS = T.let(
-      Set.new([
-        Spoom::Deadcode::Plugins::Namespaces,
-        Spoom::Deadcode::Plugins::Ruby,
-      ]).freeze,
-      T::Set[T.class_of(Plugins::Base)],
-    )
+    DEFAULT_PLUGINS = Set.new([
+      Spoom::Deadcode::Plugins::Namespaces,
+      Spoom::Deadcode::Plugins::Ruby,
+    ]).freeze #: Set[singleton(Plugins::Base)]
 
-    PLUGINS_FOR_GEM = T.let(
-      {
-        "actionmailer" => Spoom::Deadcode::Plugins::ActionMailer,
-        "actionpack" => Spoom::Deadcode::Plugins::ActionPack,
-        "activejob" => Spoom::Deadcode::Plugins::ActiveJob,
-        "activemodel" => Spoom::Deadcode::Plugins::ActiveModel,
-        "activerecord" => Spoom::Deadcode::Plugins::ActiveRecord,
-        "activesupport" => Spoom::Deadcode::Plugins::ActiveSupport,
-        "graphql" => Spoom::Deadcode::Plugins::GraphQL,
-        "minitest" => Spoom::Deadcode::Plugins::Minitest,
-        "rails" => Spoom::Deadcode::Plugins::Rails,
-        "rake" => Spoom::Deadcode::Plugins::Rake,
-        "rspec" => Spoom::Deadcode::Plugins::RSpec,
-        "rubocop" => Spoom::Deadcode::Plugins::Rubocop,
-        "sorbet-runtime" => Spoom::Deadcode::Plugins::Sorbet,
-        "sorbet-static" => Spoom::Deadcode::Plugins::Sorbet,
-        "thor" => Spoom::Deadcode::Plugins::Thor,
-      }.freeze,
-      T::Hash[String, T.class_of(Plugins::Base)],
-    )
+    PLUGINS_FOR_GEM = {
+      "actionmailer" => Spoom::Deadcode::Plugins::ActionMailer,
+      "actionpack" => Spoom::Deadcode::Plugins::ActionPack,
+      "activejob" => Spoom::Deadcode::Plugins::ActiveJob,
+      "activemodel" => Spoom::Deadcode::Plugins::ActiveModel,
+      "activerecord" => Spoom::Deadcode::Plugins::ActiveRecord,
+      "activesupport" => Spoom::Deadcode::Plugins::ActiveSupport,
+      "graphql" => Spoom::Deadcode::Plugins::GraphQL,
+      "minitest" => Spoom::Deadcode::Plugins::Minitest,
+      "rails" => Spoom::Deadcode::Plugins::Rails,
+      "rake" => Spoom::Deadcode::Plugins::Rake,
+      "rspec" => Spoom::Deadcode::Plugins::RSpec,
+      "rubocop" => Spoom::Deadcode::Plugins::Rubocop,
+      "sorbet-runtime" => Spoom::Deadcode::Plugins::Sorbet,
+      "sorbet-static" => Spoom::Deadcode::Plugins::Sorbet,
+      "thor" => Spoom::Deadcode::Plugins::Thor,
+    }.freeze #: Hash[String, singleton(Plugins::Base)]
 
     class << self
       #: (Context context) -> Set[singleton(Plugins::Base)]

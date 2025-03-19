@@ -13,7 +13,7 @@ module Spoom
         #: -> void
         def initialize
           super()
-          @namespaces_for_locs = T.let({}, T::Hash[String, String])
+          @namespaces_for_locs = {} #: Hash[String, String]
         end
 
         # @override

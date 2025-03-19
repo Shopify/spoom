@@ -40,7 +40,7 @@ module Spoom
 
       abstract!
 
-      TEMPLATE = T.let("#{Spoom::SPOOM_PATH}/templates/page.erb", String)
+      TEMPLATE = "#{Spoom::SPOOM_PATH}/templates/page.erb" #: String
 
       #: String
       attr_reader :title
@@ -88,7 +88,7 @@ module Spoom
       class Card < Template
         extend T::Sig
 
-        TEMPLATE = T.let("#{Spoom::SPOOM_PATH}/templates/card.erb", String)
+        TEMPLATE = "#{Spoom::SPOOM_PATH}/templates/card.erb" #: String
 
         #: String?
         attr_reader :title, :body
@@ -120,7 +120,7 @@ module Spoom
       end
 
       class Snapshot < Card
-        TEMPLATE = T.let("#{Spoom::SPOOM_PATH}/templates/card_snapshot.erb", String)
+        TEMPLATE = "#{Spoom::SPOOM_PATH}/templates/card_snapshot.erb" #: String
 
         #: Coverage::Snapshot
         attr_reader :snapshot
