@@ -221,6 +221,20 @@ Count the number of type-checking errors if all files were bumped to true:
 $ spoom srb bump --count-errors --dry
 ```
 
+#### Translate sigs between RBI and RBS
+
+Translate all file sigs from RBI to RBS:
+
+```
+$ spoom srb sigs translate
+```
+
+Translate one file's sigs from RBS to RBI:
+
+```
+$ spoom srb sigs translate --from rbs --to rbi /path/to/file.rb
+```
+
 #### Interact with Sorbet LSP mode
 
 **Experimental**
