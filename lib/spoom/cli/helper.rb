@@ -81,15 +81,17 @@ module Spoom
       end
 
       # Collect files from `paths`, defaulting to `exec_path`
-      #: (Array[String] paths) -> Array[String]
-      def collect_files(paths)
+      #: (Array[String] paths, ?include_rbi_files: bool) -> Array[String]
+      def collect_files(paths, include_rbi_files: false)
         paths << exec_path if paths.empty?
 
         files = paths.flat_map do |path|
           if File.file?(path)
             path
           else
-            Dir.glob("#{path}/**/*.rb")
+            exts = ["rb"]
+            exts << "rbi" if include_rbi_files
+            Dir.glob("#{path}/**/*.{#{exts.join(",")}}")
           end
         end
 
