@@ -13,7 +13,7 @@ module Spoom
         super()
 
         @file = file
-        @references = T.let([], T::Array[Reference])
+        @references = [] #: Array[Reference]
       end
 
       # @override

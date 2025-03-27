@@ -13,12 +13,12 @@ module Spoom
     class Client
       #: (String sorbet_bin, *String sorbet_args, ?path: String) -> void
       def initialize(sorbet_bin, *sorbet_args, path: ".")
-        @id = T.let(0, Integer)
-        @open = T.let(false, T::Boolean)
+        @id = 0 #: Integer
+        @open = false #: bool
         io_in, io_out, io_err, _status = T.unsafe(Open3).popen3(sorbet_bin, *sorbet_args, chdir: path)
-        @in = T.let(io_in, IO)
-        @out = T.let(io_out, IO)
-        @err = T.let(io_err, IO)
+        @in = io_in #: IO
+        @out = io_out #: IO
+        @err = io_err #: IO
       end
 
       #: -> Integer

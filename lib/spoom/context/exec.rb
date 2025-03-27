@@ -31,7 +31,7 @@ module Spoom
       #: (String command, ?capture_err: bool) -> ExecResult
       def exec(command, capture_err: true)
         Bundler.with_unbundled_env do
-          opts = T.let({ chdir: absolute_path }, T::Hash[Symbol, T.untyped])
+          opts = { chdir: absolute_path } #: Hash[Symbol, untyped]
 
           if capture_err
             out, err, status = Open3.capture3(command, opts)

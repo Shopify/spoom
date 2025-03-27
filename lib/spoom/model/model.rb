@@ -36,7 +36,7 @@ module Spoom
       #: (String full_name) -> void
       def initialize(full_name)
         @full_name = full_name
-        @definitions = T.let([], T::Array[SymbolDef])
+        @definitions = [] #: Array[SymbolDef]
       end
 
       # The short name of this symbol
@@ -122,8 +122,8 @@ module Spoom
       def initialize(symbol, owner:, location:, comments: [])
         super(symbol, owner: owner, location: location, comments: comments)
 
-        @children = T.let([], T::Array[SymbolDef])
-        @mixins = T.let([], T::Array[Mixin])
+        @children = [] #: Array[SymbolDef]
+        @mixins = [] #: Array[Mixin]
       end
     end
 
@@ -233,8 +233,8 @@ module Spoom
 
     #: -> void
     def initialize
-      @symbols = T.let({}, T::Hash[String, Symbol])
-      @symbols_hierarchy = T.let(Poset[Symbol].new, Poset[Symbol])
+      @symbols = {} #: Hash[String, Symbol]
+      @symbols_hierarchy = Poset[Symbol].new #: Poset[Symbol]
     end
 
     # Get a symbol by it's full name
@@ -263,7 +263,7 @@ module Spoom
         return @symbols[full_name] ||= UnresolvedSymbol.new(full_name)
       end
 
-      target = T.let(@symbols[full_name], T.nilable(Symbol))
+      target = @symbols[full_name] #: Symbol?
       return target if target
 
       parts = context.full_name.split("::")

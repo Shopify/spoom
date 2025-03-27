@@ -259,37 +259,34 @@ module Spoom
         SYMBOL_KINDS[kind] || "<unknown:#{kind}>"
       end
 
-      SYMBOL_KINDS = T.let(
-        {
-          1 => "file",
-          2 => "module",
-          3 => "namespace",
-          4 => "package",
-          5 => "class",
-          6 => "def",
-          7 => "property",
-          8 => "field",
-          9 => "constructor",
-          10 => "enum",
-          11 => "interface",
-          12 => "function",
-          13 => "variable",
-          14 => "const",
-          15 => "string",
-          16 => "number",
-          17 => "boolean",
-          18 => "array",
-          19 => "object",
-          20 => "key",
-          21 => "null",
-          22 => "enum_member",
-          23 => "struct",
-          24 => "event",
-          25 => "operator",
-          26 => "type_parameter",
-        },
-        T::Hash[Integer, String],
-      )
+      SYMBOL_KINDS = {
+        1 => "file",
+        2 => "module",
+        3 => "namespace",
+        4 => "package",
+        5 => "class",
+        6 => "def",
+        7 => "property",
+        8 => "field",
+        9 => "constructor",
+        10 => "enum",
+        11 => "interface",
+        12 => "function",
+        13 => "variable",
+        14 => "const",
+        15 => "string",
+        16 => "number",
+        17 => "boolean",
+        18 => "array",
+        19 => "object",
+        20 => "key",
+        21 => "null",
+        22 => "enum_member",
+        23 => "struct",
+        24 => "event",
+        25 => "operator",
+        26 => "type_parameter",
+      } #: Hash[Integer, String]
     end
 
     class SymbolPrinter < Printer
@@ -302,7 +299,7 @@ module Spoom
       #: (?out: (IO | StringIO), ?colors: bool, ?indent_level: Integer, ?prefix: String?) -> void
       def initialize(out: $stdout, colors: true, indent_level: 0, prefix: nil)
         super(out: out, colors: colors, indent_level: indent_level)
-        @seen = T.let(Set.new, T::Set[Integer])
+        @seen = Set.new #: Set[Integer]
         @out = out
         @colors = colors
         @indent_level = indent_level

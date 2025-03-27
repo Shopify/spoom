@@ -132,7 +132,7 @@ module Spoom
           def colorize_message(message)
             return message unless color?
 
-            cyan = T.let(false, T::Boolean)
+            cyan = false #: bool
             word = StringIO.new
             message.chars.each do |c|
               if c == "`"

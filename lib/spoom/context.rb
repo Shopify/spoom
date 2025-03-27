@@ -45,7 +45,7 @@ module Spoom
     # Call `#make!` to create it.
     #: (String absolute_path) -> void
     def initialize(absolute_path)
-      @absolute_path = T.let(::File.expand_path(absolute_path), String)
+      @absolute_path = ::File.expand_path(absolute_path) #: String
     end
   end
 end

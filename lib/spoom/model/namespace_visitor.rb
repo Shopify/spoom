@@ -12,7 +12,7 @@ module Spoom
       def initialize
         super()
 
-        @names_nesting = T.let([], T::Array[String])
+        @names_nesting = [] #: Array[String]
       end
 
       # @override
