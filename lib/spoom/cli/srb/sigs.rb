@@ -125,7 +125,7 @@ module Spoom
             gem "#{spec.name}", path: "#{copy_context.absolute_path}"
           RB
           exec(tapioca_context, "bundle install")
-          exec(tapioca_context, "bundle exec tapioca gem #{spec.name} --no-loc --no-file-header")
+          exec(tapioca_context, "bundle exec tapioca gem #{spec.name} --no-doc --no-loc --no-file-header")
 
           rbi_path = tapioca_context.glob("sorbet/rbi/gems/#{spec.name}@*.rbi").first
           unless rbi_path && tapioca_context.file?(rbi_path)

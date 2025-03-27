@@ -259,6 +259,7 @@ module Spoom
           @project.write!("foo.gemspec", GEMSPEC)
           @project.write!("lib/foo.rb", <<~RB)
             class Foo
+              # ignored comment
               #: -> void
               def foo; end
             end
