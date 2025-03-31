@@ -11,15 +11,12 @@ module Spoom
 
         @model = model
         @file = file
-        @comments_by_line = T.let(
-          comments.to_h do |c|
-            [c.location.start_line, c]
-          end,
-          T::Hash[Integer, Prism::Comment],
-        )
-        @namespace_nesting = T.let([], T::Array[Namespace])
-        @visibility_stack = T.let([Visibility::Public], T::Array[Visibility])
-        @last_sigs = T.let([], T::Array[Sig])
+        @comments_by_line = comments.to_h do |c|
+          [c.location.start_line, c]
+        end #: Hash[Integer, Prism::Comment]
+        @namespace_nesting = [] #: Array[Namespace]
+        @visibility_stack = [Visibility::Public] #: Array[Visibility]
+        @last_sigs = [] #: Array[Sig]
       end
 
       # Classes

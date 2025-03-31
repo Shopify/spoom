@@ -24,7 +24,7 @@ module Spoom
     # puts config.ignore  # "c"
     # ```
     class Config
-      DEFAULT_ALLOWED_EXTENSIONS = T.let([".rb", ".rbi"].freeze, T::Array[String])
+      DEFAULT_ALLOWED_EXTENSIONS = [".rb", ".rbi"].freeze #: Array[String]
 
       #: Array[String]
       attr_accessor :paths, :ignore, :allowed_extensions
@@ -34,10 +34,10 @@ module Spoom
 
       #: -> void
       def initialize
-        @paths = T.let([], T::Array[String])
-        @ignore = T.let([], T::Array[String])
-        @allowed_extensions = T.let([], T::Array[String])
-        @no_stdlib = T.let(false, T::Boolean)
+        @paths = [] #: Array[String]
+        @ignore = [] #: Array[String]
+        @allowed_extensions = [] #: Array[String]
+        @no_stdlib = false #: bool
       end
 
       #: -> Config
@@ -81,7 +81,7 @@ module Spoom
         #: (String sorbet_config) -> Spoom::Sorbet::Config
         def parse_string(sorbet_config)
           config = Config.new
-          state = T.let(nil, T.nilable(Symbol))
+          state = nil #: Symbol?
           sorbet_config.each_line do |line|
             line = line.strip
             case line

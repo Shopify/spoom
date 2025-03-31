@@ -24,9 +24,9 @@ module Spoom
       #: (Model model) -> void
       def initialize(model)
         @model = model
-        @definitions = T.let({}, T::Hash[String, T::Array[Definition]])
-        @references = T.let({}, T::Hash[String, T::Array[Model::Reference]])
-        @ignored = T.let(Set.new, T::Set[Model::SymbolDef])
+        @definitions = {} #: Hash[String, Array[Definition]]
+        @references = {} #: Hash[String, Array[Model::Reference]]
+        @ignored = Set.new #: Set[Model::SymbolDef]
       end
 
       # Indexing

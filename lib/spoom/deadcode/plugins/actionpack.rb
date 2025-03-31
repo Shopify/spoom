@@ -7,23 +7,20 @@ module Spoom
       class ActionPack < Base
         ignore_classes_inheriting_from("ApplicationController")
 
-        CALLBACKS = T.let(
-          [
-            "after_action",
-            "append_after_action",
-            "append_around_action",
-            "append_before_action",
-            "around_action",
-            "before_action",
-            "prepend_after_action",
-            "prepend_around_action",
-            "prepend_before_action",
-            "skip_after_action",
-            "skip_around_action",
-            "skip_before_action",
-          ].freeze,
-          T::Array[String],
-        )
+        CALLBACKS = [
+          "after_action",
+          "append_after_action",
+          "append_around_action",
+          "append_before_action",
+          "around_action",
+          "before_action",
+          "prepend_after_action",
+          "prepend_around_action",
+          "prepend_before_action",
+          "skip_after_action",
+          "skip_around_action",
+          "skip_before_action",
+        ].freeze #: Array[String]
 
         # @override
         #: (Model::Method definition) -> void

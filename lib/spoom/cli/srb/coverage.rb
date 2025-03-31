@@ -89,7 +89,7 @@ module Spoom
 
             context.git_checkout!(ref: commit.sha)
 
-            snapshot = T.let(nil, T.nilable(Spoom::Coverage::Snapshot))
+            snapshot = nil #: Spoom::Coverage::Snapshot?
             if options[:bundle_install]
               Bundler.with_unbundled_env do
                 next unless bundle_install(path, commit.sha)

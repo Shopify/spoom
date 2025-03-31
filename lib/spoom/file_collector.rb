@@ -16,7 +16,7 @@ module Spoom
     # the list.
     #: (?allow_extensions: Array[String], ?allow_mime_types: Array[String], ?exclude_patterns: Array[String]) -> void
     def initialize(allow_extensions: [], allow_mime_types: [], exclude_patterns: [])
-      @files = T.let([], T::Array[String])
+      @files = [] #: Array[String]
       @allow_extensions = allow_extensions
       @allow_mime_types = allow_mime_types
       @exclude_patterns = exclude_patterns

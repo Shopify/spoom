@@ -6,7 +6,7 @@ module Spoom
   class FileTree
     #: (?T::Enumerable[String] paths) -> void
     def initialize(paths = [])
-      @roots = T.let({}, T::Hash[String, Node])
+      @roots = {} #: Hash[String, Node]
       add_paths(paths)
     end
 
@@ -123,7 +123,7 @@ module Spoom
       #: -> void
       def initialize
         super()
-        @nodes = T.let([], T::Array[FileTree::Node])
+        @nodes = [] #: Array[FileTree::Node]
       end
 
       # @override
@@ -143,7 +143,7 @@ module Spoom
       def initialize(context)
         super()
         @context = context
-        @strictnesses = T.let({}, T::Hash[Node, T.nilable(String)])
+        @strictnesses = {} #: Hash[Node, String?]
       end
 
       # @override
@@ -165,7 +165,7 @@ module Spoom
       def initialize(context)
         super
         @context = context
-        @scores = T.let({}, T::Hash[Node, Float])
+        @scores = {} #: Hash[Node, Float]
       end
 
       # @override
@@ -207,7 +207,7 @@ module Spoom
         super()
         @strictnesses = strictnesses
         @colors = colors
-        @printer = T.let(Spoom::Printer.new(out: out, colors: colors), Spoom::Printer)
+        @printer = Spoom::Printer.new(out: out, colors: colors) #: Spoom::Printer
       end
 
       # @override

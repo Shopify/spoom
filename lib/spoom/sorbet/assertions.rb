@@ -144,7 +144,7 @@ module Spoom
       end
 
       class Locator < Spoom::Visitor
-        ANNOTATION_METHODS = T.let([:let], T::Array[Symbol])
+        ANNOTATION_METHODS = [:let] #: Array[Symbol]
 
         #: Array[AssignNode]
         attr_reader :assigns
@@ -152,7 +152,7 @@ module Spoom
         #: -> void
         def initialize
           super
-          @assigns = T.let([], T::Array[AssignNode])
+          @assigns = [] #: Array[AssignNode]
         end
 
         #: (AssignType) -> void
@@ -254,7 +254,7 @@ module Spoom
 
           #: -> void
           def initialize
-            @contains_heredoc = T.let(false, T::Boolean)
+            @contains_heredoc = false #: bool
 
             super
           end
