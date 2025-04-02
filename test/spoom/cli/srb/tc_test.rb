@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require "test_with_project"
+require "rexml/document"
 
 module Spoom
   module Cli
@@ -268,6 +269,112 @@ module Spoom
           MSG
           refute(result.status)
           project.destroy!
+        end
+
+        def test_output_no_errors_to_junit_xml
+          @project.write_sorbet_config!("file.rb")
+          Tempfile.create("sorbet_junit") do |tempfile|
+            result = @project.spoom("srb tc --junit_output_path=#{tempfile.path}")
+            expected_doc = <<~XML.chomp
+              <?xml version='1.0'?>
+              <testsuite name='Sorbet' failures='0'>
+                <testcase name='Typecheck' tests='1'/>
+              </testsuite>
+            XML
+            tempfile.rewind
+            actual_doc = tempfile.read
+            assert_equal(expected_doc, actual_doc)
+            assert(result.status)
+          end
+        end
+
+        def test_output_errors_to_junit_xml
+          Tempfile.create("sorbet_junit") do |tempfile|
+            expected_doc = <<~XML.chomp
+              <?xml version='1.0'?>
+              <testsuite name='Sorbet' failures='7'>
+                <testcase name='Unable to resolve constant `Bar`' file='errors/errors.rb' line='5'>
+                  <failure type='5002'>
+                    <![CDATA[In file errors/errors.rb:
+                   5 |  sig { params(bar: Bar).returns(C) }
+                                          ^^^]]>
+                  </failure>
+                </testcase>
+                <testcase name='Unable to resolve constant `C`' file='errors/errors.rb' line='5'>
+                  <failure type='5002'>
+                    <![CDATA[In file errors/errors.rb:
+                   5 |  sig { params(bar: Bar).returns(C) }
+                                                       ^
+                Did you mean `RDoc::Parser::C`? Use `-a` to autocorrect
+                  errors/errors.rb:5: Replace with `RDoc::Parser::C`
+                   5 |  sig { params(bar: Bar).returns(C) }
+                                                       ^
+                  https://github.com/sorbet/sorbet/tree/dad16b7fe5bf8ebdec30bac0d9c1cb0e66f582cf/rbi/stdlib/rdoc.rbi#L6768: `RDoc::Parser::C` defined here
+                  6768 |class RDoc::Parser::C < ::RDoc::Parser
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^]]>
+                  </failure>
+                </testcase>
+                <testcase name='Method `params` does not exist on `T.class_of(Foo)`' file='errors/errors.rb' line='5'>
+                  <failure type='7003'>
+                    <![CDATA[In file errors/errors.rb:
+                   5 |  sig { params(bar: Bar).returns(C) }
+                              ^^^^^^]]>
+                  </failure>
+                </testcase>
+                <testcase name='Method `sig` does not exist on `T.class_of(Foo)`' file='errors/errors.rb' line='5'>
+                  <failure type='7003'>
+                    <![CDATA[In file errors/errors.rb:
+                   5 |  sig { params(bar: Bar).returns(C) }
+                        ^^^
+                Autocorrect: Use `-a` to autocorrect
+                  errors/errors.rb:5: Insert `extend T::Sig`
+                   5 |  sig { params(bar: Bar).returns(C) }
+                      ^]]>
+                  </failure>
+                </testcase>
+                <testcase name='Wrong number of arguments for constructor. Expected: `0`, got: `1`' file='errors/errors.rb' line='10'>
+                  <failure type='7004'>
+                    <![CDATA[In file errors/errors.rb:
+                  10 |b = Foo.new(42)
+                                  ^^
+                  https://github.com/sorbet/sorbet/tree/dad16b7fe5bf8ebdec30bac0d9c1cb0e66f582cf/rbi/core/basic_object.rbi#L228: `initialize` defined here
+                   228 |  def initialize(); end
+                          ^^^^^^^^^^^^^^^^
+                Autocorrect: Use `-a` to autocorrect
+                  errors/errors.rb:10: Delete
+                  10 |b = Foo.new(42)
+                                  ^^]]>
+                  </failure>
+                </testcase>
+                <testcase name='Method `c` does not exist on `T.class_of(&lt;root&gt;)`' file='errors/errors.rb' line='11'>
+                  <failure type='7003'>
+                    <![CDATA[In file errors/errors.rb:
+                  11 |b.foo(b, c)
+                               ^]]>
+                  </failure>
+                </testcase>
+                <testcase name='Too many arguments provided for method `Foo#foo`. Expected: `1`, got: `2`' file='errors/errors.rb' line='11'>
+                  <failure type='7004'>
+                    <![CDATA[In file errors/errors.rb:
+                  11 |b.foo(b, c)
+                               ^
+                  errors/errors.rb:6: `foo` defined here
+                   6 |  def foo(bar)
+                        ^^^^^^^^^^^^
+                Autocorrect: Use `-a` to autocorrect
+                  errors/errors.rb:11: Delete
+                  11 |b.foo(b, c)
+                             ^^^]]>
+                  </failure>
+                </testcase>
+              </testsuite>
+            XML
+            result = @project.spoom("srb tc --junit_output_path=#{tempfile.path}")
+            tempfile.rewind
+            actual_doc = tempfile.read
+            assert_equal(expected_doc, actual_doc)
+            refute(result.status)
+          end
         end
 
         def test_pass_options_to_sorbet
