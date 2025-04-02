@@ -1,6 +1,8 @@
 # typed: strict
 # frozen_string_literal: true
 
+require "rexml/document"
+
 module Spoom
   module Sorbet
     module Errors
@@ -10,6 +12,35 @@ module Spoom
         #: (Array[Error] errors) -> Array[Error]
         def sort_errors_by_code(errors)
           errors.sort_by { |e| [e.code, e.file, e.line, e.message] }
+        end
+
+        #: (Array[Error]) -> REXML::Document
+        def to_junit_xml(errors)
+          testsuite_element = REXML::Element.new("testsuite")
+          testsuite_element.add_attributes(
+            "name" => "Sorbet",
+            "failures" => errors.size,
+          )
+
+          if errors.empty?
+            # Avoid creating an empty report when there are no errors so that
+            # reporting tools know that the type checking ran successfully.
+            testcase_element = testsuite_element.add_element("testcase")
+            testcase_element.add_attributes(
+              "name" => "Typecheck",
+              "tests" => 1,
+            )
+          else
+            errors.each do |error|
+              testsuite_element.add_element(error.to_junit_xml_element)
+            end
+          end
+
+          doc = REXML::Document.new
+          doc << REXML::XMLDecl.new
+          doc.add_element(testsuite_element)
+
+          doc
         end
       end
       # Parse errors from Sorbet output
@@ -152,6 +183,35 @@ module Spoom
         #: -> String
         def to_s
           "#{file}:#{line}: #{message} (#{code})"
+        end
+
+        #: -> REXML::Element
+        def to_junit_xml_element
+          testcase_element = REXML::Element.new("testcase")
+          # Unlike traditional test suites, we can't report all tests
+          # regardless of outcome; we only have errors to report. As a
+          # result we reinterpret the definitions of the test properties
+          # bit: the error message becomes the test name and the full error
+          # info gets plugged into the failure body along with file/line
+          # information (displayed in Jenkins as the "Stacktrace" for the
+          # error).
+          testcase_element.add_attributes(
+            "name" => message,
+            "file" => file,
+            "line" => line,
+          )
+          failure_element = testcase_element.add_element("failure")
+          failure_element.add_attributes(
+            "type" => code,
+          )
+          explanation_text = [
+            "In file #{file}:\n",
+            *more,
+          ].join.chomp
+          # Use CDATA so that parsers know the whitespace is significant.
+          failure_element.add(REXML::CData.new(explanation_text))
+
+          testcase_element
         end
       end
     end

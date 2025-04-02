@@ -2725,6 +2725,9 @@ module Spoom::Sorbet::Errors
   class << self
     sig { params(errors: T::Array[::Spoom::Sorbet::Errors::Error]).returns(T::Array[::Spoom::Sorbet::Errors::Error]) }
     def sort_errors_by_code(errors); end
+
+    sig { params(errors: T::Array[::Spoom::Sorbet::Errors::Error]).returns(::REXML::Document) }
+    def to_junit_xml(errors); end
   end
 end
 
@@ -2762,6 +2765,9 @@ class Spoom::Sorbet::Errors::Error
 
   sig { returns(T::Array[::String]) }
   def more; end
+
+  sig { returns(::REXML::Element) }
+  def to_junit_xml_element; end
 
   sig { returns(::String) }
   def to_s; end

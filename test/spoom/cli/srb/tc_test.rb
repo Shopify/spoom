@@ -270,6 +270,122 @@ module Spoom
           project.destroy!
         end
 
+        def test_output_no_errors_to_junit_xml
+          @project.write_sorbet_config!("file.rb")
+          result = @project.spoom("srb tc --junit_output_path=junit.xml")
+          expected_doc = <<~XML.chomp
+            <?xml version='1.0'?>
+            <testsuite name='Sorbet' failures='0'>
+              <testcase name='Typecheck' tests='1'/>
+            </testsuite>
+          XML
+          assert_equal(expected_doc, @project.read("junit.xml"))
+          assert(result.status)
+        end
+
+        def test_output_errors_to_junit_xml
+          result = @project.spoom("srb tc --junit_output_path=junit.xml")
+          expected_doc = <<~XML.chomp
+            <?xml version='1.0'?>
+            <testsuite name='Sorbet' failures='7'>
+              <testcase name='Unable to resolve constant `Bar`' file='errors/errors.rb' line='5'>
+                <failure type='5002'>
+                  <![CDATA[In file errors/errors.rb:
+                 5 |  sig { params(bar: Bar).returns(C) }
+                                        ^^^
+              Did you mean `Dir`? Use `-a` to autocorrect
+                errors/errors.rb:5: Replace with `Dir`
+                 5 |  sig { params(bar: Bar).returns(C) }
+                                        ^^^
+                <GIT_LINK>/rbi/core/dir.rbi#L11: `Dir` defined here
+                11 |class Dir < Object
+                    ^^^^^^^^^^^^^^^^^^]]>
+                </failure>
+              </testcase>
+              <testcase name='Unable to resolve constant `C`' file='errors/errors.rb' line='5'>
+                <failure type='5002'>
+                  <![CDATA[In file errors/errors.rb:
+                 5 |  sig { params(bar: Bar).returns(C) }
+                                                     ^
+              Did you mean `T`? Use `-a` to autocorrect
+                errors/errors.rb:5: Replace with `T`
+                 5 |  sig { params(bar: Bar).returns(C) }
+                                                     ^
+                <GIT_LINK>/rbi/sorbet/t.rbi#L16: `T` defined here
+                16 |module T
+                    ^^^^^^^^
+              Did you mean `GC`? Use `-a` to autocorrect
+                errors/errors.rb:5: Replace with `GC`
+                 5 |  sig { params(bar: Bar).returns(C) }
+                                                     ^
+                <GIT_LINK>/rbi/core/gc.rbi#L12: `GC` defined here
+                12 |module GC
+                    ^^^^^^^^^]]>
+                </failure>
+              </testcase>
+              <testcase name='Method `params` does not exist on `T.class_of(Foo)`' file='errors/errors.rb' line='5'>
+                <failure type='7003'>
+                  <![CDATA[In file errors/errors.rb:
+                 5 |  sig { params(bar: Bar).returns(C) }
+                            ^^^^^^]]>
+                </failure>
+              </testcase>
+              <testcase name='Method `sig` does not exist on `T.class_of(Foo)`' file='errors/errors.rb' line='5'>
+                <failure type='7003'>
+                  <![CDATA[In file errors/errors.rb:
+                 5 |  sig { params(bar: Bar).returns(C) }
+                      ^^^
+              Autocorrect: Use `-a` to autocorrect
+                errors/errors.rb:5: Insert `extend T::Sig`
+                 5 |  sig { params(bar: Bar).returns(C) }
+                    ^]]>
+                </failure>
+              </testcase>
+              <testcase name='Wrong number of arguments for constructor. Expected: `0`, got: `1`' file='errors/errors.rb' line='10'>
+                <failure type='7004'>
+                  <![CDATA[In file errors/errors.rb:
+                10 |b = Foo.new(42)
+                                ^^
+                <GIT_LINK>/rbi/core/basic_object.rbi#L228: `initialize` defined here
+                 228 |  def initialize(); end
+                        ^^^^^^^^^^^^^^^^
+              Autocorrect: Use `-a` to autocorrect
+                errors/errors.rb:10: Delete
+                10 |b = Foo.new(42)
+                                ^^]]>
+                </failure>
+              </testcase>
+              <testcase name='Method `c` does not exist on `T.class_of(&lt;root&gt;)`' file='errors/errors.rb' line='11'>
+                <failure type='7003'>
+                  <![CDATA[In file errors/errors.rb:
+                11 |b.foo(b, c)
+                             ^]]>
+                </failure>
+              </testcase>
+              <testcase name='Too many arguments provided for method `Foo#foo`. Expected: `1`, got: `2`' file='errors/errors.rb' line='11'>
+                <failure type='7004'>
+                  <![CDATA[In file errors/errors.rb:
+                11 |b.foo(b, c)
+                             ^
+                errors/errors.rb:6: `foo` defined here
+                 6 |  def foo(bar)
+                      ^^^^^^^^^^^^
+              Autocorrect: Use `-a` to autocorrect
+                errors/errors.rb:11: Delete
+                11 |b.foo(b, c)
+                           ^^^]]>
+                </failure>
+              </testcase>
+            </testsuite>
+          XML
+
+          output_xml = @project.read("junit.xml")
+            .gsub(%r{^(\s+)https://github\.com/sorbet/sorbet/tree/[0-9a-f]+}, '\1<GIT_LINK>')
+
+          assert_equal(expected_doc, output_xml)
+          refute(result.status)
+        end
+
         def test_pass_options_to_sorbet
           result = @project.spoom("srb tc --no-color --sorbet-options \"--no-config -e 'foo'\"")
           assert_equal(<<~MSG, result.err)

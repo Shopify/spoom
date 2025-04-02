@@ -22,6 +22,7 @@ module Spoom
         option :format, type: :string, aliases: :f, desc: "Format line output"
         option :uniq, type: :boolean, aliases: :u, desc: "Remove duplicated lines"
         option :count, type: :boolean, default: true, desc: "Show errors count"
+        option :junit_output_path, type: :string, desc: "Output failures to XML file formatted for JUnit"
         option :sorbet, type: :string, desc: "Path to custom Sorbet bin"
         option :sorbet_options, type: :string, default: "", desc: "Pass options to Sorbet"
         def tc(*paths_to_select)
@@ -32,6 +33,7 @@ module Spoom
           uniq = options[:uniq]
           format = options[:format]
           count = options[:count]
+          junit_output_path = options[:junit_output_path]
           sorbet = options[:sorbet]
 
           unless limit || code || sort
@@ -55,6 +57,12 @@ module Spoom
 
           if result.status
             say_error(result.err, status: nil, nl: false)
+            if junit_output_path
+              doc = Spoom::Sorbet::Errors.to_junit_xml([])
+              file = File.open(junit_output_path, "w")
+              doc.write(output: file, indent: 2)
+              file.close
+            end
             exit(0)
           end
 
@@ -92,6 +100,13 @@ module Spoom
 
           lines.each do |line|
             say_error(line, status: nil)
+          end
+
+          if junit_output_path
+            doc = Spoom::Sorbet::Errors.to_junit_xml(errors)
+            file = File.open(junit_output_path, "w")
+            doc.write(output: file, indent: 2)
+            file.close
           end
 
           if count
