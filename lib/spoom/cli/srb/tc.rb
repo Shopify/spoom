@@ -1,8 +1,6 @@
 # typed: true
 # frozen_string_literal: true
 
-require "rexml/document"
-
 module Spoom
   module Cli
     module Srb
@@ -60,7 +58,7 @@ module Spoom
           if result.status
             say_error(result.err, status: nil, nl: false)
             if junit_output_path
-              write_errors_to_xml([], path: junit_output_path)
+              Spoom::Sorbet::Errors.to_junit_xml([], path: junit_output_path)
             end
             exit(0)
           end
@@ -102,7 +100,7 @@ module Spoom
           end
 
           if junit_output_path
-            write_errors_to_xml(errors, path: junit_output_path)
+            Spoom::Sorbet::Errors.to_junit_xml(errors, path: junit_output_path)
           end
 
           if count
@@ -153,56 +151,6 @@ module Spoom
               word << (cyan ? cyan(c) : red(c))
             end
             word.string
-          end
-
-          def write_errors_to_xml(errors, path:)
-            doc = REXML::Document.new
-            doc << REXML::XMLDecl.new
-            testsuite_element = doc.add_element("testsuite")
-            testsuite_element.add_attributes(
-              "name" => "Sorbet",
-              "failures" => errors.size,
-            )
-
-            if errors.empty?
-              # Avoid creating an empty report when there are no errors so that
-              # reporting tools know that the type checking ran successfully.
-              testcase_element = testsuite_element.add_element("testcase")
-              testcase_element.add_attributes(
-                "name" => "Typecheck",
-                "tests" => 1,
-              )
-            else
-              errors.each do |error|
-                testcase_element = testsuite_element.add_element("testcase")
-                # Unlike traditional test suites, we can't report all tests
-                # regardless of outcome; we only have errors to report. As a
-                # result we reinterpret the definitions of the test properties
-                # bit: the error message becomes the test name and the full error
-                # info gets plugged into the failure body along with file/line
-                # information (displayed in Jenkins as the "Stacktrace" for the
-                # error).
-                testcase_element.add_attributes(
-                  "name" => error.message,
-                  "file" => error.file,
-                  "line" => error.line,
-                )
-                failure_element = testcase_element.add_element("failure")
-                failure_element.add_attributes(
-                  "type" => error.code,
-                )
-                explanation_lines = [
-                  "In file #{error.file}:\n",
-                ] + error.more
-                explanation_text = explanation_lines.join("").chomp
-                # Use CDATA so that parsers know the whitespace is significant.
-                failure_element.add(REXML::CData.new(explanation_text))
-              end
-            end
-
-            xml_buffer = StringIO.new
-            doc.write(output: xml_buffer, indent: 2)
-            File.write(path, xml_buffer.string)
           end
         end
       end
