@@ -99,8 +99,10 @@ module Spoom
           prev_node = context.previous_node
           next_node = context.next_node
 
-          if (prev_node && prev_node.location.end_line != node.location.start_line) &&
-              (next_node && next_node.location.start_line != node.location.end_line)
+          has_prev_node_on_different_line = prev_node && prev_node.location.end_line != node.location.start_line
+          has_next_node_on_different_line = next_node && next_node.location.start_line != node.location.end_line
+
+          if has_prev_node_on_different_line && has_next_node_on_different_line
             # We have a node before and after, but on different lines, we need to remove the whole line
             #
             # ~~~
@@ -164,8 +166,10 @@ module Spoom
           prev_node = context.previous_node
           next_node = context.next_node
 
-          if (prev_node && prev_node.location.end_line != context.node.location.start_line) &&
-              (next_node && next_node.location.start_line != context.node.location.end_line)
+          has_prev_node_on_different_line = prev_node && prev_node.location.end_line != context.node.location.start_line
+          has_next_node_on_different_line = next_node && next_node.location.start_line != context.node.location.end_line
+
+          if has_prev_node_on_different_line && has_next_node_on_different_line
             # We have a node before and after, but on different lines, we need to remove the whole line
             #
             # ~~~
