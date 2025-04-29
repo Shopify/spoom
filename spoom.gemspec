@@ -38,5 +38,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency("sorbet-static-and-runtime", ">= 0.5.10187")
   spec.add_dependency("thor", ">= 0.19.2")
 
-  spec.required_ruby_version = ">= 3.1"
+  spec.required_ruby_version = ">= 3.2"
 end
