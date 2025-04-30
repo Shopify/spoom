@@ -35,6 +35,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency("erubi", ">= 1.10.0")
   spec.add_dependency("prism", ">= 0.28.0")
   spec.add_dependency("rbi", ">= 0.3.1")
+  spec.add_dependency("rexml", ">= 3.2.6")
   spec.add_dependency("sorbet-static-and-runtime", ">= 0.5.10187")
   spec.add_dependency("thor", ">= 0.19.2")
 
