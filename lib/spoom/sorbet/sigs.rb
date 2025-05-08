@@ -139,6 +139,11 @@ module Spoom
             out = StringIO.new
             p = RBI::RBSPrinter.new(out: out, indent: sig.loc&.begin_column, positional_names: positional_names)
 
+            if sig.without_runtime
+              p.printn("# @without_runtime")
+              p.printt
+            end
+
             if node.sigs.any?(&:is_final)
               p.printn("# @final")
               p.printt
@@ -218,6 +223,8 @@ module Spoom
                 res.allow_incompatible_override = true
               when "@overridable"
                 res.is_overridable = true
+              when "@without_runtime"
+                res.without_runtime = true
               end
             end
 
