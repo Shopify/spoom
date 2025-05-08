@@ -4,7 +4,7 @@ PATH
     spoom (1.6.2)
       erubi (>= 1.10.0)
       prism (>= 0.28.0)
-      rbi (>= 0.3.1)
+      rbi (>= 0.3.3)
       rexml (>= 3.2.6)
       sorbet-static-and-runtime (>= 0.5.10187)
       thor (>= 0.19.2)
