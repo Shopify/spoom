@@ -163,6 +163,19 @@ module Spoom
         RBS
       end
 
+      def test_translate_to_rbs_method_sigs_without_runtime
+        contents = <<~RB
+          T::Sig::WithoutRuntime.sig { void }
+          def foo; end
+        RB
+
+        assert_equal(<<~RBS, Sigs.rbi_to_rbs(contents))
+          # @without_runtime
+          #: -> void
+          def foo; end
+        RBS
+      end
+
       def test_translate_to_rbs_singleton_method_sigs
         contents = <<~RB
           class A
@@ -292,6 +305,20 @@ module Spoom
           # @override(allow_incompatible: true)
           # @overridable
           sig(:final) { override(allow_incompatible: true).overridable.void }
+          def foo; end
+        RB
+      end
+
+      def test_translate_to_rbi_method_sigs_without_runtime
+        contents = <<~RB
+          # @without_runtime
+          #: -> void
+          def foo; end
+        RB
+
+        assert_equal(<<~RB, Sigs.rbs_to_rbi(contents))
+          # @without_runtime
+          T::Sig::WithoutRuntime.sig { void }
           def foo; end
         RB
       end
