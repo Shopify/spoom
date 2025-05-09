@@ -2895,6 +2895,9 @@ class Spoom::Sorbet::Sigs::RBIToRBSTranslator
 
     private
 
+    sig { params(p: ::RBI::RBSPrinter, sig: ::RBI::Sig, node: T.any(::RBI::Attr, ::RBI::Method)).void }
+    def apply_annotations(p, sig, node); end
+
     sig { params(sig: ::RBI::Sig, node: ::RBI::Attr, positional_names: T::Boolean).returns(::String) }
     def translate_attr_sig(sig, node, positional_names: T.unsafe(nil)); end
 
@@ -2909,6 +2912,9 @@ class Spoom::Sorbet::Sigs::RBSToRBITranslator
     def translate(comment, node); end
 
     private
+
+    sig { params(sig: ::RBI::Sig, node: T.any(::RBI::Attr, ::RBI::Method)).void }
+    def apply_annotations(sig, node); end
 
     sig { params(comment: ::RBI::RBSComment, node: ::RBI::Attr).returns(::String) }
     def translate_attr_sig(comment, node); end
