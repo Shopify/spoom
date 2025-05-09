@@ -134,11 +134,8 @@ module Spoom
 
           private
 
-          #: (RBI::Sig sig, RBI::Method node, positional_names: bool) -> String
-          def translate_method_sig(sig, node, positional_names: true)
-            out = StringIO.new
-            p = RBI::RBSPrinter.new(out: out, indent: sig.loc&.begin_column, positional_names: positional_names)
-
+          #: (RBI::RBSPrinter, RBI::Sig, (RBI::Method | RBI::Attr)) -> void
+          def apply_annotations(p, sig, node)
             if sig.without_runtime
               p.printn("# @without_runtime")
               p.printt
@@ -167,10 +164,15 @@ module Spoom
               p.printn("# @overridable")
               p.printt
             end
+          end
 
+          #: (RBI::Sig sig, RBI::Method node, positional_names: bool) -> String
+          def translate_method_sig(sig, node, positional_names: true)
+            out = StringIO.new
+            p = RBI::RBSPrinter.new(out: out, indent: sig.loc&.begin_column, positional_names: positional_names)
+            apply_annotations(p, sig, node)
             p.print("#: ")
             p.send(:print_method_sig, node, sig)
-
             out.string
           end
 
@@ -178,8 +180,10 @@ module Spoom
           def translate_attr_sig(sig, node, positional_names: true)
             out = StringIO.new
             p = RBI::RBSPrinter.new(out: out, positional_names: positional_names)
+            apply_annotations(p, sig, node)
+            p.print("#: ")
             p.print_attr_sig(node, sig)
-            "#: #{out.string}"
+            out.string
           end
         end
       end
@@ -202,6 +206,27 @@ module Spoom
 
           private
 
+          #: (RBI::Sig, (RBI::Method | RBI::Attr)) -> void
+          def apply_annotations(sig, node)
+            node.comments.each do |comment|
+              case comment.text
+              when "@abstract"
+                sig.is_abstract = true
+              when "@final"
+                sig.is_final = true
+              when "@override"
+                sig.is_override = true
+              when "@override(allow_incompatible: true)"
+                sig.is_override = true
+                sig.allow_incompatible_override = true
+              when "@overridable"
+                sig.is_overridable = true
+              when "@without_runtime"
+                sig.without_runtime = true
+              end
+            end
+          end
+
           #: (RBI::RBSComment rbs_comment, RBI::Method node) -> String
           def translate_method_sig(rbs_comment, node)
             method_type = ::RBS::Parser.parse_method_type(rbs_comment.text)
@@ -210,24 +235,7 @@ module Spoom
 
             # TODO: move this to `rbi`
             res = translator.result
-            node.comments.each do |comment|
-              case comment.text
-              when "@abstract"
-                res.is_abstract = true
-              when "@final"
-                res.is_final = true
-              when "@override"
-                res.is_override = true
-              when "@override(allow_incompatible: true)"
-                res.is_override = true
-                res.allow_incompatible_override = true
-              when "@overridable"
-                res.is_overridable = true
-              when "@without_runtime"
-                res.without_runtime = true
-              end
-            end
-
+            apply_annotations(res, node)
             res.string.strip
           end
 
@@ -246,6 +254,7 @@ module Spoom
             end
 
             sig.return_type = RBI::RBS::TypeTranslator.translate(attr_type)
+            apply_annotations(sig, node)
             sig.string.strip
           end
         end

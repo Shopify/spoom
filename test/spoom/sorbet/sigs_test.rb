@@ -224,6 +224,34 @@ module Spoom
         RBS
       end
 
+      def test_translate_to_rbs_attr_sigs_with_annotations
+        contents = <<~RB
+          sig(:final) { overridable.override(allow_incompatible: true).returns(Integer) }
+          attr_accessor :foo
+        RB
+
+        assert_equal(<<~RBS, Sigs.rbi_to_rbs(contents))
+          # @final
+          # @override(allow_incompatible: true)
+          # @overridable
+          #: Integer
+          attr_accessor :foo
+        RBS
+      end
+
+      def test_translate_to_rbs_attr_sigs_without_runtime
+        contents = <<~RB
+          T::Sig::WithoutRuntime.sig { returns(Integer) }
+          attr_accessor :foo
+        RB
+
+        assert_equal(<<~RBS, Sigs.rbi_to_rbs(contents))
+          # @without_runtime
+          #: Integer
+          attr_accessor :foo
+        RBS
+      end
+
       # translate RBS to RBI
 
       def test_translate_to_rbi_empty
@@ -380,6 +408,38 @@ module Spoom
         assert_raises(Sigs::Error) do
           Sigs.rbs_to_rbi(contents)
         end
+      end
+
+      def test_translate_to_rbi_attr_sigs_with_annotations
+        contents = <<~RB
+          # @final
+          # @override(allow_incompatible: true)
+          # @overridable
+          #: Integer
+          attr_accessor :foo
+        RB
+
+        assert_equal(<<~RB, Sigs.rbs_to_rbi(contents))
+          # @final
+          # @override(allow_incompatible: true)
+          # @overridable
+          sig(:final) { override(allow_incompatible: true).overridable.returns(Integer) }
+          attr_accessor :foo
+        RB
+      end
+
+      def test_translate_to_rbi_attr_sigs_without_runtime
+        contents = <<~RB
+          # @without_runtime
+          #: Integer
+          attr_accessor :foo
+        RB
+
+        assert_equal(<<~RB, Sigs.rbs_to_rbi(contents))
+          # @without_runtime
+          T::Sig::WithoutRuntime.sig { returns(Integer) }
+          attr_accessor :foo
+        RB
       end
 
       def test_translate_to_rbi_skips_sigs_with_errors
