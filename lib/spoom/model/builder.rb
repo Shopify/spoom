@@ -5,7 +5,7 @@ module Spoom
   class Model
     # Populate a Model by visiting the nodes from a Ruby file
     class Builder < NamespaceVisitor
-      #: (Model model, String file, ?comments: Array[Prism::Comment]) -> void
+      #: (Model model, String file, comments: Array[Prism::Comment]) -> void
       def initialize(model, file, comments:)
         super()
 
