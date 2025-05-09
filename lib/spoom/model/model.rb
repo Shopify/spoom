@@ -84,7 +84,7 @@ module Spoom
       #: Array[Comment]
       attr_reader :comments
 
-      #: (Symbol symbol, owner: Namespace?, location: Location, ?comments: Array[Comment]) -> void
+      #: (Symbol symbol, owner: Namespace?, location: Location, comments: Array[Comment]) -> void
       def initialize(symbol, owner:, location:, comments:)
         @symbol = symbol
         @owner = owner
