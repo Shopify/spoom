@@ -5,6 +5,8 @@ source "https://rubygems.org"
 
 gemspec
 
+gem "rbs", github: "Shopify/rbs", branch: "master"
+
 group :development do
   gem "debug"
   gem "rubocop-shopify", require: false
