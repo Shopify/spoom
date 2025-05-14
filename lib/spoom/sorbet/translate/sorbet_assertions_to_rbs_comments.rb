@@ -44,12 +44,7 @@ module Spoom
           call = node.value
           return unless call.is_a?(Prism::CallNode) && t_annotation?(call)
 
-          # We do not support translating heredocs yet because the `#: ` would need to be added to the first line
-          # and it will requires us to adapt the annotation detection in Sorbet. But Sorbet desugars them into bare
-          # strings making them impossible to detect.
           value = T.must(call.arguments&.arguments&.first)
-          return if contains_heredoc?(value)
-
           type = T.must(call.arguments&.arguments&.last)
 
           operator_loc = case node
@@ -140,13 +135,6 @@ module Spoom
           true
         end
 
-        #: (Prism::Node) -> bool
-        def contains_heredoc?(node)
-          visitor = HeredocVisitor.new
-          visitor.visit(node)
-          visitor.contains_heredoc
-        end
-
         #: (AssignType, Prism::Node) -> String
         def dedent_value(assign, value)
           if value.location.start_line == assign.location.start_line
@@ -184,31 +172,6 @@ module Spoom
             end
           end
           lines.join
-        end
-
-        class HeredocVisitor < Spoom::Visitor
-          #: bool
-          attr_reader :contains_heredoc
-
-          #: -> void
-          def initialize
-            @contains_heredoc = false #: bool
-
-            super
-          end
-
-          # @override
-          #: (Prism::Node?) -> void
-          def visit(node)
-            return if node.nil?
-
-            case node
-            when Prism::StringNode, Prism::InterpolatedStringNode
-              return @contains_heredoc = !!node.opening_loc&.slice&.match?(/<<~|<<-/)
-            end
-
-            super
-          end
         end
       end
     end
