@@ -55,6 +55,7 @@ module Spoom
         def visit_assign(node)
           call = node.value
           return unless call.is_a?(Prism::CallNode) && t_annotation?(call)
+          return unless at_end_of_line?(node)
 
           value = T.must(call.arguments&.arguments&.first)
           rbs_annotation = build_rbs_annotation(call)
