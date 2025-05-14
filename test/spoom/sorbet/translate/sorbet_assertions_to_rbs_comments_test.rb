@@ -302,6 +302,16 @@ module Spoom
           RB
         end
 
+        def test_translate_only_first_level_assertions
+          rb = <<~RB
+            a = T.let(T.let(b, B), A)
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            a = T.let(b, B) #: A
+          RB
+        end
+
         private
 
         #: (String) -> String
