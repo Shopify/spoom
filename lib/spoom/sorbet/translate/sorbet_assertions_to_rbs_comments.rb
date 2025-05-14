@@ -138,6 +138,8 @@ module Spoom
             "#: as #{rbs_type}"
           when :must
             "#: as !nil"
+          when :unsafe
+            "#: as untyped"
           else
             raise "Unknown annotation method: #{call.name}"
           end
@@ -164,7 +166,7 @@ module Spoom
           case node.name
           when :let, :cast
             return node.arguments&.arguments&.size == 2
-          when :must
+          when :must, :unsafe
             return node.arguments&.arguments&.size == 1
           end
 
