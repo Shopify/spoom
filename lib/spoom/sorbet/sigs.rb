@@ -23,28 +23,11 @@ module Spoom
           SorbetSigsToRBSCommentsRewriter.new(ruby_contents, file: "test.rb", positional_names: positional_names).rewrite
         end
 
+        # Converts all the RBS comments in the given Ruby code to `sig` nodes.
+        # It also handles type members and class annotations.
         #: (String ruby_contents) -> String
         def rbs_to_rbi(ruby_contents)
-          ruby_contents = ruby_contents.dup
-          rbs_comments = collect_rbs_comments(ruby_contents)
-
-          rbs_comments.each do |rbs_comment, node|
-            scanner = Scanner.new(ruby_contents)
-            start_index = scanner.find_char_position(
-              T.must(rbs_comment.loc&.begin_line&.pred),
-              T.must(rbs_comment.loc).begin_column,
-            )
-            end_index = scanner.find_char_position(
-              rbs_comment.loc&.end_line&.pred,
-              T.must(rbs_comment.loc).end_column,
-            )
-            rbi = RBSToRBITranslator.translate(rbs_comment, node)
-            next unless rbi
-
-            ruby_contents[start_index...end_index] = rbi
-          end
-
-          ruby_contents
+          RBSCommentsToSorbetSigsRewriter.new(ruby_contents, file: "test.rb").rewrite
         end
 
         private
@@ -254,6 +237,123 @@ module Spoom
 
           if sigs.any? { |_, sig| sig.is_overridable }
             @rewriter << Source::Insert.new(insert_pos, "# @overridable\n")
+          end
+        end
+      end
+
+      class RBSCommentsToSorbetSigsRewriter < Rewriter
+        # @override
+        #: (Prism::DefNode node) -> void
+        def visit_def_node(node)
+          comments = node_comments(node)
+          return if comments.empty?
+
+          annotations = comments.select { |c| c.slice.start_with?("# @") }
+          signatures = comments.select { |c| c.slice.start_with?("#: ") }
+
+          return if signatures.empty?
+
+          builder = RBI::Parser::TreeBuilder.new(@ruby_contents, comments: [], file: @file)
+          builder.visit(node)
+          rbi_node = builder.tree.nodes.first #: as RBI::Method
+
+          signatures.each do |signature|
+            method_type = ::RBS::Parser.parse_method_type(signature.slice.delete_prefix("#: "))
+            translator = RBI::RBS::MethodTypeTranslator.new(rbi_node)
+            translator.visit(method_type)
+            sig = translator.result
+            apply_member_annotations(annotations, sig)
+
+            @rewriter << Source::Replace.new(
+              signature.location.start_offset,
+              signature.location.end_offset,
+              sig.string,
+            )
+          rescue ::RBS::ParsingError
+            # Ignore signatures with errors
+            next
+          end
+        end
+
+        # @override
+        #: (Prism::CallNode node) -> void
+        def visit_call_node(node)
+          return unless node.message == "attr_reader" || node.message == "attr_writer" || node.message == "attr_accessor"
+
+          comments = node_comments(node)
+          return if comments.empty?
+
+          annotations = comments.select { |c| c.slice.start_with?("# @") }
+          signatures = comments.select { |c| c.slice.start_with?("#: ") }
+
+          return if signatures.empty?
+
+          signatures.each do |signature|
+            attr_type = ::RBS::Parser.parse_type(signature.slice.delete_prefix("#: "))
+            sig = RBI::Sig.new
+
+            if node.message == "attr_writer"
+              if node.arguments&.arguments&.size != 1
+                raise Error, "AttrWriter must have exactly one name"
+              end
+
+              name = node.arguments&.arguments&.first #: as Prism::SymbolNode
+              sig.params << RBI::SigParam.new(
+                name.slice[1..-1], #: as String
+                RBI::RBS::TypeTranslator.translate(attr_type),
+              )
+            end
+
+            sig.return_type = RBI::RBS::TypeTranslator.translate(attr_type)
+
+            apply_member_annotations(annotations, sig)
+
+            @rewriter << Source::Replace.new(
+              signature.location.start_offset,
+              signature.location.end_offset,
+              sig.string,
+            )
+          end
+        end
+
+        private
+
+        #: (Prism::Node) -> Array[Prism::Comment]
+        def node_comments(node)
+          comments = []
+
+          start_line = node.location.start_line
+          start_line -= 1 unless @comments_by_line.key?(start_line)
+
+          start_line.downto(1) do |line|
+            comment = @comments_by_line[line]
+            break unless comment
+
+            comments.unshift(comment)
+            @comments_by_line.delete(line)
+          end
+
+          comments
+        end
+
+        #: (Array[Prism::Comment], RBI::Sig) -> void
+        def apply_member_annotations(comments, sig)
+          comments.each do |comment|
+            case comment.slice.delete_prefix("# ")
+            when "@abstract"
+              sig.is_abstract = true
+            when "@final"
+              sig.is_final = true
+            when "@override"
+              sig.is_override = true
+            when "@override(allow_incompatible: true)"
+              sig.is_override = true
+              sig.allow_incompatible_override = true
+            when "@overridable"
+              sig.is_overridable = true
+            when "@without_runtime"
+              sig.without_runtime = true
+            end
           end
         end
       end
