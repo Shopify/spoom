@@ -39,6 +39,21 @@ module Spoom
           )
         end
 
+        # @override
+        #: (Prism::CallNode) -> void
+        def visit_call_node(node)
+          return super unless t_annotation?(node)
+          return super unless at_end_of_line?(node)
+
+          value = T.must(node.arguments&.arguments&.first)
+          str_type = T.must(node.arguments&.arguments&.last)
+          rbs_type = RBI::Type.parse_node(str_type).rbs_string
+
+          start_offset = node.location.start_offset
+          end_offset = node.location.end_offset
+          @rewriter << Source::Replace.new(start_offset, end_offset - 1, "#{dedent_value(node, value)} #: #{rbs_type}")
+        end
+
         #: (AssignType) -> void
         def visit_assign(node)
           call = node.value
@@ -135,7 +150,14 @@ module Spoom
           true
         end
 
-        #: (AssignType, Prism::Node) -> String
+        #: (Prism::Node) -> bool
+        def at_end_of_line?(node)
+          end_offset = node.location.end_offset
+          end_offset += 1 while (@ruby_bytes[end_offset] == " ".ord) && (end_offset < @ruby_bytes.size)
+          @ruby_bytes[end_offset] == LINE_BREAK
+        end
+
+        #: (Prism::Node, Prism::Node) -> String
         def dedent_value(assign, value)
           if value.location.start_line == assign.location.start_line
             # The value is on the same line as the assign, so we can just return the slice as is:
