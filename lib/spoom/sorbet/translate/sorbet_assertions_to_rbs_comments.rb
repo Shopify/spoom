@@ -6,8 +6,6 @@ module Spoom
     module Translate
       # Translates Sorbet assertions to RBS comments.
       class SorbetAssertionsToRBSComments < Translator
-        ANNOTATION_METHODS = [:let] #: Array[Symbol]
-
         LINE_BREAK = "\n".ord #: Integer
 
         AssignType = T.type_alias do
@@ -46,12 +44,11 @@ module Spoom
           return super unless at_end_of_line?(node)
 
           value = T.must(node.arguments&.arguments&.first)
-          str_type = T.must(node.arguments&.arguments&.last)
-          rbs_type = RBI::Type.parse_node(str_type).rbs_string
+          rbs_annotation = build_rbs_annotation(node)
 
           start_offset = node.location.start_offset
           end_offset = node.location.end_offset
-          @rewriter << Source::Replace.new(start_offset, end_offset - 1, "#{dedent_value(node, value)} #: #{rbs_type}")
+          @rewriter << Source::Replace.new(start_offset, end_offset - 1, "#{dedent_value(node, value)} #{rbs_annotation}")
         end
 
         #: (AssignType) -> void
@@ -60,7 +57,7 @@ module Spoom
           return unless call.is_a?(Prism::CallNode) && t_annotation?(call)
 
           value = T.must(call.arguments&.arguments&.first)
-          type = T.must(call.arguments&.arguments&.last)
+          rbs_annotation = build_rbs_annotation(call)
 
           operator_loc = case node
           when Prism::ClassVariableOperatorWriteNode,
@@ -85,10 +82,9 @@ module Spoom
           #     (a = nil) #: String?
           #
           # This is important to avoid translating the `nil` as `nil` instead of `nil #: String?`
-          rbs_type = RBI::Type.parse_node(type).rbs_string
           end_offset = node.location.end_offset
           end_offset += 1 while (@ruby_bytes[end_offset] != LINE_BREAK) && (end_offset < @ruby_bytes.size)
-          @rewriter << Source::Insert.new(end_offset, " #: #{rbs_type}")
+          @rewriter << Source::Insert.new(end_offset, " #{rbs_annotation}")
 
           start_offset = operator_loc.end_offset
           end_offset = node.value.location.start_offset + node.value.location.length - 1
@@ -127,6 +123,24 @@ module Spoom
 
         alias_method(:visit_multi_write_node, :visit_assign)
 
+        private
+
+        #: (Prism::CallNode) -> void
+        def build_rbs_annotation(call)
+          case call.name
+          when :let
+            srb_type = call.arguments&.arguments&.last #: as !nil
+            rbs_type = RBI::Type.parse_node(srb_type).rbs_string
+            "#: #{rbs_type}"
+          when :cast
+            srb_type = call.arguments&.arguments&.last #: as !nil
+            rbs_type = RBI::Type.parse_node(srb_type).rbs_string
+            "#: as #{rbs_type}"
+          else
+            raise "Unknown annotation method: #{call.name}"
+          end
+        end
+
         # Is this node a `T` or `::T` constant?
         #: (Prism::Node?) -> bool
         def t?(node)
@@ -144,10 +158,13 @@ module Spoom
         #: (Prism::CallNode) -> bool
         def t_annotation?(node)
           return false unless t?(node.receiver)
-          return false unless ANNOTATION_METHODS.include?(node.name)
-          return false unless node.arguments&.arguments&.size == 2
 
-          true
+          case node.name
+          when :let, :cast
+            return node.arguments&.arguments&.size == 2
+          end
+
+          false
         end
 
         #: (Prism::Node) -> bool
