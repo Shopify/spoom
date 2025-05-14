@@ -14,6 +14,7 @@ module Spoom
           @positional_names = positional_names #: bool
           @nesting = [] #: Array[Prism::ClassNode | Prism::ModuleNode | Prism::SingletonClassNode]
           @last_sigs = [] #: Array[[Prism::CallNode, RBI::Sig]]
+          @type_members = [] #: Array[String]
         end
 
         # @override
@@ -76,14 +77,41 @@ module Spoom
           end
         end
 
+        # @override
+        #: (Prism::ConstantWriteNode) -> void
+        def visit_constant_write_node(node)
+          call = node.value
+          return super unless call.is_a?(Prism::CallNode)
+          return super unless call.message == "type_member"
+
+          @type_members << build_type_member_string(node)
+
+          from = adjust_to_line_start(node.location.start_offset)
+          to = adjust_to_line_end(node.location.end_offset)
+
+          if to + 1 < @ruby_bytes.size && @ruby_bytes[to + 1] == "\n".ord
+            to += 1
+          end
+
+          @rewriter << Source::Delete.new(from, to)
+        end
+
         private
 
         #: (Prism::ClassNode | Prism::ModuleNode | Prism::SingletonClassNode) { -> void } -> void
         def visit_scope(node, &block)
           @nesting << node
+          old_type_members = @type_members
+          @type_members = []
 
           yield
 
+          if @type_members.any?
+            indent = " " * node.location.start_column
+            @rewriter << Source::Insert.new(node.location.start_offset, "#: [#{@type_members.join(", ")}]\n#{indent}")
+          end
+
+          @type_members = old_type_members
           @nesting.pop
         end
 
@@ -222,6 +250,52 @@ module Spoom
           if sigs.any? { |_, sig| sig.is_overridable }
             @rewriter << Source::Insert.new(insert_pos, "# @overridable\n")
           end
+        end
+
+        #: (Prism::ConstantWriteNode) -> String
+        def build_type_member_string(node)
+          call = node.value
+          raise Error, "Expected a call node" unless call.is_a?(Prism::CallNode)
+          raise Error, "Expected type_member" unless call.message == "type_member"
+
+          type_member = node.name.to_s
+
+          arg = call.arguments&.arguments&.first
+          if arg.is_a?(Prism::SymbolNode)
+            case arg.slice
+            when ":in"
+              type_member = "in #{type_member}"
+            when ":out"
+              type_member = "out #{type_member}"
+            else
+              raise Error, "Unknown type member variance: #{arg.slice}"
+            end
+          end
+
+          block = call.block
+          return type_member unless block.is_a?(Prism::BlockNode)
+
+          body = block.body
+          return type_member unless body.is_a?(Prism::StatementsNode)
+          return type_member unless body.body.size == 1
+
+          hash = body.body.first
+          return type_member unless hash.is_a?(Prism::HashNode)
+
+          hash.elements.each do |element|
+            next unless element.is_a?(Prism::AssocNode)
+
+            type = RBI::Type.parse_node(element.value)
+
+            case element.key.slice
+            when "upper:"
+              type_member = "#{type_member} < #{type.rbs_string}"
+            when "fixed:"
+              type_member = "#{type_member} = #{type.rbs_string}"
+            end
+          end
+
+          type_member
         end
       end
     end
