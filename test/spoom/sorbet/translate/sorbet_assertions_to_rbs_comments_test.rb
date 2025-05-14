@@ -315,6 +315,18 @@ module Spoom
           RB
         end
 
+        def test_translate_cast
+          rb = <<~RB
+            T.cast(a, A)
+            b = T.cast(b, B)
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            a #: as A
+            b = b #: as B
+          RB
+        end
+
         private
 
         #: (String) -> String
