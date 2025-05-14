@@ -20,7 +20,7 @@ module Spoom
           lines.join
         end
 
-        #: (String ruby_contents, positional_names: bool) -> String
+        #: (String ruby_contents, ?positional_names: bool) -> String
         def rbi_to_rbs(ruby_contents, positional_names: true)
           ruby_contents = ruby_contents.dup
           sigs = collect_sorbet_sigs(ruby_contents)
@@ -122,7 +122,7 @@ module Spoom
 
       class RBIToRBSTranslator
         class << self
-          #: (RBI::Sig sig, (RBI::Method | RBI::Attr) node, positional_names: bool) -> String
+          #: (RBI::Sig sig, (RBI::Method | RBI::Attr) node, ?positional_names: bool) -> String
           def translate(sig, node, positional_names: true)
             case node
             when RBI::Method
@@ -166,7 +166,7 @@ module Spoom
             end
           end
 
-          #: (RBI::Sig sig, RBI::Method node, positional_names: bool) -> String
+          #: (RBI::Sig sig, RBI::Method node, ?positional_names: bool) -> String
           def translate_method_sig(sig, node, positional_names: true)
             out = StringIO.new
             p = RBI::RBSPrinter.new(out: out, indent: sig.loc&.begin_column, positional_names: positional_names)
@@ -176,7 +176,7 @@ module Spoom
             out.string
           end
 
-          #: (RBI::Sig sig, RBI::Attr node, positional_names: bool) -> String
+          #: (RBI::Sig sig, RBI::Attr node, ?positional_names: bool) -> String
           def translate_attr_sig(sig, node, positional_names: true)
             out = StringIO.new
             p = RBI::RBSPrinter.new(out: out, positional_names: positional_names)
