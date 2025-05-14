@@ -339,6 +339,18 @@ module Spoom
           RB
         end
 
+        def test_translate_unsafe
+          rb = <<~RB
+            T.unsafe(a)
+            b = T.unsafe(b)
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            a #: as untyped
+            b = b #: as untyped
+          RB
+        end
+
         private
 
         #: (String) -> String
