@@ -9,150 +9,60 @@ module Spoom
       class << self
         #: (String, file: String) -> String
         def rbi_to_rbs(ruby_contents, file:)
-          old_encoding = ruby_contents.encoding
-          ruby_contents = ruby_contents.encode("UTF-8") unless old_encoding == "UTF-8"
-          ruby_bytes = ruby_contents.bytes
-
-          assigns = collect_assigns(ruby_contents, file: file)
-
-          assigns.reverse.each do |assign|
-            # Adjust the end offset to locate the end of the line:
-            #
-            # So this:
-            #
-            #     (a = T.let(nil, T.nilable(String)))
-            #
-            # properly becomes:
-            #
-            #     (a = nil) #: String?
-            #
-            # This is important to avoid translating the `nil` as `nil` instead of `nil #: String?`
-            end_offset = assign.node.location.end_offset
-            end_offset += 1 while (ruby_bytes[end_offset] != "\n".ord) && (end_offset < ruby_bytes.size)
-            T.unsafe(ruby_bytes).insert(end_offset, *" #: #{assign.rbs_type}".bytes)
-
-            # Rewrite the value
-            start_offset = assign.operator_loc.end_offset
-            end_offset = assign.node.value.location.start_offset + assign.node.value.location.length
-            ruby_bytes[start_offset...end_offset] = " #{dedent_value(assign)}".bytes
-          end
-
-          ruby_bytes.pack("C*").force_encoding(old_encoding)
-        end
-
-        private
-
-        #: (String, file: String) -> Array[AssignNode]
-        def collect_assigns(ruby_contents, file:)
-          node = Spoom.parse_ruby(ruby_contents, file: file)
-          visitor = Locator.new
-          visitor.visit(node)
-          visitor.assigns
-        end
-
-        #: (AssignNode) -> String
-        def dedent_value(assign)
-          if assign.value.location.start_line == assign.node.location.start_line
-            # The value is on the same line as the assign, so we can just return the slice as is:
-            # ```rb
-            # a = T.let(nil, T.nilable(String))
-            # ```
-            # becomes
-            # ```rb
-            # a = nil #: String?
-            # ```
-            return assign.value.slice
-          end
-
-          # The value is on a different line, so we need to dedent it:
-          # ```rb
-          # a = T.let(
-          #   [
-          #     1, 2, 3,
-          #   ],
-          #   T::Array[Integer],
-          # )
-          # ```
-          # becomes
-          # ```rb
-          # a = [
-          #   1, 2, 3,
-          # ] #: Array[Integer]
-          # ```
-          indent = assign.value.location.start_line - assign.node.location.start_line
-          lines = assign.value.slice.lines
-          if lines.size > 1
-            lines[1..]&.each_with_index do |line, i|
-              lines[i + 1] = line.delete_prefix("  " * indent)
-            end
-          end
-          lines.join
+          Rewriter.new(ruby_contents, file: file).rewrite
         end
       end
 
-      AssignType = T.type_alias do
-        T.any(
-          Prism::ClassVariableAndWriteNode,
-          Prism::ClassVariableOrWriteNode,
-          Prism::ClassVariableOperatorWriteNode,
-          Prism::ClassVariableWriteNode,
-          Prism::ConstantAndWriteNode,
-          Prism::ConstantOrWriteNode,
-          Prism::ConstantOperatorWriteNode,
-          Prism::ConstantWriteNode,
-          Prism::ConstantPathAndWriteNode,
-          Prism::ConstantPathOrWriteNode,
-          Prism::ConstantPathOperatorWriteNode,
-          Prism::ConstantPathWriteNode,
-          Prism::GlobalVariableAndWriteNode,
-          Prism::GlobalVariableOrWriteNode,
-          Prism::GlobalVariableOperatorWriteNode,
-          Prism::GlobalVariableWriteNode,
-          Prism::InstanceVariableAndWriteNode,
-          Prism::InstanceVariableOperatorWriteNode,
-          Prism::InstanceVariableOrWriteNode,
-          Prism::InstanceVariableWriteNode,
-          Prism::LocalVariableAndWriteNode,
-          Prism::LocalVariableOperatorWriteNode,
-          Prism::LocalVariableOrWriteNode,
-          Prism::LocalVariableWriteNode,
-        )
-      end
+      class Rewriter < Spoom::Visitor
+        ANNOTATION_METHODS = [:let] #: Array[Symbol]
 
-      class AssignNode
-        #: AssignType
-        attr_reader :node
+        LINE_BREAK = "\n".ord #: Integer
 
-        #: Prism::Location
-        attr_reader :operator_loc
+        AssignType = T.type_alias do
+          T.any(
+            Prism::ClassVariableAndWriteNode,
+            Prism::ClassVariableOrWriteNode,
+            Prism::ClassVariableOperatorWriteNode,
+            Prism::ClassVariableWriteNode,
+            Prism::ConstantAndWriteNode,
+            Prism::ConstantOrWriteNode,
+            Prism::ConstantOperatorWriteNode,
+            Prism::ConstantWriteNode,
+            Prism::ConstantPathAndWriteNode,
+            Prism::ConstantPathOrWriteNode,
+            Prism::ConstantPathOperatorWriteNode,
+            Prism::ConstantPathWriteNode,
+            Prism::GlobalVariableAndWriteNode,
+            Prism::GlobalVariableOrWriteNode,
+            Prism::GlobalVariableOperatorWriteNode,
+            Prism::GlobalVariableWriteNode,
+            Prism::InstanceVariableAndWriteNode,
+            Prism::InstanceVariableOperatorWriteNode,
+            Prism::InstanceVariableOrWriteNode,
+            Prism::InstanceVariableWriteNode,
+            Prism::LocalVariableAndWriteNode,
+            Prism::LocalVariableOperatorWriteNode,
+            Prism::LocalVariableOrWriteNode,
+            Prism::LocalVariableWriteNode,
+          )
+        end
 
-        #: Prism::Node
-        attr_reader :value, :type
+        #: (String, file: String) -> void
+        def initialize(ruby_contents, file:)
+          super()
 
-        #: (AssignType, Prism::Location, Prism::Node, Prism::Node) -> void
-        def initialize(node, operator_loc, value, type)
-          @node = node
-          @operator_loc = operator_loc
-          @value = value
-          @type = type
+          ruby_contents = ruby_contents.encode("UTF-8") unless @original_encoding == "UTF-8"
+          @node = Spoom.parse_ruby(ruby_contents, file: file) #: Prism::Node
+          @original_encoding = ruby_contents.encoding #: Encoding
+          @ruby_bytes = ruby_contents.bytes #: Array[Integer]
+          @rewriter = Spoom::Source::Rewriter.new #: Source::Rewriter
         end
 
         #: -> String
-        def rbs_type
-          RBI::Type.parse_node(type).rbs_string
-        end
-      end
-
-      class Locator < Spoom::Visitor
-        ANNOTATION_METHODS = [:let] #: Array[Symbol]
-
-        #: Array[AssignNode]
-        attr_reader :assigns
-
-        #: -> void
-        def initialize
-          super
-          @assigns = [] #: Array[AssignNode]
+        def rewrite
+          visit(@node)
+          @rewriter.rewrite!(@ruby_bytes)
+          @ruby_bytes.pack("C*").force_encoding(@original_encoding)
         end
 
         #: (AssignType) -> void
@@ -166,6 +76,8 @@ module Spoom
           value = T.must(call.arguments&.arguments&.first)
           return if contains_heredoc?(value)
 
+          type = T.must(call.arguments&.arguments&.last)
+
           operator_loc = case node
           when Prism::ClassVariableOperatorWriteNode,
                 Prism::ConstantOperatorWriteNode,
@@ -178,12 +90,25 @@ module Spoom
             node.operator_loc
           end
 
-          @assigns << AssignNode.new(
-            node,
-            operator_loc,
-            value,
-            T.must(call.arguments&.arguments&.last),
-          )
+          # Adjust the end offset to locate the end of the line:
+          #
+          # So this:
+          #
+          #     (a = T.let(nil, T.nilable(String)))
+          #
+          # properly becomes:
+          #
+          #     (a = nil) #: String?
+          #
+          # This is important to avoid translating the `nil` as `nil` instead of `nil #: String?`
+          rbs_type = RBI::Type.parse_node(type).rbs_string
+          end_offset = node.location.end_offset
+          end_offset += 1 while (@ruby_bytes[end_offset] != LINE_BREAK) && (end_offset < @ruby_bytes.size)
+          @rewriter << Source::Insert.new(end_offset, " #: #{rbs_type}")
+
+          start_offset = operator_loc.end_offset
+          end_offset = node.value.location.start_offset + node.value.location.length - 1
+          @rewriter << Source::Replace.new(start_offset, end_offset, " #{dedent_value(node, value)}")
         end
 
         alias_method(:visit_class_variable_and_write_node, :visit_assign)
@@ -246,6 +171,45 @@ module Spoom
           visitor = HeredocVisitor.new
           visitor.visit(node)
           visitor.contains_heredoc
+        end
+
+        #: (AssignType, Prism::Node) -> String
+        def dedent_value(assign, value)
+          if value.location.start_line == assign.location.start_line
+            # The value is on the same line as the assign, so we can just return the slice as is:
+            # ```rb
+            # a = T.let(nil, T.nilable(String))
+            # ```
+            # becomes
+            # ```rb
+            # a = nil #: String?
+            # ```
+            return value.slice
+          end
+
+          # The value is on a different line, so we need to dedent it:
+          # ```rb
+          # a = T.let(
+          #   [
+          #     1, 2, 3,
+          #   ],
+          #   T::Array[Integer],
+          # )
+          # ```
+          # becomes
+          # ```rb
+          # a = [
+          #   1, 2, 3,
+          # ] #: Array[Integer]
+          # ```
+          indent = value.location.start_line - assign.location.start_line
+          lines = value.slice.lines
+          if lines.size > 1
+            lines[1..]&.each_with_index do |line, i|
+              lines[i + 1] = line.delete_prefix("  " * indent)
+            end
+          end
+          lines.join
         end
 
         class HeredocVisitor < Spoom::Visitor
