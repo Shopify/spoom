@@ -268,6 +268,26 @@ module Spoom
           RB
         end
 
+        def test_translate_to_rbs_in_block
+          contents = <<~RB
+            Class.new do
+              sig { returns(Integer) }
+              def foo
+                42
+              end
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            Class.new do
+              #: -> Integer
+              def foo
+                42
+              end
+            end
+          RBS
+        end
+
         private
 
         #: (String, ?positional_names: bool) -> String

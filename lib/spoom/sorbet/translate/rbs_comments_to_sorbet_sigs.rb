@@ -65,8 +65,18 @@ module Spoom
         # @override
         #: (Prism::CallNode node) -> void
         def visit_call_node(node)
-          return unless node.message == "attr_reader" || node.message == "attr_writer" || node.message == "attr_accessor"
+          case node.message
+          when "attr_reader", "attr_writer", "attr_accessor"
+            visit_attr(node)
+          else
+            super
+          end
+        end
 
+        private
+
+        #: (Prism::CallNode) -> void
+        def visit_attr(node)
           comments = node_comments(node)
           return if comments.empty?
 
@@ -102,8 +112,6 @@ module Spoom
             )
           end
         end
-
-        private
 
         #: (Prism::Node) -> Array[Prism::Comment]
         def node_comments(node)
