@@ -257,7 +257,27 @@ module Spoom
             STR
           RB
 
-          assert_equal(rb, rbi_to_rbs(rb))
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            a = <<~STR #: String
+              foo
+            STR
+
+            b = <<-STR #: String
+              foo
+            STR
+
+            c = <<~STR.strip #: String
+              foo
+            STR
+
+            d = foo(<<~STR) #: String
+              foo
+            STR
+
+            e = <<~STR.strip #: String
+              \#{foo}
+            STR
+          RB
         end
 
         def test_translate_assigns_does_not_match_bare_strings_has_heredoc
