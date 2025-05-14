@@ -163,26 +163,6 @@ module Spoom
           RB
         end
 
-        def test_translate_assigns_with_parentheses
-          rb = <<~RB
-            (@x = T.let(@x, T.nilable(String)))
-          RB
-
-          assert_equal(<<~RB, rbi_to_rbs(rb))
-            (@x = @x) #: String?
-          RB
-        end
-
-        def test_translate_assigns_with_dangling_conditionals
-          rb = <<~RB
-            x = T.let(42, Integer) if foo
-          RB
-
-          assert_equal(<<~RB, rbi_to_rbs(rb))
-            x = 42 if foo #: Integer
-          RB
-        end
-
         def test_translate_assigns_with_indented_values
           rb = <<~RB
             a = ::T.let([
@@ -349,6 +329,41 @@ module Spoom
             a #: as untyped
             b = b #: as untyped
           RB
+        end
+
+        def test_does_not_translate_assertions_already_with_annotations
+          rb = <<~RB
+            a = T.let(a, A) #: as A
+            T.must(a) #: as A
+          RB
+
+          assert_equal(rb, rbi_to_rbs(rb))
+        end
+
+        def test_does_not_translate_assigns_with_parentheses
+          rb = <<~RB
+            (@x = T.let(@x, T.nilable(String)))
+          RB
+
+          # TODO: should we translate this?
+          # assert_equal(<<~RB, rbi_to_rbs(rb))
+          #   (@x = @x) #: String?
+          # RB
+
+          assert_equal(rb, rbi_to_rbs(rb))
+        end
+
+        def test_does_not_translate_assigns_with_dangling_conditionals
+          rb = <<~RB
+            x = T.let(42, Integer) if foo
+          RB
+
+          # TODO: should we translate this?
+          # assert_equal(<<~RB, rbi_to_rbs(rb))
+          #   x = 42 if foo #: Integer
+          # RB
+
+          assert_equal(rb, rbi_to_rbs(rb))
         end
 
         private
