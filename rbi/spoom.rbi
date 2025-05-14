@@ -2772,22 +2772,42 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs < ::Spoom::Sorbet::Trans
   sig { override.params(node: ::Prism::CallNode).void }
   def visit_call_node(node); end
 
+  sig { override.params(node: ::Prism::ClassNode).void }
+  def visit_class_node(node); end
+
   sig { override.params(node: ::Prism::DefNode).void }
   def visit_def_node(node); end
 
+  sig { override.params(node: ::Prism::ModuleNode).void }
+  def visit_module_node(node); end
+
+  sig { override.params(node: ::Prism::SingletonClassNode).void }
+  def visit_singleton_class_node(node); end
+
   private
+
+  sig do
+    params(
+      node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode),
+      constant_regex: ::Regexp
+    ).returns(T::Boolean)
+  end
+  def already_extends?(node, constant_regex); end
+
+  sig { params(node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode)).void }
+  def apply_class_annotations(node); end
 
   sig { params(comments: T::Array[::Prism::Comment], sig: ::RBI::Sig).void }
   def apply_member_annotations(comments, sig); end
 
   sig { params(node: ::Prism::Node).returns(T::Array[::Prism::Comment]) }
   def node_comments(node); end
+
+  sig { params(node: ::Prism::CallNode).void }
+  def visit_attr(node); end
 end
 
 class Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments < ::Spoom::Sorbet::Translate::Translator
-  sig { params(node: ::Prism::Node).returns(T::Boolean) }
-  def contains_heredoc?(node); end
-
   sig do
     params(
       assign: T.any(::Prism::ClassVariableAndWriteNode, ::Prism::ClassVariableOperatorWriteNode, ::Prism::ClassVariableOrWriteNode, ::Prism::ClassVariableWriteNode, ::Prism::ConstantAndWriteNode, ::Prism::ConstantOperatorWriteNode, ::Prism::ConstantOrWriteNode, ::Prism::ConstantPathAndWriteNode, ::Prism::ConstantPathOperatorWriteNode, ::Prism::ConstantPathOrWriteNode, ::Prism::ConstantPathWriteNode, ::Prism::ConstantWriteNode, ::Prism::GlobalVariableAndWriteNode, ::Prism::GlobalVariableOperatorWriteNode, ::Prism::GlobalVariableOrWriteNode, ::Prism::GlobalVariableWriteNode, ::Prism::InstanceVariableAndWriteNode, ::Prism::InstanceVariableOperatorWriteNode, ::Prism::InstanceVariableOrWriteNode, ::Prism::InstanceVariableWriteNode, ::Prism::LocalVariableAndWriteNode, ::Prism::LocalVariableOperatorWriteNode, ::Prism::LocalVariableOrWriteNode, ::Prism::LocalVariableWriteNode),
@@ -2838,18 +2858,6 @@ end
 
 Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments::ANNOTATION_METHODS = T.let(T.unsafe(nil), Array)
 Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments::AssignType = T.type_alias { T.any(::Prism::ClassVariableAndWriteNode, ::Prism::ClassVariableOperatorWriteNode, ::Prism::ClassVariableOrWriteNode, ::Prism::ClassVariableWriteNode, ::Prism::ConstantAndWriteNode, ::Prism::ConstantOperatorWriteNode, ::Prism::ConstantOrWriteNode, ::Prism::ConstantPathAndWriteNode, ::Prism::ConstantPathOperatorWriteNode, ::Prism::ConstantPathOrWriteNode, ::Prism::ConstantPathWriteNode, ::Prism::ConstantWriteNode, ::Prism::GlobalVariableAndWriteNode, ::Prism::GlobalVariableOperatorWriteNode, ::Prism::GlobalVariableOrWriteNode, ::Prism::GlobalVariableWriteNode, ::Prism::InstanceVariableAndWriteNode, ::Prism::InstanceVariableOperatorWriteNode, ::Prism::InstanceVariableOrWriteNode, ::Prism::InstanceVariableWriteNode, ::Prism::LocalVariableAndWriteNode, ::Prism::LocalVariableOperatorWriteNode, ::Prism::LocalVariableOrWriteNode, ::Prism::LocalVariableWriteNode) }
-
-class Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments::HeredocVisitor < ::Spoom::Visitor
-  sig { void }
-  def initialize; end
-
-  sig { returns(T::Boolean) }
-  def contains_heredoc; end
-
-  sig { override.params(node: T.nilable(::Prism::Node)).void }
-  def visit(node); end
-end
-
 Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments::LINE_BREAK = T.let(T.unsafe(nil), Integer)
 
 class Spoom::Sorbet::Translate::SorbetSigsToRBSComments < ::Spoom::Sorbet::Translate::Translator
@@ -2859,16 +2867,45 @@ class Spoom::Sorbet::Translate::SorbetSigsToRBSComments < ::Spoom::Sorbet::Trans
   sig { override.params(node: ::Prism::CallNode).void }
   def visit_call_node(node); end
 
+  sig { override.params(node: ::Prism::ClassNode).void }
+  def visit_class_node(node); end
+
+  sig { override.params(node: ::Prism::ConstantWriteNode).void }
+  def visit_constant_write_node(node); end
+
   sig { override.params(node: ::Prism::DefNode).void }
   def visit_def_node(node); end
+
+  sig { override.params(node: ::Prism::ModuleNode).void }
+  def visit_module_node(node); end
+
+  sig { override.params(node: ::Prism::SingletonClassNode).void }
+  def visit_singleton_class_node(node); end
 
   private
 
   sig { params(sigs: T::Array[[::Prism::CallNode, ::RBI::Sig]]).void }
   def apply_member_annotations(sigs); end
 
+  sig { params(node: ::Prism::ConstantWriteNode).returns(::String) }
+  def build_type_member_string(node); end
+
   sig { params(node: ::Prism::CallNode).void }
   def visit_attr(node); end
+
+  sig { params(node: ::Prism::CallNode).void }
+  def visit_class_annotation(node); end
+
+  sig { params(node: ::Prism::CallNode).void }
+  def visit_extend(node); end
+
+  sig do
+    params(
+      node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode),
+      block: T.proc.void
+    ).void
+  end
+  def visit_scope(node, &block); end
 
   sig { params(node: ::Prism::CallNode).void }
   def visit_sig(node); end
@@ -2880,6 +2917,8 @@ class Spoom::Sorbet::Translate::StripSorbetSigs < ::Spoom::Sorbet::Translate::Tr
 end
 
 class Spoom::Sorbet::Translate::Translator < ::Spoom::Visitor
+  abstract!
+
   sig { params(ruby_contents: ::String, file: ::String).void }
   def initialize(ruby_contents, file:); end
 
@@ -2920,6 +2959,8 @@ class Spoom::Source::Delete < ::Spoom::Source::Edit
 end
 
 class Spoom::Source::Edit
+  abstract!
+
   sig { abstract.params(bytes: T::Array[::Integer]).void }
   def apply(bytes); end
 
