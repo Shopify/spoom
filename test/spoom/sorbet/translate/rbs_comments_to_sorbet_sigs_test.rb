@@ -283,6 +283,44 @@ module Spoom
           RB
         end
 
+        def test_translate_to_rbi_generics
+          contents = <<~RB
+            #: [in A, out B]
+            class A
+              #: [A, B < C]
+              module B
+                #: [A = singleton(Numeric)]
+                class << self
+                end
+              end
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            class A
+              extend T::Generic
+
+              A = type_member(:in)
+
+              B = type_member(:out)
+
+              module B
+                extend T::Generic
+
+                A = type_member
+
+                B = type_member {{ upper: C }}
+
+                class << self
+                  extend T::Generic
+
+                  A = type_member {{ fixed: T.class_of(Numeric) }}
+                end
+              end
+            end
+          RB
+        end
+
         private
 
         #: (String) -> String

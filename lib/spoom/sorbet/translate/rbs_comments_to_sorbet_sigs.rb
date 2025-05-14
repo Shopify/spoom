@@ -194,6 +194,48 @@ module Spoom
               @rewriter << Source::Insert.new(insert_pos, "\n#{indent}#{content}#{newline}")
             end
           end
+
+          signatures = comments.select { |c| c.slice.start_with?("#: ") }
+          if signatures.any?
+            signatures.each do |signature|
+              type_params = ::RBS::Parser.parse_type_params(signature.slice.delete_prefix("#: "))
+              next if type_params.empty?
+
+              from = adjust_to_line_start(signature.location.start_offset)
+              to = adjust_to_line_end(signature.location.end_offset)
+              @rewriter << Source::Delete.new(from, to)
+
+              unless already_extends?(node, /^(::)?T::Generic$/)
+                @rewriter << Source::Insert.new(insert_pos, "\n#{indent}extend T::Generic\n")
+              end
+
+              type_params.each do |type_param|
+                type_member = "#{type_param.name} = type_member"
+
+                case type_param.variance
+                when :covariant
+                  type_member = "#{type_member}(:out)"
+                when :contravariant
+                  type_member = "#{type_member}(:in)"
+                end
+
+                if type_param.upper_bound || type_param.default_type
+                  if type_param.upper_bound
+                    rbs_type = RBI::RBS::TypeTranslator.translate(type_param.upper_bound)
+                    type_member = "#{type_member} {{ upper: #{rbs_type} }}"
+                  end
+
+                  if type_param.default_type
+                    rbs_type = RBI::RBS::TypeTranslator.translate(type_param.default_type)
+                    type_member = "#{type_member} {{ fixed: #{rbs_type} }}"
+                  end
+                end
+
+                newline = node.body.nil? ? "" : "\n"
+                @rewriter << Source::Insert.new(insert_pos, "\n#{indent}#{type_member}#{newline}")
+              end
+            end
+          end
         end
 
         #: (Array[RBSAnnotations], RBI::Sig) -> void
@@ -215,21 +257,21 @@ module Spoom
               sig.without_runtime = true
             end
           end
+        end
 
-          #: (Prism::ClassNode | Prism::ModuleNode | Prism::SingletonClassNode, Regexp) -> bool
-          def already_extends?(node, constant_regex)
-            node.child_nodes.any? do |c|
-              next false unless c.is_a?(Prism::CallNode)
-              next false unless c.message == "extend"
-              next false unless c.receiver.nil? || c.receiver.is_a?(Prism::SelfNode)
-              next false unless c.arguments&.arguments&.size == 1
+        #: (Prism::ClassNode | Prism::ModuleNode | Prism::SingletonClassNode, Regexp) -> bool
+        def already_extends?(node, constant_regex)
+          node.child_nodes.any? do |c|
+            next false unless c.is_a?(Prism::CallNode)
+            next false unless c.message == "extend"
+            next false unless c.receiver.nil? || c.receiver.is_a?(Prism::SelfNode)
+            next false unless c.arguments&.arguments&.size == 1
 
-              arg = c.arguments&.arguments&.first
-              next false unless arg.is_a?(Prism::ConstantPathNode)
-              next false unless arg.slice.match?(constant_regex)
+            arg = c.arguments&.arguments&.first
+            next false unless arg.is_a?(Prism::ConstantPathNode)
+            next false unless arg.slice.match?(constant_regex)
 
-              true
-            end
+            true
           end
         end
 
