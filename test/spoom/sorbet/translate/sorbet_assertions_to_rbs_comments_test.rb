@@ -7,13 +7,16 @@ module Spoom
   module Sorbet
     module Translate
       class SorbetAssertionsToRBSCommentsTest < Minitest::Test
-        def test_translate_ignore_non_assigns
+        def test_translate_casts
           rb = <<~RB
             T.let(42, Integer)
             ::T.let(nil, String)
           RB
 
-          assert_equal(rb, rbi_to_rbs(rb))
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            42 #: Integer
+            nil #: String
+          RB
         end
 
         def test_translate_ignore_non_assertions
