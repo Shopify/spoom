@@ -62,8 +62,18 @@ module Spoom
         # @override
         #: (Prism::CallNode node) -> void
         def visit_call_node(node)
-          return unless node.message == "attr_reader" || node.message == "attr_writer" || node.message == "attr_accessor"
+          case node.message
+          when "attr_reader", "attr_writer", "attr_accessor"
+            visit_attr(node)
+          else
+            super
+          end
+        end
 
+        private
+
+        #: (Prism::CallNode) -> void
+        def visit_attr(node)
           comments = node_rbs_comments(node)
           return if comments.empty?
 
@@ -96,8 +106,6 @@ module Spoom
             )
           end
         end
-
-        private
 
         #: (Prism::Node) -> RBSComments
         def node_rbs_comments(node)
@@ -195,10 +203,10 @@ module Spoom
             end
           end
 
-          signatures = comments.select { |c| c.slice.start_with?("#: ") }
+          signatures = comments.signatures
           if signatures.any?
             signatures.each do |signature|
-              type_params = ::RBS::Parser.parse_type_params(signature.slice.delete_prefix("#: "))
+              type_params = ::RBS::Parser.parse_type_params(signature.string)
               next if type_params.empty?
 
               from = adjust_to_line_start(signature.location.start_offset)
