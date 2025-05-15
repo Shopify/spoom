@@ -8,35 +8,6 @@ module Spoom
       class SorbetAssertionsToRBSComments < Translator
         LINE_BREAK = "\n".ord #: Integer
 
-        AssignType = T.type_alias do
-          T.any(
-            Prism::ClassVariableAndWriteNode,
-            Prism::ClassVariableOrWriteNode,
-            Prism::ClassVariableOperatorWriteNode,
-            Prism::ClassVariableWriteNode,
-            Prism::ConstantAndWriteNode,
-            Prism::ConstantOrWriteNode,
-            Prism::ConstantOperatorWriteNode,
-            Prism::ConstantWriteNode,
-            Prism::ConstantPathAndWriteNode,
-            Prism::ConstantPathOrWriteNode,
-            Prism::ConstantPathOperatorWriteNode,
-            Prism::ConstantPathWriteNode,
-            Prism::GlobalVariableAndWriteNode,
-            Prism::GlobalVariableOrWriteNode,
-            Prism::GlobalVariableOperatorWriteNode,
-            Prism::GlobalVariableWriteNode,
-            Prism::InstanceVariableAndWriteNode,
-            Prism::InstanceVariableOperatorWriteNode,
-            Prism::InstanceVariableOrWriteNode,
-            Prism::InstanceVariableWriteNode,
-            Prism::LocalVariableAndWriteNode,
-            Prism::LocalVariableOperatorWriteNode,
-            Prism::LocalVariableOrWriteNode,
-            Prism::LocalVariableWriteNode,
-          )
-        end
-
         # @override
         #: (Prism::CallNode) -> void
         def visit_call_node(node)
@@ -50,79 +21,6 @@ module Spoom
           end_offset = node.location.end_offset
           @rewriter << Source::Replace.new(start_offset, end_offset - 1, "#{dedent_value(node, value)} #{rbs_annotation}")
         end
-
-        #: (AssignType) -> void
-        def visit_assign(node)
-          call = node.value
-          return unless call.is_a?(Prism::CallNode) && t_annotation?(call)
-          return unless at_end_of_line?(node)
-
-          value = T.must(call.arguments&.arguments&.first)
-          rbs_annotation = build_rbs_annotation(call)
-
-          operator_loc = case node
-          when Prism::ClassVariableOperatorWriteNode,
-                Prism::ConstantOperatorWriteNode,
-                Prism::ConstantPathOperatorWriteNode,
-                Prism::GlobalVariableOperatorWriteNode,
-                Prism::InstanceVariableOperatorWriteNode,
-                Prism::LocalVariableOperatorWriteNode
-            node.binary_operator_loc
-          else
-            node.operator_loc
-          end
-
-          # Adjust the end offset to locate the end of the line:
-          #
-          # So this:
-          #
-          #     (a = T.let(nil, T.nilable(String)))
-          #
-          # properly becomes:
-          #
-          #     (a = nil) #: String?
-          #
-          # This is important to avoid translating the `nil` as `nil` instead of `nil #: String?`
-          end_offset = node.location.end_offset
-          end_offset += 1 while (@ruby_bytes[end_offset] != LINE_BREAK) && (end_offset < @ruby_bytes.size)
-          @rewriter << Source::Insert.new(end_offset, " #{rbs_annotation}")
-
-          start_offset = operator_loc.end_offset
-          end_offset = node.value.location.start_offset + node.value.location.length - 1
-          @rewriter << Source::Replace.new(start_offset, end_offset, " #{dedent_value(node, value)}")
-        end
-
-        alias_method(:visit_class_variable_and_write_node, :visit_assign)
-        alias_method(:visit_class_variable_operator_write_node, :visit_assign)
-        alias_method(:visit_class_variable_or_write_node, :visit_assign)
-        alias_method(:visit_class_variable_write_node, :visit_assign)
-
-        alias_method(:visit_constant_and_write_node, :visit_assign)
-        alias_method(:visit_constant_operator_write_node, :visit_assign)
-        alias_method(:visit_constant_or_write_node, :visit_assign)
-        alias_method(:visit_constant_write_node, :visit_assign)
-
-        alias_method(:visit_constant_path_and_write_node, :visit_assign)
-        alias_method(:visit_constant_path_operator_write_node, :visit_assign)
-        alias_method(:visit_constant_path_or_write_node, :visit_assign)
-        alias_method(:visit_constant_path_write_node, :visit_assign)
-
-        alias_method(:visit_global_variable_and_write_node, :visit_assign)
-        alias_method(:visit_global_variable_operator_write_node, :visit_assign)
-        alias_method(:visit_global_variable_or_write_node, :visit_assign)
-        alias_method(:visit_global_variable_write_node, :visit_assign)
-
-        alias_method(:visit_instance_variable_and_write_node, :visit_assign)
-        alias_method(:visit_instance_variable_operator_write_node, :visit_assign)
-        alias_method(:visit_instance_variable_or_write_node, :visit_assign)
-        alias_method(:visit_instance_variable_write_node, :visit_assign)
-
-        alias_method(:visit_local_variable_and_write_node, :visit_assign)
-        alias_method(:visit_local_variable_operator_write_node, :visit_assign)
-        alias_method(:visit_local_variable_or_write_node, :visit_assign)
-        alias_method(:visit_local_variable_write_node, :visit_assign)
-
-        alias_method(:visit_multi_write_node, :visit_assign)
 
         private
 

@@ -190,9 +190,10 @@ module Spoom
             b = [
               1, 2, 3,
             ] #: Array[Integer]
-            c = [
-              1, 2, 3,
-            ] #: Array[Integer]
+            c =
+              [
+                1, 2, 3,
+              ] #: Array[Integer]
           RB
         end
 
