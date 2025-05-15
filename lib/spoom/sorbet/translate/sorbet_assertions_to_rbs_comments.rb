@@ -136,6 +136,8 @@ module Spoom
             srb_type = call.arguments&.arguments&.last #: as !nil
             rbs_type = RBI::Type.parse_node(srb_type).rbs_string
             "#: as #{rbs_type}"
+          when :must
+            "#: as !nil"
           else
             raise "Unknown annotation method: #{call.name}"
           end
@@ -162,6 +164,8 @@ module Spoom
           case node.name
           when :let, :cast
             return node.arguments&.arguments&.size == 2
+          when :must
+            return node.arguments&.arguments&.size == 1
           end
 
           false
