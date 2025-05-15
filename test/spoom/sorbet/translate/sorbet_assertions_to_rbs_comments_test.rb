@@ -327,6 +327,18 @@ module Spoom
           RB
         end
 
+        def test_translate_must
+          rb = <<~RB
+            T.must(a)
+            b = T.must(b)
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            a #: as !nil
+            b = b #: as !nil
+          RB
+        end
+
         private
 
         #: (String) -> String
