@@ -1,19 +1,11 @@
 # typed: strict
 # frozen_string_literal: true
 
-require "rbi"
-
 module Spoom
   module Sorbet
-    class Assertions
-      class << self
-        #: (String, file: String) -> String
-        def rbi_to_rbs(ruby_contents, file:)
-          Rewriter.new(ruby_contents, file: file).rewrite
-        end
-      end
-
-      class Rewriter < Spoom::Visitor
+    module Translate
+      # Translates Sorbet assertions to RBS comments.
+      class SorbetAssertionsToRBSComments < Translator
         ANNOTATION_METHODS = [:let] #: Array[Symbol]
 
         LINE_BREAK = "\n".ord #: Integer
@@ -45,24 +37,6 @@ module Spoom
             Prism::LocalVariableOrWriteNode,
             Prism::LocalVariableWriteNode,
           )
-        end
-
-        #: (String, file: String) -> void
-        def initialize(ruby_contents, file:)
-          super()
-
-          ruby_contents = ruby_contents.encode("UTF-8") unless @original_encoding == "UTF-8"
-          @node = Spoom.parse_ruby(ruby_contents, file: file) #: Prism::Node
-          @original_encoding = ruby_contents.encoding #: Encoding
-          @ruby_bytes = ruby_contents.bytes #: Array[Integer]
-          @rewriter = Spoom::Source::Rewriter.new #: Source::Rewriter
-        end
-
-        #: -> String
-        def rewrite
-          visit(@node)
-          @rewriter.rewrite!(@ruby_bytes)
-          @ruby_bytes.pack("C*").force_encoding(@original_encoding)
         end
 
         #: (AssignType) -> void

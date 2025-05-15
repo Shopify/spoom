@@ -1,8 +1,6 @@
 # typed: true
 # frozen_string_literal: true
 
-require "spoom/sorbet/sigs"
-
 module Spoom
   module Cli
     module Srb
@@ -34,12 +32,12 @@ module Spoom
 
           case from
           when "rbi"
-            transformed_files = transform_files(files) do |_file, contents|
-              Spoom::Sorbet::Sigs.rbi_to_rbs(contents, positional_names: options[:positional_names])
+            transformed_files = transform_files(files) do |file, contents|
+              Spoom::Sorbet::Translate.sorbet_sigs_to_rbs_comments(contents, file: file, positional_names: options[:positional_names])
             end
           when "rbs"
-            transformed_files = transform_files(files) do |_file, contents|
-              Spoom::Sorbet::Sigs.rbs_to_rbi(contents)
+            transformed_files = transform_files(files) do |file, contents|
+              Spoom::Sorbet::Translate.rbs_comments_to_sorbet_sigs(contents, file: file)
             end
           end
 
@@ -52,8 +50,8 @@ module Spoom
 
           say("Stripping signatures from `#{files.size}` file#{files.size == 1 ? "" : "s"}...\n\n")
 
-          transformed_files = transform_files(files) do |_file, contents|
-            Spoom::Sorbet::Sigs.strip(contents)
+          transformed_files = transform_files(files) do |file, contents|
+            Spoom::Sorbet::Translate.strip_sorbet_sigs(contents, file: file)
           end
 
           say("Stripped signatures from `#{transformed_files}` file#{transformed_files == 1 ? "" : "s"}.")
@@ -93,8 +91,8 @@ module Spoom
           # Then, we transform the copied files to translate all the RBS signatures into RBI signatures.
           say("Translating signatures from RBS to RBI...")
           files = collect_files([copy_context.absolute_path])
-          transform_files(files) do |_file, contents|
-            Spoom::Sorbet::Sigs.rbs_to_rbi(contents)
+          transform_files(files) do |file, contents|
+            Spoom::Sorbet::Translate.rbs_comments_to_sorbet_sigs(contents, file: file)
           end
 
           # We need to inject `extend T::Sig` to be sure all the classes can run the `sig{}` blocks.

@@ -19,7 +19,7 @@ module Spoom
             "in `#{files.size}` file#{files.size == 1 ? "" : "s"}...\n\n")
 
           transformed_files = transform_files(files) do |file, contents|
-            Spoom::Sorbet::Assertions.rbi_to_rbs(contents, file: file)
+            Spoom::Sorbet::Translate.sorbet_assertions_to_rbs_comments(contents, file: file)
           end
 
           say("Translated type assertions in `#{transformed_files}` file#{transformed_files == 1 ? "" : "s"}.")
