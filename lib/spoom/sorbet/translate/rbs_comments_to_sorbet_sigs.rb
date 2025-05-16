@@ -82,6 +82,8 @@ module Spoom
           comments = node_prism_comments(node)
           return res if comments.empty?
 
+          continuation_comments = [] #: Array[Prism::Comment]
+
           comments.each do |comment|
             string = comment.slice
 
@@ -90,7 +92,16 @@ module Spoom
               res.annotations << RBSAnnotations.new(string)
             elsif string.start_with?("#: ")
               string = string.delete_prefix("#:").strip
-              res.signatures << RBSSignature.new(string, comment.location)
+              location = comment.location
+
+              continuation_comments.reverse_each do |continuation_comment|
+                string = "#{string}#{continuation_comment.slice.delete_prefix("#|")}"
+                location = location.join(continuation_comment.location)
+              end
+              continuation_comments.clear
+              res.signatures << RBSSignature.new(string, location)
+            elsif string.start_with?("#|")
+              continuation_comments << comment
             end
           end
 
@@ -108,7 +119,7 @@ module Spoom
             comment = @comments_by_line[line]
             break unless comment
 
-            comments.unshift(comment)
+            comments << comment
             @comments_by_line.delete(line)
           end
 

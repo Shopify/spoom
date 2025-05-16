@@ -220,6 +220,29 @@ module Spoom
           assert_equal(contents, rbs_comments_to_sorbet_sigs(contents))
         end
 
+        def test_translate_to_rbi_multiline_sigs
+          contents = <<~RB
+            #: Array[
+            #|   Integer
+            #| ]
+            attr_accessor :foo
+
+            #: (
+            #|   Integer,
+            #|   Integer
+            #| ) -> Integer
+            def foo(a, b); end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            sig { returns(T::Array[Integer]) }
+            attr_accessor :foo
+
+            sig { params(a: Integer, b: Integer).returns(Integer) }
+            def foo(a, b); end
+          RB
+        end
+
         private
 
         #: (String) -> String
