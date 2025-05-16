@@ -2778,11 +2778,52 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs < ::Spoom::Sorbet::Trans
 
   private
 
-  sig { params(comments: T::Array[::Prism::Comment], sig: ::RBI::Sig).void }
-  def apply_member_annotations(comments, sig); end
+  sig do
+    params(
+      annotations: T::Array[::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBSAnnotations],
+      sig: ::RBI::Sig
+    ).void
+  end
+  def apply_member_annotations(annotations, sig); end
 
   sig { params(node: ::Prism::Node).returns(T::Array[::Prism::Comment]) }
-  def node_comments(node); end
+  def node_prism_comments(node); end
+
+  sig { params(node: ::Prism::Node).returns(::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBSComments) }
+  def node_rbs_comments(node); end
+end
+
+class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBSAnnotations
+  sig { params(string: ::String).void }
+  def initialize(string); end
+
+  sig { returns(::String) }
+  def string; end
+end
+
+class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBSComments
+  sig { void }
+  def initialize; end
+
+  sig { returns(T::Array[::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBSAnnotations]) }
+  def annotations; end
+
+  sig { returns(T::Boolean) }
+  def empty?; end
+
+  sig { returns(T::Array[::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBSSignature]) }
+  def signatures; end
+end
+
+class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBSSignature
+  sig { params(string: ::String, location: ::Prism::Location).void }
+  def initialize(string, location); end
+
+  sig { returns(::Prism::Location) }
+  def location; end
+
+  sig { returns(::String) }
+  def string; end
 end
 
 class Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments < ::Spoom::Sorbet::Translate::Translator
