@@ -8,18 +8,68 @@ module Spoom
       class SorbetAssertionsToRBSComments < Translator
         LINE_BREAK = "\n".ord #: Integer
 
+        #: (String, file: String) -> void
+        def initialize(ruby_contents, file:)
+          super
+
+          @nodes_nesting = [] #: Array[Prism::Node]
+        end
+
+        # @override
+        #: (Prism::Node?) -> void
+        def visit(node)
+          return unless node
+
+          @nodes_nesting << node
+          super
+          @nodes_nesting.pop
+        end
+
         # @override
         #: (Prism::CallNode) -> void
         def visit_call_node(node)
           return super unless t_annotation?(node)
-          return super unless at_end_of_line?(node)
 
           value = T.must(node.arguments&.arguments&.first)
           rbs_annotation = build_rbs_annotation(node)
 
           start_offset = node.location.start_offset
           end_offset = node.location.end_offset
-          @rewriter << Source::Replace.new(start_offset, end_offset - 1, "#{dedent_value(node, value)} #{rbs_annotation}")
+
+          new_string = if at_end_of_line?(node)
+            "#{dedent_value(node, value)} #{rbs_annotation}"
+          # elsif parent = @nodes_nesting.grep(Prism::ArgumentsNode).last
+          #   if node.location.start_line == parent.location.start_line
+          #     start_of_line = node.location.start_line_slice[/\A */]&.size || 0
+          #     indent = " " * (start_of_line + 2)
+          #     if next_token(end_offset) == ",".ord
+          #       end_offset += 1
+          #       if next_token(end_offset) == " ".ord
+          #         end_offset += 1
+          #       end
+          #       res = "\n#{indent}#{dedent_value(node, value)}, #{rbs_annotation}\n#{indent}"
+          #     else
+          #       res = "\n#{indent}#{dedent_value(node, value)} #{rbs_annotation}\n#{indent}"
+          #     end
+          #   else
+          #     return
+          #   end
+          elsif !has_comment?(node)
+            puts @nodes_nesting.map(&:class).join(" > ")
+            start_of_line = node.location.start_line_slice[/\A */]&.size || 0
+            indent = " " * (start_of_line + 2)
+            if next_token(end_offset) == ",".ord
+              end_offset += 1
+              end_offset += 1 while next_token(end_offset) == " ".ord
+              "#{dedent_value(node, value)}, #{rbs_annotation}\n#{indent}"
+            else
+              "#{dedent_value(node, value)} #{rbs_annotation}\n#{indent}"
+            end
+          else
+            return
+          end
+
+          @rewriter << Source::Replace.new(start_offset, end_offset - 1, new_string)
         end
 
         private
@@ -116,6 +166,20 @@ module Spoom
             end
           end
           lines.join
+        end
+
+        #: (Prism::Node) -> bool
+        def has_comment?(node)
+          offset = node.location.end_offset
+          offset += 1 while next_token(offset) == " ".ord
+          next_token(offset) == "#".ord
+        end
+
+        #: (Integer) -> Integer?
+        def next_token(offset)
+          return if offset >= @ruby_bytes.size
+
+          @ruby_bytes[offset]
         end
       end
     end
