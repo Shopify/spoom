@@ -7,8 +7,8 @@ module Spoom
   class ParseError < Error; end
 
   class << self
-    #: (String ruby, file: String) -> Prism::Node
-    def parse_ruby(ruby, file:)
+    #: (String ruby, file: String, ?comments: bool) -> Prism::Node
+    def parse_ruby(ruby, file:, comments: false)
       result = Prism.parse(ruby)
       unless result.success?
         message = +"Error while parsing #{file}:\n"
@@ -19,6 +19,8 @@ module Spoom
 
         raise ParseError, message
       end
+
+      result.attach_comments! if comments
 
       result.value
     end
@@ -35,6 +37,8 @@ module Spoom
 
         raise ParseError, message
       end
+
+      result.attach_comments!
 
       [result.value, result.comments]
     end
