@@ -286,13 +286,17 @@ module Spoom
           RB
         end
 
-        def test_translate_only_first_level_assertions
+        def test_translate_only_first_level_assertions_at_the_end_of_the_line
           rb = <<~RB
             a = T.let(T.let(b, B), A)
+            foo(T.must(c))
+            T.must(d).baz
           RB
 
           assert_equal(<<~RB, rbi_to_rbs(rb))
             a = T.let(b, B) #: A
+            foo(T.must(c))
+            T.must(d).baz
           RB
         end
 
@@ -363,6 +367,117 @@ module Spoom
           # assert_equal(<<~RB, rbi_to_rbs(rb))
           #   x = 42 if foo #: Integer
           # RB
+
+          assert_equal(rb, rbi_to_rbs(rb))
+        end
+
+        def test_does_not_translate_assertions_already_with_comments
+          rb = <<~RB
+            a = T.let(42, Integer) # as Integer
+          RB
+
+          assert_equal(rb, rbi_to_rbs(rb))
+        end
+
+        def test_translate_cast_in_oneliners
+          rb = <<~RB
+            arr.map { |x| T.must(x) }
+            arr.map { |x|
+              T.must(x)
+            }
+            arr.map { |x|
+              arr.map { |x| T.must(x) }
+            }
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            arr.map { |x| T.must(x) }
+            arr.map { |x|
+              x #: as !nil
+            }
+            arr.map { |x|
+              arr.map { |x| T.must(x) }
+            }
+          RB
+        end
+
+        def test_translate_cast_in_cases
+          rb = <<~RB
+            case nodes.size
+            when 0
+              raise ArgumentError
+            when 1
+              T.must(nodes.first)
+            else
+              nodes
+            end
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            case nodes.size
+            when 0
+              raise ArgumentError
+            when 1
+              nodes.first #: as !nil
+            else
+              nodes
+            end
+          RB
+        end
+
+        def test_translate_cast_in_nested_values
+          rb = <<~RB
+            type = case nodes.size
+            when 0
+              raise ArgumentError
+            when 1
+              T.must(nodes.first)
+            else
+              nodes
+            end
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            type = case nodes.size
+            when 0
+              raise ArgumentError
+            when 1
+              nodes.first #: as !nil
+            else
+              nodes
+            end
+          RB
+        end
+
+        def test_inserts_cast_before_comments
+          rb = <<~RB
+            A = T.must(ARGV.first) #: String?
+
+            case ARGV.first
+            when String
+              T.must(ARGV.first) #: String?
+            end
+
+            T.must(ARGV.first) #: String?
+          RB
+
+          assert_equal(rb, rbi_to_rbs(rb))
+        end
+
+        def test_doesnt_translate_cast_in_parentheses
+          rb = <<~RB
+            if (a = T.let(nil, T.nilable(String)))
+              a
+            end
+          RB
+
+          assert_equal(rb, rbi_to_rbs(rb))
+        end
+
+        def test_doesnt_translate_cast_in_string_interpolation
+          rb = <<~RB
+            "\#{T.must(ARGV.first)}"
+          RB
 
           assert_equal(rb, rbi_to_rbs(rb))
         end
