@@ -10,35 +10,6 @@ module Spoom
 
         LINE_BREAK = "\n".ord #: Integer
 
-        AssignType = T.type_alias do
-          T.any(
-            Prism::ClassVariableAndWriteNode,
-            Prism::ClassVariableOrWriteNode,
-            Prism::ClassVariableOperatorWriteNode,
-            Prism::ClassVariableWriteNode,
-            Prism::ConstantAndWriteNode,
-            Prism::ConstantOrWriteNode,
-            Prism::ConstantOperatorWriteNode,
-            Prism::ConstantWriteNode,
-            Prism::ConstantPathAndWriteNode,
-            Prism::ConstantPathOrWriteNode,
-            Prism::ConstantPathOperatorWriteNode,
-            Prism::ConstantPathWriteNode,
-            Prism::GlobalVariableAndWriteNode,
-            Prism::GlobalVariableOrWriteNode,
-            Prism::GlobalVariableOperatorWriteNode,
-            Prism::GlobalVariableWriteNode,
-            Prism::InstanceVariableAndWriteNode,
-            Prism::InstanceVariableOperatorWriteNode,
-            Prism::InstanceVariableOrWriteNode,
-            Prism::InstanceVariableWriteNode,
-            Prism::LocalVariableAndWriteNode,
-            Prism::LocalVariableOperatorWriteNode,
-            Prism::LocalVariableOrWriteNode,
-            Prism::LocalVariableWriteNode,
-          )
-        end
-
         #: (AssignType) -> void
         def visit_assign(node)
           call = node.value
