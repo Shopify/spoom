@@ -22,11 +22,12 @@ GEM
       reline (>= 0.3.8)
     erubi (1.13.1)
     io-console (0.8.0)
-    irb (1.14.3)
+    irb (1.15.2)
+      pp (>= 0.6.0)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
-    json (2.10.2)
-    language_server-protocol (3.17.0.4)
+    json (2.12.0)
+    language_server-protocol (3.17.0.5)
     lint_roller (1.1.0)
     logger (1.7.0)
     minitest (5.25.5)
@@ -40,8 +41,11 @@ GEM
     parser (3.3.8.0)
       ast (~> 2.4.1)
       racc
+    pp (0.6.2)
+      prettyprint
+    prettyprint (0.2.0)
     prism (1.4.0)
-    psych (5.2.2)
+    psych (5.2.6)
       date
       stringio
     racc (1.8.1)
@@ -51,15 +55,15 @@ GEM
       prism (~> 1.0)
       rbs (>= 3.4.4)
       sorbet-runtime (>= 0.5.9204)
-    rbs (3.9.2)
+    rbs (3.9.4)
       logger
-    rdoc (6.10.0)
+    rdoc (6.13.1)
       psych (>= 4.0.0)
     regexp_parser (2.10.0)
-    reline (0.6.0)
+    reline (0.6.1)
       io-console (~> 0.5)
     rexml (3.4.1)
-    rubocop (1.75.2)
+    rubocop (1.75.6)
       json (~> 2.3)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.1.0)
@@ -78,14 +82,15 @@ GEM
     rubocop-sorbet (0.10.0)
       rubocop (>= 1)
     ruby-progressbar (1.13.0)
-    sorbet (0.5.12099)
-      sorbet-static (= 0.5.12099)
-    sorbet-runtime (0.5.12099)
-    sorbet-static (0.5.12099-x86_64-linux)
-    sorbet-static-and-runtime (0.5.12099)
-      sorbet (= 0.5.12099)
-      sorbet-runtime (= 0.5.12099)
-    stringio (3.1.2)
+    sorbet (0.5.12115)
+      sorbet-static (= 0.5.12115)
+    sorbet-runtime (0.5.12115)
+    sorbet-static (0.5.12115-universal-darwin)
+    sorbet-static (0.5.12115-x86_64-linux)
+    sorbet-static-and-runtime (0.5.12115)
+      sorbet (= 0.5.12115)
+      sorbet-runtime (= 0.5.12115)
+    stringio (3.1.7)
     tapioca (0.16.11)
       benchmark
       bundler (>= 2.2.25)
@@ -108,6 +113,7 @@ GEM
 PLATFORMS
   arm64-darwin-21
   arm64-darwin-23
+  arm64-darwin-24
   universal-darwin-22
   x86_64-linux
 
