@@ -1133,6 +1133,7 @@ end
 
 Spoom::Deadcode::Plugins::ActiveRecord::ARRAY_METHODS = T.let(T.unsafe(nil), Array)
 Spoom::Deadcode::Plugins::ActiveRecord::CALLBACKS = T.let(T.unsafe(nil), Array)
+Spoom::Deadcode::Plugins::ActiveRecord::CALLBACK_CONDITIONS = T.let(T.unsafe(nil), Array)
 Spoom::Deadcode::Plugins::ActiveRecord::CRUD_METHODS = T.let(T.unsafe(nil), Array)
 
 class Spoom::Deadcode::Plugins::ActiveSupport < ::Spoom::Deadcode::Plugins::Base

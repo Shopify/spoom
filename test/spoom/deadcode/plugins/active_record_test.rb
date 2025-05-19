@@ -54,6 +54,53 @@ module Spoom
           assert_dead(index, "method3")
         end
 
+        def test_callback_conditions_with_symbol_references
+          @project.write!("app/models/my_model.rb", <<~RB)
+            class MyModel
+              after_create :notify, if: :type_updated?
+              after_update :send_email, unless: :skip_notifications?
+              before_save :normalize_data
+
+              # These should be marked as used
+              def type_updated?; end
+              def skip_notifications?; end
+              def notify; end
+              def send_email; end
+              def normalize_data; end
+
+              # This should be marked as dead
+              def unused_method; end
+            end
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "notify")
+          assert_alive(index, "type_updated?")
+          assert_alive(index, "send_email")
+          assert_alive(index, "skip_notifications?")
+          assert_alive(index, "normalize_data")
+          assert_dead(index, "unused_method")
+        end
+
+        def test_callback_with_multiple_conditions
+          @project.write!("app/models/my_model.rb", <<~RB)
+            class MyModel
+              after_commit :send_notification, if: :should_notify?, unless: :notifications_disabled?
+
+              def send_notification; end
+              def should_notify?; end
+              def notifications_disabled?; end
+              def unused_condition?; end
+            end
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "send_notification")
+          assert_alive(index, "should_notify?")
+          assert_alive(index, "notifications_disabled?")
+          assert_dead(index, "unused_condition?")
+        end
+
         def test_dead_record_assign_attributes_assoc
           ActiveRecord::CRUD_METHODS.each do |method|
             @project.write!("app/models/my_model.rb", <<~RB)
