@@ -111,7 +111,7 @@ module Spoom
         def node_rbs_comments(node)
           res = RBSComments.new
 
-          comments = node_prism_comments(node)
+          comments = node.location.leading_comments.reverse
           return res if comments.empty?
 
           continuation_comments = [] #: Array[Prism::Comment]
@@ -138,24 +138,6 @@ module Spoom
           end
 
           res
-        end
-
-        #: (Prism::Node) -> Array[Prism::Comment]
-        def node_prism_comments(node)
-          comments = []
-
-          start_line = node.location.start_line
-          start_line -= 1 unless @comments_by_line.key?(start_line)
-
-          start_line.downto(1) do |line|
-            comment = @comments_by_line[line]
-            break unless comment
-
-            comments << comment
-            @comments_by_line.delete(line)
-          end
-
-          comments
         end
 
         #: (Prism::ClassNode | Prism::ModuleNode | Prism::SingletonClassNode) -> void

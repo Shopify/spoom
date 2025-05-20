@@ -19,9 +19,8 @@ module Spoom
             ruby_contents.encode("UTF-8")
           end #: String
 
-          node, comments = Spoom.parse_ruby_with_comments(ruby_contents, file: file)
+          node = Spoom.parse_ruby(ruby_contents, file: file, comments: true)
           @node = node #: Prism::Node
-          @comments_by_line = comments.to_h { |c| [c.location.start_line, c] } #: Hash[Integer, Prism::Comment]
           @ruby_bytes = ruby_contents.bytes #: Array[Integer]
           @rewriter = Spoom::Source::Rewriter.new #: Source::Rewriter
         end
