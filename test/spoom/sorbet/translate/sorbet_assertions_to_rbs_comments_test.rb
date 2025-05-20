@@ -7,13 +7,16 @@ module Spoom
   module Sorbet
     module Translate
       class SorbetAssertionsToRBSCommentsTest < Minitest::Test
-        def test_translate_ignore_non_assigns
+        def test_translate_casts
           rb = <<~RB
             T.let(42, Integer)
             ::T.let(nil, String)
           RB
 
-          assert_equal(rb, rbi_to_rbs(rb))
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            42 #: Integer
+            nil #: String
+          RB
         end
 
         def test_translate_ignore_non_assertions
@@ -160,26 +163,6 @@ module Spoom
           RB
         end
 
-        def test_translate_assigns_with_parentheses
-          rb = <<~RB
-            (@x = T.let(@x, T.nilable(String)))
-          RB
-
-          assert_equal(<<~RB, rbi_to_rbs(rb))
-            (@x = @x) #: String?
-          RB
-        end
-
-        def test_translate_assigns_with_dangling_conditionals
-          rb = <<~RB
-            x = T.let(42, Integer) if foo
-          RB
-
-          assert_equal(<<~RB, rbi_to_rbs(rb))
-            x = 42 if foo #: Integer
-          RB
-        end
-
         def test_translate_assigns_with_indented_values
           rb = <<~RB
             a = ::T.let([
@@ -207,9 +190,10 @@ module Spoom
             b = [
               1, 2, 3,
             ] #: Array[Integer]
-            c = [
-              1, 2, 3,
-            ] #: Array[Integer]
+            c =
+              [
+                1, 2, 3,
+              ] #: Array[Integer]
           RB
         end
 
@@ -300,6 +284,202 @@ module Spoom
             # 😊
             a = "foo" #: String
           RB
+        end
+
+        def test_translate_only_first_level_assertions_at_the_end_of_the_line
+          rb = <<~RB
+            a = T.let(T.let(b, B), A)
+            foo(T.must(c))
+            T.must(d).baz
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            a = T.let(b, B) #: A
+            foo(T.must(c))
+            T.must(d).baz
+          RB
+        end
+
+        def test_translate_cast
+          rb = <<~RB
+            T.cast(a, A)
+            b = T.cast(b, B)
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            a #: as A
+            b = b #: as B
+          RB
+        end
+
+        def test_translate_must
+          rb = <<~RB
+            T.must(a)
+            b = T.must(b)
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            a #: as !nil
+            b = b #: as !nil
+          RB
+        end
+
+        def test_translate_unsafe
+          rb = <<~RB
+            T.unsafe(a)
+            b = T.unsafe(b)
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            a #: as untyped
+            b = b #: as untyped
+          RB
+        end
+
+        def test_does_not_translate_assertions_already_with_annotations
+          rb = <<~RB
+            a = T.let(a, A) #: as A
+            T.must(a) #: as A
+          RB
+
+          assert_equal(rb, rbi_to_rbs(rb))
+        end
+
+        def test_does_not_translate_assigns_with_parentheses
+          rb = <<~RB
+            (@x = T.let(@x, T.nilable(String)))
+          RB
+
+          # TODO: should we translate this?
+          # assert_equal(<<~RB, rbi_to_rbs(rb))
+          #   (@x = @x) #: String?
+          # RB
+
+          assert_equal(rb, rbi_to_rbs(rb))
+        end
+
+        def test_does_not_translate_assigns_with_dangling_conditionals
+          rb = <<~RB
+            x = T.let(42, Integer) if foo
+          RB
+
+          # TODO: should we translate this?
+          # assert_equal(<<~RB, rbi_to_rbs(rb))
+          #   x = 42 if foo #: Integer
+          # RB
+
+          assert_equal(rb, rbi_to_rbs(rb))
+        end
+
+        def test_does_not_translate_assertions_already_with_comments
+          rb = <<~RB
+            a = T.let(42, Integer) # as Integer
+          RB
+
+          assert_equal(rb, rbi_to_rbs(rb))
+        end
+
+        def test_translate_cast_in_oneliners
+          rb = <<~RB
+            arr.map { |x| T.must(x) }
+            arr.map { |x|
+              T.must(x)
+            }
+            arr.map { |x|
+              arr.map { |x| T.must(x) }
+            }
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            arr.map { |x| T.must(x) }
+            arr.map { |x|
+              x #: as !nil
+            }
+            arr.map { |x|
+              arr.map { |x| T.must(x) }
+            }
+          RB
+        end
+
+        def test_translate_cast_in_cases
+          rb = <<~RB
+            case nodes.size
+            when 0
+              raise ArgumentError
+            when 1
+              T.must(nodes.first)
+            else
+              nodes
+            end
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            case nodes.size
+            when 0
+              raise ArgumentError
+            when 1
+              nodes.first #: as !nil
+            else
+              nodes
+            end
+          RB
+        end
+
+        def test_translate_cast_in_nested_values
+          rb = <<~RB
+            type = case nodes.size
+            when 0
+              raise ArgumentError
+            when 1
+              T.must(nodes.first)
+            else
+              nodes
+            end
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            type = case nodes.size
+            when 0
+              raise ArgumentError
+            when 1
+              nodes.first #: as !nil
+            else
+              nodes
+            end
+          RB
+        end
+
+        def test_inserts_cast_before_comments
+          rb = <<~RB
+            A = T.must(ARGV.first) #: String?
+
+            case ARGV.first
+            when String
+              T.must(ARGV.first) #: String?
+            end
+
+            T.must(ARGV.first) #: String?
+          RB
+
+          assert_equal(rb, rbi_to_rbs(rb))
+        end
+
+        def test_doesnt_translate_cast_in_parentheses
+          rb = <<~RB
+            if (a = T.let(nil, T.nilable(String)))
+              a
+            end
+          RB
+
+          assert_equal(rb, rbi_to_rbs(rb))
+        end
+
+        def test_doesnt_translate_cast_in_string_interpolation
+          rb = <<~RB
+            "\#{T.must(ARGV.first)}"
+          RB
+
+          assert_equal(rb, rbi_to_rbs(rb))
         end
 
         private
