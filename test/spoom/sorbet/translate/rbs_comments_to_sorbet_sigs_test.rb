@@ -243,6 +243,104 @@ module Spoom
           RB
         end
 
+        def test_translate_to_rbi_helpers
+          contents = <<~RB
+            # @abstract
+            # @requires_ancestor: singleton(Foo::Bar)
+            class A
+              # @interface
+              # @sealed
+              module B
+                # @final
+                class << self
+                end
+              end
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            class A
+              extend T::Helpers
+
+              abstract!
+
+              requires_ancestor { T.class_of(Foo::Bar) }
+
+              module B
+                extend T::Helpers
+
+                interface!
+
+                sealed!
+
+                class << self
+                  extend T::Helpers
+
+                  final!
+                end
+              end
+            end
+          RB
+        end
+
+        def test_translate_to_rbi_generics
+          contents = <<~RB
+            #: [in A, out B]
+            class A
+              #: [A, B < C]
+              module B
+                #: [A = singleton(Numeric)]
+                class << self
+                end
+              end
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            class A
+              extend T::Generic
+
+              A = type_member(:in)
+
+              B = type_member(:out)
+
+              module B
+                extend T::Generic
+
+                A = type_member
+
+                B = type_member {{ upper: C }}
+
+                class << self
+                  extend T::Generic
+
+                  A = type_member {{ fixed: T.class_of(Numeric) }}
+                end
+              end
+            end
+          RB
+        end
+
+        def test_translate_to_rbi_in_block
+          contents = <<~RB
+            Class.new do
+              #: -> Integer
+              def foo
+                42
+              end
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            Class.new do
+              sig { returns(Integer) }
+              def foo
+                42
+              end
+            end
+          RB
+        end
+
         private
 
         #: (String) -> String

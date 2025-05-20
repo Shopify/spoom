@@ -12,7 +12,27 @@ module Spoom
           super(ruby_contents, file: file)
 
           @positional_names = positional_names #: bool
+          @nesting = [] #: Array[Prism::ClassNode | Prism::ModuleNode | Prism::SingletonClassNode]
           @last_sigs = [] #: Array[[Prism::CallNode, RBI::Sig]]
+          @type_members = [] #: Array[String]
+        end
+
+        # @override
+        #: (Prism::ClassNode) -> void
+        def visit_class_node(node)
+          visit_scope(node) { super }
+        end
+
+        # @override
+        #: (Prism::ModuleNode) -> void
+        def visit_module_node(node)
+          visit_scope(node) { super }
+        end
+
+        # @override
+        #: (Prism::SingletonClassNode) -> void
+        def visit_singleton_class_node(node)
+          visit_scope(node) { super }
         end
 
         # @override
@@ -48,12 +68,49 @@ module Spoom
             visit_sig(node)
           when "attr_reader", "attr_writer", "attr_accessor"
             visit_attr(node)
+          when "extend"
+            visit_extend(node)
+          when "abstract!", "interface!", "sealed!", "final!", "requires_ancestor"
+            visit_class_annotation(node)
           else
             super
           end
         end
 
+        # @override
+        #: (Prism::ConstantWriteNode) -> void
+        def visit_constant_write_node(node)
+          call = node.value
+          return super unless call.is_a?(Prism::CallNode)
+          return super unless call.message == "type_member"
+
+          @type_members << build_type_member_string(node)
+
+          from = adjust_to_line_start(node.location.start_offset)
+          to = adjust_to_line_end(node.location.end_offset)
+          to = adjust_to_new_line(to)
+
+          @rewriter << Source::Delete.new(from, to)
+        end
+
         private
+
+        #: (Prism::ClassNode | Prism::ModuleNode | Prism::SingletonClassNode) { -> void } -> void
+        def visit_scope(node, &block)
+          @nesting << node
+          old_type_members = @type_members
+          @type_members = []
+
+          yield
+
+          if @type_members.any?
+            indent = " " * node.location.start_column
+            @rewriter << Source::Insert.new(node.location.start_offset, "#: [#{@type_members.join(", ")}]\n#{indent}")
+          end
+
+          @type_members = old_type_members
+          @nesting.pop
+        end
 
         #: (Prism::CallNode) -> void
         def visit_sig(node)
@@ -94,6 +151,65 @@ module Spoom
           @last_sigs.clear
         end
 
+        #: (Prism::CallNode node) -> void
+        def visit_extend(node)
+          raise Error, "Expected extend" unless node.message == "extend"
+
+          return unless node.receiver.nil? || node.receiver.is_a?(Prism::SelfNode)
+          return unless node.arguments&.arguments&.size == 1
+
+          arg = node.arguments&.arguments&.first
+          return unless arg.is_a?(Prism::ConstantPathNode)
+          return unless arg.slice.match?(/^(::)?T::Helpers$/) || arg.slice.match?(/^(::)?T::Generic$/)
+
+          from = adjust_to_line_start(node.location.start_offset)
+          to = adjust_to_line_end(node.location.end_offset)
+          to = adjust_to_new_line(to)
+          @rewriter << Source::Delete.new(from, to)
+        end
+
+        #: (Prism::CallNode node) -> void
+        def visit_class_annotation(node)
+          unless node.message == "abstract!" || node.message == "interface!" || node.message == "sealed!" ||
+              node.message == "final!" || node.message == "requires_ancestor"
+            raise Error, "Expected abstract!, interface!, sealed!, final!, or requires_ancestor"
+          end
+
+          return unless node.receiver.nil? || node.receiver.is_a?(Prism::SelfNode)
+          return unless node.arguments.nil?
+
+          klass = @nesting.last #: as Prism::Node
+          indent = " " * klass.location.start_column
+
+          case node.message
+          when "abstract!"
+            @rewriter << Source::Insert.new(klass.location.start_offset, "# @abstract\n#{indent}")
+          when "interface!"
+            @rewriter << Source::Insert.new(klass.location.start_offset, "# @interface\n#{indent}")
+          when "sealed!"
+            @rewriter << Source::Insert.new(klass.location.start_offset, "# @sealed\n#{indent}")
+          when "final!"
+            @rewriter << Source::Insert.new(klass.location.start_offset, "# @final\n#{indent}")
+          when "requires_ancestor"
+            block = node.block
+            return unless block.is_a?(Prism::BlockNode)
+
+            body = block.body
+            return unless body.is_a?(Prism::StatementsNode)
+            return unless body.body.size == 1
+
+            arg = body.body.first #: as Prism::Node
+            srb_type = RBI::Type.parse_node(arg)
+            @rewriter << Source::Insert.new(klass.location.start_offset, "# @requires_ancestor: #{srb_type.rbs_string}\n#{indent}")
+          end
+
+          from = adjust_to_line_start(node.location.start_offset)
+          to = adjust_to_line_end(node.location.end_offset)
+          to = adjust_to_new_line(to)
+
+          @rewriter << Source::Delete.new(from, to)
+        end
+
         #: (Array[[Prism::CallNode, RBI::Sig]]) -> void
         def apply_member_annotations(sigs)
           return if sigs.empty?
@@ -124,6 +240,52 @@ module Spoom
           if sigs.any? { |_, sig| sig.is_overridable }
             @rewriter << Source::Insert.new(insert_pos, "# @overridable\n")
           end
+        end
+
+        #: (Prism::ConstantWriteNode) -> String
+        def build_type_member_string(node)
+          call = node.value
+          raise Error, "Expected a call node" unless call.is_a?(Prism::CallNode)
+          raise Error, "Expected type_member" unless call.message == "type_member"
+
+          type_member = node.name.to_s
+
+          arg = call.arguments&.arguments&.first
+          if arg.is_a?(Prism::SymbolNode)
+            case arg.slice
+            when ":in"
+              type_member = "in #{type_member}"
+            when ":out"
+              type_member = "out #{type_member}"
+            else
+              raise Error, "Unknown type member variance: #{arg.slice}"
+            end
+          end
+
+          block = call.block
+          return type_member unless block.is_a?(Prism::BlockNode)
+
+          body = block.body
+          return type_member unless body.is_a?(Prism::StatementsNode)
+          return type_member unless body.body.size == 1
+
+          hash = body.body.first
+          return type_member unless hash.is_a?(Prism::HashNode)
+
+          hash.elements.each do |element|
+            next unless element.is_a?(Prism::AssocNode)
+
+            type = RBI::Type.parse_node(element.value)
+
+            case element.key.slice
+            when "upper:"
+              type_member = "#{type_member} < #{type.rbs_string}"
+            when "fixed:"
+              type_member = "#{type_member} = #{type.rbs_string}"
+            end
+          end
+
+          type_member
         end
       end
     end
