@@ -2853,12 +2853,18 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBSSignature
 end
 
 class Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments < ::Spoom::Sorbet::Translate::Translator
-  sig do
-    params(
-      assign: T.any(::Prism::ClassVariableAndWriteNode, ::Prism::ClassVariableOperatorWriteNode, ::Prism::ClassVariableOrWriteNode, ::Prism::ClassVariableWriteNode, ::Prism::ConstantAndWriteNode, ::Prism::ConstantOperatorWriteNode, ::Prism::ConstantOrWriteNode, ::Prism::ConstantPathAndWriteNode, ::Prism::ConstantPathOperatorWriteNode, ::Prism::ConstantPathOrWriteNode, ::Prism::ConstantPathWriteNode, ::Prism::ConstantWriteNode, ::Prism::GlobalVariableAndWriteNode, ::Prism::GlobalVariableOperatorWriteNode, ::Prism::GlobalVariableOrWriteNode, ::Prism::GlobalVariableWriteNode, ::Prism::InstanceVariableAndWriteNode, ::Prism::InstanceVariableOperatorWriteNode, ::Prism::InstanceVariableOrWriteNode, ::Prism::InstanceVariableWriteNode, ::Prism::LocalVariableAndWriteNode, ::Prism::LocalVariableOperatorWriteNode, ::Prism::LocalVariableOrWriteNode, ::Prism::LocalVariableWriteNode),
-      value: ::Prism::Node
-    ).returns(::String)
-  end
+  sig { override.params(node: ::Prism::CallNode).void }
+  def visit_call_node(node); end
+
+  private
+
+  sig { params(node: ::Prism::Node).returns(T::Boolean) }
+  def at_end_of_line?(node); end
+
+  sig { params(call: ::Prism::CallNode).void }
+  def build_rbs_annotation(call); end
+
+  sig { params(assign: ::Prism::Node, value: ::Prism::Node).returns(::String) }
   def dedent_value(assign, value); end
 
   sig { params(node: T.nilable(::Prism::Node)).returns(T::Boolean) }
@@ -2866,43 +2872,8 @@ class Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments < ::Spoom::Sorbet:
 
   sig { params(node: ::Prism::CallNode).returns(T::Boolean) }
   def t_annotation?(node); end
-
-  sig do
-    params(
-      node: T.any(::Prism::ClassVariableAndWriteNode, ::Prism::ClassVariableOperatorWriteNode, ::Prism::ClassVariableOrWriteNode, ::Prism::ClassVariableWriteNode, ::Prism::ConstantAndWriteNode, ::Prism::ConstantOperatorWriteNode, ::Prism::ConstantOrWriteNode, ::Prism::ConstantPathAndWriteNode, ::Prism::ConstantPathOperatorWriteNode, ::Prism::ConstantPathOrWriteNode, ::Prism::ConstantPathWriteNode, ::Prism::ConstantWriteNode, ::Prism::GlobalVariableAndWriteNode, ::Prism::GlobalVariableOperatorWriteNode, ::Prism::GlobalVariableOrWriteNode, ::Prism::GlobalVariableWriteNode, ::Prism::InstanceVariableAndWriteNode, ::Prism::InstanceVariableOperatorWriteNode, ::Prism::InstanceVariableOrWriteNode, ::Prism::InstanceVariableWriteNode, ::Prism::LocalVariableAndWriteNode, ::Prism::LocalVariableOperatorWriteNode, ::Prism::LocalVariableOrWriteNode, ::Prism::LocalVariableWriteNode)
-    ).void
-  end
-  def visit_assign(node); end
-
-  def visit_class_variable_and_write_node(*args, **_arg1, &blk); end
-  def visit_class_variable_operator_write_node(*args, **_arg1, &blk); end
-  def visit_class_variable_or_write_node(*args, **_arg1, &blk); end
-  def visit_class_variable_write_node(*args, **_arg1, &blk); end
-  def visit_constant_and_write_node(*args, **_arg1, &blk); end
-  def visit_constant_operator_write_node(*args, **_arg1, &blk); end
-  def visit_constant_or_write_node(*args, **_arg1, &blk); end
-  def visit_constant_path_and_write_node(*args, **_arg1, &blk); end
-  def visit_constant_path_operator_write_node(*args, **_arg1, &blk); end
-  def visit_constant_path_or_write_node(*args, **_arg1, &blk); end
-  def visit_constant_path_write_node(*args, **_arg1, &blk); end
-  def visit_constant_write_node(*args, **_arg1, &blk); end
-  def visit_global_variable_and_write_node(*args, **_arg1, &blk); end
-  def visit_global_variable_operator_write_node(*args, **_arg1, &blk); end
-  def visit_global_variable_or_write_node(*args, **_arg1, &blk); end
-  def visit_global_variable_write_node(*args, **_arg1, &blk); end
-  def visit_instance_variable_and_write_node(*args, **_arg1, &blk); end
-  def visit_instance_variable_operator_write_node(*args, **_arg1, &blk); end
-  def visit_instance_variable_or_write_node(*args, **_arg1, &blk); end
-  def visit_instance_variable_write_node(*args, **_arg1, &blk); end
-  def visit_local_variable_and_write_node(*args, **_arg1, &blk); end
-  def visit_local_variable_operator_write_node(*args, **_arg1, &blk); end
-  def visit_local_variable_or_write_node(*args, **_arg1, &blk); end
-  def visit_local_variable_write_node(*args, **_arg1, &blk); end
-  def visit_multi_write_node(*args, **_arg1, &blk); end
 end
 
-Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments::ANNOTATION_METHODS = T.let(T.unsafe(nil), Array)
-Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments::AssignType = T.type_alias { T.any(::Prism::ClassVariableAndWriteNode, ::Prism::ClassVariableOperatorWriteNode, ::Prism::ClassVariableOrWriteNode, ::Prism::ClassVariableWriteNode, ::Prism::ConstantAndWriteNode, ::Prism::ConstantOperatorWriteNode, ::Prism::ConstantOrWriteNode, ::Prism::ConstantPathAndWriteNode, ::Prism::ConstantPathOperatorWriteNode, ::Prism::ConstantPathOrWriteNode, ::Prism::ConstantPathWriteNode, ::Prism::ConstantWriteNode, ::Prism::GlobalVariableAndWriteNode, ::Prism::GlobalVariableOperatorWriteNode, ::Prism::GlobalVariableOrWriteNode, ::Prism::GlobalVariableWriteNode, ::Prism::InstanceVariableAndWriteNode, ::Prism::InstanceVariableOperatorWriteNode, ::Prism::InstanceVariableOrWriteNode, ::Prism::InstanceVariableWriteNode, ::Prism::LocalVariableAndWriteNode, ::Prism::LocalVariableOperatorWriteNode, ::Prism::LocalVariableOrWriteNode, ::Prism::LocalVariableWriteNode) }
 Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments::LINE_BREAK = T.let(T.unsafe(nil), Integer)
 
 class Spoom::Sorbet::Translate::SorbetSigsToRBSComments < ::Spoom::Sorbet::Translate::Translator
