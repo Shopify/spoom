@@ -243,6 +243,46 @@ module Spoom
           RB
         end
 
+        def test_translate_to_rbi_helpers
+          contents = <<~RB
+            # @abstract
+            # @requires_ancestor: singleton(Foo::Bar)
+            class A
+              # @interface
+              # @sealed
+              module B
+                # @final
+                class << self
+                end
+              end
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            class A
+              extend T::Helpers
+
+              abstract!
+
+              requires_ancestor { T.class_of(Foo::Bar) }
+
+              module B
+                extend T::Helpers
+
+                interface!
+
+                sealed!
+
+                class << self
+                  extend T::Helpers
+
+                  final!
+                end
+              end
+            end
+          RB
+        end
+
         private
 
         #: (String) -> String
