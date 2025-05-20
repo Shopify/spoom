@@ -56,6 +56,16 @@ module Spoom
           offset += 1 while offset < @ruby_bytes.size && @ruby_bytes[offset] != "\n".ord
           offset
         end
+
+        # Consume the next blank line if any
+        #: (Integer) -> Integer
+        def adjust_to_new_line(offset)
+          if offset + 1 < @ruby_bytes.size && @ruby_bytes[offset + 1] == "\n".ord
+            offset += 1
+          end
+
+          offset
+        end
       end
     end
   end

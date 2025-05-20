@@ -88,10 +88,7 @@ module Spoom
 
           from = adjust_to_line_start(node.location.start_offset)
           to = adjust_to_line_end(node.location.end_offset)
-
-          if to + 1 < @ruby_bytes.size && @ruby_bytes[to + 1] == "\n".ord
-            to += 1
-          end
+          to = adjust_to_new_line(to)
 
           @rewriter << Source::Delete.new(from, to)
         end
@@ -167,11 +164,7 @@ module Spoom
 
           from = adjust_to_line_start(node.location.start_offset)
           to = adjust_to_line_end(node.location.end_offset)
-
-          if to + 1 < @ruby_bytes.size && @ruby_bytes[to + 1] == "\n".ord
-            to += 1
-          end
-
+          to = adjust_to_new_line(to)
           @rewriter << Source::Delete.new(from, to)
         end
 
@@ -212,10 +205,7 @@ module Spoom
 
           from = adjust_to_line_start(node.location.start_offset)
           to = adjust_to_line_end(node.location.end_offset)
-
-          if to + 1 < @ruby_bytes.size && @ruby_bytes[to + 1] == "\n".ord
-            to += 1
-          end
+          to = adjust_to_new_line(to)
 
           @rewriter << Source::Delete.new(from, to)
         end
