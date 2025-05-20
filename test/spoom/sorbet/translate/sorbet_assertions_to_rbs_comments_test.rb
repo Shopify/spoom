@@ -375,6 +375,28 @@ module Spoom
           assert_equal(rb, rbi_to_rbs(rb))
         end
 
+        def test_translate_cast_in_oneliners
+          rb = <<~RB
+            arr.map { |x| T.must(x) }
+            arr.map { |x|
+              T.must(x)
+            }
+            arr.map { |x|
+              arr.map { |x| T.must(x) }
+            }
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            arr.map { |x| T.must(x) }
+            arr.map { |x|
+              x #: as !nil
+            }
+            arr.map { |x|
+              arr.map { |x| T.must(x) }
+            }
+          RB
+        end
+
         def test_translate_assertions_split_lines_to_insert_comments
           rb = <<~RB
             a = T.must(b).foo
