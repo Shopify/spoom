@@ -5,6 +5,8 @@ module Spoom
   module Sorbet
     module Translate
       class RBSCommentsToSorbetSigs < Translator
+        include Spoom::RBS::ExtractRBSComments
+
         # @override
         #: (Prism::ClassNode node) -> void
         def visit_class_node(node)
@@ -107,39 +109,6 @@ module Spoom
           end
         end
 
-        #: (Prism::Node) -> RBSComments
-        def node_rbs_comments(node)
-          res = RBSComments.new
-
-          comments = node.location.leading_comments.reverse
-          return res if comments.empty?
-
-          continuation_comments = [] #: Array[Prism::Comment]
-
-          comments.each do |comment|
-            string = comment.slice
-
-            if string.start_with?("# @")
-              string = string.delete_prefix("#").strip
-              res.annotations << RBSAnnotations.new(string, comment.location)
-            elsif string.start_with?("#: ")
-              string = string.delete_prefix("#:").strip
-              location = comment.location
-
-              continuation_comments.reverse_each do |continuation_comment|
-                string = "#{string}#{continuation_comment.slice.delete_prefix("#|")}"
-                location = location.join(continuation_comment.location)
-              end
-              continuation_comments.clear
-              res.signatures << RBSSignature.new(string, location)
-            elsif string.start_with?("#|")
-              continuation_comments << comment
-            end
-          end
-
-          res
-        end
-
         #: (Prism::ClassNode | Prism::ModuleNode | Prism::SingletonClassNode) -> void
         def apply_class_annotations(node)
           comments = node_rbs_comments(node)
@@ -228,7 +197,7 @@ module Spoom
           end
         end
 
-        #: (Array[RBSAnnotations], RBI::Sig) -> void
+        #: (Array[RBS::Annotations], RBI::Sig) -> void
         def apply_member_annotations(annotations, sig)
           annotations.each do |annotation|
             case annotation.string
@@ -262,53 +231,6 @@ module Spoom
             next false unless arg.slice.match?(constant_regex)
 
             true
-          end
-        end
-
-        class RBSComments
-          #: Array[RBSAnnotations]
-          attr_reader :annotations
-
-          #: Array[RBSSignature]
-          attr_reader :signatures
-
-          #: -> void
-          def initialize
-            @annotations = [] #: Array[RBSAnnotations]
-            @signatures = [] #: Array[RBSSignature]
-          end
-
-          #: -> bool
-          def empty?
-            @annotations.empty? && @signatures.empty?
-          end
-        end
-
-        class RBSAnnotations
-          #: String
-          attr_reader :string
-
-          #: Prism::Location
-          attr_reader :location
-
-          #: (String, Prism::Location) -> void
-          def initialize(string, location)
-            @string = string
-            @location = location
-          end
-        end
-
-        class RBSSignature
-          #: String
-          attr_reader :string
-
-          #: Prism::Location
-          attr_reader :location
-
-          #: (String, Prism::Location) -> void
-          def initialize(string, location)
-            @string = string
-            @location = location
           end
         end
       end
