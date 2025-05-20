@@ -6,11 +6,8 @@
 
 module Spoom
   class << self
-    sig { params(ruby: ::String, file: ::String).returns(::Prism::Node) }
-    def parse_ruby(ruby, file:); end
-
-    sig { params(ruby: ::String, file: ::String).returns([::Prism::Node, T::Array[::Prism::Comment]]) }
-    def parse_ruby_with_comments(ruby, file:); end
+    sig { params(ruby: ::String, file: ::String, comments: T::Boolean).returns(::Prism::Node) }
+    def parse_ruby(ruby, file:, comments: T.unsafe(nil)); end
   end
 end
 
@@ -2101,8 +2098,8 @@ class Spoom::Model::AttrReader < ::Spoom::Model::Attr; end
 class Spoom::Model::AttrWriter < ::Spoom::Model::Attr; end
 
 class Spoom::Model::Builder < ::Spoom::Model::NamespaceVisitor
-  sig { params(model: ::Spoom::Model, file: ::String, comments: T::Array[::Prism::Comment]).void }
-  def initialize(model, file, comments:); end
+  sig { params(model: ::Spoom::Model, file: ::String).void }
+  def initialize(model, file); end
 
   sig { override.params(node: ::Prism::CallNode).void }
   def visit_call_node(node); end
@@ -2555,6 +2552,40 @@ class Spoom::Printer
   def printt; end
 end
 
+module Spoom::RBS; end
+class Spoom::RBS::Annotations < ::Spoom::RBS::Comment; end
+
+class Spoom::RBS::Comment
+  sig { params(string: ::String, location: ::Prism::Location).void }
+  def initialize(string, location); end
+
+  sig { returns(::Prism::Location) }
+  def location; end
+
+  sig { returns(::String) }
+  def string; end
+end
+
+class Spoom::RBS::Comments
+  sig { void }
+  def initialize; end
+
+  sig { returns(T::Array[::Spoom::RBS::Annotations]) }
+  def annotations; end
+
+  sig { returns(T::Boolean) }
+  def empty?; end
+
+  sig { returns(T::Array[::Spoom::RBS::Signature]) }
+  def signatures; end
+end
+
+module Spoom::RBS::ExtractRBSComments
+  sig { params(node: ::Prism::Node).returns(::Spoom::RBS::Comments) }
+  def node_rbs_comments(node); end
+end
+
+class Spoom::RBS::Signature < ::Spoom::RBS::Comment; end
 Spoom::SPOOM_PATH = T.let(T.unsafe(nil), String)
 module Spoom::Sorbet; end
 Spoom::Sorbet::BIN_PATH = T.let(T.unsafe(nil), String)
@@ -2770,6 +2801,8 @@ end
 class Spoom::Sorbet::Translate::Error < ::Spoom::Error; end
 
 class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs < ::Spoom::Sorbet::Translate::Translator
+  include ::Spoom::RBS::ExtractRBSComments
+
   sig { override.params(node: ::Prism::CallNode).void }
   def visit_call_node(node); end
 
@@ -2798,58 +2831,11 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs < ::Spoom::Sorbet::Trans
   sig { params(node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode)).void }
   def apply_class_annotations(node); end
 
-  sig do
-    params(
-      annotations: T::Array[::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBSAnnotations],
-      sig: ::RBI::Sig
-    ).void
-  end
+  sig { params(annotations: T::Array[::Spoom::RBS::Annotations], sig: ::RBI::Sig).void }
   def apply_member_annotations(annotations, sig); end
-
-  sig { params(node: ::Prism::Node).returns(T::Array[::Prism::Comment]) }
-  def node_prism_comments(node); end
-
-  sig { params(node: ::Prism::Node).returns(::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBSComments) }
-  def node_rbs_comments(node); end
 
   sig { params(node: ::Prism::CallNode).void }
   def visit_attr(node); end
-end
-
-class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBSAnnotations
-  sig { params(string: ::String, location: ::Prism::Location).void }
-  def initialize(string, location); end
-
-  sig { returns(::Prism::Location) }
-  def location; end
-
-  sig { returns(::String) }
-  def string; end
-end
-
-class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBSComments
-  sig { void }
-  def initialize; end
-
-  sig { returns(T::Array[::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBSAnnotations]) }
-  def annotations; end
-
-  sig { returns(T::Boolean) }
-  def empty?; end
-
-  sig { returns(T::Array[::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBSSignature]) }
-  def signatures; end
-end
-
-class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBSSignature
-  sig { params(string: ::String, location: ::Prism::Location).void }
-  def initialize(string, location); end
-
-  sig { returns(::Prism::Location) }
-  def location; end
-
-  sig { returns(::String) }
-  def string; end
 end
 
 class Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments < ::Spoom::Sorbet::Translate::Translator

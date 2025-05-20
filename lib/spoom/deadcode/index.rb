@@ -49,10 +49,10 @@ module Spoom
 
       #: (String rb, file: String, ?plugins: Array[Plugins::Base]) -> void
       def index_ruby(rb, file:, plugins: [])
-        node, comments = Spoom.parse_ruby_with_comments(rb, file: file)
+        node = Spoom.parse_ruby(rb, file: file, comments: true)
 
         # Index definitions
-        model_builder = Model::Builder.new(@model, file, comments: comments)
+        model_builder = Model::Builder.new(@model, file)
         model_builder.visit(node)
 
         # Index references
