@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    spoom (1.6.4)
+    spoom (1.7.0)
       erubi (>= 1.10.0)
       prism (>= 0.28.0)
       rbi (>= 0.3.3)
@@ -84,7 +84,6 @@ GEM
     rubocop-sorbet (0.10.0)
       rubocop (>= 1)
     ruby-progressbar (1.13.0)
-    stringio (3.1.7)
     sorbet (0.5.12117)
       sorbet-static (= 0.5.12117)
     sorbet-runtime (0.5.12117)
@@ -93,6 +92,7 @@ GEM
     sorbet-static-and-runtime (0.5.12117)
       sorbet (= 0.5.12117)
       sorbet-runtime (= 0.5.12117)
+    stringio (3.1.7)
     tapioca (0.16.11)
       benchmark
       bundler (>= 2.2.25)
