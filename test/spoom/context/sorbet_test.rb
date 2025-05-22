@@ -143,7 +143,7 @@ module Spoom
         context = Context.mktmp!
 
         res = context.srb_metrics("-e ''", sorbet_bin: Spoom::Sorbet::BIN_PATH)
-        assert_instance_of(Hash, res)
+        assert_instance_of(Counters, res)
         refute_empty(res)
 
         context.destroy!

@@ -20,11 +20,10 @@ module Spoom
             parse_hash(JSON.parse(string), prefix)
           end
 
-          #: (Hash[String, untyped] obj, ?String prefix) -> Hash[String, Integer]
+          #: (Hash[String, untyped] obj, ?String prefix) -> Counters
           def parse_hash(obj, prefix = DEFAULT_PREFIX)
-            obj["metrics"].each_with_object(Hash.new(0)) do |metric, metrics|
-              name = metric["name"]
-              name = name.sub(prefix, "")
+            obj["metrics"].each_with_object(Counters.new) do |metric, metrics|
+              name = metric["name"].sub(prefix, "")
               metrics[name] = metric["value"] || 0
             end
           end
