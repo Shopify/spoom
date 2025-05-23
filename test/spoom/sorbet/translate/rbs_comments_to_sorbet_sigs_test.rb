@@ -283,6 +283,31 @@ module Spoom
           RB
         end
 
+        def test_translate_to_rbi_helpers_with_right_order
+          contents = <<~RB
+            # @foo
+            # @bar
+            # @requires_ancestor: Kernel
+            module Baz
+              #: -> void
+              def foo; end
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            # @foo
+            # @bar
+            module Baz
+              extend T::Helpers
+
+              requires_ancestor { Kernel }
+
+              sig { void }
+              def foo; end
+            end
+          RB
+        end
+
         def test_translate_to_rbi_generics
           contents = <<~RB
             #: [in A, out B]
