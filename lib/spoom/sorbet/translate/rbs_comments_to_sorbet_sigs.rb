@@ -132,7 +132,6 @@ module Spoom
             comments.annotations.reverse_each do |annotation|
               from = adjust_to_line_start(annotation.location.start_offset)
               to = adjust_to_line_end(annotation.location.end_offset)
-              @rewriter << Source::Delete.new(from, to)
 
               content = case annotation.string
               when "@abstract"
@@ -147,7 +146,11 @@ module Spoom
                 srb_type = ::RBS::Parser.parse_type(annotation.string.delete_prefix("@requires_ancestor: "))
                 rbs_type = RBI::RBS::TypeTranslator.translate(srb_type)
                 "requires_ancestor { #{rbs_type} }"
+              else
+                next
               end
+
+              @rewriter << Source::Delete.new(from, to)
 
               newline = node.body.nil? ? "" : "\n"
               @rewriter << Source::Insert.new(insert_pos, "\n#{indent}#{content}#{newline}")
