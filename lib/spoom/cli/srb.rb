@@ -5,6 +5,7 @@ require_relative "srb/assertions"
 require_relative "srb/bump"
 require_relative "srb/coverage"
 require_relative "srb/lsp"
+require_relative "srb/metrics"
 require_relative "srb/sigs"
 require_relative "srb/tc"
 
@@ -23,6 +24,9 @@ module Spoom
 
         desc "lsp", "Send LSP requests to Sorbet"
         subcommand "lsp", Spoom::Cli::Srb::LSP
+
+        desc "metrics", "Collect metrics about Sorbet usage"
+        subcommand "metrics", Spoom::Cli::Srb::Metrics
 
         desc "sigs", "Translate signatures from/to RBI and RBS"
         subcommand "sigs", Spoom::Cli::Srb::Sigs

@@ -48,7 +48,7 @@ module Spoom
         return unless file?(metrics_file)
 
         metrics_path = absolute_path_to(metrics_file)
-        metrics = Spoom::Sorbet::MetricsParser.parse_file(metrics_path)
+        metrics = Spoom::Sorbet::Metrics::MetricsFileParser.parse_file(metrics_path)
         remove!(metrics_file)
         metrics
       end

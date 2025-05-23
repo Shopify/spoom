@@ -165,8 +165,17 @@ class Spoom::Cli::Srb::Main < ::Thor
   def coverage(*args); end
   def help(command = T.unsafe(nil), subcommand = T.unsafe(nil)); end
   def lsp(*args); end
+  def metrics(*args); end
   def sigs(*args); end
   def tc(*args); end
+end
+
+class Spoom::Cli::Srb::Metrics < ::Thor
+  include ::Spoom::Colorize
+  include ::Spoom::Cli::Helper
+
+  def help(command = T.unsafe(nil), subcommand = T.unsafe(nil)); end
+  def show(*paths); end
 end
 
 class Spoom::Cli::Srb::Sigs < ::Thor
@@ -420,6 +429,17 @@ module Spoom::Context::Sorbet
 
   sig { params(contents: ::String, append: T::Boolean).void }
   def write_sorbet_config!(contents, append: T.unsafe(nil)); end
+end
+
+class Spoom::Counters < ::Hash
+  sig { void }
+  def initialize; end
+
+  sig { params(key: ::String).returns(::Integer) }
+  def [](key); end
+
+  sig { params(key: ::String).void }
+  def increment(key); end
 end
 
 module Spoom::Coverage
@@ -2445,29 +2465,25 @@ end
 class Spoom::ParseError < ::Spoom::Error; end
 
 class Spoom::Poset
-  extend T::Generic
-
-  E = type_member { { upper: Object } }
-
   sig { void }
   def initialize; end
 
-  sig { params(value: E).returns(Spoom::Poset::Element[E]) }
+  sig { params(value: T.untyped).returns(Spoom::Poset::Element[T.untyped]) }
   def [](value); end
 
-  sig { params(from: E, to: E).void }
+  sig { params(from: T.untyped, to: T.untyped).void }
   def add_direct_edge(from, to); end
 
-  sig { params(value: E).returns(Spoom::Poset::Element[E]) }
+  sig { params(value: T.untyped).returns(Spoom::Poset::Element[T.untyped]) }
   def add_element(value); end
 
-  sig { params(from: E, to: E).returns(T::Boolean) }
+  sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
   def direct_edge?(from, to); end
 
-  sig { params(from: E, to: E).returns(T::Boolean) }
+  sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
   def edge?(from, to); end
 
-  sig { params(value: E).returns(T::Boolean) }
+  sig { params(value: T.untyped).returns(T::Boolean) }
   def element?(value); end
 
   sig { params(direct: T::Boolean, transitive: T::Boolean).void }
@@ -2478,39 +2494,36 @@ class Spoom::Poset
 end
 
 class Spoom::Poset::Element
-  extend T::Generic
   include ::Comparable
 
-  E = type_member { { upper: Object } }
-
-  sig { params(value: E).void }
+  sig { params(value: T.untyped).void }
   def initialize(value); end
 
   sig { params(other: T.untyped).returns(T.nilable(::Integer)) }
   def <=>(other); end
 
-  sig { returns(T::Array[E]) }
+  sig { returns(T::Array[T.untyped]) }
   def ancestors; end
 
-  sig { returns(T::Array[E]) }
+  sig { returns(T::Array[T.untyped]) }
   def children; end
 
-  sig { returns(T::Array[E]) }
+  sig { returns(T::Array[T.untyped]) }
   def descendants; end
 
   def dfroms; end
 
-  sig { returns(T::Set[Spoom::Poset::Element[E]]) }
+  sig { returns(T::Set[Spoom::Poset::Element[T.untyped]]) }
   def dtos; end
 
   def froms; end
 
-  sig { returns(T::Array[E]) }
+  sig { returns(T::Array[T.untyped]) }
   def parents; end
 
   def tos; end
 
-  sig { returns(E) }
+  sig { returns(T.untyped) }
   def value; end
 end
 
@@ -2732,12 +2745,72 @@ Spoom::Sorbet::GEM_PATH = T.let(T.unsafe(nil), String)
 Spoom::Sorbet::GEM_VERSION = T.let(T.unsafe(nil), String)
 Spoom::Sorbet::KILLED_CODE = T.let(T.unsafe(nil), Integer)
 
-module Spoom::Sorbet::MetricsParser
+module Spoom::Sorbet::Metrics
+  class << self
+    sig { params(files: T::Array[::String]).returns(Spoom::Counters) }
+    def collect_code_metrics(files); end
+  end
+end
+
+class Spoom::Sorbet::Metrics::CodeMetricsVisitor < ::Spoom::Visitor
+  include ::Spoom::RBS::ExtractRBSComments
+
+  sig { params(counters: Spoom::Counters).void }
+  def initialize(counters); end
+
+  sig { returns(Spoom::Counters) }
+  def counters; end
+
+  sig { override.params(node: T.nilable(::Prism::Node)).void }
+  def visit(node); end
+
+  sig { override.params(node: ::Prism::CallNode).void }
+  def visit_call_node(node); end
+
+  sig { override.params(node: ::Prism::ClassNode).void }
+  def visit_class_node(node); end
+
+  sig { override.params(node: ::Prism::DefNode).void }
+  def visit_def_node(node); end
+
+  sig { override.params(node: ::Prism::ModuleNode).void }
+  def visit_module_node(node); end
+
+  sig { override.params(node: ::Prism::SingletonClassNode).void }
+  def visit_singleton_class_node(node); end
+
+  private
+
+  sig { returns(T::Array[::Prism::CallNode]) }
+  def collect_last_srb_sigs; end
+
+  sig { params(node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode)).returns(::String) }
+  def node_key(node); end
+
+  sig { params(node: ::Prism::CallNode).void }
+  def visit_attr_accessor(node); end
+
+  sig do
+    params(
+      node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode),
+      block: T.proc.void
+    ).void
+  end
+  def visit_scope(node, &block); end
+
+  sig { params(node: ::Prism::CallNode).void }
+  def visit_sig(node); end
+
+  sig { params(node: ::Prism::CallNode).void }
+  def visit_type_member(node); end
+end
+
+module Spoom::Sorbet::Metrics::MetricsFileParser
   class << self
     sig { params(path: ::String, prefix: ::String).returns(T::Hash[::String, ::Integer]) }
     def parse_file(path, prefix = T.unsafe(nil)); end
 
-    sig { params(obj: T::Hash[::String, T.untyped], prefix: ::String).returns(T::Hash[::String, ::Integer]) }
+    sig { params(obj: T::Hash[::String, T.untyped], prefix: ::String).returns(Spoom::Counters) }
     def parse_hash(obj, prefix = T.unsafe(nil)); end
 
     sig { params(string: ::String, prefix: ::String).returns(T::Hash[::String, ::Integer]) }
@@ -2745,7 +2818,7 @@ module Spoom::Sorbet::MetricsParser
   end
 end
 
-Spoom::Sorbet::MetricsParser::DEFAULT_PREFIX = T.let(T.unsafe(nil), String)
+Spoom::Sorbet::Metrics::MetricsFileParser::DEFAULT_PREFIX = T.let(T.unsafe(nil), String)
 Spoom::Sorbet::SEGFAULT_CODE = T.let(T.unsafe(nil), Integer)
 
 module Spoom::Sorbet::Sigils
