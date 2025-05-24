@@ -34,9 +34,6 @@ module Spoom
       class CodeMetricsVisitor < Spoom::Visitor
         include RBS::ExtractRBSComments
 
-        #: Counters
-        attr_reader :counters
-
         #: (Spoom::Counters) -> void
         def initialize(counters)
           super()
