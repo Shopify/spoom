@@ -2758,9 +2758,6 @@ class Spoom::Sorbet::Metrics::CodeMetricsVisitor < ::Spoom::Visitor
   sig { params(counters: Spoom::Counters).void }
   def initialize(counters); end
 
-  sig { returns(Spoom::Counters) }
-  def counters; end
-
   sig { override.params(node: T.nilable(::Prism::Node)).void }
   def visit(node); end
 
