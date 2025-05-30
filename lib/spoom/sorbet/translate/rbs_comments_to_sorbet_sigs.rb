@@ -55,7 +55,7 @@ module Spoom
               signature.location.end_offset,
               sig.string,
             )
-          rescue ::RBS::ParsingError
+          rescue ::RBS::ParsingError, ::RBI::Error
             # Ignore signatures with errors
             next
           end
@@ -106,6 +106,9 @@ module Spoom
               signature.location.end_offset,
               sig.string,
             )
+          rescue ::RBS::ParsingError, ::RBI::Error
+            # Ignore signatures with errors
+            next
           end
         end
 
@@ -154,6 +157,9 @@ module Spoom
 
               newline = node.body.nil? ? "" : "\n"
               @rewriter << Source::Insert.new(insert_pos, "\n#{indent}#{content}#{newline}")
+            rescue ::RBS::ParsingError, ::RBI::Error
+              # Ignore annotations with errors
+              next
             end
           end
 
@@ -195,6 +201,9 @@ module Spoom
 
                 newline = node.body.nil? ? "" : "\n"
                 @rewriter << Source::Insert.new(insert_pos, "\n#{indent}#{type_member}#{newline}")
+              rescue ::RBS::ParsingError, ::RBI::Error
+                # Ignore signatures with errors
+                next
               end
             end
           end

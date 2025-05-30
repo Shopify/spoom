@@ -432,6 +432,12 @@ module Spoom::Context::Sorbet
 end
 
 class Spoom::Counters < ::Hash
+  extend T::Generic
+
+  K = type_member { { fixed: String } }
+  V = type_member { { fixed: Integer } }
+  Elem = type_member { { fixed: [String, Integer] } }
+
   sig { void }
   def initialize; end
 
@@ -2465,25 +2471,29 @@ end
 class Spoom::ParseError < ::Spoom::Error; end
 
 class Spoom::Poset
+  extend T::Generic
+
+  E = type_member { { upper: Object } }
+
   sig { void }
   def initialize; end
 
-  sig { params(value: T.untyped).returns(Spoom::Poset::Element[T.untyped]) }
+  sig { params(value: E).returns(Spoom::Poset::Element[E]) }
   def [](value); end
 
-  sig { params(from: T.untyped, to: T.untyped).void }
+  sig { params(from: E, to: E).void }
   def add_direct_edge(from, to); end
 
-  sig { params(value: T.untyped).returns(Spoom::Poset::Element[T.untyped]) }
+  sig { params(value: E).returns(Spoom::Poset::Element[E]) }
   def add_element(value); end
 
-  sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+  sig { params(from: E, to: E).returns(T::Boolean) }
   def direct_edge?(from, to); end
 
-  sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+  sig { params(from: E, to: E).returns(T::Boolean) }
   def edge?(from, to); end
 
-  sig { params(value: T.untyped).returns(T::Boolean) }
+  sig { params(value: E).returns(T::Boolean) }
   def element?(value); end
 
   sig { params(direct: T::Boolean, transitive: T::Boolean).void }
@@ -2494,36 +2504,39 @@ class Spoom::Poset
 end
 
 class Spoom::Poset::Element
+  extend T::Generic
   include ::Comparable
 
-  sig { params(value: T.untyped).void }
+  E = type_member { { upper: Object } }
+
+  sig { params(value: E).void }
   def initialize(value); end
 
   sig { params(other: T.untyped).returns(T.nilable(::Integer)) }
   def <=>(other); end
 
-  sig { returns(T::Array[T.untyped]) }
+  sig { returns(T::Array[E]) }
   def ancestors; end
 
-  sig { returns(T::Array[T.untyped]) }
+  sig { returns(T::Array[E]) }
   def children; end
 
-  sig { returns(T::Array[T.untyped]) }
+  sig { returns(T::Array[E]) }
   def descendants; end
 
   def dfroms; end
 
-  sig { returns(T::Set[Spoom::Poset::Element[T.untyped]]) }
+  sig { returns(T::Set[Spoom::Poset::Element[E]]) }
   def dtos; end
 
   def froms; end
 
-  sig { returns(T::Array[T.untyped]) }
+  sig { returns(T::Array[E]) }
   def parents; end
 
   def tos; end
 
-  sig { returns(T.untyped) }
+  sig { returns(E) }
   def value; end
 end
 
