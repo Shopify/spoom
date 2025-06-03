@@ -124,7 +124,7 @@ PLATFORMS
 DEPENDENCIES
   bundler (>= 2.2.10)
   debug
-  minitest (~> 5.0)
+  minitest
   minitest-reporters
   rake (~> 13.2.1)
   rubocop-shopify

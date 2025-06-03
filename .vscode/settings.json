@@ -1,0 +1,7 @@
+{
+    "rubyLsp.indexing": {
+        "includedPatterns": [
+            "**/test/test_with_project.rb"
+        ]
+    }
+}
