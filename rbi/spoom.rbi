@@ -1142,7 +1142,13 @@ class Spoom::Deadcode::Plugins::ActionPack < ::Spoom::Deadcode::Plugins::Base
 end
 
 Spoom::Deadcode::Plugins::ActionPack::CALLBACKS = T.let(T.unsafe(nil), Array)
-class Spoom::Deadcode::Plugins::ActiveJob < ::Spoom::Deadcode::Plugins::Base; end
+
+class Spoom::Deadcode::Plugins::ActiveJob < ::Spoom::Deadcode::Plugins::Base
+  sig { override.params(send: ::Spoom::Deadcode::Send).void }
+  def on_send(send); end
+end
+
+Spoom::Deadcode::Plugins::ActiveJob::CALLBACKS = T.let(T.unsafe(nil), Array)
 
 class Spoom::Deadcode::Plugins::ActiveModel < ::Spoom::Deadcode::Plugins::Base
   sig { override.params(send: ::Spoom::Deadcode::Send).void }
