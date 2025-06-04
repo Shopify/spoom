@@ -346,8 +346,8 @@ module Spoom
                   <![CDATA[In file errors/errors.rb:
                 10 |b = Foo.new(42)
                                 ^^
-                <GIT_LINK>/rbi/core/basic_object.rbi#L228: `initialize` defined here
-                 228 |  def initialize(); end
+                <GIT_LINK>/rbi/core/basic_object.rbi#L230: `initialize` defined here
+                 230 |  def initialize(); end
                         ^^^^^^^^^^^^^^^^
               Autocorrect: Use `-a` to autocorrect
                 errors/errors.rb:10: Delete
