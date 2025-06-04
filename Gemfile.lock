@@ -15,7 +15,7 @@ GEM
   specs:
     ansi (1.5.0)
     ast (2.4.3)
-    benchmark (0.4.0)
+    benchmark (0.4.1)
     builder (3.3.0)
     date (3.4.1)
     debug (1.10.0)
@@ -51,7 +51,7 @@ GEM
       stringio
     racc (1.8.1)
     rainbow (3.1.1)
-    rake (13.2.1)
+    rake (13.3.0)
     rbi (0.3.3)
       prism (~> 1.0)
       rbs (>= 3.4.4)
@@ -85,16 +85,16 @@ GEM
     rubocop-sorbet (0.10.0)
       rubocop (>= 1)
     ruby-progressbar (1.13.0)
-    sorbet (0.5.12117)
-      sorbet-static (= 0.5.12117)
-    sorbet-runtime (0.5.12117)
-    sorbet-static (0.5.12117-universal-darwin)
-    sorbet-static (0.5.12117-x86_64-linux)
-    sorbet-static-and-runtime (0.5.12117)
-      sorbet (= 0.5.12117)
-      sorbet-runtime (= 0.5.12117)
+    sorbet (0.5.12152)
+      sorbet-static (= 0.5.12152)
+    sorbet-runtime (0.5.12152)
+    sorbet-static (0.5.12152-universal-darwin)
+    sorbet-static (0.5.12152-x86_64-linux)
+    sorbet-static-and-runtime (0.5.12152)
+      sorbet (= 0.5.12152)
+      sorbet-runtime (= 0.5.12152)
     stringio (3.1.7)
-    tapioca (0.17.0)
+    tapioca (0.17.1)
       benchmark
       bundler (>= 2.2.25)
       netrc (>= 0.11.0)
@@ -126,7 +126,7 @@ DEPENDENCIES
   debug
   minitest
   minitest-reporters
-  rake (~> 13.2.1)
+  rake (~> 13.3.0)
   rubocop-shopify
   rubocop-sorbet
   spoom!
