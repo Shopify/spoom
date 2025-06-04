@@ -48,7 +48,7 @@ module Spoom
             translator = RBI::RBS::MethodTypeTranslator.new(rbi_node)
             translator.visit(method_type)
             sig = translator.result
-            apply_member_annotations(comments.annotations, sig)
+            apply_member_annotations(comments.method_annotations, sig)
 
             @rewriter << Source::Replace.new(
               signature.location.start_offset,
@@ -99,7 +99,7 @@ module Spoom
 
             sig.return_type = RBI::RBS::TypeTranslator.translate(attr_type)
 
-            apply_member_annotations(comments.annotations, sig)
+            apply_member_annotations(comments.method_annotations, sig)
 
             @rewriter << Source::Replace.new(
               signature.location.start_offset,
@@ -127,12 +127,13 @@ module Spoom
             node.expression.location.end_offset
           end
 
-          if comments.annotations.any?
+          class_annotations = comments.class_annotations
+          if class_annotations.any?
             unless already_extends?(node, /^(::)?T::Helpers$/)
               @rewriter << Source::Insert.new(insert_pos, "\n#{indent}extend T::Helpers\n")
             end
 
-            comments.annotations.reverse_each do |annotation|
+            class_annotations.reverse_each do |annotation|
               from = adjust_to_line_start(annotation.location.start_offset)
               to = adjust_to_line_end(annotation.location.end_offset)
 
@@ -209,7 +210,7 @@ module Spoom
           end
         end
 
-        #: (Array[RBS::Annotations], RBI::Sig) -> void
+        #: (Array[RBS::Annotation], RBI::Sig) -> void
         def apply_member_annotations(annotations, sig)
           annotations.each do |annotation|
             case annotation.string

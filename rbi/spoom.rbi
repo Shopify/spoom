@@ -2579,7 +2579,7 @@ class Spoom::Printer
 end
 
 module Spoom::RBS; end
-class Spoom::RBS::Annotations < ::Spoom::RBS::Comment; end
+class Spoom::RBS::Annotation < ::Spoom::RBS::Comment; end
 
 class Spoom::RBS::Comment
   sig { params(string: ::String, location: ::Prism::Location).void }
@@ -2596,11 +2596,17 @@ class Spoom::RBS::Comments
   sig { void }
   def initialize; end
 
-  sig { returns(T::Array[::Spoom::RBS::Annotations]) }
+  sig { returns(T::Array[::Spoom::RBS::Annotation]) }
   def annotations; end
+
+  sig { returns(T::Array[::Spoom::RBS::Annotation]) }
+  def class_annotations; end
 
   sig { returns(T::Boolean) }
   def empty?; end
+
+  sig { returns(T::Array[::Spoom::RBS::Annotation]) }
+  def method_annotations; end
 
   sig { returns(T::Array[::Spoom::RBS::Signature]) }
   def signatures; end
@@ -2914,7 +2920,7 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs < ::Spoom::Sorbet::Trans
   sig { params(node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode)).void }
   def apply_class_annotations(node); end
 
-  sig { params(annotations: T::Array[::Spoom::RBS::Annotations], sig: ::RBI::Sig).void }
+  sig { params(annotations: T::Array[::Spoom::RBS::Annotation], sig: ::RBI::Sig).void }
   def apply_member_annotations(annotations, sig); end
 
   sig { params(node: ::Prism::CallNode).void }
