@@ -12,9 +12,12 @@ module Spoom
           super(ruby_contents, file: file)
 
           @positional_names = positional_names #: bool
-          @nesting = [] #: Array[Prism::ClassNode | Prism::ModuleNode | Prism::SingletonClassNode]
           @last_sigs = [] #: Array[[Prism::CallNode, RBI::Sig]]
+          @class_annotations = [] #: Array[Prism::CallNode]
           @type_members = [] #: Array[String]
+          @extend_t_helpers = [] #: Array[Prism::CallNode]
+          @extend_t_generics = [] #: Array[Prism::CallNode]
+          @seen_mixes_in_class_methods = false #: bool
         end
 
         # @override
@@ -71,7 +74,9 @@ module Spoom
           when "extend"
             visit_extend(node)
           when "abstract!", "interface!", "sealed!", "final!", "requires_ancestor"
-            visit_class_annotation(node)
+            @class_annotations << node
+          when "mixes_in_class_methods"
+            @seen_mixes_in_class_methods = true
           else
             super
           end
@@ -97,19 +102,39 @@ module Spoom
 
         #: (Prism::ClassNode | Prism::ModuleNode | Prism::SingletonClassNode) { -> void } -> void
         def visit_scope(node, &block)
-          @nesting << node
+          old_class_annotations = @class_annotations
+          @class_annotations = []
           old_type_members = @type_members
           @type_members = []
+          old_extend_t_helpers = @extend_t_helpers
+          @extend_t_helpers = []
+          old_extend_t_generics = @extend_t_generics
+          @extend_t_generics = []
+          old_seen_mixes_in_class_methods = @seen_mixes_in_class_methods
+          @seen_mixes_in_class_methods = false
 
           yield
+
+          delete_extend_t_generics
 
           if @type_members.any?
             indent = " " * node.location.start_column
             @rewriter << Source::Insert.new(node.location.start_offset, "#: [#{@type_members.join(", ")}]\n#{indent}")
           end
 
+          unless @seen_mixes_in_class_methods
+            delete_extend_t_helpers
+          end
+
+          @class_annotations.each do |call|
+            apply_class_annotation(node, call)
+          end
+
+          @class_annotations = old_class_annotations
           @type_members = old_type_members
-          @nesting.pop
+          @extend_t_helpers = old_extend_t_helpers
+          @extend_t_generics = old_extend_t_generics
+          @seen_mixes_in_class_methods = old_seen_mixes_in_class_methods
         end
 
         #: (Prism::CallNode) -> void
@@ -160,16 +185,17 @@ module Spoom
 
           arg = node.arguments&.arguments&.first
           return unless arg.is_a?(Prism::ConstantPathNode)
-          return unless arg.slice.match?(/^(::)?T::Helpers$/) || arg.slice.match?(/^(::)?T::Generic$/)
 
-          from = adjust_to_line_start(node.location.start_offset)
-          to = adjust_to_line_end(node.location.end_offset)
-          to = adjust_to_new_line(to)
-          @rewriter << Source::Delete.new(from, to)
+          case arg.slice
+          when /^(::)?T::Helpers$/
+            @extend_t_helpers << node
+          when /^(::)?T::Generic$/
+            @extend_t_generics << node
+          end
         end
 
-        #: (Prism::CallNode node) -> void
-        def visit_class_annotation(node)
+        #: (Prism::ClassNode | Prism::ModuleNode | Prism::SingletonClassNode, Prism::CallNode) -> void
+        def apply_class_annotation(parent, node)
           unless node.message == "abstract!" || node.message == "interface!" || node.message == "sealed!" ||
               node.message == "final!" || node.message == "requires_ancestor"
             raise Error, "Expected abstract!, interface!, sealed!, final!, or requires_ancestor"
@@ -178,18 +204,17 @@ module Spoom
           return unless node.receiver.nil? || node.receiver.is_a?(Prism::SelfNode)
           return unless node.arguments.nil?
 
-          klass = @nesting.last #: as Prism::Node
-          indent = " " * klass.location.start_column
+          indent = " " * parent.location.start_column
 
           case node.message
           when "abstract!"
-            @rewriter << Source::Insert.new(klass.location.start_offset, "# @abstract\n#{indent}")
+            @rewriter << Source::Insert.new(parent.location.start_offset, "# @abstract\n#{indent}")
           when "interface!"
-            @rewriter << Source::Insert.new(klass.location.start_offset, "# @interface\n#{indent}")
+            @rewriter << Source::Insert.new(parent.location.start_offset, "# @interface\n#{indent}")
           when "sealed!"
-            @rewriter << Source::Insert.new(klass.location.start_offset, "# @sealed\n#{indent}")
+            @rewriter << Source::Insert.new(parent.location.start_offset, "# @sealed\n#{indent}")
           when "final!"
-            @rewriter << Source::Insert.new(klass.location.start_offset, "# @final\n#{indent}")
+            @rewriter << Source::Insert.new(parent.location.start_offset, "# @final\n#{indent}")
           when "requires_ancestor"
             block = node.block
             return unless block.is_a?(Prism::BlockNode)
@@ -200,7 +225,7 @@ module Spoom
 
             arg = body.body.first #: as Prism::Node
             srb_type = RBI::Type.parse_node(arg)
-            @rewriter << Source::Insert.new(klass.location.start_offset, "# @requires_ancestor: #{srb_type.rbs_string}\n#{indent}")
+            @rewriter << Source::Insert.new(parent.location.start_offset, "# @requires_ancestor: #{srb_type.rbs_string}\n#{indent}")
           end
 
           from = adjust_to_line_start(node.location.start_offset)
@@ -286,6 +311,30 @@ module Spoom
           end
 
           type_member
+        end
+
+        #: -> void
+        def delete_extend_t_helpers
+          @extend_t_helpers.each do |helper|
+            from = adjust_to_line_start(helper.location.start_offset)
+            to = adjust_to_line_end(helper.location.end_offset)
+            to = adjust_to_new_line(to)
+            @rewriter << Source::Delete.new(from, to)
+          end
+
+          @extend_t_helpers.clear
+        end
+
+        #: -> void
+        def delete_extend_t_generics
+          @extend_t_generics.each do |generic|
+            from = adjust_to_line_start(generic.location.start_offset)
+            to = adjust_to_line_end(generic.location.end_offset)
+            to = adjust_to_new_line(to)
+            @rewriter << Source::Delete.new(from, to)
+          end
+
+          @extend_t_generics.clear
         end
       end
     end

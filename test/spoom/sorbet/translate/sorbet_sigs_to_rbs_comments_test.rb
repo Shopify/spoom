@@ -237,6 +237,48 @@ module Spoom
           RB
         end
 
+        def test_translate_to_rbs_helpers_do_not_remove_extend_helpers_if_no_helper_was_removed
+          contents = <<~RB
+            module Foo
+              extend T::Helpers
+
+              mixes_in_class_methods Bar
+
+              module Bar
+                def bar
+                end
+              end
+            end
+
+            module Baz
+              extend T::Helpers
+
+              mixes_in_class_methods Foo::Bar
+              requires_ancestor { Foo::Bar }
+            end
+          RB
+
+          assert_equal(<<~RB, sorbet_sigs_to_rbs_comments(contents))
+            module Foo
+              extend T::Helpers
+
+              mixes_in_class_methods Bar
+
+              module Bar
+                def bar
+                end
+              end
+            end
+
+            # @requires_ancestor: Foo::Bar
+            module Baz
+              extend T::Helpers
+
+              mixes_in_class_methods Foo::Bar
+            end
+          RB
+        end
+
         def test_translate_to_rbs_generics
           contents = <<~RB
             class A
