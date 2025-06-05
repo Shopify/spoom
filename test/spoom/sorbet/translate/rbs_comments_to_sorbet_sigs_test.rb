@@ -283,6 +283,16 @@ module Spoom
           RB
         end
 
+        def test_translate_to_rbi_does_not_insert_t_helpers_for_random_annotations
+          contents = <<~RB
+            # @private
+            class Foo
+            end
+          RB
+
+          assert_equal(contents, rbs_comments_to_sorbet_sigs(contents))
+        end
+
         def test_translate_to_rbi_helpers_with_right_order
           contents = <<~RB
             # @foo

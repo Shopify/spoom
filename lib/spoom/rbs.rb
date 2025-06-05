@@ -4,7 +4,7 @@
 module Spoom
   module RBS
     class Comments
-      #: Array[Annotations]
+      #: Array[Annotation]
       attr_reader :annotations
 
       #: Array[Signature]
@@ -12,13 +12,39 @@ module Spoom
 
       #: -> void
       def initialize
-        @annotations = [] #: Array[Annotations]
+        @annotations = [] #: Array[Annotation]
         @signatures = [] #: Array[Signature]
       end
 
       #: -> bool
       def empty?
         @annotations.empty? && @signatures.empty?
+      end
+
+      #: -> Array[Annotation]
+      def class_annotations
+        @annotations.select do |annotation|
+          case annotation.string
+          when "@abstract", "@interface", "@sealed", "@final"
+            true
+          when /^@requires_ancestor: /
+            true
+          else
+            false
+          end
+        end
+      end
+
+      #: -> Array[Annotation]
+      def method_annotations
+        @annotations.select do |annotation|
+          case annotation.string
+          when "@abstract", "@final", "@override", "@override(allow_incompatible: true)", "@overridable", "@without_runtime"
+            true
+          else
+            false
+          end
+        end
       end
     end
 
@@ -36,7 +62,7 @@ module Spoom
       end
     end
 
-    class Annotations < Comment; end
+    class Annotation < Comment; end
     class Signature < Comment; end
 
     module ExtractRBSComments
@@ -54,7 +80,7 @@ module Spoom
 
           if string.start_with?("# @")
             string = string.delete_prefix("#").strip
-            res.annotations << Annotations.new(string, comment.location)
+            res.annotations << Annotation.new(string, comment.location)
           elsif string.start_with?("#: ")
             string = string.delete_prefix("#:").strip
             location = comment.location
