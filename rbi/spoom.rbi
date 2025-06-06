@@ -2981,17 +2981,28 @@ class Spoom::Sorbet::Translate::SorbetSigsToRBSComments < ::Spoom::Sorbet::Trans
 
   private
 
+  sig do
+    params(
+      parent: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode),
+      node: ::Prism::CallNode
+    ).void
+  end
+  def apply_class_annotation(parent, node); end
+
   sig { params(sigs: T::Array[[::Prism::CallNode, ::RBI::Sig]]).void }
   def apply_member_annotations(sigs); end
 
   sig { params(node: ::Prism::ConstantWriteNode).returns(::String) }
   def build_type_member_string(node); end
 
-  sig { params(node: ::Prism::CallNode).void }
-  def visit_attr(node); end
+  sig { void }
+  def delete_extend_t_generics; end
+
+  sig { void }
+  def delete_extend_t_helpers; end
 
   sig { params(node: ::Prism::CallNode).void }
-  def visit_class_annotation(node); end
+  def visit_attr(node); end
 
   sig { params(node: ::Prism::CallNode).void }
   def visit_extend(node); end
