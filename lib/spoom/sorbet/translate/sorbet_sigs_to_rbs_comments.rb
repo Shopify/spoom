@@ -50,11 +50,15 @@ module Spoom
 
           @last_sigs.each do |node, sig|
             out = StringIO.new
-            p = RBI::RBSPrinter.new(out: out, indent: node.location.start_column, positional_names: @positional_names)
+            p = RBI::RBSPrinter.new(out: out, indent: node.location.start_column, positional_names: @positional_names, max_line_length: 120)
+
             p.print("#: ")
             p.send(:print_method_sig, rbi_node, sig)
-            p.print("\n")
-            @rewriter << Source::Replace.new(node.location.start_offset, node.location.end_offset, out.string)
+            rbs_sig = out.string
+            rbs_sig.gsub!("\n", "\n#| ")
+            rbs_sig << "\n"
+
+            @rewriter << Source::Replace.new(node.location.start_offset, node.location.end_offset, rbs_sig)
           end
 
           @last_sigs.clear

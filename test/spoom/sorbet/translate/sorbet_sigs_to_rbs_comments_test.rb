@@ -288,6 +288,66 @@ module Spoom
           RBS
         end
 
+        def test_translate_of_multiline_sig
+          contents = <<~RB
+            sig do
+              params(
+                merchandise_lines: T::Array[CheckoutPlatform::PurchaseOrderTerms::Merchandise::MerchandiseLine],
+                destination_address: T.nilable(Web::Delivery::SimpleStreetDeliveryAddress),
+                delivery_strategy: T.nilable(Web::Delivery::ConcreteDeliveryStrategy),
+                delivery_option: T.nilable(::Delivery::Option),
+                total_cost: T.nilable(MultiCurrency::MoneyBag),
+                origin_location_id: ::Delivery::OriginLocationId,
+                estimated_delivery_time_range: T.nilable(T::Array[Time]),
+                fulfillment_constraints: T.nilable(::OrderRouting::FulfillmentConstraints::Constraints),
+                auto_fulfillment_override: T.nilable(T::Boolean),
+                available_on: T.nilable(CheckoutPlatform::Terms::TermConditions::DeliveryLine::AvailableOn)
+              ).returns(T.self_type)
+            end
+            def with_delivery(
+              merchandise_lines: @merchandise.lines,
+              destination_address: nil,
+              delivery_strategy: nil,
+              delivery_option: nil,
+              total_cost: nil,
+              origin_location_id: ::Delivery::OriginLocationId.new(1),
+              estimated_delivery_time_range: nil,
+              fulfillment_constraints: nil,
+              auto_fulfillment_override: nil,
+              available_on: nil
+            )
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            #: (
+            #|   ?merchandise_lines: Array[CheckoutPlatform::PurchaseOrderTerms::Merchandise::MerchandiseLine],
+            #|   ?destination_address: Web::Delivery::SimpleStreetDeliveryAddress?,
+            #|   ?delivery_strategy: Web::Delivery::ConcreteDeliveryStrategy?,
+            #|   ?delivery_option: ::Delivery::Option?,
+            #|   ?total_cost: MultiCurrency::MoneyBag?,
+            #|   ?origin_location_id: ::Delivery::OriginLocationId,
+            #|   ?estimated_delivery_time_range: Array[Time]?,
+            #|   ?fulfillment_constraints: ::OrderRouting::FulfillmentConstraints::Constraints?,
+            #|   ?auto_fulfillment_override: bool?,
+            #|   ?available_on: CheckoutPlatform::Terms::TermConditions::DeliveryLine::AvailableOn?
+            #| ) -> self
+            def with_delivery(
+              merchandise_lines: @merchandise.lines,
+              destination_address: nil,
+              delivery_strategy: nil,
+              delivery_option: nil,
+              total_cost: nil,
+              origin_location_id: ::Delivery::OriginLocationId.new(1),
+              estimated_delivery_time_range: nil,
+              fulfillment_constraints: nil,
+              auto_fulfillment_override: nil,
+              available_on: nil
+            )
+            end
+          RBS
+        end
+
         private
 
         #: (String, ?positional_names: bool) -> String
