@@ -158,7 +158,10 @@ module Spoom
       def rewrite!(bytes)
         # To avoid remapping positions after each edit,
         # we sort the changes by position and apply them in reverse order.
-        @edits.sort_by(&:range).reverse_each do |edit|
+        # When ranges are equal, preserve the original order
+        @edits.each_with_index.sort_by do |(edit, idx)|
+          [edit.range, idx]
+        end.reverse_each do |(edit, _)|
           edit.apply(bytes)
         end
       end
