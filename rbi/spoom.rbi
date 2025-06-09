@@ -2937,6 +2937,9 @@ class Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments < ::Spoom::Sorbet:
   sig { override.params(node: ::Prism::CallNode).void }
   def visit_call_node(node); end
 
+  sig { override.params(node: ::Prism::IfNode).void }
+  def visit_if_node(node); end
+
   private
 
   sig { params(node: ::Prism::Node).returns(T::Boolean) }
