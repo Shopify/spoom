@@ -336,6 +336,54 @@ module Spoom
           RBS
         end
 
+        def test_translate_to_rbs_with_nested_nilable_param
+          contents = <<~RB
+            Class.new do
+              sig { params(x: T.nilable(T.nilable(Integer))).void }
+              def foo(x); end
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            Class.new do
+              #: (Integer? x) -> void
+              def foo(x); end
+            end
+          RBS
+        end
+
+        def test_translate_to_rbs_with_nested_any_param
+          contents = <<~RB
+            Class.new do
+              sig { params(x: T.any(T.any(Integer, String), Float, Integer)).void }
+              def foo(x); end
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            Class.new do
+              #: ((Integer | String | Float) x) -> void
+              def foo(x); end
+            end
+          RBS
+        end
+
+        def test_translate_to_rbs_with_nested_all_param
+          contents = <<~RB
+            Class.new do
+              sig { params(x: T.all(T.all(Enumerable, Comparable), Numeric, Enumerable)).void }
+              def foo(x); end
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            Class.new do
+              #: ((Enumerable & Comparable & Numeric) x) -> void
+              def foo(x); end
+            end
+          RBS
+        end
+
         private
 
         #: (String, ?positional_names: bool) -> String
