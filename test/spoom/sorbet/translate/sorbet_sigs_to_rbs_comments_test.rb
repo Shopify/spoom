@@ -76,11 +76,17 @@ module Spoom
           contents = <<~RB
             sig { abstract.void }
             def foo; end
+
+            sig { void }
+            def bar; end
           RB
 
           assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
             sig { abstract.void }
             def foo; end
+
+            #: -> void
+            def bar; end
           RBS
         end
 

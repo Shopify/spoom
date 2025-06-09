@@ -41,17 +41,18 @@ module Spoom
         # @override
         #: (Prism::DefNode) -> void
         def visit_def_node(node)
-          return if @last_sigs.empty?
-          return if @last_sigs.any? { |_, sig| sig.is_abstract }
+          last_sigs = collect_last_sigs
+          return if last_sigs.empty?
+          return if last_sigs.any? { |_, sig| sig.is_abstract }
 
-          apply_member_annotations(@last_sigs)
+          apply_member_annotations(last_sigs)
 
           # Build the RBI::Method node so we can print the method signature as RBS.
           builder = RBI::Parser::TreeBuilder.new(@ruby_contents, comments: [], file: @file)
           builder.visit(node)
           rbi_node = builder.tree.nodes.first #: as RBI::Method
 
-          @last_sigs.each do |node, sig|
+          last_sigs.each do |node, sig|
             out = StringIO.new
             p = RBI::RBSPrinter.new(out: out, indent: node.location.start_column, positional_names: @positional_names)
             p.print("#: ")
@@ -59,8 +60,6 @@ module Spoom
             p.print("\n")
             @rewriter << Source::Replace.new(node.location.start_offset, node.location.end_offset, out.string)
           end
-
-          @last_sigs.clear
         end
 
         # @override
@@ -155,16 +154,17 @@ module Spoom
             raise Error, "Expected attr_reader, attr_writer, or attr_accessor"
           end
 
-          return if @last_sigs.empty?
-          return if @last_sigs.any? { |_, sig| sig.is_abstract }
+          last_sigs = collect_last_sigs
+          return if last_sigs.empty?
+          return if last_sigs.any? { |_, sig| sig.is_abstract }
 
-          apply_member_annotations(@last_sigs)
+          apply_member_annotations(last_sigs)
 
           builder = RBI::Parser::TreeBuilder.new(@ruby_contents, comments: [], file: @file)
           builder.visit(node)
           rbi_node = builder.tree.nodes.first #: as RBI::Attr
 
-          @last_sigs.each do |node, sig|
+          last_sigs.each do |node, sig|
             out = StringIO.new
             p = RBI::RBSPrinter.new(out: out, indent: node.location.start_column, positional_names: @positional_names)
             p.print("#: ")
@@ -172,8 +172,6 @@ module Spoom
             p.print("\n")
             @rewriter << Source::Replace.new(node.location.start_offset, node.location.end_offset, out.string)
           end
-
-          @last_sigs.clear
         end
 
         #: (Prism::CallNode node) -> void
@@ -335,6 +333,14 @@ module Spoom
           end
 
           @extend_t_generics.clear
+        end
+
+        # Collects the last signatures visited and clears the current list
+        #: -> Array[[Prism::CallNode, RBI::Sig]]
+        def collect_last_sigs
+          last_sigs = @last_sigs
+          @last_sigs = []
+          last_sigs
         end
       end
     end
