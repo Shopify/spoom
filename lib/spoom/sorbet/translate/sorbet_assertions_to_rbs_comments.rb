@@ -9,6 +9,27 @@ module Spoom
         LINE_BREAK = "\n".ord #: Integer
 
         # @override
+        #: (Prism::IfNode) -> void
+        def visit_if_node(node)
+          if node.if_keyword_loc
+            # We do not translate assertions in ternary expressions to avoid altering the semantic of the code.
+            #
+            # For example:
+            # ```rb
+            # a = T.must(b) ? T.must(c) : T.must(d)
+            # ```
+            #
+            # would become
+            # ```rb
+            # a = T.must(b) ? T.must(c) : d #: !nil
+            # ```
+            #
+            # which does not match the original intent.
+            super
+          end
+        end
+
+        # @override
         #: (Prism::CallNode) -> void
         def visit_call_node(node)
           return super unless t_annotation?(node)
