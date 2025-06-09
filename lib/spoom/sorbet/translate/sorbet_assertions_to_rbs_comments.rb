@@ -12,14 +12,47 @@ module Spoom
         #: (Prism::CallNode) -> void
         def visit_call_node(node)
           return super unless t_annotation?(node)
-          return super unless at_end_of_line?(node)
 
           value = T.must(node.arguments&.arguments&.first)
           rbs_annotation = build_rbs_annotation(node)
 
-          start_offset = node.location.start_offset
-          end_offset = node.location.end_offset
-          @rewriter << Source::Replace.new(start_offset, end_offset - 1, "#{dedent_value(node, value)} #{rbs_annotation}")
+          if at_end_of_line?(node)
+            # Handle regular case where T assertion is at end of line
+            start_offset = node.location.start_offset
+            end_offset = node.location.end_offset
+            @rewriter << Source::Replace.new(start_offset, end_offset - 1, "#{dedent_value(node, value)} #{rbs_annotation}")
+          elsif has_chained_method_call?(node)
+            # Handle chained method calls (e.g., T.unsafe(a).b)
+            start_offset = node.location.start_offset
+            end_offset = node.location.end_offset
+
+            # Find what comes after the T assertion on the same line
+            line_end_offset = end_offset
+            line_end_offset += 1 while line_end_offset < @ruby_bytes.size && @ruby_bytes[line_end_offset] != LINE_BREAK
+
+            # Extract the chained part (everything after the T assertion on the same line)
+            chained_bytes = @ruby_bytes[end_offset...line_end_offset]
+            chained_part = chained_bytes ? chained_bytes.pack("C*") : ""
+
+            # Find the start of the line to extract original indentation
+            line_start_offset = start_offset
+            line_start_offset -= 1 while line_start_offset > 0 && @ruby_bytes[line_start_offset - 1] != LINE_BREAK
+
+            # Extract only the whitespace indentation at the beginning of the line
+            indent_end_offset = line_start_offset
+            indent_end_offset += 1 while indent_end_offset < start_offset && (@ruby_bytes[indent_end_offset] == " ".ord || @ruby_bytes[indent_end_offset] == "\t".ord)
+
+            indent_bytes = @ruby_bytes[line_start_offset...indent_end_offset]
+            original_indent = indent_bytes ? indent_bytes.pack("C*") : ""
+
+            # Replace the entire line with the formatted version
+            # Put the dot after the RBS annotation, and the method name on the next line with original indentation + 1 space
+            replacement = "#{dedent_value(node, value)}. #{rbs_annotation}\n#{original_indent} #{chained_part.strip.delete_prefix(".")}"
+            @rewriter << Source::Replace.new(start_offset, line_end_offset - 1, replacement)
+          else
+            # For other cases (comments, parentheses, etc.), don't translate
+            super
+          end
         end
 
         private
@@ -57,7 +90,7 @@ module Spoom
           end
         end
 
-        # Is this node a `T.let` or `T.cast`?
+        # Is this node a `T.let`, `T.cast`, `T.must`, or `T.unsafe`?
         #: (Prism::CallNode) -> bool
         def t_annotation?(node)
           return false unless t?(node.receiver)
@@ -116,6 +149,17 @@ module Spoom
             end
           end
           lines.join
+        end
+
+        # Check if the T assertion is followed by a chained method call
+        #: (Prism::CallNode) -> bool
+        def has_chained_method_call?(node)
+          end_offset = node.location.end_offset
+          # Skip whitespace to find the next non-space character
+          end_offset += 1 while end_offset < @ruby_bytes.size && @ruby_bytes[end_offset] == " ".ord
+
+          # Check if the next character is a dot (direct method chaining)
+          end_offset < @ruby_bytes.size && @ruby_bytes[end_offset] == ".".ord
         end
       end
     end

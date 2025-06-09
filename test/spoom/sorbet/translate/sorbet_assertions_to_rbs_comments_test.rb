@@ -296,7 +296,8 @@ module Spoom
           assert_equal(<<~RB, rbi_to_rbs(rb))
             a = T.let(b, B) #: A
             foo(T.must(c))
-            T.must(d).baz
+            d. #: as !nil
+             baz
           RB
         end
 
@@ -462,6 +463,63 @@ module Spoom
           RB
 
           assert_equal(rb, rbi_to_rbs(rb))
+        end
+
+        def test_translate_chained_unsafe_calls
+          rb = <<~RB
+            T.unsafe(a).b
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            a. #: as untyped
+             b
+          RB
+        end
+
+        def test_translate_chained_calls_with_indentation
+          rb = <<~RB
+            def foo
+              T.unsafe(self).bar
+              result = T.must(data).process
+            end
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            def foo
+              self. #: as untyped
+               bar
+              result = data. #: as !nil
+               process
+            end
+          RB
+        end
+
+        # TODO: From wip branch
+        def test_does_not_translate_assertions_already_with_comments
+          rb = <<~RB
+            a = T.let(42, Integer) # as Integer
+          RB
+
+          assert_equal(rb, rbi_to_rbs(rb))
+        end
+
+        def test_translate_assertions_split_lines_to_insert_comments
+          rb = <<~RB
+            a = T.must(b).foo
+
+            bar(T.must(c), d)
+
+            T.must(a) << T.must(b)
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            a = b. #: as !nil
+             foo
+
+            bar(T.must(c), d)
+
+            T.must(a) << b #: as !nil
+          RB
         end
 
         def test_doesnt_translate_cast_in_parentheses
