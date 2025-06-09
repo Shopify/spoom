@@ -67,12 +67,17 @@ module Spoom
 
           start_offset = node.location.start_offset
           end_offset = node.location.end_offset
-          @rewriter << Source::Replace.new(start_offset, end_offset - 1, "#{dedent_value(node, value)} #{rbs_annotation}")
+
+          @rewriter << if node.name == :bind
+            Source::Replace.new(start_offset, end_offset - 1, rbs_annotation)
+          else
+            Source::Replace.new(start_offset, end_offset - 1, "#{dedent_value(node, value)} #{rbs_annotation}")
+          end
 
           true
         end
 
-        #: (Prism::CallNode) -> void
+        #: (Prism::CallNode) -> String
         def build_rbs_annotation(call)
           case call.name
           when :let
@@ -83,6 +88,10 @@ module Spoom
             srb_type = call.arguments&.arguments&.last #: as !nil
             rbs_type = RBI::Type.parse_node(srb_type).rbs_string
             "#: as #{rbs_type}"
+          when :bind
+            srb_type = call.arguments&.arguments&.last #: as !nil
+            rbs_type = RBI::Type.parse_node(srb_type).rbs_string
+            "#: self as #{rbs_type}"
           when :must
             "#: as !nil"
           when :unsafe
@@ -113,6 +122,8 @@ module Spoom
           case node.name
           when :let, :cast
             return node.arguments&.arguments&.size == 2
+          when :bind
+            return node.arguments&.arguments&.size == 2 && node.arguments&.arguments&.first.is_a?(Prism::SelfNode)
           when :must, :unsafe
             return node.arguments&.arguments&.size == 1
           end
