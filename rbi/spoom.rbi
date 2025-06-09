@@ -2934,11 +2934,11 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs < ::Spoom::Sorbet::Trans
 end
 
 class Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments < ::Spoom::Sorbet::Translate::Translator
-  sig { override.params(node: ::Prism::CallNode).void }
-  def visit_call_node(node); end
-
   sig { override.params(node: ::Prism::IfNode).void }
   def visit_if_node(node); end
+
+  sig { override.params(node: ::Prism::StatementsNode).void }
+  def visit_statements_node(node); end
 
   private
 
@@ -2950,6 +2950,9 @@ class Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments < ::Spoom::Sorbet:
 
   sig { params(assign: ::Prism::Node, value: ::Prism::Node).returns(::String) }
   def dedent_value(assign, value); end
+
+  sig { params(node: ::Prism::Node).returns(T::Boolean) }
+  def maybe_translate_assertion(node); end
 
   sig { params(node: T.nilable(::Prism::Node)).returns(T::Boolean) }
   def t?(node); end
