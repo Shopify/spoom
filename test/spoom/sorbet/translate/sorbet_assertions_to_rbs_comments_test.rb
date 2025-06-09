@@ -482,6 +482,14 @@ module Spoom
           assert_equal(rb, rbi_to_rbs(rb))
         end
 
+        def test_doesnt_translate_in_expressions
+          rb = <<~RB
+            a - T.must(b)
+          RB
+
+          assert_equal(rb, rbi_to_rbs(rb))
+        end
+
         def test_doesnt_translate_in_ternary_expressions
           rb = <<~RB
             a = T.must(b) ? T.must(c) : T.must(d)
