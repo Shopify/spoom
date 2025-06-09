@@ -2995,6 +2995,9 @@ class Spoom::Sorbet::Translate::SorbetSigsToRBSComments < ::Spoom::Sorbet::Trans
   sig { params(node: ::Prism::ConstantWriteNode).returns(::String) }
   def build_type_member_string(node); end
 
+  sig { returns(T::Array[[::Prism::CallNode, ::RBI::Sig]]) }
+  def collect_last_sigs; end
+
   sig { void }
   def delete_extend_t_generics; end
 
