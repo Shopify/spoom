@@ -481,6 +481,9 @@ module Spoom
             def foo
               T.unsafe(self).bar
               result = T.must(data).process
+              Foo.bar(T.unsafe(self).baz)
+              "foo:\#{T.unsafe(self).bar}"
+              Foo.bar(T.unsafe(self).baz, a: :b)
             end
           RB
 
@@ -490,6 +493,16 @@ module Spoom
                bar
               result = data. #: as !nil
                process
+              Foo.bar(
+                self. #: as untyped
+                 baz
+              )
+              "foo:\#{T.unsafe(self).bar}"
+              Foo.bar(
+                self. #: as untyped
+                 baz,
+                a: :b,
+              )
             end
           RB
         end
