@@ -2945,7 +2945,7 @@ class Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments < ::Spoom::Sorbet:
   sig { params(node: ::Prism::Node).returns(T::Boolean) }
   def at_end_of_line?(node); end
 
-  sig { params(call: ::Prism::CallNode).void }
+  sig { params(call: ::Prism::CallNode).returns(::String) }
   def build_rbs_annotation(call); end
 
   sig { params(assign: ::Prism::Node, value: ::Prism::Node).returns(::String) }
