@@ -651,10 +651,6 @@ class Spoom::Coverage::D3::ColorPalette < ::T::Struct
   prop :true, ::String
   prop :strict, ::String
   prop :strong, ::String
-
-  class << self
-    def inherited(s); end
-  end
 end
 
 class Spoom::Coverage::D3::Pie < ::Spoom::Coverage::D3::Base
@@ -905,8 +901,6 @@ class Spoom::Coverage::Snapshot < ::T::Struct
 
     sig { params(obj: T::Hash[::String, T.untyped]).returns(::Spoom::Coverage::Snapshot) }
     def from_obj(obj); end
-
-    def inherited(s); end
   end
 end
 
@@ -996,10 +990,6 @@ class Spoom::Deadcode::Definition < ::T::Struct
 
   sig { params(args: T.untyped).returns(::String) }
   def to_json(*args); end
-
-  class << self
-    def inherited(s); end
-  end
 end
 
 class Spoom::Deadcode::Definition::Kind < ::T::Enum
@@ -1533,10 +1523,6 @@ class Spoom::Deadcode::Send < ::T::Struct
 
   sig { params(block: T.proc.params(key: ::Prism::Node, value: T.nilable(::Prism::Node)).void).void }
   def each_arg_assoc(&block); end
-
-  class << self
-    def inherited(s); end
-  end
 end
 
 class Spoom::Error < ::StandardError; end
@@ -1549,10 +1535,6 @@ class Spoom::ExecResult < ::T::Struct
 
   sig { returns(::String) }
   def to_s; end
-
-  class << self
-    def inherited(s); end
-  end
 end
 
 class Spoom::FileCollector
@@ -1672,10 +1654,6 @@ class Spoom::FileTree::Node < ::T::Struct
 
   sig { returns(::String) }
   def path; end
-
-  class << self
-    def inherited(s); end
-  end
 end
 
 class Spoom::FileTree::Printer < ::Spoom::FileTree::Visitor
@@ -1720,8 +1698,6 @@ class Spoom::Git::Commit < ::T::Struct
   def timestamp; end
 
   class << self
-    def inherited(s); end
-
     sig { params(string: ::String).returns(T.nilable(::Spoom::Git::Commit)) }
     def parse_line(string); end
   end
@@ -1800,8 +1776,6 @@ class Spoom::LSP::Diagnostic < ::T::Struct
   class << self
     sig { params(json: T::Hash[T.untyped, T.untyped]).returns(::Spoom::LSP::Diagnostic) }
     def from_json(json); end
-
-    def inherited(s); end
   end
 end
 
@@ -1827,8 +1801,6 @@ class Spoom::LSP::DocumentSymbol < ::T::Struct
   class << self
     sig { params(json: T::Hash[T.untyped, T.untyped]).returns(::Spoom::LSP::DocumentSymbol) }
     def from_json(json); end
-
-    def inherited(s); end
   end
 end
 
@@ -1868,8 +1840,6 @@ class Spoom::LSP::Hover < ::T::Struct
   class << self
     sig { params(json: T::Hash[T.untyped, T.untyped]).returns(::Spoom::LSP::Hover) }
     def from_json(json); end
-
-    def inherited(s); end
   end
 end
 
@@ -1888,8 +1858,6 @@ class Spoom::LSP::Location < ::T::Struct
   class << self
     sig { params(json: T::Hash[T.untyped, T.untyped]).returns(::Spoom::LSP::Location) }
     def from_json(json); end
-
-    def inherited(s); end
   end
 end
 
@@ -1930,8 +1898,6 @@ class Spoom::LSP::Position < ::T::Struct
   class << self
     sig { params(json: T::Hash[T.untyped, T.untyped]).returns(::Spoom::LSP::Position) }
     def from_json(json); end
-
-    def inherited(s); end
   end
 end
 
@@ -1957,8 +1923,6 @@ class Spoom::LSP::Range < ::T::Struct
   class << self
     sig { params(json: T::Hash[T.untyped, T.untyped]).returns(::Spoom::LSP::Range) }
     def from_json(json); end
-
-    def inherited(s); end
   end
 end
 
@@ -2005,8 +1969,6 @@ class Spoom::LSP::SignatureHelp < ::T::Struct
   class << self
     sig { params(json: T::Hash[T.untyped, T.untyped]).returns(::Spoom::LSP::SignatureHelp) }
     def from_json(json); end
-
-    def inherited(s); end
   end
 end
 
@@ -2302,8 +2264,6 @@ class Spoom::Model::Reference < ::T::Struct
   class << self
     sig { params(name: ::String, location: ::Spoom::Location).returns(::Spoom::Model::Reference) }
     def constant(name, location); end
-
-    def inherited(s); end
 
     sig { params(name: ::String, location: ::Spoom::Location).returns(::Spoom::Model::Reference) }
     def method(name, location); end
