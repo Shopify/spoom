@@ -482,12 +482,38 @@ module Spoom
           assert_equal(rb, rbi_to_rbs(rb))
         end
 
+        def test_doesnt_translate_in_expressions
+          rb = <<~RB
+            a - T.must(b)
+          RB
+
+          assert_equal(rb, rbi_to_rbs(rb))
+        end
+
         def test_doesnt_translate_in_ternary_expressions
           rb = <<~RB
             a = T.must(b) ? T.must(c) : T.must(d)
           RB
 
           assert_equal(rb, rbi_to_rbs(rb))
+        end
+
+        def test_translate_bind
+          rb = <<~RB
+            T.bind(self, T.class_of(String))
+
+            T.bind(foo, String)
+
+            before_enqueue { T.bind(self, String) }
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            #: self as singleton(String)
+
+            T.bind(foo, String)
+
+            before_enqueue { T.bind(self, String) }
+          RB
         end
 
         private

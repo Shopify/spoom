@@ -9,6 +9,15 @@ module Spoom
         LINE_BREAK = "\n".ord #: Integer
 
         # @override
+        #: (Prism::StatementsNode) -> void
+        def visit_statements_node(node)
+          node.body.each do |statement|
+            translated = maybe_translate_assertion(statement)
+            visit(statement) unless translated
+          end
+        end
+
+        # @override
         #: (Prism::IfNode) -> void
         def visit_if_node(node)
           if node.if_keyword_loc
@@ -29,23 +38,46 @@ module Spoom
           end
         end
 
-        # @override
-        #: (Prism::CallNode) -> void
-        def visit_call_node(node)
-          return super unless t_annotation?(node)
-          return super unless at_end_of_line?(node)
+        private
+
+        #: (Prism::Node) -> bool
+        def maybe_translate_assertion(node)
+          node = case node
+          when Prism::MultiWriteNode,
+               Prism::ClassVariableWriteNode, Prism::ClassVariableAndWriteNode, Prism::ClassVariableOperatorWriteNode, Prism::ClassVariableOrWriteNode,
+               Prism::ConstantWriteNode, Prism::ConstantAndWriteNode, Prism::ConstantOperatorWriteNode, Prism::ConstantOrWriteNode,
+               Prism::ConstantPathWriteNode, Prism::ConstantPathAndWriteNode, Prism::ConstantPathOperatorWriteNode, Prism::ConstantPathOrWriteNode,
+               Prism::GlobalVariableWriteNode, Prism::GlobalVariableAndWriteNode, Prism::GlobalVariableOperatorWriteNode, Prism::GlobalVariableOrWriteNode,
+               Prism::InstanceVariableWriteNode, Prism::InstanceVariableAndWriteNode, Prism::InstanceVariableOperatorWriteNode, Prism::InstanceVariableOrWriteNode,
+               Prism::LocalVariableWriteNode, Prism::LocalVariableAndWriteNode, Prism::LocalVariableOperatorWriteNode, Prism::LocalVariableOrWriteNode,
+               Prism::CallAndWriteNode, Prism::CallOperatorWriteNode, Prism::CallOrWriteNode
+            node.value
+          when Prism::CallNode
+            node
+          else
+            return false
+          end
+
+          return false unless node.is_a?(Prism::CallNode)
+          return false unless t_annotation?(node)
+          return false unless at_end_of_line?(node)
 
           value = T.must(node.arguments&.arguments&.first)
           rbs_annotation = build_rbs_annotation(node)
 
           start_offset = node.location.start_offset
           end_offset = node.location.end_offset
-          @rewriter << Source::Replace.new(start_offset, end_offset - 1, "#{dedent_value(node, value)} #{rbs_annotation}")
+
+          @rewriter << if node.name == :bind
+            Source::Replace.new(start_offset, end_offset - 1, rbs_annotation)
+          else
+            Source::Replace.new(start_offset, end_offset - 1, "#{dedent_value(node, value)} #{rbs_annotation}")
+          end
+
+          true
         end
 
-        private
-
-        #: (Prism::CallNode) -> void
+        #: (Prism::CallNode) -> String
         def build_rbs_annotation(call)
           case call.name
           when :let
@@ -56,6 +88,10 @@ module Spoom
             srb_type = call.arguments&.arguments&.last #: as !nil
             rbs_type = RBI::Type.parse_node(srb_type).rbs_string
             "#: as #{rbs_type}"
+          when :bind
+            srb_type = call.arguments&.arguments&.last #: as !nil
+            rbs_type = RBI::Type.parse_node(srb_type).rbs_string
+            "#: self as #{rbs_type}"
           when :must
             "#: as !nil"
           when :unsafe
@@ -86,6 +122,8 @@ module Spoom
           case node.name
           when :let, :cast
             return node.arguments&.arguments&.size == 2
+          when :bind
+            return node.arguments&.arguments&.size == 2 && node.arguments&.arguments&.first.is_a?(Prism::SelfNode)
           when :must, :unsafe
             return node.arguments&.arguments&.size == 1
           end
