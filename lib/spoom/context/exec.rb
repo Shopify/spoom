@@ -22,11 +22,8 @@ module Spoom
 
   class Context
     # Execution features for a context
+    # @requires_ancestor: Context
     module Exec
-      extend T::Helpers
-
-      requires_ancestor { Context }
-
       # Run a command in this context directory
       #: (String command, ?capture_err: bool) -> ExecResult
       def exec(command, capture_err: true)

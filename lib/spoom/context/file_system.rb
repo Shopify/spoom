@@ -4,11 +4,8 @@
 module Spoom
   class Context
     # File System features for a context
+    # @requires_ancestor: Context
     module FileSystem
-      extend T::Helpers
-
-      requires_ancestor { Context }
-
       # Returns the absolute path to `relative_path` in the context's directory
       #: (String relative_path) -> String
       def absolute_path_to(relative_path)

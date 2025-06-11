@@ -4,12 +4,9 @@
 module Spoom
   module Coverage
     module D3
+      # @abstract
       class Base
         extend T::Sig
-        extend T::Helpers
-
-        abstract!
-
         #: String
         attr_reader :id
 

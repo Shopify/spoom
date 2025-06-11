@@ -6,12 +6,9 @@ require "set"
 
 module Spoom
   module LSP
+    # @interface
     module PrintableSymbol
       extend T::Sig
-      extend T::Helpers
-
-      interface!
-
       sig { abstract.params(printer: SymbolPrinter).void }
       def accept_printer(printer); end
     end

@@ -8,11 +8,8 @@ require "spoom"
 require "test_project"
 
 module Spoom
+  # @requires_ancestor: Minitest::Test
   module TestHelper
-    extend T::Helpers
-
-    requires_ancestor { Minitest::Test }
-
     #: (?String? name) -> TestProject
     def new_project(name = nil)
       project = TestProject.mktmp!(name || self.name)

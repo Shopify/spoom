@@ -6,11 +6,8 @@ require "set"
 module Spoom
   module Deadcode
     module Plugins
+      # @abstract
       class Base
-        extend T::Helpers
-
-        abstract!
-
         class << self
           # Plugins DSL
 

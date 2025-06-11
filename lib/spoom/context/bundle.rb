@@ -4,11 +4,8 @@
 module Spoom
   class Context
     # Bundle features for a context
+    # @requires_ancestor: Context
     module Bundle
-      extend T::Helpers
-
-      requires_ancestor { Context }
-
       # Read the contents of the Gemfile in this context directory
       #: -> String?
       def read_gemfile
