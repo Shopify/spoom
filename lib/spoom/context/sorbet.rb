@@ -4,11 +4,8 @@
 module Spoom
   class Context
     # Sorbet features for a context
+    # @requires_ancestor: Context
     module Sorbet
-      extend T::Helpers
-
-      requires_ancestor { Context }
-
       # Run `bundle exec srb` in this context directory
       #: (*String arg, ?sorbet_bin: String?, ?capture_err: bool) -> ExecResult
       def srb(*arg, sorbet_bin: nil, capture_err: true)

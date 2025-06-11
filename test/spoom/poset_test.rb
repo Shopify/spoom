@@ -6,20 +6,20 @@ require "test_helper"
 module Spoom
   class PosetTest < Minitest::Test
     def test_empty
-      poset = Poset[String].new
+      poset = Poset.new #: Poset[String]
 
       refute(poset.element?("A"))
       refute(poset.edge?("A", "B"))
     end
 
     def test_raises_if_element_not_found
-      poset = Poset[String].new
+      poset = Poset.new #: Poset[String]
 
       assert_raises(Poset::Error) { poset["A"] }
     end
 
     def test_add_add_element
-      poset = Poset[String].new
+      poset = Poset.new #: Poset[String]
 
       poset.add_element("A")
       assert(poset.element?("A"))
@@ -31,7 +31,7 @@ module Spoom
     end
 
     def test_add_edge_also_adds_elements
-      poset = Poset[String].new
+      poset = Poset.new #: Poset[String]
       poset.add_direct_edge("A", "B")
 
       assert(poset.element?("A"))
@@ -39,7 +39,7 @@ module Spoom
     end
 
     def test_add_edge_creates_direct_edge
-      poset = Poset[String].new
+      poset = Poset.new #: Poset[String]
 
       poset.add_direct_edge("A", "B")
       assert(poset.direct_edge?("A", "B"))
@@ -51,7 +51,7 @@ module Spoom
     end
 
     def test_add_edge_creates_transitive_edge
-      poset = Poset[String].new
+      poset = Poset.new #: Poset[String]
 
       poset.add_direct_edge("A", "B")
       assert(poset.edge?("A", "B"))
@@ -62,7 +62,7 @@ module Spoom
     end
 
     def test_add_edge_not_reflexive
-      poset = Poset[String].new
+      poset = Poset.new #: Poset[String]
       poset.add_direct_edge("A", "B")
 
       assert(poset.direct_edge?("A", "B"))
@@ -73,7 +73,7 @@ module Spoom
     end
 
     def test_update_edges
-      poset = Poset[String].new
+      poset = Poset.new #: Poset[String]
 
       poset.add_direct_edge("A", "B")
       assert(poset.edge?("A", "B"))
@@ -108,7 +108,7 @@ module Spoom
     end
 
     def test_update_transitive_edges
-      poset = Poset[String].new
+      poset = Poset.new #: Poset[String]
 
       poset.add_direct_edge("A", "B")
       poset.add_direct_edge("B", "C")
@@ -122,7 +122,7 @@ module Spoom
     end
 
     def test_get_element
-      poset = Poset[String].new
+      poset = Poset.new #: Poset[String]
 
       poset.add_direct_edge("A", "B")
       poset.add_direct_edge("C", "D")
@@ -169,7 +169,7 @@ module Spoom
     end
 
     def test_elements_comparison
-      poset = Poset[String].new
+      poset = Poset.new #: Poset[String]
 
       poset.add_direct_edge("A", "B")
       poset.add_direct_edge("B", "C")

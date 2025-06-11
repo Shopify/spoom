@@ -2,5 +2,4 @@
 --ignore=vendor/
 --ignore=rbi/spoom.rbi
 --enable-experimental-requires-ancestor
---enable-experimental-rbs-signatures
---enable-experimental-rbs-assertions
+--enable-experimental-rbs-comments

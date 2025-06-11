@@ -28,11 +28,8 @@ module Spoom
 
   class Context
     # Git features for a context
+    # @requires_ancestor: Context
     module Git
-      extend T::Helpers
-
-      requires_ancestor { Context }
-
       # Run a command prefixed by `git` in this context directory
       #: (String command) -> ExecResult
       def git(command)

@@ -7,11 +7,8 @@ require "erb"
 
 module Spoom
   module Coverage
+    # @abstract
     class Template
-      extend T::Helpers
-
-      abstract!
-
       # Create a new template from an Erb file path
       #: (template: String) -> void
       def initialize(template:)
@@ -34,12 +31,8 @@ module Spoom
       end
     end
 
+    # @abstract
     class Page < Template
-      extend T::Sig
-      extend T::Helpers
-
-      abstract!
-
       TEMPLATE = "#{Spoom::SPOOM_PATH}/templates/page.erb" #: String
 
       #: String
@@ -75,7 +68,8 @@ module Spoom
         cards.map(&:html).join("\n")
       end
 
-      sig { abstract.returns(T::Array[Cards::Card]) }
+      # @abstract
+      #: -> Array[Cards::Card]
       def cards; end
 
       #: -> String
@@ -86,8 +80,6 @@ module Spoom
 
     module Cards
       class Card < Template
-        extend T::Sig
-
         TEMPLATE = "#{Spoom::SPOOM_PATH}/templates/card.erb" #: String
 
         #: String?
@@ -101,11 +93,8 @@ module Spoom
         end
       end
 
+      # @abstract
       class Erb < Card
-        extend T::Helpers
-
-        abstract!
-
         #: -> void
         def initialize; end # rubocop:disable Lint/MissingSuper
 
@@ -115,7 +104,8 @@ module Spoom
           ERB.new(erb).result(get_binding)
         end
 
-        sig { abstract.returns(String) }
+        # @abstract
+        #: -> String
         def erb; end
       end
 

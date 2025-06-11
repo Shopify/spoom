@@ -6,11 +6,8 @@ require_relative "base"
 module Spoom
   module Coverage
     module D3
+      # @abstract
       class Timeline < Base
-        extend T::Helpers
-
-        abstract!
-
         #: (String id, untyped data, Array[String] keys) -> void
         def initialize(id, data, keys)
           super(id, data)
@@ -120,7 +117,8 @@ module Spoom
           HTML
         end
 
-        sig { abstract.returns(String) }
+        # @abstract
+        #: -> String
         def plot; end
 
         #: -> String
@@ -324,11 +322,8 @@ module Spoom
           end
         end
 
+        # @abstract
         class Stacked < Timeline
-          extend T::Helpers
-
-          abstract!
-
           # @override
           #: -> String
           def script

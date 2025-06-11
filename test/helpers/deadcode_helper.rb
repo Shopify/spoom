@@ -6,11 +6,8 @@ require "test_with_project"
 module Spoom
   module Test
     module Helpers
+      # @requires_ancestor: TestWithProject
       module DeadcodeHelper
-        extend T::Helpers
-
-        requires_ancestor { TestWithProject }
-
         # Indexing
 
         #: (?plugin_classes: Array[singleton(Deadcode::Plugins::Base)]) -> Deadcode::Index

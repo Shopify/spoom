@@ -94,11 +94,8 @@ module Spoom
     end
 
     # An abstract visitor for FileTree
+    # @abstract
     class Visitor
-      extend T::Helpers
-
-      abstract!
-
       #: (FileTree tree) -> void
       def visit_tree(tree)
         visit_nodes(tree.roots)

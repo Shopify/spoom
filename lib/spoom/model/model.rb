@@ -63,11 +63,8 @@ module Spoom
     #
     # It can be a class, module, constant, method, etc.
     # A SymbolDef has a location pointing to the actual code that defines the symbol.
+    # @abstract
     class SymbolDef
-      extend T::Helpers
-
-      abstract!
-
       # The symbol this definition belongs to
       #: Symbol
       attr_reader :symbol
@@ -109,9 +106,8 @@ module Spoom
     end
 
     # A class or module
+    # @abstract
     class Namespace < SymbolDef
-      abstract!
-
       #: Array[SymbolDef]
       attr_reader :children
 
@@ -156,9 +152,8 @@ module Spoom
     end
 
     # A method or an attribute accessor
+    # @abstract
     class Property < SymbolDef
-      abstract!
-
       #: Visibility
       attr_reader :visibility
 
@@ -176,8 +171,8 @@ module Spoom
 
     class Method < Property; end
 
+    # @abstract
     class Attr < Property
-      abstract!
     end
 
     class AttrReader < Attr; end
@@ -193,11 +188,8 @@ module Spoom
     end
 
     # A mixin (include, prepend, extend) to a namespace
+    # @abstract
     class Mixin
-      extend T::Helpers
-
-      abstract!
-
       #: String
       attr_reader :name
 
@@ -234,7 +226,7 @@ module Spoom
     #: -> void
     def initialize
       @symbols = {} #: Hash[String, Symbol]
-      @symbols_hierarchy = Poset[Symbol].new #: Poset[Symbol]
+      @symbols_hierarchy = Poset.new #: Poset[Symbol]
     end
 
     # Get a symbol by it's full name
