@@ -117,7 +117,8 @@ module Spoom
           HTML
         end
 
-        sig { abstract.returns(String) }
+        # @abstract
+        #: -> String
         def plot; end
 
         #: -> String

@@ -6,7 +6,6 @@ module Spoom
     module D3
       # @abstract
       class Base
-        extend T::Sig
         #: String
         attr_reader :id
 
@@ -41,7 +40,8 @@ module Spoom
           ""
         end
 
-        sig { abstract.returns(String) }
+        # @abstract
+        #: -> String
         def script; end
       end
     end

@@ -8,8 +8,8 @@ module Spoom
   module LSP
     # @interface
     module PrintableSymbol
-      extend T::Sig
-      sig { abstract.params(printer: SymbolPrinter).void }
+      # @abstract
+      #: (SymbolPrinter printer) -> void
       def accept_printer(printer); end
     end
 

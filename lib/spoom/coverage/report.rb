@@ -33,7 +33,6 @@ module Spoom
 
     # @abstract
     class Page < Template
-      extend T::Sig
       TEMPLATE = "#{Spoom::SPOOM_PATH}/templates/page.erb" #: String
 
       #: String
@@ -69,7 +68,8 @@ module Spoom
         cards.map(&:html).join("\n")
       end
 
-      sig { abstract.returns(T::Array[Cards::Card]) }
+      # @abstract
+      #: -> Array[Cards::Card]
       def cards; end
 
       #: -> String
@@ -80,8 +80,6 @@ module Spoom
 
     module Cards
       class Card < Template
-        extend T::Sig
-
         TEMPLATE = "#{Spoom::SPOOM_PATH}/templates/card.erb" #: String
 
         #: String?
@@ -106,7 +104,8 @@ module Spoom
           ERB.new(erb).result(get_binding)
         end
 
-        sig { abstract.returns(String) }
+        # @abstract
+        #: -> String
         def erb; end
       end
 
