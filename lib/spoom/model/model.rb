@@ -226,7 +226,7 @@ module Spoom
     #: -> void
     def initialize
       @symbols = {} #: Hash[String, Symbol]
-      @symbols_hierarchy = Poset[Symbol].new #: Poset[Symbol]
+      @symbols_hierarchy = Poset.new #: Poset[Symbol]
     end
 
     # Get a symbol by it's full name
