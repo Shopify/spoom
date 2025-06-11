@@ -376,11 +376,31 @@ module Spoom
           RB
         end
 
+        def test_translate_to_rbi_max_line_length
+          contents = <<~RB
+            #: (
+            #|   param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
+            #|   param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
+            #| ) -> void
+            def foo(param1:, param2:); end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents, max_line_length: 120))
+            sig do
+              params(
+                param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
+                param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
+              ).void
+            end
+            def foo(param1:, param2:); end
+          RB
+        end
+
         private
 
-        #: (String) -> String
-        def rbs_comments_to_sorbet_sigs(ruby_contents)
-          Translate.rbs_comments_to_sorbet_sigs(ruby_contents, file: "test.rb")
+        #: (String, ?max_line_length: Integer?) -> String
+        def rbs_comments_to_sorbet_sigs(ruby_contents, max_line_length: nil)
+          Translate.rbs_comments_to_sorbet_sigs(ruby_contents, file: "test.rb", max_line_length: max_line_length)
         end
       end
     end
