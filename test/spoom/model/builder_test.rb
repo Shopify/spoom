@@ -105,7 +105,7 @@ module Spoom
           ],
           model.symbols.values
             .flat_map(&:definitions)
-            .filter { |d| d.is_a?(Namespace) }
+            .grep(Namespace)
             .map do |d|
               "#{d.full_name}: #{T.cast(d, Namespace).mixins.map { |m| "#{class_name(m)}(#{m.name})" }.join(", ")}"
             end,
@@ -162,7 +162,7 @@ module Spoom
           ["A", "M::B", "M::C", "C::D", "C::M::E", "F", "G::H", "C::M::I"],
           model.symbols.values
             .flat_map(&:definitions)
-            .filter { |d| d.is_a?(Constant) }
+            .grep(Constant)
             .map(&:full_name),
         )
       end
@@ -189,7 +189,7 @@ module Spoom
           ["m1", "m2", "C1::m3", "C1::m4", "C1::m5", "C1::m6"],
           model.symbols.values
             .flat_map(&:definitions)
-            .filter { |d| d.is_a?(Method) }
+            .grep(Method)
             .map(&:full_name),
         )
       end
@@ -234,7 +234,7 @@ module Spoom
           ],
           model.symbols.values
             .flat_map(&:definitions)
-            .filter { |d| d.is_a?(Attr) }
+            .grep(Attr)
             .map { |d| "#{class_name(d)}(#{d.full_name})" },
         )
       end
@@ -303,7 +303,7 @@ module Spoom
           ],
           model.symbols.values
             .flat_map(&:definitions)
-            .filter { |s| s.is_a?(Namespace) }
+            .grep(Namespace)
             .map { |d| "#{d.full_name}: #{T.cast(d, Namespace).children.map(&:full_name).join(", ")}" }
             .uniq,
         )
@@ -352,7 +352,7 @@ module Spoom
           ],
           model.symbols.values
             .flat_map(&:definitions)
-            .filter { |d| d.is_a?(Method) }
+            .grep(Method)
             .map { |d| "#{d.full_name}: #{T.cast(d, Method).visibility.serialize}" },
         )
       end
@@ -389,7 +389,7 @@ module Spoom
           ],
           model.symbols.values
             .flat_map(&:definitions)
-            .filter { |d| d.is_a?(Method) }
+            .grep(Method)
             .map { |d| "#{d.full_name}: #{T.cast(d, Method).visibility.serialize}" },
         )
       end
@@ -416,7 +416,7 @@ module Spoom
           ],
           model.symbols.values
             .flat_map(&:definitions)
-            .filter { |d| d.is_a?(Property) }
+            .grep(Property)
             .map { |d| "#{d.full_name}: #{T.cast(d, Property).sigs.map(&:string).join(", ")}" },
         )
       end
