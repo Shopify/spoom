@@ -25,16 +25,16 @@ module Spoom
 
         # Converts all `sig` nodes to RBS comments in the given Ruby code.
         # It also handles type members and class annotations.
-        #: (String ruby_contents, file: String, ?positional_names: bool) -> String
-        def sorbet_sigs_to_rbs_comments(ruby_contents, file:, positional_names: true)
-          SorbetSigsToRBSComments.new(ruby_contents, file: file, positional_names: positional_names).rewrite
+        #: (String ruby_contents, file: String, ?positional_names: bool, ?max_line_length: Integer?) -> String
+        def sorbet_sigs_to_rbs_comments(ruby_contents, file:, positional_names: true, max_line_length: nil)
+          SorbetSigsToRBSComments.new(ruby_contents, file: file, positional_names: positional_names, max_line_length: max_line_length).rewrite
         end
 
         # Converts all the RBS comments in the given Ruby code to `sig` nodes.
         # It also handles type members and class annotations.
-        #: (String ruby_contents, file: String) -> String
-        def rbs_comments_to_sorbet_sigs(ruby_contents, file:)
-          RBSCommentsToSorbetSigs.new(ruby_contents, file: file).rewrite
+        #: (String ruby_contents, file: String, ?max_line_length: Integer?) -> String
+        def rbs_comments_to_sorbet_sigs(ruby_contents, file:, max_line_length: nil)
+          RBSCommentsToSorbetSigs.new(ruby_contents, file: file, max_line_length: max_line_length).rewrite
         end
 
         # Converts all `T.let` and `T.cast` nodes to RBS comments in the given Ruby code.

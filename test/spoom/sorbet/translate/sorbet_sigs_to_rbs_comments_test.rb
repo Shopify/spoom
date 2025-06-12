@@ -384,11 +384,36 @@ module Spoom
           RBS
         end
 
+        def test_translate_to_rbs_multline_for_long_sigs
+          contents = <<~RB
+            sig do
+              params(
+                param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
+                param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
+              ).void
+            end
+            def foo(param1:, param2:); end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents, max_line_length: 120))
+            #: (
+            #|   param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
+            #|   param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
+            #| ) -> void
+            def foo(param1:, param2:); end
+          RBS
+        end
+
         private
 
-        #: (String, ?positional_names: bool) -> String
-        def sorbet_sigs_to_rbs_comments(ruby_contents, positional_names: true)
-          Translate.sorbet_sigs_to_rbs_comments(ruby_contents, file: "test.rb", positional_names: positional_names)
+        #: (String, ?positional_names: bool, ?max_line_length: Integer?) -> String
+        def sorbet_sigs_to_rbs_comments(ruby_contents, positional_names: true, max_line_length: nil)
+          Translate.sorbet_sigs_to_rbs_comments(
+            ruby_contents,
+            file: "test.rb",
+            positional_names: positional_names,
+            max_line_length: max_line_length,
+          )
         end
       end
     end

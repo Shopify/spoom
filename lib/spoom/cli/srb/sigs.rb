@@ -16,13 +16,24 @@ module Spoom
           desc: "Use positional names when translating from RBI to RBS",
           default: true
         option :include_rbi_files, type: :boolean, desc: "Include RBI files", default: false
+        option :max_line_length, type: :numeric, desc: "Max line length (pass 0 to disable)", default: 120
         def translate(*paths)
           from = options[:from]
           to = options[:to]
+          max_line_length = options[:max_line_length]
 
           if from == to
             say_error("Can't translate signatures from `#{from}` to `#{to}`")
             exit(1)
+          end
+
+          if max_line_length.nil? || max_line_length.zero?
+            max_line_length = nil
+          elsif max_line_length.negative?
+            say_error("--max-line-length can't be negative")
+            exit(1)
+          else
+            max_line_length = max_line_length.to_i
           end
 
           files = collect_files(paths, include_rbi_files: options[:include_rbi_files])
@@ -33,11 +44,20 @@ module Spoom
           case from
           when "rbi"
             transformed_files = transform_files(files) do |file, contents|
-              Spoom::Sorbet::Translate.sorbet_sigs_to_rbs_comments(contents, file: file, positional_names: options[:positional_names])
+              Spoom::Sorbet::Translate.sorbet_sigs_to_rbs_comments(
+                contents,
+                file: file,
+                positional_names: options[:positional_names],
+                max_line_length: max_line_length,
+              )
             end
           when "rbs"
             transformed_files = transform_files(files) do |file, contents|
-              Spoom::Sorbet::Translate.rbs_comments_to_sorbet_sigs(contents, file: file)
+              Spoom::Sorbet::Translate.rbs_comments_to_sorbet_sigs(
+                contents,
+                file: file,
+                max_line_length: max_line_length,
+              )
             end
           end
 

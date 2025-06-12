@@ -7,8 +7,8 @@ module Spoom
       # Converts all `sig` nodes to RBS comments in the given Ruby code.
       # It also handles type members and class annotations.
       class SorbetSigsToRBSComments < Translator
-        #: (String, file: String, positional_names: bool) -> void
-        def initialize(ruby_contents, file:, positional_names:)
+        #: (String, file: String, positional_names: bool, ?max_line_length: Integer?) -> void
+        def initialize(ruby_contents, file:, positional_names:, max_line_length: nil)
           super(ruby_contents, file: file)
 
           @positional_names = positional_names #: bool
@@ -18,6 +18,7 @@ module Spoom
           @extend_t_helpers = [] #: Array[Prism::CallNode]
           @extend_t_generics = [] #: Array[Prism::CallNode]
           @seen_mixes_in_class_methods = false #: bool
+          @max_line_length = max_line_length #: Integer?
         end
 
         # @override
@@ -53,12 +54,10 @@ module Spoom
           rbi_node = builder.tree.nodes.first #: as RBI::Method
 
           last_sigs.each do |node, sig|
-            out = StringIO.new
-            p = RBI::RBSPrinter.new(out: out, indent: node.location.start_column, positional_names: @positional_names)
-            p.print("#: ")
-            p.send(:print_method_sig, rbi_node, sig)
-            p.print("\n")
-            @rewriter << Source::Replace.new(node.location.start_offset, node.location.end_offset, out.string)
+            out = rbs_print(node.location.start_column) do |printer|
+              printer.print_method_sig(rbi_node, sig)
+            end
+            @rewriter << Source::Replace.new(node.location.start_offset, node.location.end_offset, out)
           end
         end
 
@@ -165,12 +164,10 @@ module Spoom
           rbi_node = builder.tree.nodes.first #: as RBI::Attr
 
           last_sigs.each do |node, sig|
-            out = StringIO.new
-            p = RBI::RBSPrinter.new(out: out, indent: node.location.start_column, positional_names: @positional_names)
-            p.print("#: ")
-            p.print_attr_sig(rbi_node, sig)
-            p.print("\n")
-            @rewriter << Source::Replace.new(node.location.start_offset, node.location.end_offset, out.string)
+            out = rbs_print(node.location.start_column) do |printer|
+              printer.print_attr_sig(rbi_node, sig)
+            end
+            @rewriter << Source::Replace.new(node.location.start_offset, node.location.end_offset, out)
           end
         end
 
@@ -341,6 +338,22 @@ module Spoom
           last_sigs = @last_sigs
           @last_sigs = []
           last_sigs
+        end
+
+        #: (Integer) { (RBI::RBSPrinter) -> void } -> String
+        def rbs_print(indent, &block)
+          out = StringIO.new
+          p = RBI::RBSPrinter.new(out: out, positional_names: @positional_names, max_line_length: @max_line_length)
+          block.call(p)
+          string = out.string
+
+          string.lines.map.with_index do |line, index|
+            if index == 0
+              "#: #{line}"
+            else
+              "#{" " * indent}#| #{line}"
+            end
+          end.join + "\n"
         end
       end
     end

@@ -7,6 +7,13 @@ module Spoom
       class RBSCommentsToSorbetSigs < Translator
         include Spoom::RBS::ExtractRBSComments
 
+        #: (String, file: String, ?max_line_length: Integer?) -> void
+        def initialize(ruby_contents, file:, max_line_length: nil)
+          super(ruby_contents, file: file)
+
+          @max_line_length = max_line_length
+        end
+
         # @override
         #: (Prism::ClassNode node) -> void
         def visit_class_node(node)
@@ -53,7 +60,7 @@ module Spoom
             @rewriter << Source::Replace.new(
               signature.location.start_offset,
               signature.location.end_offset,
-              sig.string,
+              sig.string(max_line_length: @max_line_length),
             )
           rescue ::RBS::ParsingError, ::RBI::Error
             # Ignore signatures with errors
@@ -104,7 +111,7 @@ module Spoom
             @rewriter << Source::Replace.new(
               signature.location.start_offset,
               signature.location.end_offset,
-              sig.string,
+              sig.string(max_line_length: @max_line_length),
             )
           rescue ::RBS::ParsingError, ::RBI::Error
             # Ignore signatures with errors

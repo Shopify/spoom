@@ -2839,14 +2839,21 @@ Spoom::Sorbet::Sigils::VALID_STRICTNESS = T.let(T.unsafe(nil), Array)
 
 module Spoom::Sorbet::Translate
   class << self
-    sig { params(ruby_contents: ::String, file: ::String).returns(::String) }
-    def rbs_comments_to_sorbet_sigs(ruby_contents, file:); end
+    sig { params(ruby_contents: ::String, file: ::String, max_line_length: T.nilable(::Integer)).returns(::String) }
+    def rbs_comments_to_sorbet_sigs(ruby_contents, file:, max_line_length: T.unsafe(nil)); end
 
     sig { params(ruby_contents: ::String, file: ::String).returns(::String) }
     def sorbet_assertions_to_rbs_comments(ruby_contents, file:); end
 
-    sig { params(ruby_contents: ::String, file: ::String, positional_names: T::Boolean).returns(::String) }
-    def sorbet_sigs_to_rbs_comments(ruby_contents, file:, positional_names: T.unsafe(nil)); end
+    sig do
+      params(
+        ruby_contents: ::String,
+        file: ::String,
+        positional_names: T::Boolean,
+        max_line_length: T.nilable(::Integer)
+      ).returns(::String)
+    end
+    def sorbet_sigs_to_rbs_comments(ruby_contents, file:, positional_names: T.unsafe(nil), max_line_length: T.unsafe(nil)); end
 
     sig { params(ruby_contents: ::String, file: ::String).returns(::String) }
     def strip_sorbet_sigs(ruby_contents, file:); end
@@ -2857,6 +2864,9 @@ class Spoom::Sorbet::Translate::Error < ::Spoom::Error; end
 
 class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs < ::Spoom::Sorbet::Translate::Translator
   include ::Spoom::RBS::ExtractRBSComments
+
+  sig { params(ruby_contents: ::String, file: ::String, max_line_length: T.nilable(::Integer)).void }
+  def initialize(ruby_contents, file:, max_line_length: T.unsafe(nil)); end
 
   sig { override.params(node: ::Prism::CallNode).void }
   def visit_call_node(node); end
@@ -2924,8 +2934,15 @@ end
 Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments::LINE_BREAK = T.let(T.unsafe(nil), Integer)
 
 class Spoom::Sorbet::Translate::SorbetSigsToRBSComments < ::Spoom::Sorbet::Translate::Translator
-  sig { params(ruby_contents: ::String, file: ::String, positional_names: T::Boolean).void }
-  def initialize(ruby_contents, file:, positional_names:); end
+  sig do
+    params(
+      ruby_contents: ::String,
+      file: ::String,
+      positional_names: T::Boolean,
+      max_line_length: T.nilable(::Integer)
+    ).void
+  end
+  def initialize(ruby_contents, file:, positional_names:, max_line_length: T.unsafe(nil)); end
 
   sig { override.params(node: ::Prism::CallNode).void }
   def visit_call_node(node); end
@@ -2969,6 +2986,9 @@ class Spoom::Sorbet::Translate::SorbetSigsToRBSComments < ::Spoom::Sorbet::Trans
 
   sig { void }
   def delete_extend_t_helpers; end
+
+  sig { params(indent: ::Integer, block: T.proc.params(arg0: ::RBI::RBSPrinter).void).returns(::String) }
+  def rbs_print(indent, &block); end
 
   sig { params(node: ::Prism::CallNode).void }
   def visit_attr(node); end

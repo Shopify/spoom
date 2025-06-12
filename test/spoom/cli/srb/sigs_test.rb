@@ -206,6 +206,62 @@ module Spoom
           RB
         end
 
+        def test_translate_to_rbs_with_max_line_length_error
+          result = @project.spoom("srb sigs translate --no-color --max-line-length -1")
+
+          assert_equal(<<~ERR, result.err)
+            Error: --max-line-length can't be negative
+          ERR
+          refute(result.status)
+        end
+
+        def test_translate_to_rbs_with_max_line_length_by_default
+          @project.write!("file.rb", <<~RB)
+            sig do
+              params(
+                param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
+                param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
+              ).void
+            end
+            def foo(param1:, param2:); end
+          RB
+
+          result = @project.spoom("srb sigs translate --no-color")
+
+          assert_empty(result.err)
+          assert(result.status)
+
+          assert_equal(<<~RB, @project.read("file.rb"))
+            #: (
+            #|   param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
+            #|   param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
+            #| ) -> void
+            def foo(param1:, param2:); end
+          RB
+        end
+
+        def test_translate_to_rbs_without_max_line_length
+          @project.write!("file.rb", <<~RB)
+            sig do
+              params(
+                param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
+                param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
+              ).void
+            end
+            def foo(param1:, param2:); end
+          RB
+
+          result = @project.spoom("srb sigs translate --no-color --max-line-length 0")
+
+          assert_empty(result.err)
+          assert(result.status)
+
+          assert_equal(<<~RB, @project.read("file.rb"))
+            #: (param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType, param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType) -> void
+            def foo(param1:, param2:); end
+          RB
+        end
+
         # translate --from rbs --to rbi
 
         def test_translate_from_rbs_to_rbi
@@ -227,6 +283,51 @@ module Spoom
           assert_equal(<<~RB, @project.read("file.rb"))
             sig { void }
             def foo; end
+          RB
+        end
+
+        def test_translate_to_rbi_with_max_line_length_by_default
+          @project.write!("file.rb", <<~RB)
+            #: (
+            #|   param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
+            #|   param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
+            #| ) -> void
+            def foo(param1:, param2:); end
+          RB
+
+          result = @project.spoom("srb sigs translate --no-color --from rbs --to rbi")
+
+          assert_empty(result.err)
+          assert(result.status)
+
+          assert_equal(<<~RB, @project.read("file.rb"))
+            sig do
+              params(
+                param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
+                param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
+              ).void
+            end
+            def foo(param1:, param2:); end
+          RB
+        end
+
+        def test_translate_to_rbi_without_max_line_length
+          @project.write!("file.rb", <<~RB)
+            #: (
+            #|   param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
+            #|   param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
+            #| ) -> void
+            def foo(param1:, param2:); end
+          RB
+
+          result = @project.spoom("srb sigs translate --no-color --from rbs --to rbi --max-line-length 0")
+
+          assert_empty(result.err)
+          assert(result.status)
+
+          assert_equal(<<~RB, @project.read("file.rb"))
+            sig { params(param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType, param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType).void }
+            def foo(param1:, param2:); end
           RB
         end
 
