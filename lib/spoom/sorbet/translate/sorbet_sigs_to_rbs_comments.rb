@@ -58,6 +58,14 @@ module Spoom
             end
             @rewriter << Source::Replace.new(node.location.start_offset, node.location.end_offset, out)
           end
+
+          if last_sigs.any? { |_, sig| sig.is_abstract }
+            @rewriter << Source::Replace.new(
+              node.name_loc.end_offset,
+              node.location.end_offset - 1,
+              " = raise NotImplementedError, \"Abstract method called\"",
+            )
+          end
         end
 
         # @override
