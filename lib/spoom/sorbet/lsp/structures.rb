@@ -10,7 +10,7 @@ module Spoom
     module PrintableSymbol
       # @abstract
       #: (SymbolPrinter printer) -> void
-      def accept_printer(printer); end
+      def accept_printer(printer) = raise("Abstract method called")
     end
 
     class Hover < T::Struct

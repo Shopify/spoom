@@ -119,7 +119,7 @@ module Spoom
 
         # @abstract
         #: -> String
-        def plot; end
+        def plot = raise("Abstract method called")
 
         #: -> String
         def x_scale

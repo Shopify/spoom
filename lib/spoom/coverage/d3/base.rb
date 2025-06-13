@@ -42,7 +42,7 @@ module Spoom
 
         # @abstract
         #: -> String
-        def script; end
+        def script = raise("Abstract method called")
       end
     end
   end
