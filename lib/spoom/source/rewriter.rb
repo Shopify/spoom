@@ -29,11 +29,11 @@ module Spoom
     class Edit
       # @abstract
       #: (Array[Integer]) -> void
-      def apply(bytes); end
+      def apply(bytes) = raise("Abstract method called")
 
       # @abstract
       #: -> [Integer, Integer]
-      def range; end
+      def range = raise("Abstract method called")
     end
 
     class Insert < Edit

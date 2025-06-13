@@ -70,7 +70,7 @@ module Spoom
 
       # @abstract
       #: -> Array[Cards::Card]
-      def cards; end
+      def cards = raise("Abstract method called")
 
       #: -> String
       def footer_html
@@ -106,7 +106,7 @@ module Spoom
 
         # @abstract
         #: -> String
-        def erb; end
+        def erb = raise("Abstract method called")
       end
 
       class Snapshot < Card
