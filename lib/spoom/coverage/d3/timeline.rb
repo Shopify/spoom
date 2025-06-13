@@ -119,7 +119,7 @@ module Spoom
 
         # @abstract
         #: -> String
-        def plot = raise("Abstract method called")
+        def plot = raise NotImplementedError, "Abstract method called"
 
         #: -> String
         def x_scale

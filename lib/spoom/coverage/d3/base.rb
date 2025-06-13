@@ -42,7 +42,7 @@ module Spoom
 
         # @abstract
         #: -> String
-        def script = raise("Abstract method called")
+        def script = raise NotImplementedError, "Abstract method called"
       end
     end
   end

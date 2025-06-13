@@ -70,7 +70,7 @@ module Spoom
 
       # @abstract
       #: -> Array[Cards::Card]
-      def cards = raise("Abstract method called")
+      def cards = raise NotImplementedError, "Abstract method called"
 
       #: -> String
       def footer_html
@@ -106,7 +106,7 @@ module Spoom
 
         # @abstract
         #: -> String
-        def erb = raise("Abstract method called")
+        def erb = raise NotImplementedError, "Abstract method called"
       end
 
       class Snapshot < Card
