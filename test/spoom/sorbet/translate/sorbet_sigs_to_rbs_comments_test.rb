@@ -89,12 +89,12 @@ module Spoom
             class Foo
               # @abstract
               #: -> void
-              def foo; end
+              def foo = raise NotImplementedError, "Abstract method called"
 
               class Bar
                 # @abstract
                 #: -> void
-                def bar; end
+                def bar = raise NotImplementedError, "Abstract method called"
               end
             end
           RBS
