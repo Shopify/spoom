@@ -44,7 +44,6 @@ module Spoom
         def visit_def_node(node)
           last_sigs = collect_last_sigs
           return if last_sigs.empty?
-          return if last_sigs.any? { |_, sig| sig.is_abstract }
 
           apply_member_annotations(last_sigs)
 
@@ -58,6 +57,14 @@ module Spoom
               printer.print_method_sig(rbi_node, sig)
             end
             @rewriter << Source::Replace.new(node.location.start_offset, node.location.end_offset, out)
+          end
+
+          if last_sigs.any? { |_, sig| sig.is_abstract }
+            @rewriter << Source::Replace.new(
+              node.name_loc.end_offset,
+              node.location.end_offset - 1,
+              " = raise NotImplementedError, \"Abstract method called\"",
+            )
           end
         end
 
@@ -237,23 +244,25 @@ module Spoom
           node, _sig = sigs.first #: as [Prism::CallNode, RBI::Sig]
           insert_pos = node.location.start_offset
 
+          indent = " " * node.location.start_column
+
           if sigs.any? { |_, sig| sig.without_runtime }
-            @rewriter << Source::Insert.new(insert_pos, "# @without_runtime\n")
+            @rewriter << Source::Insert.new(insert_pos, "# @without_runtime\n#{indent}")
           end
 
           if sigs.any? { |_, sig| sig.is_final }
-            @rewriter << Source::Insert.new(insert_pos, "# @final\n")
+            @rewriter << Source::Insert.new(insert_pos, "# @final\n#{indent}")
           end
 
           if sigs.any? { |_, sig| sig.is_abstract }
-            @rewriter << Source::Insert.new(insert_pos, "# @abstract\n")
+            @rewriter << Source::Insert.new(insert_pos, "# @abstract\n#{indent}")
           end
 
           if sigs.any? { |_, sig| sig.is_override }
             @rewriter << if sigs.any? { |_, sig| sig.allow_incompatible_override }
-              Source::Insert.new(insert_pos, "# @override(allow_incompatible: true)\n")
+              Source::Insert.new(insert_pos, "# @override(allow_incompatible: true)\n#{indent}")
             else
-              Source::Insert.new(insert_pos, "# @override\n")
+              Source::Insert.new(insert_pos, "# @override\n#{indent}")
             end
           end
 
