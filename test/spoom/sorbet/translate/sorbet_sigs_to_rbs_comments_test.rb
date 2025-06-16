@@ -86,6 +86,13 @@ module Spoom
               sig { abstract.params(x: Integer).void }
               def baz(x)
               end
+
+              sig { abstract.params(x: Integer).void }
+              def foo=(x); end
+
+              sig { abstract.params(x: Integer).void }
+              def bar=(x)
+              end
             end
           RB
 
@@ -104,6 +111,18 @@ module Spoom
               # @abstract
               #: (Integer x) -> void
               def baz(x) = raise NotImplementedError, "Abstract method called"
+
+              # @abstract
+              #: (Integer x) -> void
+              def foo=(x)
+                raise NotImplementedError, "Abstract method called"
+              end
+
+              # @abstract
+              #: (Integer x) -> void
+              def bar=(x)
+                raise NotImplementedError, "Abstract method called"
+              end
             end
           RBS
         end

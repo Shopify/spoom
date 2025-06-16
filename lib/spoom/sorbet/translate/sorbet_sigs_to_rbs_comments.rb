@@ -63,7 +63,12 @@ module Spoom
             @rewriter << Source::Replace.new(
               node.rparen_loc&.end_offset || node.name_loc.end_offset,
               node.location.end_offset - 1,
-              " = raise NotImplementedError, \"Abstract method called\"",
+              if node.name.end_with?("=")
+                indent = " " * node.location.start_column
+                "\n#{indent}  raise NotImplementedError, \"Abstract method called\"\n#{indent}end"
+              else
+                " = raise NotImplementedError, \"Abstract method called\""
+              end,
             )
           end
         end
