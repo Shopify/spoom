@@ -72,21 +72,58 @@ module Spoom
           RBS
         end
 
-        def test_does_not_translate_to_rbs_abstract_methods
+        def test_translate_to_rbs_abstract_methods
           contents = <<~RB
-            sig { abstract.void }
-            def foo; end
+            class Foo
+              sig { abstract.void }
+              def foo; end
 
-            sig { void }
-            def bar; end
+              class Bar
+                sig { abstract.void }
+                def bar; end
+              end
+
+              sig { abstract.params(x: Integer).void }
+              def baz(x)
+              end
+
+              sig { abstract.params(x: Integer).void }
+              def foo=(x); end
+
+              sig { abstract.params(x: Integer).void }
+              def bar=(x)
+              end
+            end
           RB
 
           assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
-            sig { abstract.void }
-            def foo; end
+            class Foo
+              # @abstract
+              #: -> void
+              def foo = raise NotImplementedError, "Abstract method called"
 
-            #: -> void
-            def bar; end
+              class Bar
+                # @abstract
+                #: -> void
+                def bar = raise NotImplementedError, "Abstract method called"
+              end
+
+              # @abstract
+              #: (Integer x) -> void
+              def baz(x) = raise NotImplementedError, "Abstract method called"
+
+              # @abstract
+              #: (Integer x) -> void
+              def foo=(x)
+                raise NotImplementedError, "Abstract method called"
+              end
+
+              # @abstract
+              #: (Integer x) -> void
+              def bar=(x)
+                raise NotImplementedError, "Abstract method called"
+              end
+            end
           RBS
         end
 
