@@ -8,6 +8,33 @@ module Spoom
       class SorbetAssertionsToRBSComments < Translator
         LINE_BREAK = "\n".ord #: Integer
 
+        #: (
+        #|  String,
+        #|  file: String,
+        #|  ?translate_t_let: bool,
+        #|  ?translate_t_cast: bool,
+        #|  ?translate_t_bind: bool,
+        #|  ?translate_t_must: bool,
+        #|  ?translate_t_unsafe: bool,
+        #| ) -> void
+        def initialize(
+          ruby_contents,
+          file:,
+          translate_t_let: true,
+          translate_t_cast: true,
+          translate_t_bind: true,
+          translate_t_must: true,
+          translate_t_unsafe: true
+        )
+          super(ruby_contents, file: file)
+
+          @translate_t_let = translate_t_let
+          @translate_t_cast = translate_t_cast
+          @translate_t_bind = translate_t_bind
+          @translate_t_must = translate_t_must
+          @translate_t_unsafe = translate_t_unsafe
+        end
+
         # @override
         #: (Prism::StatementsNode) -> void
         def visit_statements_node(node)
@@ -59,7 +86,7 @@ module Spoom
           end
 
           return false unless node.is_a?(Prism::CallNode)
-          return false unless t_annotation?(node)
+          return false unless translatable_annotation?(node)
           return false unless at_end_of_line?(node)
 
           value = T.must(node.arguments&.arguments&.first)
@@ -116,16 +143,20 @@ module Spoom
 
         # Is this node a `T.let` or `T.cast`?
         #: (Prism::CallNode) -> bool
-        def t_annotation?(node)
+        def translatable_annotation?(node)
           return false unless t?(node.receiver)
 
           case node.name
-          when :let, :cast
-            return node.arguments&.arguments&.size == 2
+          when :let
+            return @translate_t_let && node.arguments&.arguments&.size == 2
+          when :cast
+            return @translate_t_cast && node.arguments&.arguments&.size == 2
           when :bind
-            return node.arguments&.arguments&.size == 2 && node.arguments&.arguments&.first.is_a?(Prism::SelfNode)
-          when :must, :unsafe
-            return node.arguments&.arguments&.size == 1
+            return @translate_t_bind && node.arguments&.arguments&.size == 2 && node.arguments&.arguments&.first.is_a?(Prism::SelfNode)
+          when :must
+            return @translate_t_must && node.arguments&.arguments&.size == 1
+          when :unsafe
+            return @translate_t_unsafe && node.arguments&.arguments&.size == 1
           end
 
           false

@@ -516,11 +516,56 @@ module Spoom
           RB
         end
 
+        def test_translate_options
+          rb = <<~RB
+            T.bind(self, T.class_of(String))
+
+            a = T.let(42, Integer)
+            b = T.cast(42, Integer)
+            c = T.must(42)
+            d = T.unsafe(42)
+          RB
+
+          assert_equal(
+            rb,
+            rbi_to_rbs(
+              rb,
+              translate_t_let: false,
+              translate_t_cast: false,
+              translate_t_bind: false,
+              translate_t_must: false,
+              translate_t_unsafe: false,
+            ),
+          )
+        end
+
         private
 
-        #: (String) -> String
-        def rbi_to_rbs(ruby_contents)
-          Translate.sorbet_assertions_to_rbs_comments(ruby_contents, file: "test.rb")
+        #: (
+        #|  String,
+        #|  ?translate_t_let: bool,
+        #|  ?translate_t_cast: bool,
+        #|  ?translate_t_bind: bool,
+        #|  ?translate_t_must: bool,
+        #|  ?translate_t_unsafe: bool
+        #| ) -> String
+        def rbi_to_rbs(
+          ruby_contents,
+          translate_t_let: true,
+          translate_t_cast: true,
+          translate_t_bind: true,
+          translate_t_must: true,
+          translate_t_unsafe: true
+        )
+          Translate.sorbet_assertions_to_rbs_comments(
+            ruby_contents,
+            file: "test.rb",
+            translate_t_let: translate_t_let,
+            translate_t_cast: translate_t_cast,
+            translate_t_bind: translate_t_bind,
+            translate_t_must: translate_t_must,
+            translate_t_unsafe: translate_t_unsafe,
+          )
         end
       end
     end
