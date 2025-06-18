@@ -2842,8 +2842,18 @@ module Spoom::Sorbet::Translate
     sig { params(ruby_contents: ::String, file: ::String, max_line_length: T.nilable(::Integer)).returns(::String) }
     def rbs_comments_to_sorbet_sigs(ruby_contents, file:, max_line_length: T.unsafe(nil)); end
 
-    sig { params(ruby_contents: ::String, file: ::String).returns(::String) }
-    def sorbet_assertions_to_rbs_comments(ruby_contents, file:); end
+    sig do
+      params(
+        ruby_contents: ::String,
+        file: ::String,
+        translate_t_let: T::Boolean,
+        translate_t_cast: T::Boolean,
+        translate_t_bind: T::Boolean,
+        translate_t_must: T::Boolean,
+        translate_t_unsafe: T::Boolean
+      ).returns(::String)
+    end
+    def sorbet_assertions_to_rbs_comments(ruby_contents, file:, translate_t_let: T.unsafe(nil), translate_t_cast: T.unsafe(nil), translate_t_bind: T.unsafe(nil), translate_t_must: T.unsafe(nil), translate_t_unsafe: T.unsafe(nil)); end
 
     sig do
       params(
@@ -2904,6 +2914,19 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs < ::Spoom::Sorbet::Trans
 end
 
 class Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments < ::Spoom::Sorbet::Translate::Translator
+  sig do
+    params(
+      ruby_contents: ::String,
+      file: ::String,
+      translate_t_let: T::Boolean,
+      translate_t_cast: T::Boolean,
+      translate_t_bind: T::Boolean,
+      translate_t_must: T::Boolean,
+      translate_t_unsafe: T::Boolean
+    ).void
+  end
+  def initialize(ruby_contents, file:, translate_t_let: T.unsafe(nil), translate_t_cast: T.unsafe(nil), translate_t_bind: T.unsafe(nil), translate_t_must: T.unsafe(nil), translate_t_unsafe: T.unsafe(nil)); end
+
   sig { override.params(node: ::Prism::IfNode).void }
   def visit_if_node(node); end
 
@@ -2928,7 +2951,7 @@ class Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments < ::Spoom::Sorbet:
   def t?(node); end
 
   sig { params(node: ::Prism::CallNode).returns(T::Boolean) }
-  def t_annotation?(node); end
+  def translatable_annotation?(node); end
 end
 
 Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments::LINE_BREAK = T.let(T.unsafe(nil), Integer)
