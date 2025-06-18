@@ -96,6 +96,8 @@ module Spoom
             end
           RB
 
+          assert_equal(contents, sorbet_sigs_to_rbs_comments(contents, translate_abstract_methods: false))
+
           assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
             class Foo
               # @abstract
@@ -265,6 +267,8 @@ module Spoom
             end
           RB
 
+          assert_equal(contents, sorbet_sigs_to_rbs_comments(contents, translate_helpers: false))
+
           assert_equal(<<~RB, sorbet_sigs_to_rbs_comments(contents))
             # @abstract
             # @requires_ancestor: singleton(Foo::Bar)
@@ -326,26 +330,28 @@ module Spoom
           contents = <<~RB
             class A
               extend T::Generic
-              A = type_member(:in)
-              B = type_member(:out)
+              X = type_member(:in)
+              Y = type_member(:out)
               module B
                 extend T::Generic
-                A = type_member
-                B = type_member {{ upper: C }}
+                X = type_member
+                Y = type_member {{ upper: C }}
                 class << self
                   extend T::Generic
-                  A = type_member {{ fixed: T.class_of(Numeric) }}
+                  X = type_member {{ fixed: T.class_of(Numeric) }}
                 end
               end
             end
           RB
 
+          assert_equal(contents, sorbet_sigs_to_rbs_comments(contents, translate_generics: false))
+
           assert_equal(<<~RB, sorbet_sigs_to_rbs_comments(contents))
-            #: [in A, out B]
+            #: [in X, out Y]
             class A
-              #: [A, B < C]
+              #: [X, Y < C]
               module B
-                #: [A = singleton(Numeric)]
+                #: [X = singleton(Numeric)]
                 class << self
                 end
               end
@@ -443,13 +449,30 @@ module Spoom
 
         private
 
-        #: (String, ?positional_names: bool, ?max_line_length: Integer?) -> String
-        def sorbet_sigs_to_rbs_comments(ruby_contents, positional_names: true, max_line_length: nil)
+        #: (
+        #|   String,
+        #|   ?positional_names: bool,
+        #|   ?max_line_length: Integer?,
+        #|   ?translate_generics: bool,
+        #|   ?translate_helpers: bool,
+        #|   ?translate_abstract_methods: bool
+        #| ) -> String
+        def sorbet_sigs_to_rbs_comments(
+          ruby_contents,
+          positional_names: true,
+          max_line_length: nil,
+          translate_generics: true,
+          translate_helpers: true,
+          translate_abstract_methods: true
+        )
           Translate.sorbet_sigs_to_rbs_comments(
             ruby_contents,
             file: "test.rb",
             positional_names: positional_names,
             max_line_length: max_line_length,
+            translate_generics: translate_generics,
+            translate_helpers: translate_helpers,
+            translate_abstract_methods: translate_abstract_methods,
           )
         end
       end

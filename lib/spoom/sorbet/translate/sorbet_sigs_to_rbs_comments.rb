@@ -7,8 +7,24 @@ module Spoom
       # Converts all `sig` nodes to RBS comments in the given Ruby code.
       # It also handles type members and class annotations.
       class SorbetSigsToRBSComments < Translator
-        #: (String, file: String, positional_names: bool, ?max_line_length: Integer?) -> void
-        def initialize(ruby_contents, file:, positional_names:, max_line_length: nil)
+        #: (
+        #|   String,
+        #|   file: String,
+        #|   positional_names: bool,
+        #|   ?max_line_length: Integer?,
+        #|   ?translate_generics: bool,
+        #|   ?translate_helpers: bool,
+        #|   ?translate_abstract_methods: bool
+        #| ) -> void
+        def initialize(
+          ruby_contents,
+          file:,
+          positional_names:,
+          max_line_length: nil,
+          translate_generics: true,
+          translate_helpers: true,
+          translate_abstract_methods: true
+        )
           super(ruby_contents, file: file)
 
           @positional_names = positional_names #: bool
@@ -19,6 +35,10 @@ module Spoom
           @extend_t_generics = [] #: Array[Prism::CallNode]
           @seen_mixes_in_class_methods = false #: bool
           @max_line_length = max_line_length #: Integer?
+
+          @translate_generics = translate_generics #: bool
+          @translate_helpers = translate_helpers #: bool
+          @translate_abstract_methods = translate_abstract_methods #: bool
         end
 
         # @override
@@ -53,13 +73,15 @@ module Spoom
           rbi_node = builder.tree.nodes.first #: as RBI::Method
 
           last_sigs.each do |node, sig|
+            next if sig.is_abstract && !@translate_abstract_methods
+
             out = rbs_print(node.location.start_column) do |printer|
               printer.print_method_sig(rbi_node, sig)
             end
             @rewriter << Source::Replace.new(node.location.start_offset, node.location.end_offset, out)
           end
 
-          if last_sigs.any? { |_, sig| sig.is_abstract }
+          if @translate_abstract_methods && last_sigs.any? { |_, sig| sig.is_abstract }
             @rewriter << Source::Replace.new(
               node.rparen_loc&.end_offset || node.name_loc.end_offset,
               node.location.end_offset - 1,
@@ -95,6 +117,8 @@ module Spoom
         # @override
         #: (Prism::ConstantWriteNode) -> void
         def visit_constant_write_node(node)
+          return super unless @translate_generics
+
           call = node.value
           return super unless call.is_a?(Prism::CallNode)
           return super unless call.message == "type_member"
@@ -125,19 +149,23 @@ module Spoom
 
           yield
 
-          delete_extend_t_generics
+          if @translate_generics
+            delete_extend_t_generics
 
-          if @type_members.any?
-            indent = " " * node.location.start_column
-            @rewriter << Source::Insert.new(node.location.start_offset, "#: [#{@type_members.join(", ")}]\n#{indent}")
+            if @type_members.any?
+              indent = " " * node.location.start_column
+              @rewriter << Source::Insert.new(node.location.start_offset, "#: [#{@type_members.join(", ")}]\n#{indent}")
+            end
           end
 
-          unless @seen_mixes_in_class_methods
-            delete_extend_t_helpers
-          end
+          if @translate_helpers
+            unless @seen_mixes_in_class_methods
+              delete_extend_t_helpers
+            end
 
-          @class_annotations.each do |call|
-            apply_class_annotation(node, call)
+            @class_annotations.each do |call|
+              apply_class_annotation(node, call)
+            end
           end
 
           @class_annotations = old_class_annotations
@@ -259,7 +287,7 @@ module Spoom
             @rewriter << Source::Insert.new(insert_pos, "# @final\n#{indent}")
           end
 
-          if sigs.any? { |_, sig| sig.is_abstract }
+          if sigs.any? { |_, sig| sig.is_abstract } && @translate_abstract_methods
             @rewriter << Source::Insert.new(insert_pos, "# @abstract\n#{indent}")
           end
 
