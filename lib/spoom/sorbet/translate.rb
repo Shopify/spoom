@@ -60,9 +60,32 @@ module Spoom
 
         # Converts all `T.let` and `T.cast` nodes to RBS comments in the given Ruby code.
         # It also handles type members and class annotations.
-        #: (String ruby_contents, file: String) -> String
-        def sorbet_assertions_to_rbs_comments(ruby_contents, file:)
-          SorbetAssertionsToRBSComments.new(ruby_contents, file: file).rewrite
+        #: (
+        #|  String,
+        #|  file: String,
+        #|  ?translate_t_let: bool,
+        #|  ?translate_t_cast: bool,
+        #|  ?translate_t_bind: bool,
+        #|  ?translate_t_must: bool,
+        #|  ?translate_t_unsafe: bool
+        #| ) -> String
+        def sorbet_assertions_to_rbs_comments(
+          ruby_contents, file:,
+          translate_t_let: true,
+          translate_t_cast: true,
+          translate_t_bind: true,
+          translate_t_must: true,
+          translate_t_unsafe: true
+        )
+          SorbetAssertionsToRBSComments.new(
+            ruby_contents,
+            file: file,
+            translate_t_let: translate_t_let,
+            translate_t_cast: translate_t_cast,
+            translate_t_bind: translate_t_bind,
+            translate_t_must: translate_t_must,
+            translate_t_unsafe: translate_t_unsafe,
+          ).rewrite
         end
       end
     end

@@ -25,8 +25,40 @@ module Spoom
           OUT
           assert(result.status)
 
-          assert_equal(<<~RB, File.read(@project.absolute_path_to("a/file1.rb")))
+          assert_equal(<<~RB, @project.read("a/file1.rb"))
             x = nil #: String?
+          RB
+        end
+
+        def test_translate_from_rbi_to_rbs_with_options
+          contents = <<~RB
+            T.bind(self, T.class_of(String))
+
+            a = T.let(nil, T.nilable(String))
+            b = T.cast(nil, T.nilable(String))
+            c = T.must(nil)
+            d = T.unsafe(nil)
+          RB
+
+          @project.write!("file.rb", contents)
+
+          result = @project.spoom("srb assertions translate --no-color --no-translate-t-let --no-translate-t-cast --no-translate-t-bind --no-translate-t-must --no-translate-t-unsafe")
+
+          assert_empty(result.err)
+          assert(result.status)
+          assert_equal(contents, @project.read("file.rb"))
+
+          result = @project.spoom("srb assertions translate --no-color")
+
+          assert_empty(result.err)
+          assert(result.status)
+          assert_equal(<<~RB, @project.read("file.rb"))
+            #: self as singleton(String)
+
+            a = nil #: String?
+            b = nil #: as String?
+            c = nil #: as !nil
+            d = nil #: as untyped
           RB
         end
 
