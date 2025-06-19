@@ -2850,10 +2850,13 @@ module Spoom::Sorbet::Translate
         ruby_contents: ::String,
         file: ::String,
         positional_names: T::Boolean,
-        max_line_length: T.nilable(::Integer)
+        max_line_length: T.nilable(::Integer),
+        translate_generics: T::Boolean,
+        translate_helpers: T::Boolean,
+        translate_abstract_methods: T::Boolean
       ).returns(::String)
     end
-    def sorbet_sigs_to_rbs_comments(ruby_contents, file:, positional_names: T.unsafe(nil), max_line_length: T.unsafe(nil)); end
+    def sorbet_sigs_to_rbs_comments(ruby_contents, file:, positional_names: T.unsafe(nil), max_line_length: T.unsafe(nil), translate_generics: T.unsafe(nil), translate_helpers: T.unsafe(nil), translate_abstract_methods: T.unsafe(nil)); end
 
     sig { params(ruby_contents: ::String, file: ::String).returns(::String) }
     def strip_sorbet_sigs(ruby_contents, file:); end
@@ -2939,10 +2942,13 @@ class Spoom::Sorbet::Translate::SorbetSigsToRBSComments < ::Spoom::Sorbet::Trans
       ruby_contents: ::String,
       file: ::String,
       positional_names: T::Boolean,
-      max_line_length: T.nilable(::Integer)
+      max_line_length: T.nilable(::Integer),
+      translate_generics: T::Boolean,
+      translate_helpers: T::Boolean,
+      translate_abstract_methods: T::Boolean
     ).void
   end
-  def initialize(ruby_contents, file:, positional_names:, max_line_length: T.unsafe(nil)); end
+  def initialize(ruby_contents, file:, positional_names:, max_line_length: T.unsafe(nil), translate_generics: T.unsafe(nil), translate_helpers: T.unsafe(nil), translate_abstract_methods: T.unsafe(nil)); end
 
   sig { override.params(node: ::Prism::CallNode).void }
   def visit_call_node(node); end

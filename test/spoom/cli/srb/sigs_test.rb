@@ -262,6 +262,91 @@ module Spoom
           RB
         end
 
+        def test_translate_to_rbs_translate_generics_option
+          contents = <<~RB
+            class A
+              extend T::Generic
+
+              E = type_member
+            end
+          RB
+
+          @project.write!("file.rb", contents)
+
+          result = @project.spoom("srb sigs translate --no-color --from rbs --to rbi")
+
+          assert_empty(result.err)
+          assert(result.status)
+          assert_equal(contents, @project.read("file.rb"))
+
+          result = @project.spoom("srb sigs translate --no-color --from rbi --to rbs --translate-generics")
+
+          assert_empty(result.err)
+          assert(result.status)
+          assert_equal(<<~RB, @project.read("file.rb"))
+            #: [E]
+            class A
+            end
+          RB
+        end
+
+        def test_translate_to_rbs_translate_helpers_option
+          contents = <<~RB
+            class A
+              extend T::Helpers
+
+              abstract!
+            end
+          RB
+
+          @project.write!("file.rb", contents)
+
+          result = @project.spoom("srb sigs translate --no-color --from rbi --to rbs")
+
+          assert_empty(result.err)
+          assert(result.status)
+          assert_equal(contents, @project.read("file.rb"))
+
+          result = @project.spoom("srb sigs translate --no-color --from rbi --to rbs --translate-helpers")
+
+          assert_empty(result.err)
+          assert(result.status)
+          assert_equal(<<~RB, @project.read("file.rb"))
+            # @abstract
+            class A
+            end
+          RB
+        end
+
+        def test_translate_to_rbs_translate_abstract_methods_option
+          contents = <<~RB
+            class A
+              sig { abstract.void }
+              def foo; end
+            end
+          RB
+
+          @project.write!("file.rb", contents)
+
+          result = @project.spoom("srb sigs translate --no-color --from rbi --to rbs")
+
+          assert_empty(result.err)
+          assert(result.status)
+          assert_equal(contents, @project.read("file.rb"))
+
+          result = @project.spoom("srb sigs translate --no-color --from rbi --to rbs --translate-abstract-methods")
+
+          assert_empty(result.err)
+          assert(result.status)
+          assert_equal(<<~RB, @project.read("file.rb"))
+            class A
+              # @abstract
+              #: -> void
+              def foo = raise NotImplementedError, "Abstract method called"
+            end
+          RB
+        end
+
         # translate --from rbs --to rbi
 
         def test_translate_from_rbs_to_rbi

@@ -17,6 +17,9 @@ module Spoom
           default: true
         option :include_rbi_files, type: :boolean, desc: "Include RBI files", default: false
         option :max_line_length, type: :numeric, desc: "Max line length (pass 0 to disable)", default: 120
+        option :translate_generics, type: :boolean, desc: "Translate generics", default: false
+        option :translate_helpers, type: :boolean, desc: "Translate helpers", default: false
+        option :translate_abstract_methods, type: :boolean, desc: "Translate abstract methods", default: false
         def translate(*paths)
           from = options[:from]
           to = options[:to]
@@ -49,6 +52,9 @@ module Spoom
                 file: file,
                 positional_names: options[:positional_names],
                 max_line_length: max_line_length,
+                translate_generics: options[:translate_generics],
+                translate_helpers: options[:translate_helpers],
+                translate_abstract_methods: options[:translate_abstract_methods],
               )
             end
           when "rbs"
