@@ -2912,6 +2912,9 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs < ::Spoom::Sorbet::Trans
   sig { params(annotations: T::Array[::Spoom::RBS::Annotation], sig: ::RBI::Sig).void }
   def apply_member_annotations(annotations, sig); end
 
+  sig { params(def_node: ::Prism::DefNode, comments: ::Spoom::RBS::Comments).void }
+  def rewrite_def(def_node, comments); end
+
   sig { params(node: ::Prism::CallNode).void }
   def visit_attr(node); end
 end
