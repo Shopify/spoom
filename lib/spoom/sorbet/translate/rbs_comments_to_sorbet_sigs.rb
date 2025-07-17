@@ -111,10 +111,22 @@ module Spoom
           rbi_node = builder.tree.nodes.first #: as RBI::Method
 
           comments.signatures.each do |signature|
-            method_type = ::RBS::Parser.parse_method_type(signature.string)
+            begin
+              method_type = ::RBS::Parser.parse_method_type(signature.string)
+            rescue ::RBS::ParsingError
+              next
+            end
+
             translator = RBI::RBS::MethodTypeTranslator.new(rbi_node)
-            translator.visit(method_type)
+
+            begin
+              translator.visit(method_type)
+            rescue ::RBI::Error
+              next
+            end
+
             sig = translator.result
+
             apply_member_annotations(comments.method_annotations, sig)
 
             @rewriter << Source::Replace.new(
@@ -122,9 +134,6 @@ module Spoom
               signature.location.end_offset,
               sig.string(max_line_length: @max_line_length),
             )
-          rescue ::RBS::ParsingError, ::RBI::Error
-            # Ignore signatures with errors
-            next
           end
         end
 
