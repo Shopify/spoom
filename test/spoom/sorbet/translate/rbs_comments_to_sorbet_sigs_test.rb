@@ -396,6 +396,36 @@ module Spoom
           RB
         end
 
+        def test_translate_to_rbi_defs_within_send
+          contents = <<~RB
+            #: -> void
+            public def foo; end
+
+            #: -> void
+            private def bar; end
+
+            #: -> void
+            memoize def baz; end
+
+            #: -> void
+            abstract def qux; end
+          RB
+
+          assert_equal(<<~RBS, rbs_comments_to_sorbet_sigs(contents))
+            sig { void }
+            public def foo; end
+
+            sig { void }
+            private def bar; end
+
+            sig { void }
+            memoize def baz; end
+
+            sig { void }
+            abstract def qux; end
+          RBS
+        end
+
         private
 
         #: (String, ?max_line_length: Integer?) -> String

@@ -41,31 +41,7 @@ module Spoom
         # @override
         #: (Prism::DefNode node) -> void
         def visit_def_node(node)
-          comments = node_rbs_comments(node)
-          return if comments.empty?
-
-          return if comments.signatures.empty?
-
-          builder = RBI::Parser::TreeBuilder.new(@ruby_contents, comments: [], file: @file)
-          builder.visit(node)
-          rbi_node = builder.tree.nodes.first #: as RBI::Method
-
-          comments.signatures.each do |signature|
-            method_type = ::RBS::Parser.parse_method_type(signature.string)
-            translator = RBI::RBS::MethodTypeTranslator.new(rbi_node)
-            translator.visit(method_type)
-            sig = translator.result
-            apply_member_annotations(comments.method_annotations, sig)
-
-            @rewriter << Source::Replace.new(
-              signature.location.start_offset,
-              signature.location.end_offset,
-              sig.string(max_line_length: @max_line_length),
-            )
-          rescue ::RBS::ParsingError, ::RBI::Error
-            # Ignore signatures with errors
-            next
-          end
+          rewrite_def(node, node_rbs_comments(node))
         end
 
         # @override
@@ -75,6 +51,12 @@ module Spoom
           when "attr_reader", "attr_writer", "attr_accessor"
             visit_attr(node)
           else
+            def_node = node.arguments&.arguments&.first
+            if def_node&.is_a?(Prism::DefNode)
+              rewrite_def(def_node, node_rbs_comments(node))
+              return
+            end
+
             super
           end
         end
@@ -116,6 +98,42 @@ module Spoom
           rescue ::RBS::ParsingError, ::RBI::Error
             # Ignore signatures with errors
             next
+          end
+        end
+
+        #: (Prism::DefNode, RBS::Comments) -> void
+        def rewrite_def(def_node, comments)
+          return if comments.empty?
+          return if comments.signatures.empty?
+
+          builder = RBI::Parser::TreeBuilder.new(@ruby_contents, comments: [], file: @file)
+          builder.visit(def_node)
+          rbi_node = builder.tree.nodes.first #: as RBI::Method
+
+          comments.signatures.each do |signature|
+            begin
+              method_type = ::RBS::Parser.parse_method_type(signature.string)
+            rescue ::RBS::ParsingError
+              next
+            end
+
+            translator = RBI::RBS::MethodTypeTranslator.new(rbi_node)
+
+            begin
+              translator.visit(method_type)
+            rescue ::RBI::Error
+              next
+            end
+
+            sig = translator.result
+
+            apply_member_annotations(comments.method_annotations, sig)
+
+            @rewriter << Source::Replace.new(
+              signature.location.start_offset,
+              signature.location.end_offset,
+              sig.string(max_line_length: @max_line_length),
+            )
           end
         end
 
