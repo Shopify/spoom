@@ -426,6 +426,26 @@ module Spoom
           RBS
         end
 
+        def test_translate_to_rbi_selects_right_comments
+          contents = <<~RB
+            #: -> void
+
+            class Foo
+              #: -> void
+
+              #: -> void
+
+              class << self
+                #: -> void
+
+                def bar; end
+              end
+            end
+          RB
+
+          assert_equal(contents, rbs_comments_to_sorbet_sigs(contents))
+        end
+
         private
 
         #: (String, ?max_line_length: Integer?) -> String
