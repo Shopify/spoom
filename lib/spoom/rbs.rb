@@ -75,8 +75,18 @@ module Spoom
 
         continuation_comments = [] #: Array[Prism::Comment]
 
+        last_line = node.location.start_line
+
         comments.each do |comment|
           string = comment.slice
+
+          comment_line = comment.location.end_line
+
+          if comment_line < last_line - 1
+            break
+          end
+
+          last_line = comment_line
 
           if string.start_with?("# @")
             string = string.delete_prefix("#").strip
