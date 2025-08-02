@@ -965,6 +965,29 @@ module Spoom
         RB
       end
 
+      def test_removes_node_rbs_comment
+        res = remove(<<~RB, "bar")
+          class Foo
+            def foo; end
+
+            #: -> void
+            def bar
+              something
+            end
+
+            def baz; end
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            def foo; end
+
+            def baz; end
+          end
+        RB
+      end
+
       def test_removes_singleton_class_if_needed
         res = remove(<<~RB, "foo")
           class Foo
