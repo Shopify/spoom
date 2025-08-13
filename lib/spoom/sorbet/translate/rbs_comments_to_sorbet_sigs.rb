@@ -15,6 +15,16 @@ module Spoom
         end
 
         # @override
+        #: (Prism::ProgramNode node) -> void
+        def visit_program_node(node)
+          # Process all type aliases from the entire file first
+          apply_type_aliases(@comments)
+
+          # Now process the rest of the file with type aliases available
+          super
+        end
+
+        # @override
         #: (Prism::ClassNode node) -> void
         def visit_class_node(node)
           apply_class_annotations(node)
@@ -272,6 +282,77 @@ module Spoom
             next false unless arg.slice.match?(constant_regex)
 
             true
+          end
+        end
+
+        #: (Array[Prism::Comment]) -> Array[RBS::TypeAlias]
+        def collect_type_aliases(comments)
+          type_aliases = [] #: Array[RBS::TypeAlias]
+
+          return type_aliases if comments.empty?
+
+          continuation_comments = [] #: Array[Prism::Comment]
+
+          comments.reverse_each do |comment|
+            string = comment.slice
+
+            if string.start_with?("#:")
+              string = string.delete_prefix("#:").strip
+              location = comment.location
+
+              if string.start_with?("type ")
+                continuation_comments.reverse_each do |continuation_comment|
+                  string = "#{string}#{continuation_comment.slice.delete_prefix("#|")}"
+                  location = location.join(continuation_comment.location)
+                end
+
+                type_aliases << Spoom::RBS::TypeAlias.new(string, location)
+              end
+
+              # Clear the continuation comments regardless of whether we found a type alias or not
+              continuation_comments.clear
+            elsif string.start_with?("#|")
+              continuation_comments << comment
+            else
+              continuation_comments.clear
+            end
+          end
+
+          type_aliases
+        end
+
+        #: (Array[Prism::Comment]) -> void
+        def apply_type_aliases(comments)
+          type_aliases = collect_type_aliases(comments)
+
+          type_aliases.each do |type_alias|
+            indent = " " * type_alias.location.start_column
+            insert_pos = adjust_to_line_start(type_alias.location.start_offset)
+
+            from = insert_pos
+            to = adjust_to_line_end(type_alias.location.end_offset)
+
+            *, decls = ::RBS::Parser.parse_signature(type_alias.string)
+
+            # We only expect there to be a single type alias declaration
+            next unless decls.size == 1 && decls.first.is_a?(::RBS::AST::Declarations::TypeAlias)
+
+            rbs_type = decls.first
+            sorbet_type = RBI::RBS::TypeTranslator.translate(rbs_type.type)
+
+            alias_name = ::RBS::TypeName.new(
+              namespace: rbs_type.name.namespace,
+              name: rbs_type.name.name.to_s.gsub(/(?:^|_)([a-z\d]*)/i) do |match|
+                match = match.delete_prefix("_")
+                !match.empty? ? match[0].upcase.concat(match[1..-1]) : +""
+              end,
+            )
+
+            @rewriter << Source::Delete.new(from, to)
+            @rewriter << Source::Insert.new(insert_pos, "#{indent}#{alias_name} = T.type_alias { #{sorbet_type.to_rbi} }\n")
+          rescue ::RBS::ParsingError, ::RBI::Error
+            # Ignore type aliases with errors
+            next
           end
         end
       end
