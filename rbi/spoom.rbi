@@ -2584,6 +2584,7 @@ module Spoom::RBS::ExtractRBSComments
 end
 
 class Spoom::RBS::Signature < ::Spoom::RBS::Comment; end
+class Spoom::RBS::TypeAlias < ::Spoom::RBS::Comment; end
 Spoom::SPOOM_PATH = T.let(T.unsafe(nil), String)
 module Spoom::Sorbet; end
 Spoom::Sorbet::BIN_PATH = T.let(T.unsafe(nil), String)
