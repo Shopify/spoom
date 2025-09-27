@@ -13,3 +13,5 @@ group :development do
   gem "rubocop-sorbet", require: false
   gem "tapioca", require: false
 end
+
+gem "rbi", git: "https://github.com/Shopify/rbi.git", branch: "main"
