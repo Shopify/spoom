@@ -207,7 +207,7 @@ module Spoom
 
           # Extract the comment including the leading space and return the end offset
           range = @ruby_bytes[comment_start...end_offset] #: as !nil
-          [" #{range.pack('C*')}", end_offset]
+          [" #{range.pack("C*")}", end_offset]
         end
 
         #: (Prism::Node, Prism::Node) -> String
