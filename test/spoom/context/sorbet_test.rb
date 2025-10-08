@@ -48,8 +48,8 @@ module Spoom
           a.rb:3: Method `foo` does not exist on `T.class_of(<root>)` https://srb.help/7003
                3 |foo(42)
                   ^^^
-          Errors: 1
         ERR
+        assert_includes(res.err, "Errors: 1")
         refute(res.status)
 
         context.write!("b.rb", <<~RB)
