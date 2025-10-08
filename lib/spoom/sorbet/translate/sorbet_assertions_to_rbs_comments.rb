@@ -89,17 +89,25 @@ module Spoom
           return false unless translatable_annotation?(node)
           return false unless at_end_of_line?(node)
 
+          trailing_comment, comment_end_offset = extract_trailing_comment(node)
+          # If extract_trailing_comment returns nil when there's an RBS annotation, don't translate
+          return false if trailing_comment.nil? && has_rbs_annotation?(node)
+
           value = T.must(node.arguments&.arguments&.first)
           rbs_annotation = build_rbs_annotation(node)
 
           start_offset = node.location.start_offset
-          end_offset = node.location.end_offset
+          # If there's a trailing comment, replace up to the end of the comment
+          # Otherwise, replace up to the end of the node
+          end_offset = comment_end_offset || node.location.end_offset
 
-          @rewriter << if node.name == :bind
-            Source::Replace.new(start_offset, end_offset - 1, rbs_annotation)
+          replacement = if node.name == :bind
+            "#{rbs_annotation}#{trailing_comment}"
           else
-            Source::Replace.new(start_offset, end_offset - 1, "#{dedent_value(node, value)} #{rbs_annotation}")
+            "#{dedent_value(node, value)} #{rbs_annotation}#{trailing_comment}"
           end
+
+          @rewriter << Source::Replace.new(start_offset, end_offset - 1, replacement)
 
           true
         end
@@ -166,7 +174,40 @@ module Spoom
         def at_end_of_line?(node)
           end_offset = node.location.end_offset
           end_offset += 1 while (@ruby_bytes[end_offset] == " ".ord) && (end_offset < @ruby_bytes.size)
-          @ruby_bytes[end_offset] == LINE_BREAK
+          # Check if we're at a newline OR at the start of a comment
+          @ruby_bytes[end_offset] == LINE_BREAK || @ruby_bytes[end_offset] == "#".ord
+        end
+
+        # Check if the node has an RBS annotation comment (#:) after it
+        #: (Prism::Node) -> bool
+        def has_rbs_annotation?(node)
+          end_offset = node.location.end_offset
+          # Skip spaces
+          end_offset += 1 while (@ruby_bytes[end_offset] == " ".ord) && (end_offset < @ruby_bytes.size)
+          # Check if there's a comment starting with #:
+          @ruby_bytes[end_offset] == "#".ord && @ruby_bytes[end_offset + 1] == ":".ord
+        end
+
+        # Extract any trailing comment after the node
+        # Returns [comment_text, comment_end_offset] or [nil, nil] if no comment or RBS annotation
+        #: (Prism::Node) -> [String?, Integer?]
+        def extract_trailing_comment(node)
+          end_offset = node.location.end_offset
+          # Skip spaces
+          end_offset += 1 while (@ruby_bytes[end_offset] == " ".ord) && (end_offset < @ruby_bytes.size)
+          # Check if there's a comment
+          return [nil, nil] unless @ruby_bytes[end_offset] == "#".ord
+
+          # If it's an RBS annotation comment (#:), return nil to prevent translation
+          return [nil, nil] if @ruby_bytes[end_offset + 1] == ":".ord
+
+          # Find the end of the comment (end of line)
+          comment_start = end_offset
+          end_offset += 1 while @ruby_bytes[end_offset] != LINE_BREAK && end_offset < @ruby_bytes.size
+
+          # Extract the comment including the leading space and return the end offset
+          range = @ruby_bytes[comment_start...end_offset] #: as !nil
+          [" #{range.pack("C*")}", end_offset]
         end
 
         #: (Prism::Node, Prism::Node) -> String
