@@ -2950,6 +2950,12 @@ class Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments < ::Spoom::Sorbet:
   sig { params(assign: ::Prism::Node, value: ::Prism::Node).returns(::String) }
   def dedent_value(assign, value); end
 
+  sig { params(node: ::Prism::Node).returns([T.nilable(::String), T.nilable(::Integer)]) }
+  def extract_trailing_comment(node); end
+
+  sig { params(node: ::Prism::Node).returns(T::Boolean) }
+  def has_rbs_annotation?(node); end
+
   sig { params(node: ::Prism::Node).returns(T::Boolean) }
   def maybe_translate_assertion(node); end
 
