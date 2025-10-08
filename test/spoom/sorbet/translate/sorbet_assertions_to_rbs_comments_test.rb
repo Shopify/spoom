@@ -376,7 +376,10 @@ module Spoom
             a = T.let(42, Integer) # as Integer
           RB
 
-          assert_equal(rb, rbi_to_rbs(rb))
+          # Now translates and preserves the comment
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            a = 42 #: Integer # as Integer
+          RB
         end
 
         def test_translate_cast_in_oneliners
@@ -537,6 +540,20 @@ module Spoom
               translate_t_unsafe: false,
             ),
           )
+        end
+
+        def test_translate_with_trailing_comments
+          rb = <<~RB
+            a = T.let(3, Integer) # comment
+            b = T.cast(x, String) # another comment
+            T.must(y) # must comment
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            a = 3 #: Integer # comment
+            b = x #: as String # another comment
+            y #: as !nil # must comment
+          RB
         end
 
         private
