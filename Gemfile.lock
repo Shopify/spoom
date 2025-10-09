@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    spoom (1.7.6)
+    spoom (1.7.7)
       erubi (>= 1.10.0)
       prism (>= 0.28.0)
       rbi (>= 0.3.3)
