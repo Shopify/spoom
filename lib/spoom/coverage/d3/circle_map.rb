@@ -145,7 +145,12 @@ module Spoom
         end
 
         class Sigils < CircleMap
-          #: (String id, FileTree file_tree, Hash[FileTree::Node, String?] nodes_strictnesses, Hash[FileTree::Node, Float] nodes_scores) -> void
+          #: (
+          #|   String id,
+          #|   FileTree file_tree,
+          #|   Hash[FileTree::Node, String?] nodes_strictnesses,
+          #|   Hash[FileTree::Node, Float] nodes_scores
+          #| ) -> void
           def initialize(id, file_tree, nodes_strictnesses, nodes_scores)
             @nodes_strictnesses = nodes_strictnesses
             @nodes_scores = nodes_scores

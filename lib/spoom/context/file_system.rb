@@ -39,7 +39,11 @@ module Spoom
         glob("*")
       end
 
-      #: (?allow_extensions: Array[String], ?allow_mime_types: Array[String], ?exclude_patterns: Array[String]) -> Array[String]
+      #: (
+      #|   ?allow_extensions: Array[String],
+      #|   ?allow_mime_types: Array[String],
+      #|   ?exclude_patterns: Array[String]
+      #| ) -> Array[String]
       def collect_files(allow_extensions: [], allow_mime_types: [], exclude_patterns: [])
         collector = FileCollector.new(
           allow_extensions: allow_extensions,

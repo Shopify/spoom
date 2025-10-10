@@ -129,7 +129,13 @@ module Spoom
       #: String?
       attr_accessor :superclass_name
 
-      #: (Symbol symbol, owner: Namespace?, location: Location, ?superclass_name: String?, ?comments: Array[Comment]) -> void
+      #: (
+      #|   Symbol symbol,
+      #|   owner: Namespace?,
+      #|   location: Location,
+      #|   ?superclass_name: String?,
+      #|   ?comments: Array[Comment]
+      #| ) -> void
       def initialize(symbol, owner:, location:, superclass_name: nil, comments: [])
         super(symbol, owner: owner, location: location, comments: comments)
 
@@ -160,7 +166,14 @@ module Spoom
       #: Array[Sig]
       attr_reader :sigs
 
-      #: (Symbol symbol, owner: Namespace?, location: Location, visibility: Visibility, ?sigs: Array[Sig], ?comments: Array[Comment]) -> void
+      #: (
+      #|   Symbol symbol,
+      #|   owner: Namespace?,
+      #|   location: Location,
+      #|   visibility: Visibility,
+      #|   ?sigs: Array[Sig],
+      #|   ?comments: Array[Comment]
+      #| ) -> void
       def initialize(symbol, owner:, location:, visibility:, sigs: [], comments: [])
         super(symbol, owner: owner, location: location, comments: comments)
 
