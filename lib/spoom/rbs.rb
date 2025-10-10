@@ -43,6 +43,7 @@ module Spoom
                "@final",
                "@override",
                "@override(allow_incompatible: true)",
+               "@override(allow_incompatible: :visibility)",
                "@overridable",
                "@without_runtime"
             true
