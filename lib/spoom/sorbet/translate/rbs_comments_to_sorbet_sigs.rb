@@ -248,6 +248,9 @@ module Spoom
             when "@override(allow_incompatible: true)"
               sig.is_override = true
               sig.allow_incompatible_override = true
+            when "@override(allow_incompatible: :visibility)"
+              sig.is_override = true
+              sig.allow_incompatible_override_visibility = true
             when "@overridable"
               sig.is_overridable = true
             when "@without_runtime"
