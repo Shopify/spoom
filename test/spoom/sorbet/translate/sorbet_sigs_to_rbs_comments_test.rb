@@ -147,16 +147,35 @@ module Spoom
 
         def test_translate_to_rbs_method_sigs_with_annotations
           contents = <<~RB
-            sig(:final) { overridable.override(allow_incompatible: true).void }
+            sig(:final) { overridable.void }
             def foo; end
           RB
 
           assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
             # @final
-            # @override(allow_incompatible: true)
             # @overridable
             #: -> void
             def foo; end
+          RBS
+        end
+
+        def test_translate_to_rbs_method_sigs_with_override_annotations
+          contents = <<~RB
+            sig { override(allow_incompatible: true).void }
+            def foo; end
+
+            sig { override(allow_incompatible: :visibility).void }
+            def bar; end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            # @override(allow_incompatible: true)
+            #: -> void
+            def foo; end
+
+            # @override(allow_incompatible: :visibility)
+            #: -> void
+            def bar; end
           RBS
         end
 
