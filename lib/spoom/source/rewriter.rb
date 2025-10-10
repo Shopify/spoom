@@ -92,7 +92,8 @@ module Spoom
       # @override
       #: (Array[Integer]) -> void
       def apply(bytes)
-        raise PositionError, "Position is out of bounds" if from < 0 || to < 0 || from > bytes.size || to > bytes.size || from > to
+        raise PositionError,
+          "Position is out of bounds" if from < 0 || to < 0 || from > bytes.size || to > bytes.size || from > to
 
         bytes[from..to] = *text.bytes
       end
@@ -125,7 +126,8 @@ module Spoom
       # @override
       #: (Array[untyped]) -> void
       def apply(bytes)
-        raise PositionError, "Position is out of bounds" if from < 0 || to < 0 || from > bytes.size || to > bytes.size || from > to
+        raise PositionError,
+          "Position is out of bounds" if from < 0 || to < 0 || from > bytes.size || to > bytes.size || from > to
 
         bytes[from..to] = "".bytes
       end

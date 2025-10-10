@@ -74,8 +74,10 @@ module Spoom
                Prism::ClassVariableWriteNode, Prism::ClassVariableAndWriteNode, Prism::ClassVariableOperatorWriteNode, Prism::ClassVariableOrWriteNode,
                Prism::ConstantWriteNode, Prism::ConstantAndWriteNode, Prism::ConstantOperatorWriteNode, Prism::ConstantOrWriteNode,
                Prism::ConstantPathWriteNode, Prism::ConstantPathAndWriteNode, Prism::ConstantPathOperatorWriteNode, Prism::ConstantPathOrWriteNode,
-               Prism::GlobalVariableWriteNode, Prism::GlobalVariableAndWriteNode, Prism::GlobalVariableOperatorWriteNode, Prism::GlobalVariableOrWriteNode,
-               Prism::InstanceVariableWriteNode, Prism::InstanceVariableAndWriteNode, Prism::InstanceVariableOperatorWriteNode, Prism::InstanceVariableOrWriteNode,
+               Prism::GlobalVariableWriteNode, Prism::GlobalVariableAndWriteNode,
+               Prism::GlobalVariableOperatorWriteNode, Prism::GlobalVariableOrWriteNode,
+               Prism::InstanceVariableWriteNode, Prism::InstanceVariableAndWriteNode,
+               Prism::InstanceVariableOperatorWriteNode, Prism::InstanceVariableOrWriteNode,
                Prism::LocalVariableWriteNode, Prism::LocalVariableAndWriteNode, Prism::LocalVariableOperatorWriteNode, Prism::LocalVariableOrWriteNode,
                Prism::CallAndWriteNode, Prism::CallOperatorWriteNode, Prism::CallOrWriteNode
             node.value

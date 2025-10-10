@@ -138,7 +138,12 @@ module Spoom
       end
 
       class Map < Card
-        #: (file_tree: FileTree, nodes_strictnesses: Hash[FileTree::Node, String?], nodes_strictness_scores: Hash[FileTree::Node, Float], ?title: String) -> void
+        #: (
+        #|   file_tree: FileTree,
+        #|   nodes_strictnesses: Hash[FileTree::Node, String?],
+        #|   nodes_strictness_scores: Hash[FileTree::Node, Float],
+        #|   ?title: String
+        #| ) -> void
         def initialize(file_tree:, nodes_strictnesses:, nodes_strictness_scores:, title: "Strictness Map")
           super(
             title: title,
@@ -222,7 +227,16 @@ module Spoom
     end
 
     class Report < Page
-      #: (project_name: String, palette: D3::ColorPalette, snapshots: Array[Snapshot], file_tree: FileTree, nodes_strictnesses: Hash[FileTree::Node, String?], nodes_strictness_scores: Hash[FileTree::Node, Float], ?sorbet_intro_commit: String?, ?sorbet_intro_date: Time?) -> void
+      #: (
+      #|   project_name: String,
+      #|   palette: D3::ColorPalette,
+      #|   snapshots: Array[Snapshot],
+      #|   file_tree: FileTree,
+      #|   nodes_strictnesses: Hash[FileTree::Node, String?],
+      #|   nodes_strictness_scores: Hash[FileTree::Node, Float],
+      #|   ?sorbet_intro_commit: String?,
+      #|   ?sorbet_intro_date: Time?
+      #| ) -> void
       def initialize(
         project_name:,
         palette:,

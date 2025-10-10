@@ -42,7 +42,15 @@ module Spoom
 
           @project.write!("file.rb", contents)
 
-          result = @project.spoom("srb assertions translate --no-color --no-translate-t-let --no-translate-t-cast --no-translate-t-bind --no-translate-t-must --no-translate-t-unsafe")
+          result = @project.spoom(<<~CMD)
+            srb assertions translate \
+              --no-color \
+              --no-translate-t-let \
+              --no-translate-t-cast \
+              --no-translate-t-bind \
+              --no-translate-t-must \
+              --no-translate-t-unsafe
+          CMD
 
           assert_empty(result.err)
           assert(result.status)
