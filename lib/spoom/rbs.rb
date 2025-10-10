@@ -39,7 +39,12 @@ module Spoom
       def method_annotations
         @annotations.select do |annotation|
           case annotation.string
-          when "@abstract", "@final", "@override", "@override(allow_incompatible: true)", "@overridable", "@without_runtime"
+          when "@abstract",
+               "@final",
+               "@override",
+               "@override(allow_incompatible: true)",
+               "@overridable",
+               "@without_runtime"
             true
           else
             false

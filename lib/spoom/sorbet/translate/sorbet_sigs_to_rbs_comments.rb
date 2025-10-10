@@ -260,7 +260,10 @@ module Spoom
 
             arg = body.body.first #: as Prism::Node
             srb_type = RBI::Type.parse_node(arg)
-            @rewriter << Source::Insert.new(parent.location.start_offset, "# @requires_ancestor: #{srb_type.rbs_string}\n#{indent}")
+            @rewriter << Source::Insert.new(
+              parent.location.start_offset,
+              "# @requires_ancestor: #{srb_type.rbs_string}\n#{indent}",
+            )
           end
 
           from = adjust_to_line_start(node.location.start_offset)
