@@ -5,6 +5,8 @@ source "https://rubygems.org"
 
 gemspec
 
+gem "rbi", github: "Shopify/rbi", branch: "at-allow-incompatible-override-visibility"
+
 gem "minitest"
 
 group :development do
