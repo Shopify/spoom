@@ -69,6 +69,7 @@ module Spoom
 
     class Annotation < Comment; end
     class Signature < Comment; end
+    class TypeAlias < Comment; end
 
     module ExtractRBSComments
       #: (Prism::Node) -> Comments
