@@ -297,6 +297,8 @@ module Spoom
           if sigs.any? { |_, sig| sig.is_override }
             @rewriter << if sigs.any? { |_, sig| sig.allow_incompatible_override }
               Source::Insert.new(insert_pos, "# @override(allow_incompatible: true)\n#{indent}")
+            elsif sigs.any? { |_, sig| sig.allow_incompatible_override_visibility }
+              Source::Insert.new(insert_pos, "# @override(allow_incompatible: :visibility)\n#{indent}")
             else
               Source::Insert.new(insert_pos, "# @override\n#{indent}")
             end
