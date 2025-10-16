@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [ -z "$1" ]; then
+    echo "Usage: $0 <path>"
+    exit 1
+fi
+
+path=$1
+
+echo "Running with spoom..."
+./mem-use bundle exec ruby spoom.rb $path
+
+echo "Running with index..."
+./mem-use bundle exec ruby index.rb $path

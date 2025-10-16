@@ -1,4 +1,9 @@
 PATH
+  remote: ../index
+  specs:
+    index (0.1.0)
+
+PATH
   remote: .
   specs:
     spoom (1.7.8)
@@ -126,6 +131,7 @@ PLATFORMS
 DEPENDENCIES
   bundler (>= 2.2.10)
   debug
+  index!
   minitest
   minitest-reporters
   rake (~> 13.3.0)

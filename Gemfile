@@ -5,6 +5,8 @@ source "https://rubygems.org"
 
 gemspec
 
+gem "index", path: "../index"
+
 gem "minitest"
 
 group :development do
