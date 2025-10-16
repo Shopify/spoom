@@ -6,11 +6,8 @@
 
 module Spoom
   class << self
-    sig { params(ruby: ::String, file: ::String, comments: T::Boolean).returns(::Prism::Node) }
-    def parse_ruby(ruby, file:, comments: T.unsafe(nil)); end
-
     sig { params(ruby: ::String, file: ::String).returns([::Prism::Node, T::Array[::Prism::Comment]]) }
-    def parse_ruby_with_comments(ruby, file:); end
+    def parse_ruby(ruby, file:); end
   end
 end
 

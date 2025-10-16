@@ -13,7 +13,7 @@ module Spoom
             counters.increment("files")
 
             content = File.read(file)
-            node = Spoom.parse_ruby(content, file: file, comments: true)
+            node, _ = Spoom.parse_ruby(content, file: file)
             visitor = CodeMetricsVisitor.new(counters)
             visitor.visit(node)
           end

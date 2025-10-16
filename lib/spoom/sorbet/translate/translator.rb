@@ -19,7 +19,7 @@ module Spoom
             ruby_contents.encode("UTF-8")
           end #: String
 
-          node, comments = Spoom.parse_ruby_with_comments(ruby_contents, file: file)
+          node, comments = Spoom.parse_ruby(ruby_contents, file: file)
           @node = node #: Prism::Node
           @comments = comments #: Array[Prism::Comment]
           @ruby_bytes = ruby_contents.bytes #: Array[Integer]

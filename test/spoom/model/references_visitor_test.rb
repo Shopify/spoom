@@ -296,7 +296,7 @@ module Spoom
       private
 
       def visit(code)
-        node = Spoom.parse_ruby(code, file: "-")
+        node, _ = Spoom.parse_ruby(code, file: "-")
 
         v = ReferencesVisitor.new("-")
         v.visit(node)

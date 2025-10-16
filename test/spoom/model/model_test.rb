@@ -104,7 +104,7 @@ module Spoom
 
       #: (String rb) -> Model
       def model(rb)
-        node = Spoom.parse_ruby(rb, file: "foo.rb", comments: true)
+        node, _ = Spoom.parse_ruby(rb, file: "foo.rb")
 
         model = Model.new
         builder = Builder.new(model, "foo.rb")

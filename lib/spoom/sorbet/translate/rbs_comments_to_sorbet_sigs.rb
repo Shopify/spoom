@@ -349,7 +349,8 @@ module Spoom
             )
 
             @rewriter << Source::Delete.new(from, to)
-            @rewriter << Source::Insert.new(insert_pos, "#{indent}#{alias_name} = T.type_alias { #{sorbet_type.to_rbi} }\n")
+            content = "#{indent}#{alias_name} = T.type_alias { #{sorbet_type.to_rbi} }\n"
+            @rewriter << Source::Insert.new(insert_pos, content)
           rescue ::RBS::ParsingError, ::RBI::Error
             # Ignore type aliases with errors
             next
