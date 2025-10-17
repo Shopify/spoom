@@ -466,6 +466,160 @@ module Spoom
           assert_equal(contents, rbs_comments_to_sorbet_sigs(contents))
         end
 
+        def test_translate_type_alias
+          contents = <<~RB
+            module Aliases
+              #: type foo = Integer | String
+              #: type multiLine =
+              #|   Integer |
+              #|   String
+            end
+
+            #: (Aliases::foo a) -> Aliases::multiLine
+            def bar(a)
+              42
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            module Aliases
+              Foo = T.type_alias { T.any(Integer, String) }
+              MultiLine = T.type_alias { T.any(Integer, String) }
+            end
+
+            sig { params(a: Aliases::Foo).returns(Aliases::MultiLine) }
+            def bar(a)
+              42
+            end
+          RB
+        end
+
+        def test_translate_type_alias_with_complex_type
+          contents = <<~RB
+            #: type Foo::user_id = Integer
+            #: type ::Bar::user_data = { id: Foo::user_id, name: String }
+
+            #: (::Bar::user_data data) -> Foo::user_id
+            def process_user(data)
+              data[:id]
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            Foo::UserId = T.type_alias { Integer }
+            ::Bar::UserData = T.type_alias { { id: Foo::UserId, name: String } }
+
+            sig { params(data: ::Bar::UserData).returns(Foo::UserId) }
+            def process_user(data)
+              data[:id]
+            end
+          RB
+        end
+
+        def test_translate_type_alias_in_class
+          contents = <<~RB
+            class Example
+              #: type status = :pending | :completed | :failed
+
+              #: () -> status
+              def get_status
+                :pending
+              end
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            class Example
+              Status = T.type_alias { T.untyped }
+
+              sig { returns(Status) }
+              def get_status
+                :pending
+              end
+            end
+          RB
+        end
+
+        def test_translate_type_alias_with_generics
+          contents = <<~RB
+            #: type list = Array[Integer]
+
+            #: (list items) -> list
+            def double_items(items)
+              items.map { |x| x * 2 }
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            List = T.type_alias { T::Array[Integer] }
+
+            sig { params(items: List).returns(List) }
+            def double_items(items)
+              items.map { |x| x * 2 }
+            end
+          RB
+        end
+
+        def test_translate_type_alias_with_union
+          contents = <<~RB
+            #: type nullable_string = String?
+
+            #: (nullable_string text) -> String
+            def ensure_string(text)
+              text || ""
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            NullableString = T.type_alias { T.nilable(String) }
+
+            sig { params(text: NullableString).returns(String) }
+            def ensure_string(text)
+              text || ""
+            end
+          RB
+        end
+
+        def test_translate_type_alias_that_does_not_exist
+          contents = <<~RB
+            #: () -> notFound
+            def foo
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            sig { returns(NotFound) }
+            def foo
+            end
+          RB
+        end
+
+        def test_translate_broken_type_alias_continuation
+          contents = <<~RB
+            #: type multiLine =
+            #| String
+            #| | Integer
+            # foo bar baz
+            #| | Symbol
+
+            #: () -> multiLine
+            def foo
+              ""
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            MultiLine = T.type_alias { T.any(String, Integer) }
+            # foo bar baz
+            #| | Symbol
+
+            sig { returns(MultiLine) }
+            def foo
+              ""
+            end
+          RB
+        end
+
         private
 
         #: (String, ?max_line_length: Integer?) -> String
