@@ -1,7 +1,7 @@
 # typed: true
 # frozen_string_literal: true
 
-require "index"
+require "saturn"
 
 unless ARGV.first
   puts "Usage: ruby index.rb <path>"
@@ -12,14 +12,18 @@ puts "\n# Building graph... (index)\n\n"
 
 path = File.absolute_path(ARGV.first)
 
-graph = Index::Graph.new
+graph = Saturn::Graph.new
 graph.index_all([path])
 
-declaration = graph["Spoom::Model::Builder"]
+puts graph.declarations.size
+
+declaration = graph["Shopify"]
 puts declaration.name
 
+puts "Definitions: #{declaration.definitions.size}"
+
 declaration.definitions.each do |definition|
-  puts definition.kind
-  puts definition.uri
+  puts definition.inspect
   puts definition.location
+  puts definition.comments.map(&:string)
 end

@@ -5,7 +5,7 @@ source "https://rubygems.org"
 
 gemspec
 
-gem "index", path: "../index"
+gem "saturn", path: "../saturn"
 
 gem "minitest"
 

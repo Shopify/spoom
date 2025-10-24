@@ -1,7 +1,7 @@
 PATH
-  remote: ../index
+  remote: ../saturn
   specs:
-    index (0.1.0)
+    saturn (0.1.0)
 
 PATH
   remote: .
@@ -131,12 +131,12 @@ PLATFORMS
 DEPENDENCIES
   bundler (>= 2.2.10)
   debug
-  index!
   minitest
   minitest-reporters
   rake (~> 13.3.0)
   rubocop-shopify
   rubocop-sorbet
+  saturn!
   spoom!
   tapioca
 
