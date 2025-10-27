@@ -45,7 +45,7 @@ module Spoom
 
         assert_equal(
           ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8"],
-          deadcode_index.all_definitions.select(&:constant?).map(&:name),
+          deadcode_index.all_definitions.select(&:constant?).map(&:name).sort,
         )
       end
 
@@ -63,7 +63,7 @@ module Spoom
 
         assert_equal(
           ["C1", "C2", "C3", "C4", "C5", "C6"],
-          deadcode_index.all_definitions.select(&:class?).map(&:name),
+          deadcode_index.all_definitions.select(&:class?).map(&:name).sort,
         )
       end
 
@@ -81,7 +81,7 @@ module Spoom
 
         assert_equal(
           ["M1", "M2", "M3", "M4", "M5", "M6"],
-          deadcode_index.all_definitions.select(&:module?).map(&:name),
+          deadcode_index.all_definitions.select(&:module?).map(&:name).sort,
         )
       end
 
@@ -107,8 +107,8 @@ module Spoom
         RB
 
         assert_equal(
-          ["m1", "m2", "m3", "m4", "m5", "m6=", "`", "!", "<=>", "CONST"],
-          deadcode_index.all_definitions.select(&:method?).map(&:name),
+          ["!", "<=>", "CONST", "`", "m1", "m2", "m3", "m4", "m5", "m6="],
+          deadcode_index.all_definitions.select(&:method?).map(&:name).sort,
         )
       end
 
@@ -146,16 +146,16 @@ module Spoom
         )
       end
 
-      def test_index_attribute_definitions_but_ignore_when_not_a_symbol
+      def test_index_attribute_definitions_but_ignore_when_not_a_symbol_or_string_literal
         @project.write!("foo.rb", <<~RB)
           attr_reader :r1
-          attr_reader "foo"
+          attr_reader "r2"
           attr_reader *names
         RB
 
         assert_equal(
-          ["r1"],
-          deadcode_index.all_definitions.select(&:attr_reader?).map(&:name),
+          ["r1", "r2"],
+          deadcode_index.all_definitions.select(&:attr_reader?).map(&:name).sort,
         )
       end
 

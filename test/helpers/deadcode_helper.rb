@@ -15,20 +15,13 @@ module Spoom
           files = project.collect_files(
             allow_extensions: [".rb", ".erb", ".rake", ".rakefile", ".gemspec"],
             allow_mime_types: ["text/x-ruby", "text/x-ruby-script"],
-          )
+          ).map { |file| project.absolute_path_to(file) }
 
           model = Model.new
           index = Deadcode::Index.new(model)
           plugins = plugin_classes.map { |plugin| plugin.new(index) }
 
-          files.each do |file|
-            content = project.read(file)
-            if file.end_with?(".erb")
-              index.index_erb(content, file: file, plugins: plugins)
-            else
-              index.index_ruby(content, file: file, plugins: plugins)
-            end
-          end
+          index.index_files(files, plugins: plugins)
 
           model.finalize!
           index.apply_plugins!(plugins)

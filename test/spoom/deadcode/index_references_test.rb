@@ -159,7 +159,7 @@ module Spoom
           m39(&:m40)
           m41(&m42)
           m43(m44, &m45(m46))
-          m47, m48 = Foo.m49
+          self.m47, self.m48 = Foo.m49
         RB
 
         references = deadcode_index.all_references.select(&:method?)
@@ -177,12 +177,12 @@ module Spoom
 
       def test_index_method_assign_references
         @project.write!("foo.rb", <<~RB)
-          m1= 42
-          m2=(42)
-          m3 = m4.m5
+          self.m1= 42
+          self.m2=(42)
+          self.m3 = m4.m5
           m6.m7.m8 = m9.m10
           @c.m11 = 42
-          m12, m13 = 42
+          self.m12, self.m13 = 42
         RB
 
         assert_equal(
@@ -193,10 +193,10 @@ module Spoom
 
       def test_index_method_opassign_references
         @project.write!("foo.rb", <<~RB)
-          m1 += 42
-          m2 |= 42
-          m3 ||= 42
-          m4 &&= 42
+          self.m1 += 42
+          self.m2 |= 42
+          self.m3 ||= 42
+          self.m4 &&= 42
           m5.m6 += m7
           m8.m9 ||= m10
           m11.m12 &&= m13

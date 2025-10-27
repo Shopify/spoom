@@ -3,6 +3,7 @@
 
 require "sorbet-runtime"
 require "pathname"
+require "saturn"
 
 module Spoom
   SPOOM_PATH = (Pathname.new(__FILE__) / ".." / "..").to_s #: String
