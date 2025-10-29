@@ -80,6 +80,9 @@ class Saturn::Definition
   # source://saturn//../../saturn/lib/saturn.rb#7
   def location; end
 
+  # source://saturn//../../saturn/lib/saturn.rb#7
+  def name; end
+
   class << self
     private
 

@@ -1617,7 +1617,7 @@ module Spoom
 
         model = Model.new
         index = Index.new(model)
-        index.index_ruby(ruby_string, file: file)
+        index.index_files([context.absolute_path_to(file)])
         index.finalize!
 
         definitions = definitions_for_name(index, def_name)
@@ -1625,6 +1625,7 @@ module Spoom
         definition = T.must(definitions.first)
 
         remover = Remover.new(context)
+        definition.location.instance_variable_set(:@file, file)
         new_source = remover.remove_location(definition.kind, definition.location)
 
         context.destroy!

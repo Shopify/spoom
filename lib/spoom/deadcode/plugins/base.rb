@@ -142,13 +142,13 @@ module Spoom
         #   end
         # end
         # ~~~
-        #: (Model::Attr definition) -> void
+        #: (Saturn::AttrAccessorDefinition | Saturn::AttrReaderDefinition | Saturn::AttrWriterDefinition definition) -> void
         def on_define_accessor(definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_accessor` instead.
-        #: (Model::Attr definition) -> void
+        #: (Saturn::AttrAccessorDefinition | Saturn::AttrReaderDefinition | Saturn::AttrWriterDefinition definition) -> void
         def internal_on_define_accessor(definition)
           on_define_accessor(definition)
         end
@@ -166,13 +166,13 @@ module Spoom
         #   end
         # end
         # ~~~
-        #: (Model::Class definition) -> void
+        #: (Saturn::ClassDefinition definition) -> void
         def on_define_class(definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_class` instead.
-        #: (Model::Class definition) -> void
+        #: (Saturn::ClassDefinition definition) -> void
         def internal_on_define_class(definition)
           if ignored_class_name?(definition.name)
             @index.ignore(definition)
@@ -196,13 +196,13 @@ module Spoom
         #   end
         # end
         # ~~~
-        #: (Model::Constant definition) -> void
+        #: (Saturn::ConstantDefinition definition) -> void
         def on_define_constant(definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_constant` instead.
-        #: (Model::Constant definition) -> void
+        #: (Saturn::ConstantDefinition definition) -> void
         def internal_on_define_constant(definition)
           @index.ignore(definition) if ignored_constant_name?(definition.name)
 
@@ -222,13 +222,13 @@ module Spoom
         #   end
         # end
         # ~~~
-        #: (Model::Method definition) -> void
+        #: (Saturn::MethodDefinition definition) -> void
         def on_define_method(definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_method` instead.
-        #: (Model::Method definition) -> void
+        #: (Saturn::MethodDefinition definition) -> void
         def internal_on_define_method(definition)
           @index.ignore(definition) if ignored_method_name?(definition.name)
 
@@ -248,13 +248,13 @@ module Spoom
         #   end
         # end
         # ~~~
-        #: (Model::Module definition) -> void
+        #: (Saturn::ModuleDefinition definition) -> void
         def on_define_module(definition)
           # no-op
         end
 
         # Do not override this method, use `on_define_module` instead.
-        #: (Model::Module definition) -> void
+        #: (Saturn::ModuleDefinition definition) -> void
         def internal_on_define_module(definition)
           @index.ignore(definition) if ignored_module_name?(definition.name)
 
@@ -298,7 +298,7 @@ module Spoom
           ignored_name?(name, :@ignored_class_names, :@ignored_class_patterns)
         end
 
-        #: (Model::Class definition) -> bool
+        #: (Saturn::ClassDefinition definition) -> bool
         def ignored_subclass?(definition)
           superclass_name = definition.superclass_name
           return true if superclass_name && ignored_name?(

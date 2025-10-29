@@ -31,7 +31,7 @@ module Spoom
         @graph = Saturn::Graph.new #: Saturn::Graph
         @definitions = {} #: Hash[String, Array[Definition]]
         @references = {} #: Hash[String, Array[Model::Reference]]
-        @ignored = Set.new #: Set[Model::SymbolDef]
+        @ignored = Set.new #: Set[String]
       end
 
       # Indexing
@@ -103,26 +103,26 @@ module Spoom
         (@references[name] ||= []) << Model::Reference.method(name, location)
       end
 
-      #: (Model::SymbolDef symbol_def) -> void
-      def ignore(symbol_def)
-        @ignored << symbol_def
+      #: (Saturn::Definition definition) -> void
+      def ignore(definition)
+        @ignored << definition.name
       end
 
       #: (Array[Plugins::Base] plugins) -> void
       def apply_plugins!(plugins)
-        @model.symbols.each do |_full_name, symbol|
-          symbol.definitions.each do |symbol_def|
-            case symbol_def
-            when Model::Class
-              plugins.each { |plugin| plugin.internal_on_define_class(symbol_def) }
-            when Model::Module
-              plugins.each { |plugin| plugin.internal_on_define_module(symbol_def) }
-            when Model::Constant
-              plugins.each { |plugin| plugin.internal_on_define_constant(symbol_def) }
-            when Model::Method
-              plugins.each { |plugin| plugin.internal_on_define_method(symbol_def) }
-            when Model::Attr
-              plugins.each { |plugin| plugin.internal_on_define_accessor(symbol_def) }
+        @graph.declarations.each do |declaration|
+          declaration.definitions.each do |definition|
+            case definition
+            when Saturn::ClassDefinition
+              plugins.each { |plugin| plugin.internal_on_define_class(definition) }
+            when Saturn::ModuleDefinition
+              plugins.each { |plugin| plugin.internal_on_define_module(definition) }
+            when Saturn::ConstantDefinition
+              plugins.each { |plugin| plugin.internal_on_define_constant(definition) }
+            when Saturn::MethodDefinition
+              plugins.each { |plugin| plugin.internal_on_define_method(definition) }
+            when Saturn::AttrAccessorDefinition, Saturn::AttrReaderDefinition, Saturn::AttrWriterDefinition
+              plugins.each { |plugin| plugin.internal_on_define_accessor(definition) }
             end
           end
         end
@@ -133,97 +133,11 @@ module Spoom
       # To be called once all the files have been indexed and all the definitions and references discovered.
       #: -> void
       def finalize!
-        @graph.declarations.each do |declaration|
-          declaration.definitions.each do |definition|
-            case definition
-            when Saturn::ClassDefinition
-              d = Definition.new(
-                kind: Definition::Kind::Class,
-                name: declaration_name(declaration.name),
-                full_name: declaration.name,
-                location: saturn_location_to_spoom_location(definition.location),
-              )
-              d.ignored! if @ignored.include?(definition)
-              d.alive! if @references.key?(d.name)
-              define(d)
-            when Saturn::ModuleDefinition
-              d = Definition.new(
-                kind: Definition::Kind::Module,
-                name: declaration_name(declaration.name),
-                full_name: declaration.name,
-                location: saturn_location_to_spoom_location(definition.location),
-              )
-              d.ignored! if @ignored.include?(definition)
-              d.alive! if @references.key?(d.name)
-              define(d)
-            when Saturn::ConstantDefinition
-              d = Definition.new(
-                kind: Definition::Kind::Constant,
-                name: declaration_name(declaration.name),
-                full_name: declaration.name,
-                location: saturn_location_to_spoom_location(definition.location),
-              )
-              d.ignored! if @ignored.include?(definition)
-              d.alive! if @references.key?(d.name)
-              define(d)
-            when Saturn::MethodDefinition
-              d = Definition.new(
-                kind: Definition::Kind::Method,
-                name: declaration_name(declaration.name),
-                full_name: declaration.name,
-                location: saturn_location_to_spoom_location(definition.location),
-              )
-              d.ignored! if @ignored.include?(definition)
-              d.alive! if @references.key?(d.name)
-              define(d)
-            when Saturn::AttrAccessorDefinition
-              d = if declaration.name.end_with?("=")
-                Definition.new(
-                  kind: Definition::Kind::AttrWriter,
-                  name: declaration_name(declaration.name),
-                  full_name: declaration.name,
-                  location: saturn_location_to_spoom_location(definition.location),
-                )
-              else
-                Definition.new(
-                  kind: Definition::Kind::AttrReader,
-                  name: declaration_name(declaration.name),
-                  full_name: declaration.name,
-                  location: saturn_location_to_spoom_location(definition.location),
-                )
-              end
-              d.ignored! if @ignored.include?(definition)
-              d.alive! if @references.key?(d.name)
-              define(d)
-            when Saturn::AttrReaderDefinition
-              d = Definition.new(
-                kind: Definition::Kind::AttrReader,
-                name: declaration_name(declaration.name),
-                full_name: declaration.name,
-                location: saturn_location_to_spoom_location(definition.location),
-              )
-              d.ignored! if @ignored.include?(definition)
-              d.alive! if @references.key?(d.name)
-              define(d)
-            when Saturn::AttrWriterDefinition
-              d = Definition.new(
-                kind: Definition::Kind::AttrWriter,
-                name: declaration_name(declaration.name),
-                full_name: declaration.name,
-                location: saturn_location_to_spoom_location(definition.location),
-              )
-              d.ignored! if @ignored.include?(definition)
-              d.alive! if @references.key?(d.name)
-              define(d)
-            end
-          end
-        end
-
         @graph.unresolved_references.each do |ref|
           case ref
           when Saturn::UnresolvedConstantReference
             reference_constant(
-              declaration_name(ref.name),
+              ref.name.split("::").last,
               saturn_location_to_spoom_location(ref.location),
             )
           when Saturn::UnresolvedMethodReference
@@ -233,12 +147,99 @@ module Spoom
             )
           end
         end
-      end
 
-      # TODO
-      #: (String name) -> String
-      def declaration_name(name)
-        name.split(/(::|#)/).last #: as !nil
+        @graph.declarations.each do |declaration|
+          declaration.definitions.each do |definition|
+            case definition
+            when Saturn::ClassDefinition
+              name = definition.name
+              d = Definition.new(
+                kind: Definition::Kind::Class,
+                name: name,
+                full_name: declaration.name,
+                location: saturn_location_to_spoom_location(definition.location),
+              )
+              d.ignored! if @ignored.include?(name)
+              d.alive! if @references.key?(name)
+              define(d)
+            when Saturn::ModuleDefinition
+              name = definition.name
+              d = Definition.new(
+                kind: Definition::Kind::Module,
+                name: name,
+                full_name: declaration.name,
+                location: saturn_location_to_spoom_location(definition.location),
+              )
+              d.ignored! if @ignored.include?(name)
+              d.alive! if @references.key?(name)
+              define(d)
+            when Saturn::ConstantDefinition
+              name = definition.name
+              d = Definition.new(
+                kind: Definition::Kind::Constant,
+                name: name,
+                full_name: declaration.name,
+                location: saturn_location_to_spoom_location(definition.location),
+              )
+              d.ignored! if @ignored.include?(name)
+              d.alive! if @references.key?(name)
+              define(d)
+            when Saturn::MethodDefinition
+              name = definition.name
+              d = Definition.new(
+                kind: Definition::Kind::Method,
+                name: name,
+                full_name: declaration.name,
+                location: saturn_location_to_spoom_location(definition.location),
+              )
+              d.ignored! if @ignored.include?(name)
+              d.alive! if @references.key?(name)
+              define(d)
+            when Saturn::AttrAccessorDefinition
+              name = definition.name
+              d = if name.end_with?("=")
+                Definition.new(
+                  kind: Definition::Kind::AttrWriter,
+                  name: name,
+                  full_name: declaration.name,
+                  location: saturn_location_to_spoom_location(definition.location),
+                )
+              else
+                Definition.new(
+                  kind: Definition::Kind::AttrReader,
+                  name: name,
+                  full_name: declaration.name,
+                  location: saturn_location_to_spoom_location(definition.location),
+                )
+              end
+              d.ignored! if @ignored.include?(name)
+              d.alive! if @references.key?(name)
+              define(d)
+            when Saturn::AttrReaderDefinition
+              name = definition.name
+              d = Definition.new(
+                kind: Definition::Kind::AttrReader,
+                name: name,
+                full_name: declaration.name,
+                location: saturn_location_to_spoom_location(definition.location),
+              )
+              d.ignored! if @ignored.include?(name)
+              d.alive! if @references.key?(name)
+              define(d)
+            when Saturn::AttrWriterDefinition
+              name = definition.name
+              d = Definition.new(
+                kind: Definition::Kind::AttrWriter,
+                name: name,
+                full_name: declaration.name,
+                location: saturn_location_to_spoom_location(definition.location),
+              )
+              d.ignored! if @ignored.include?(name)
+              d.alive! if @references.key?(name)
+              define(d)
+            end
+          end
+        end
       end
 
       #: (Saturn::Location location) -> Location
@@ -247,8 +248,8 @@ module Spoom
           location.path,
           start_line: location.start_line,
           end_line: location.end_line,
-          start_column: location.start_column,
-          end_column: location.end_column,
+          start_column: location.start_column - 1,
+          end_column: location.end_column - 1,
         )
       end
 
