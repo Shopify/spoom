@@ -327,7 +327,11 @@ module Spoom
                 <failure type='7003'>
                   <![CDATA[In file errors/errors.rb:
                  5 |  sig { params(bar: Bar).returns(C) }
-                            ^^^^^^]]>
+                            ^^^^^^
+              Got `T.class_of(Foo)` originating from:
+                errors/errors.rb:4:
+                 4 |class Foo
+                    ^]]>
                 </failure>
               </testcase>
               <testcase name='Method `sig` does not exist on `T.class_of(Foo)`' file='errors/errors.rb' line='5'>
@@ -335,6 +339,10 @@ module Spoom
                   <![CDATA[In file errors/errors.rb:
                  5 |  sig { params(bar: Bar).returns(C) }
                       ^^^
+              Got `T.class_of(Foo)` originating from:
+                errors/errors.rb:4:
+                 4 |class Foo
+                    ^
               Autocorrect: Use `-a` to autocorrect
                 errors/errors.rb:5: Insert `extend T::Sig`
                  5 |  sig { params(bar: Bar).returns(C) }
@@ -359,7 +367,11 @@ module Spoom
                 <failure type='7003'>
                   <![CDATA[In file errors/errors.rb:
                 11 |b.foo(b, c)
-                             ^]]>
+                             ^
+              Got `T.class_of(<root>)` originating from:
+                errors/errors.rb:4:
+                 4 |class Foo
+                    ^]]>
                 </failure>
               </testcase>
               <testcase name='Too many arguments provided for method `Foo#foo`. Expected: `1`, got: `2`' file='errors/errors.rb' line='11'>
