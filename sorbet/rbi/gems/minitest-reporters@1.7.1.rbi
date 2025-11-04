@@ -6,90 +6,7 @@
 
 
 # source://minitest-reporters//lib/minitest/reporters.rb#3
-module Minitest
-  class << self
-    # source://minitest/5.25.4/lib/minitest.rb#323
-    def __run(reporter, options); end
-
-    # source://minitest/5.25.4/lib/minitest.rb#97
-    def after_run(&block); end
-
-    # source://minitest/5.25.4/lib/minitest.rb#20
-    def allow_fork; end
-
-    # source://minitest/5.25.4/lib/minitest.rb#20
-    def allow_fork=(_arg0); end
-
-    # source://minitest/5.25.4/lib/minitest.rb#70
-    def autorun; end
-
-    # source://minitest/5.25.4/lib/minitest.rb#20
-    def backtrace_filter; end
-
-    # source://minitest/5.25.4/lib/minitest.rb#20
-    def backtrace_filter=(_arg0); end
-
-    # source://minitest/5.25.4/lib/minitest.rb#19
-    def cattr_accessor(name); end
-
-    # source://minitest/5.25.4/lib/minitest.rb#1216
-    def clock_time; end
-
-    # source://minitest/5.25.4/lib/minitest.rb#303
-    def empty_run!(options); end
-
-    # source://minitest/5.25.4/lib/minitest.rb#20
-    def extensions; end
-
-    # source://minitest/5.25.4/lib/minitest.rb#20
-    def extensions=(_arg0); end
-
-    # source://minitest/5.25.4/lib/minitest.rb#336
-    def filter_backtrace(bt); end
-
-    # source://minitest/5.25.4/lib/minitest.rb#20
-    def info_signal; end
-
-    # source://minitest/5.25.4/lib/minitest.rb#20
-    def info_signal=(_arg0); end
-
-    # source://minitest/5.25.4/lib/minitest.rb#125
-    def init_plugins(options); end
-
-    # source://minitest/5.25.4/lib/minitest.rb#109
-    def load_plugins; end
-
-    # source://minitest/5.25.4/lib/minitest.rb#20
-    def parallel_executor; end
-
-    # source://minitest/5.25.4/lib/minitest.rb#20
-    def parallel_executor=(_arg0); end
-
-    # source://minitest/5.25.4/lib/minitest.rb#143
-    def process_args(args = T.unsafe(nil)); end
-
-    # source://minitest/5.25.4/lib/minitest.rb#104
-    def register_plugin(name_or_mod); end
-
-    # source://minitest/5.25.4/lib/minitest.rb#20
-    def reporter; end
-
-    # source://minitest/5.25.4/lib/minitest.rb#20
-    def reporter=(_arg0); end
-
-    # source://minitest/5.25.4/lib/minitest.rb#269
-    def run(args = T.unsafe(nil)); end
-
-    # source://minitest/5.25.4/lib/minitest.rb#1207
-    def run_one_method(klass, method_name); end
-
-    # source://minitest/5.25.4/lib/minitest.rb#20
-    def seed; end
-
-    # source://minitest/5.25.4/lib/minitest.rb#20
-    def seed=(_arg0); end
-  end
-end
+module Minitest; end
 
 # Filters backtraces of exceptions that may arise when running tests.
 #
@@ -356,7 +273,7 @@ class Minitest::Reporters::DefaultReporter < ::Minitest::Reporters::BaseReporter
   # source://minitest-reporters//lib/minitest/reporters/default_reporter.rb#26
   def start; end
 
-  # source://minitest-reporters//lib/minitest/reporters/default_reporter.rb#89
+  # source://minitest-reporters//lib/minitest/reporters/default_reporter.rb#138
   def to_s; end
 
   private
@@ -451,7 +368,7 @@ class Minitest::Reporters::HtmlReporter < ::Minitest::Reporters::BaseReporter
   # The percentage of tests that were skipped
   # Keeping old method name with typo for backwards compatibility in custom templates (for now)
   #
-  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#35
+  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#40
   def percent_skipps; end
 
   # The percentage of tests that were skipped
@@ -595,20 +512,20 @@ Minitest::Reporters::JUnitReporter::DEFAULT_REPORTS_DIR = T.let(T.unsafe(nil), S
 #
 # source://minitest-reporters//lib/minitest/reporters/mean_time_reporter.rb#24
 class Minitest::Reporters::MeanTimeReporter < ::Minitest::Reporters::DefaultReporter
+  # @option order
   # @option previous_runs_filename
+  # @option report_filename
+  # @option show_all_runs
   # @option show_count
   # @option show_progress
-  # @option show_all_runs
   # @option sort_column
-  # @option order
-  # @option report_filename
+  # @param options [Hash]
   # @param order [Hash] a customizable set of options
   # @param previous_runs_filename [Hash] a customizable set of options
-  # @param options [Hash]
   # @param report_filename [Hash] a customizable set of options
+  # @param show_all_runs [Hash] a customizable set of options
   # @param show_count [Hash] a customizable set of options
   # @param show_progress [Hash] a customizable set of options
-  # @param show_all_runs [Hash] a customizable set of options
   # @param sort_column [Hash] a customizable set of options
   # @return [Minitest::Reporters::MeanTimeReporter]
   #
@@ -779,9 +696,9 @@ class Minitest::Reporters::MeanTimeReporter < ::Minitest::Reporters::DefaultRepo
   # source://minitest-reporters//lib/minitest/reporters/mean_time_reporter.rb#215
   def previously_ran?; end
 
-  # @param run [Float] The last run time.
-  # @param min [Float] The minimum run time.
   # @param max [Float] The maximum run time.
+  # @param min [Float] The minimum run time.
+  # @param run [Float] The last run time.
   # @return [Symbol] One of :faster, :slower or :inconclusive.
   #
   # source://minitest-reporters//lib/minitest/reporters/mean_time_reporter.rb#335
