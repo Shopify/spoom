@@ -145,6 +145,7 @@ module Spoom
           tapioca_context.write!("Gemfile", <<~RB)
             source "https://rubygems.org"
 
+            gem "rbs", ">= 4.0.0.dev.4"
             gem "tapioca"
             gem "#{spec.name}", path: "#{copy_context.absolute_path}"
           RB
