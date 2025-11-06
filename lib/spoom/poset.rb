@@ -119,7 +119,7 @@ module Spoom
             dot << "  \"#{value}\" -> \"#{to}\";\n"
           end
         end
-        if transitive # rubocop:disable Style/Next
+        if transitive
           element.ancestors.each do |ancestor|
             dot << "  \"#{value}\" -> \"#{ancestor}\" [style=dotted];\n"
           end
