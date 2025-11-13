@@ -1,0 +1,160 @@
+name: Rails Upgrade runner
+on: push
+jobs:
+  upgrade-rails:
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: "."
+
+    services:
+      mysql:
+        image: mysql:8.0
+        ports: ["3306:3306"]
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+      redis:
+        image: redis
+        ports: ["6379:6379"]
+      memcached:
+        image: memcached
+        ports: ["11211:11211"]
+
+    env:
+      RAILS_UPGRADE: 1
+      DATABASE_URL: mysql2://root@127.0.0.1:3306/rails_upgrade
+      MYSQL_HOST: 127.0.0.1
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      REDIS_URL: redis://localhost:6379/0
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      TOXIPROXY_URL: http://127.0.0.1:8474
+      TOXIPROXY_HOST: 127.0.0.1
+      TOXIPROXY_PORT: 8474
+      DISABLE_TOXIPROXY: 1
+      MEMCACHE_SERVERS: localhost:11211
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+    - name: Check out rails_upgrade
+      uses: actions/checkout@v4
+      with:
+        repository: Shopify/rails_upgrade
+        path: "./tmp/rails_upgrade"
+        token: ${{ secrets.RAILS_UPGRADE_GITHUB }}
+    - name: Check out rails_upgrade-shopify
+      uses: actions/checkout@v4
+      with:
+        repository: Shopify/rails_upgrade-shopify
+        path: "./tmp/rails_upgrade-shopify"
+        token: ${{ secrets.RAILS_UPGRADE_GITHUB }}
+    - name: Get Ruby version
+      id: ruby
+      shell: ruby -ryaml {0}
+      run: |
+        return unless File.exist?("dev.yml")
+        yaml = YAML.respond_to?(:unsafe_load_file) ? YAML.unsafe_load_file("dev.yml") : YAML.load_file("dev.yml")
+        ruby_version = yaml["up"]
+          &.detect {|h| Hash === h && h.key?("ruby") }&.dig("ruby")
+          .then {|c| Hash === c ? c["version"] : c }
+        return unless ruby_version
+        File.write(ENV.fetch("GITHUB_OUTPUT"), "version=#{ruby_version}\n", mode: "a")
+    - name: Setup dependencies declared in Shopify Build pipelines
+      shell: ruby -ryaml -rset {0}
+      run: |
+        packages, keys, repos = Set.new, Set.new, Set.new
+        Dir[".shopify-build/**/*.yml"].each do |file|
+          pipeline = YAML.respond_to?(:unsafe_load_file) ? YAML.unsafe_load_file(file) : YAML.load_file(file)
+          containers = pipeline["containers"]
+          next unless containers
+          containers.each_value do |container|
+            next unless apt = container.dig("build", "apt")
+            packages.merge(apt["install"] || [])
+            keys.merge(apt["keys"] || [])
+            repos.merge(apt["repos"] || [])
+          end
+        rescue
+          puts "Error in pipeline #{file}: #{$!}"
+        end
+        return if packages.empty?
+        keys.each { |key| system(%(curl -s "#{key}" | sudo apt-key add -), exception: true) }
+        repos.each { |repo| system("sudo", "sh", "-c", %(echo "#{repo}" >> /etc/apt/sources.list.d/custom.list), exception: true) }
+        system("sudo", "apt-get", "update", exception: true)
+        exec("sudo", "apt-get", "install", "--yes", "--option", "DPkg::Lock::Timeout=60", *packages)
+    - name: Setup Git configuration
+      run: |
+        git config --global http.https://github.com.extraheader "Authorization: Basic $(echo -n "x-access-token:${{ secrets.RAILS_UPGRADE_GITHUB }}" | base64)"
+        echo "$(git rev-parse --show-prefix)"vendor/bundle >> "$(git rev-parse --git-dir)/info/exclude"
+        git config --local user.email "ruby-and-rails-infrastructure@shopify.com"
+        git config --local user.name "Ruby & Rails infrastructure"
+        git checkout HEAD^ # Remove commit that includes the workflow
+    - name: Setup Git submodules
+      run: |
+        git submodule update --init --recursive --depth=1
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ steps.ruby.outputs.version }}
+        bundler-cache: true
+        working-directory: "."
+      env:
+        BUNDLE_PKGS__SHOPIFY__IO: ${{ secrets.RAILS_UPGRADE_PKGS_SHOPIFY_IO }}
+    - name: Install rails_upgrade
+      run: |
+        cd tmp/rails_upgrade
+        rake install
+    - name: Install rails_upgrade-shopify
+      run: |
+        cd tmp/rails_upgrade-shopify
+        rake install
+    - name: Set up DATABASE_URL scheme
+      run: |
+        if bundle list | grep --fixed-strings --quiet ' trilogy '; then
+          echo "DATABASE_URL=${DATABASE_URL/mysql2/trilogy}" >> "$GITHUB_ENV"
+        fi
+
+    - name: Setup the application before upgrading
+      run: |
+        bin/setup --skip-server
+        if test -n "$(git status --porcelain)"; then
+          if test "$(\
+               git diff -U0 --word-diff=porcelain --word-diff-regex='[0-9.]+|[^[:space:]]' |\
+                grep --invert-match --extended-regexp --count\
+                  -e '^(diff|index|---|\+\+\+|@@) ' -e '^~$' -e '^ ActiveRecord::Schema\[$' -e '^ \].define')"\
+             -eq 2 ; then
+            echo "Removing Active Record schema class version change:"
+            git diff
+            git checkout -- db/schema.rb
+            exit 0
+          fi
+          echo "There are uncommitted changes after running bin/setup:"
+          git status --porcelain
+          git config --global --unset http.https://github.com.extraheader
+          git add .
+          git commit -m "uncommitted changes" || true
+          git push --force origin HEAD:refs/heads/rails-upgrade/uncommitted
+          echo "Pushed these uncommitted changes to the rails-upgrade/uncommitted branch:"
+          echo "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$(git rev-parse HEAD)"
+          exit 1
+        else
+          git config --global --unset http.https://github.com.extraheader
+          git push --delete origin rails-upgrade/uncommitted || true
+        fi
+      env:
+        DISABLE_SPRING: "1"
+    - name: Dump configuration
+      shell: bash
+      run: |
+        rails_upgrade config 3>tmp/rails_upgrade-config.json
+    - name: Upload configuration
+      uses: actions/upload-artifact@v4
+      with:
+        name: rails_upgrade-config
+        path: ./tmp/rails_upgrade-config.json
