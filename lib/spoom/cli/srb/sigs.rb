@@ -142,7 +142,7 @@ module Spoom
           # Now we create a new context to import our modified gem and run tapioca
           say("Running Tapioca...")
           tapioca_context = Spoom::Context.mktmp!
-          tapioca_context.write!("Gemfile", <<~RB)
+          tapioca_context.write_gemfile!(<<~RB)
             source "https://rubygems.org"
 
             gem "rbs", ">= 4.0.0.dev.4"
