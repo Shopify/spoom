@@ -11,6 +11,13 @@ module Spoom
   end
 end
 
+module Spoom::BundlerHelper
+  class << self
+    sig { params(gem_name: ::String).returns(::String) }
+    def gem_requirement_from_real_bundle(gem_name); end
+  end
+end
+
 module Spoom::Cli; end
 
 class Spoom::Cli::Deadcode < ::Thor

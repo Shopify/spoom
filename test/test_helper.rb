@@ -26,9 +26,10 @@ module Spoom
         source("https://rubygems.org")
 
         gemspec name: "spoom", path: "#{SPOOM_PATH}"
-        gem "tapioca"
-        gem "sorbet-static-and-runtime", "#{Sorbet::GEM_VERSION}"
-        gem "json", "2.7.2"
+
+        #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("tapioca")}
+        #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("sorbet-static-and-runtime")}
+        #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("json")}
       GEMFILE
     end
 

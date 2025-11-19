@@ -1,6 +1,8 @@
 # typed: true
 # frozen_string_literal: true
 
+require "spoom/bundler_helper"
+
 module Spoom
   module Cli
     module Srb
@@ -145,8 +147,9 @@ module Spoom
           tapioca_context.write_gemfile!(<<~RB)
             source "https://rubygems.org"
 
-            gem "rbs", ">= 4.0.0.dev.4"
-            gem "tapioca"
+            #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("rbs")}
+            #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("tapioca")}
+
             gem "#{spec.name}", path: "#{copy_context.absolute_path}"
           RB
           exec(tapioca_context, "bundle install")
