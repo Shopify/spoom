@@ -9,10 +9,16 @@ module Spoom
       # Run `bundle exec srb` in this context directory
       #: (*String arg, ?sorbet_bin: String?, ?capture_err: bool) -> ExecResult
       def srb(*arg, sorbet_bin: nil, capture_err: true)
+        # If an environment sets the DYLD_LIBRARY_PATH in a way that depends on a version of the C++
+        # standard library other than the one used by Sorbet, it will cause Sorbet to generate
+        # corrupted JSON. Unsetting this environment variable forces Sorbet to default to the system
+        # version of the C++ standard library.
+        unset_dyld_library_path = "env -u DYLD_LIBRARY_PATH"
+
         res = if sorbet_bin
-          exec("#{sorbet_bin} #{arg.join(" ")}", capture_err: capture_err)
+          exec("#{unset_dyld_library_path} #{sorbet_bin} #{arg.join(" ")}", capture_err: capture_err)
         else
-          bundle_exec("srb #{arg.join(" ")}", capture_err: capture_err)
+          bundle_exec("#{unset_dyld_library_path} srb #{arg.join(" ")}", capture_err: capture_err)
         end
 
         case res.exit_code
