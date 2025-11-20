@@ -16,18 +16,17 @@ module Spoom
       def gem_requirement_from_real_bundle(gem_name)
         specs = Bundler.load.gems[gem_name]
 
-        if 1 < specs.count
+        if specs.nil? || specs.empty?
+          raise "Did not find gem #{gem_name.inspect} in the current bundle"
+        elsif specs.count > 1
           raise <<~MSG
             Found multiple versions of #{gem_name.inspect} in the current bundle:
             #{specs.sort_by(&:version).map { |spec| "  - #{spec.name} #{spec.version}" }.join("\n")}
           MSG
+        else
+          spec = specs.first
+          %(gem "#{spec.name}", "= #{spec.version}")
         end
-
-        unless (spec = specs.first)
-          raise "Did not find gem #{gem_name.inspect} in the current bundle"
-        end
-
-        %(gem "#{spec.name}", "= #{spec.version}")
       end
     end
   end
