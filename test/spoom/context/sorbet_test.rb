@@ -34,7 +34,7 @@ module Spoom
         context.write_gemfile!(<<~GEMFILE)
           source "https://rubygems.org"
 
-          gem "sorbet"
+          #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("sorbet")}
         GEMFILE
         context.bundle("config set --local path $GEM_HOME")
         context.bundle_install!
@@ -67,7 +67,7 @@ module Spoom
         context.write_gemfile!(<<~GEMFILE)
           source "https://rubygems.org"
 
-          gem "sorbet"
+          #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("sorbet")}
         GEMFILE
         context.bundle_install!
 
@@ -163,7 +163,7 @@ module Spoom
         context.write_gemfile!(<<~GEMFILE)
           source "https://rubygems.org"
 
-          gem "sorbet"
+          #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("sorbet")}
         GEMFILE
         context.bundle_install!
 

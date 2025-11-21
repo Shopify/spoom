@@ -1,6 +1,8 @@
 # typed: true
 # frozen_string_literal: true
 
+require "spoom/bundler_helper"
+
 module Spoom
   module Cli
     module Srb
@@ -142,13 +144,14 @@ module Spoom
           # Now we create a new context to import our modified gem and run tapioca
           say("Running Tapioca...")
           tapioca_context = Spoom::Context.mktmp!
-          tapioca_context.write!("Gemfile", <<~RB)
+          tapioca_context.write_gemfile!(<<~GEMFILE)
             source "https://rubygems.org"
 
-            gem "rbs", ">= 4.0.0.dev.4"
-            gem "tapioca"
+            #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("rbs")}
+            #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("tapioca")}
+
             gem "#{spec.name}", path: "#{copy_context.absolute_path}"
-          RB
+          GEMFILE
           exec(tapioca_context, "bundle install")
           exec(tapioca_context, "bundle exec tapioca gem #{spec.name} --no-doc --no-loc --no-file-header")
 

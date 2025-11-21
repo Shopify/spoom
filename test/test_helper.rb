@@ -22,20 +22,28 @@ module Spoom
     # Default Gemfile contents requiring only Spoom
     #: -> String
     def spoom_gemfile
-      <<~GEMFILE
-        source("https://rubygems.org")
-
-        gemspec name: "spoom", path: "#{SPOOM_PATH}"
-        gem "tapioca"
-        gem "sorbet-static-and-runtime", "#{Sorbet::GEM_VERSION}"
-        gem "json", "2.7.2"
-      GEMFILE
+      Spoom::TestHelper.default_spoom_test_gemfile
     end
 
     # Replace all sorbet-like version "0.5.5888" in `test` by "X.X.XXXX"
     #: (String text) -> String
     def censor_sorbet_version(text)
       text.gsub(/\d\.\d\.\d{4,5}/, "X.X.XXXX")
+    end
+
+    class << self
+      #: -> String
+      def default_spoom_test_gemfile
+        @default_spoom_test_gemfile ||= <<~GEMFILE #: String?
+          source("https://rubygems.org")
+
+          gemspec name: "spoom", path: "#{SPOOM_PATH}"
+
+          #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("tapioca")}
+          #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("sorbet-static-and-runtime")}
+          #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("json")}
+        GEMFILE
+      end
     end
   end
 end

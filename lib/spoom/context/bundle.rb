@@ -48,7 +48,7 @@ module Spoom
         return {} unless file?("Gemfile.lock")
 
         parser = Bundler::LockfileParser.new(read_gemfile_lock)
-        parser.specs.map { |spec| [spec.name, spec] }.to_h
+        parser.specs.to_h { |spec| [spec.name, spec] }
       end
 
       # Get `gem` version from the `Gemfile.lock` content
