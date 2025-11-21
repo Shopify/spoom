@@ -1,6 +1,8 @@
 # typed: strict
 # frozen_string_literal: true
 
+require "shellwords"
+
 module Spoom
   class ExecResult < T::Struct
     const :out, String
@@ -30,11 +32,15 @@ module Spoom
         Bundler.with_unbundled_env do
           opts = { chdir: absolute_path } #: Hash[Symbol, untyped]
 
-          # Work around Open3 buffering bug in certain Ruby builds (e.g., Nix Ruby).
-          # Direct binary execution via Open3.capture3 can produce corrupted output.
-          # Prepending "true &&" forces Ruby to invoke the shell, which prevents corruption.
-          # The "true" command is a no-op that always succeeds.
-          command_with_shell = "true && #{command}"
+          # When Ruby is wrapped in another dev environment (e.g. Nix), that environment might set
+          # env variables that cause Sorbet (or other tools) to link to incorrect versions of
+          # dependencies.
+          #
+          # In the case of Sorbet, this can lead to corrupted JSON output.
+          #
+          # Executing the command directly through the shell bypasses any Ruby wrappers and
+          # ensures that we are using the versions of tools that are default on the system.
+          command_with_shell = "/bin/sh -c #{command.shellescape}"
 
           if capture_err
             out, err, status = Open3.capture3(command_with_shell, opts)
