@@ -1,0 +1,30 @@
+name: Release gem on RubyGems.org
+
+on:
+  workflow_dispatch:
+
+jobs:
+  push:
+    name: Release gem on RubyGems.org
+    if: github.repository == 'Shopify/spoom'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      id-token: write
+
+    environment: release
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@8aeb6ff8030dd539317f8e1769a044873b56ea71 # v1.268.0
+        with:
+          bundler-cache: true
+
+      - name: Release gem on RubyGems.org
+        uses: rubygems/release-gem@1c162a739e8b4cb21a676e97b087e8268d8fc40b # v1.1.2
