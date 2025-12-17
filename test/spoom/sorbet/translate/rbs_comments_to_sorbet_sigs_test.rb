@@ -255,7 +255,7 @@ module Spoom
           RB
 
           assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            sig { returns(T::Array[Integer]) }
+            sig { returns(::T::Array[Integer]) }
             attr_accessor :foo
 
             sig { params(a: Integer, b: Integer).returns(Integer) }
@@ -284,7 +284,7 @@ module Spoom
 
               abstract!
 
-              requires_ancestor { T.class_of(Foo::Bar) }
+              requires_ancestor { ::T.class_of(Foo::Bar) }
 
               module B
                 extend T::Helpers
@@ -369,7 +369,7 @@ module Spoom
                 class << self
                   extend T::Generic
 
-                  A = type_member {{ fixed: T.class_of(Numeric) }}
+                  A = type_member {{ fixed: ::T.class_of(Numeric) }}
                 end
               end
             end
@@ -483,8 +483,8 @@ module Spoom
 
           assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
             module Aliases
-              Foo = T.type_alias { T.any(Integer, String) }
-              MultiLine = T.type_alias { T.any(Integer, String) }
+              Foo = T.type_alias { ::T.any(Integer, String) }
+              MultiLine = T.type_alias { ::T.any(Integer, String) }
             end
 
             sig { params(a: Aliases::Foo).returns(Aliases::MultiLine) }
@@ -530,7 +530,7 @@ module Spoom
 
           assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
             class Example
-              Status = T.type_alias { T.untyped }
+              Status = T.type_alias { ::T.untyped }
 
               sig { returns(Status) }
               def get_status
@@ -551,7 +551,7 @@ module Spoom
           RB
 
           assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            List = T.type_alias { T::Array[Integer] }
+            List = T.type_alias { ::T::Array[Integer] }
 
             sig { params(items: List).returns(List) }
             def double_items(items)
@@ -571,7 +571,7 @@ module Spoom
           RB
 
           assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            NullableString = T.type_alias { T.nilable(String) }
+            NullableString = T.type_alias { ::T.nilable(String) }
 
             sig { params(text: NullableString).returns(String) }
             def ensure_string(text)
@@ -609,7 +609,7 @@ module Spoom
           RB
 
           assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            MultiLine = T.type_alias { T.any(String, Integer) }
+            MultiLine = T.type_alias { ::T.any(String, Integer) }
             # foo bar baz
             #| | Symbol
 
