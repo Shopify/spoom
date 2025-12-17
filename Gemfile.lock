@@ -32,7 +32,7 @@ GEM
     language_server-protocol (3.17.0.5)
     lint_roller (1.1.0)
     logger (1.7.0)
-    minitest (5.26.2)
+    minitest (5.27.0)
     minitest-reporters (1.7.1)
       ansi
       builder
@@ -87,16 +87,16 @@ GEM
       lint_roller
       rubocop (>= 1.75.2)
     ruby-progressbar (1.13.0)
-    sorbet (0.6.12798)
-      sorbet-static (= 0.6.12798)
-    sorbet-runtime (0.6.12798)
-    sorbet-static (0.6.12798-universal-darwin)
-    sorbet-static (0.6.12798-x86_64-linux)
-    sorbet-static-and-runtime (0.6.12798)
-      sorbet (= 0.6.12798)
-      sorbet-runtime (= 0.6.12798)
+    sorbet (0.6.12848)
+      sorbet-static (= 0.6.12848)
+    sorbet-runtime (0.6.12848)
+    sorbet-static (0.6.12848-universal-darwin)
+    sorbet-static (0.6.12848-x86_64-linux)
+    sorbet-static-and-runtime (0.6.12848)
+      sorbet (= 0.6.12848)
+      sorbet-runtime (= 0.6.12848)
     stringio (3.1.7)
-    tapioca (0.17.9)
+    tapioca (0.17.10)
       benchmark
       bundler (>= 2.2.25)
       netrc (>= 0.11.0)
@@ -111,7 +111,7 @@ GEM
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
     unicode-emoji (4.1.0)
-    yard (0.9.37)
+    yard (0.9.38)
     yard-sorbet (0.9.0)
       sorbet-runtime
       yard

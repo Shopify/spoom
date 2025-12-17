@@ -5518,32 +5518,62 @@ class RDoc::Markup::HardBreak
   end
 end
 
+# A heading with a level (1-6) and text
+#
 # source://rdoc//lib/rdoc/markup/heading.rb#6
 class RDoc::Markup::Heading < ::Struct
+  # Calls #accept_heading on +visitor+
+  #
   # source://rdoc//lib/rdoc/markup/heading.rb#40
   def accept(visitor); end
 
+  # An HTML-safe anchor reference for this header.
+  #
   # source://rdoc//lib/rdoc/markup/heading.rb#47
   def aref; end
 
+  # Creates a fully-qualified label which will include the label from
+  # +context+.  This helps keep ids unique in HTML.
+  #
   # source://rdoc//lib/rdoc/markup/heading.rb#55
   def label(context = T.unsafe(nil)); end
 
+  # Returns the value of attribute level
+  #
+  # @return [Object] the current value of level
+  #
   # source://rdoc//lib/rdoc/markup/heading.rb#6
   def level; end
 
+  # Sets the attribute level
+  #
+  # @param value [Object] the value to set the attribute level to.
+  # @return [Object] the newly set value
+  #
   # source://rdoc//lib/rdoc/markup/heading.rb#6
   def level=(_); end
 
+  # HTML markup of the text of this label without the surrounding header
+  # element.
+  #
   # source://rdoc//lib/rdoc/markup/heading.rb#68
   def plain_html; end
 
   # source://rdoc//lib/rdoc/markup/heading.rb#78
   def pretty_print(q); end
 
+  # Returns the value of attribute text
+  #
+  # @return [Object] the current value of text
+  #
   # source://rdoc//lib/rdoc/markup/heading.rb#6
   def text; end
 
+  # Sets the attribute text
+  #
+  # @param value [Object] the value to set the attribute text to.
+  # @return [Object] the newly set value
+  #
   # source://rdoc//lib/rdoc/markup/heading.rb#6
   def text=(_); end
 
@@ -5563,9 +5593,14 @@ class RDoc::Markup::Heading < ::Struct
     # source://rdoc//lib/rdoc/markup/heading.rb#6
     def new(*_arg0); end
 
+    # A singleton plain HTML formatter for headings.  Used for creating labels
+    # for the Table of Contents
+    #
     # source://rdoc//lib/rdoc/markup/heading.rb#22
     def to_html; end
 
+    # A singleton RDoc::Markup::ToLabel formatter for headings.
+    #
     # source://rdoc//lib/rdoc/markup/heading.rb#14
     def to_label; end
   end

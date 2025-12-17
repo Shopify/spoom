@@ -40482,6 +40482,9 @@ class Prism::UntilNode < ::Prism::Node
   end
 end
 
+# The version constant is set by reading the result of calling pm_version.
+Prism::VERSION = T.let(T.unsafe(nil), String)
+
 # A visitor is a class that provides a default implementation for every accept
 # method defined on the nodes. This means it can walk a tree without the
 # caller needing to define any special handling. This allows you to handle a
