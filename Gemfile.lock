@@ -32,7 +32,9 @@ GEM
     language_server-protocol (3.17.0.5)
     lint_roller (1.1.0)
     logger (1.7.0)
-    minitest (5.27.0)
+    minitest (6.0.0)
+      prism (~> 1.5)
+    minitest-mock (5.27.0)
     minitest-reporters (1.7.1)
       ansi
       builder
@@ -127,6 +129,7 @@ DEPENDENCIES
   bundler (>= 2.2.10)
   debug
   minitest
+  minitest-mock
   minitest-reporters
   rake (~> 13.3.0)
   rubocop-shopify
