@@ -38,9 +38,9 @@ module Spoom
           assert_equal(<<~MSG, result.err)
             Error: Sorbet returned typechecking errors for `/errors.rb`
               8:11-8:11: Not enough arguments provided for method `Foo#foo`. Expected: `1`, got: `0` (7004)
-              5:2-5:5: Expected `String` but found `NilClass` for method result type (7005)
               3:2-3:5: Method `sig` does not exist on `T.class_of(Foo)` (fix available) (7003)
               3:8-3:14: Method `params` does not exist on `T.class_of(Foo)` (7003)
+              5:2-5:5: Expected `String` but found `NilClass` for method result type (7005)
               9:0-9:3: Unable to resolve constant `Bar` (fix available) (5002)
           MSG
         end
