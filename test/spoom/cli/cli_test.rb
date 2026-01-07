@@ -32,6 +32,7 @@ module Spoom
             spoom lsp             # Send LSP requests to Sorbet
             spoom srb             # Sorbet related commands
             spoom tc              # Run Sorbet and parses its output
+            spoom tree            # Print a tree of all available commands
 
           Options:
                 [--color], [--no-color], [--skip-color]  # Use colors
