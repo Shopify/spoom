@@ -421,17 +421,17 @@ class RDoc::ClassModule < ::RDoc::Context
   #
   # @return [ClassModule] a new instance of ClassModule
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#108
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#123
   def initialize(name, superclass = T.unsafe(nil)); end
 
   # Adds +comment+ to this ClassModule's list of comments at +location+.  This
   # method is preferred over #comment= since it allows ri data to be updated
   # across multiple runs.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#123
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#138
   def add_comment(comment, location); end
 
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#144
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#159
   def add_things(my_things, other_things); end
 
   # Ancestors list for this ClassModule: the list of included modules
@@ -445,23 +445,23 @@ class RDoc::ClassModule < ::RDoc::Context
   # which is the order suitable for searching methods/attributes
   # in the ancestors. The superclass, if any, comes last.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#167
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#182
   def ancestors; end
 
   # HTML fragment reference for this module or class.  See
   # RDoc::NormalClass#aref and RDoc::NormalModule#aref
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#179
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#194
   def aref; end
 
   # @raise [NotImplementedError]
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#171
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#186
   def aref_prefix; end
 
   # Clears the comment. Used by the Ruby parser.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#191
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#206
   def clear_comment; end
 
   # This method is deprecated, use #add_comment instead.
@@ -469,24 +469,54 @@ class RDoc::ClassModule < ::RDoc::Context
   # Appends +comment+ to the current comment, but separated by a rule.  Works
   # more like <tt>+=</tt>.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#201
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#216
   def comment=(comment); end
 
-  # Comment and the location it came from.  Use #add_comment to add comments
+  # An array of `[comment, location]` pairs documenting this class/module.
+  # Use #add_comment to add comments.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#35
+  # Before marshalling:
+  # - +comment+ is a String
+  # - +location+ is an RDoc::TopLevel
+  #
+  # After unmarshalling:
+  # - +comment+ is an RDoc::Markup::Document
+  # - +location+ is a filename String
+  #
+  # These type changes are acceptable (for now) because:
+  # - +comment+: Both String and Document respond to #empty?, and #parse
+  #   returns Document as-is (see RDoc::Text#parse)
+  # - +location+: Only used by #parse to set Document#file, which accepts
+  #   both TopLevel (extracts relative_name) and String
+  #
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#50
   def comment_location; end
 
-  # Comment and the location it came from.  Use #add_comment to add comments
+  # An array of `[comment, location]` pairs documenting this class/module.
+  # Use #add_comment to add comments.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#35
+  # Before marshalling:
+  # - +comment+ is a String
+  # - +location+ is an RDoc::TopLevel
+  #
+  # After unmarshalling:
+  # - +comment+ is an RDoc::Markup::Document
+  # - +location+ is a filename String
+  #
+  # These type changes are acceptable (for now) because:
+  # - +comment+: Both String and Document respond to #empty?, and #parse
+  #   returns Document as-is (see RDoc::Text#parse)
+  # - +location+: Only used by #parse to set Document#file, which accepts
+  #   both TopLevel (extracts relative_name) and String
+  #
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#50
   def comment_location=(_arg0); end
 
   # Prepares this ClassModule for use by a generator.
   #
   # See RDoc::Store#complete
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#219
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#234
   def complete(min_visibility); end
 
   # Constants that are aliases for this class or module
@@ -517,12 +547,12 @@ class RDoc::ClassModule < ::RDoc::Context
   #
   # Ancestors of this class or module only
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#186
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#201
   def direct_ancestors; end
 
   # Does this ClassModule or any of its methods have document_self set?
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#231
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#246
   def document_self_or_methods; end
 
   # Does this class or module have a comment with content or is
@@ -530,63 +560,63 @@ class RDoc::ClassModule < ::RDoc::Context
   #
   # @return [Boolean]
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#239
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#254
   def documented?; end
 
   # Iterates the ancestors of this class or module for which an
   # RDoc::ClassModule exists.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#249
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#264
   def each_ancestor; end
 
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#849
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#879
   def embed_mixins; end
 
   # Looks for a symbol in the #ancestors. See Context#find_local_symbol.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#262
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#277
   def find_ancestor_local_symbol(symbol); end
 
   # Finds a class or module with +name+ in this namespace or its descendants
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#274
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#289
   def find_class_named(name); end
 
   # Return the fully qualified name of this class or module
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#287
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#302
   def full_name; end
 
   # Return array of fully qualified nesting namespaces.
   #
   # For example, if full_name is +A::B::C+, this method returns <code>["A", "A::B", "A::B::C"]</code>
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#307
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#322
   def fully_qualified_nesting_namespaces; end
 
   # Class or module this constant is an alias for
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#40
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#55
   def is_alias_for; end
 
   # Class or module this constant is an alias for
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#40
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#55
   def is_alias_for=(_arg0); end
 
   # TODO: filter included items by #display?
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#317
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#332
   def marshal_dump; end
 
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#363
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#378
   def marshal_load(array); end
 
   # Merges +class_module+ into this ClassModule.
   #
   # The data in +class_module+ is preferred over the receiver.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#453
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#468
   def merge(class_module); end
 
   # Merges collection +mine+ with +other+ preferring other.  +other_files+ is
@@ -603,57 +633,57 @@ class RDoc::ClassModule < ::RDoc::Context
   #     end
   #   end
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#538
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#553
   def merge_collections(mine, other, other_files, &block); end
 
   # Merges the comments in this ClassModule with the comments in the other
   # ClassModule +cm+.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#550
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#565
   def merge_sections(cm); end
 
   # Does this object represent a module?
   #
   # @return [Boolean]
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#589
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#604
   def module?; end
 
   # Allows overriding the initial name.
   #
   # Used for modules and classes that are constant aliases.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#598
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#613
   def name=(new_name); end
 
   # Name to use to generate the url:
   # modules and classes that are aliases for another
   # module or class return the name of the latter.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#643
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#658
   def name_for_path; end
 
   # Return array of full_name splitted by +::+.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#298
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#313
   def nesting_namespaces; end
 
   # Returns the classes and modules that are not constants
   # aliasing another class or module. For use by formatters
   # only (caches its result).
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#652
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#667
   def non_aliases; end
 
   # Parses +comment_location+ into an RDoc::Markup::Document composed of
   # multiple RDoc::Markup::Documents with their file set.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#606
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#621
   def parse(comment_location); end
 
   # Path to this class or module for use with HTML generator output.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#632
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#647
   def path; end
 
   # Updates the child modules or classes of class/module +parent+ by
@@ -663,32 +693,40 @@ class RDoc::ClassModule < ::RDoc::Context
   # <tt>parent.classes_hash</tt> and +all_hash+ is ::all_modules_hash or
   # ::all_classes_hash.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#664
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#679
   def remove_nodoc_children; end
 
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#678
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#693
   def remove_things(my_things, other_files); end
 
   # Search record used by RDoc::Generator::JsonIndex
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#693
+  # TODO: Remove this method after dropping the darkfish theme and JsonIndex generator.
+  # Use #search_snippet instead for getting documentation snippets.
+  #
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#711
   def search_record; end
+
+  # Returns an HTML snippet of the first comment for search results.
+  #
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#726
+  def search_snippet; end
 
   # Sets the store for this class or module and its contained code objects.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#708
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#736
   def store=(store); end
 
   # Get all super classes of this class in an array. The last element might be
   # a string if the name is unknown.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#751
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#779
   def super_classes; end
 
   # Get the superclass of this class.  Attempts to retrieve the superclass
   # object, returns the name if it is not known.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#722
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#750
   def superclass; end
 
   # Set the superclass of this class to +superclass+
@@ -701,15 +739,15 @@ class RDoc::ClassModule < ::RDoc::Context
   #
   # @raise [NoMethodError]
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#735
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#763
   def superclass=(superclass); end
 
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#761
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#789
   def to_s; end
 
   # 'module' or 'class'
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#772
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#800
   def type; end
 
   # Updates the child modules & classes by replacing the ones that are
@@ -726,7 +764,7 @@ class RDoc::ClassModule < ::RDoc::Context
   # the aliased modules are included in the constants of the class/module,
   # that are listed separately.
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#791
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#819
   def update_aliases; end
 
   # Deletes from #extends those whose module has been removed from the
@@ -734,7 +772,7 @@ class RDoc::ClassModule < ::RDoc::Context
   # --
   # FIXME: like update_includes, extends are not reliably removed
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#839
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#869
   def update_extends; end
 
   # Deletes from #includes those whose module has been removed from the
@@ -742,12 +780,12 @@ class RDoc::ClassModule < ::RDoc::Context
   # --
   # FIXME: includes are not reliably removed, see _possible_bug test case
   #
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#824
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#854
   def update_includes; end
 
   private
 
-  # source://rdoc//lib/rdoc/code_object/class_module.rb#878
+  # source://rdoc//lib/rdoc/code_object/class_module.rb#908
   def prepare_to_embed(code_object, singleton = T.unsafe(nil)); end
 
   class << self
@@ -756,7 +794,7 @@ class RDoc::ClassModule < ::RDoc::Context
     # --
     # TODO move to RDoc::NormalClass (I think)
     #
-    # source://rdoc//lib/rdoc/code_object/class_module.rb#48
+    # source://rdoc//lib/rdoc/code_object/class_module.rb#63
     def from_module(class_type, mod); end
   end
 end
@@ -1133,17 +1171,22 @@ class RDoc::Comment
   # source://rdoc//lib/rdoc/comment.rb#154
   def normalize; end
 
+  # Change normalized, when creating already normalized comment.
+  #
+  # source://rdoc//lib/rdoc/comment.rb#167
+  def normalized=(value); end
+
   # Was this text normalized?
   #
   # @return [Boolean]
   #
-  # source://rdoc//lib/rdoc/comment.rb#168
+  # source://rdoc//lib/rdoc/comment.rb#174
   def normalized?; end
 
   # Parses the comment into an RDoc::Markup::Document.  The parsed document is
   # cached until the text is changed.
   #
-  # source://rdoc//lib/rdoc/comment.rb#176
+  # source://rdoc//lib/rdoc/comment.rb#182
   def parse; end
 
   # Removes private sections from this comment.  Private sections are flush to
@@ -1158,7 +1201,7 @@ class RDoc::Comment
   #    * public
   #    */
   #
-  # source://rdoc//lib/rdoc/comment.rb#197
+  # source://rdoc//lib/rdoc/comment.rb#203
   def remove_private; end
 
   # The text for this comment
@@ -1172,7 +1215,7 @@ class RDoc::Comment
   #
   # @raise [RDoc::Error]
   #
-  # source://rdoc//lib/rdoc/comment.rb#211
+  # source://rdoc//lib/rdoc/comment.rb#217
   def text=(text); end
 
   # The text for this comment
@@ -1186,7 +1229,7 @@ class RDoc::Comment
   #
   # @return [Boolean]
   #
-  # source://rdoc//lib/rdoc/comment.rb#222
+  # source://rdoc//lib/rdoc/comment.rb#228
   def tomdoc?; end
 
   private
@@ -1200,10 +1243,55 @@ class RDoc::Comment
   class << self
     # Create a new parsed comment from a document
     #
-    # source://rdoc//lib/rdoc/comment.rb#229
+    # source://rdoc//lib/rdoc/comment.rb#246
     def from_document(document); end
+
+    # Parse comment, collect directives as an attribute and return [normalized_comment_text, directives_hash]
+    # This method expands include and removes everything not needed in the document text, such as
+    # private section, directive line, comment characters `# /* * */` and indent spaces.
+    #
+    # RDoc comment consists of include, directive, multiline directive, private section and comment text.
+    #
+    # Include
+    #   # :include: filename
+    #
+    # Directive
+    #   # :directive-without-value:
+    #   # :directive-with-value: value
+    #
+    # Multiline directive (only :call-seq:)
+    #   # :multiline-directive:
+    #   #   value1
+    #   #   value2
+    #
+    # Private section
+    #   #--
+    #   # private comment
+    #   #++
+    #
+    # source://rdoc//lib/rdoc/comment.rb#276
+    def parse(text, filename, line_no, type, &include_callback); end
+
+    private
+
+    # source://rdoc//lib/rdoc/comment.rb#363
+    def normalize_comment_lines(lines); end
+
+    # source://rdoc//lib/rdoc/comment.rb#381
+    def take_multiline_directive_value_lines(directive, filename, line_no, lines, base_indent_size, indent_regexp, has_param); end
   end
 end
+
+# There are more, but already handled by RDoc::Parser::C
+#
+# source://rdoc//lib/rdoc/comment.rb#235
+RDoc::Comment::COLON_LESS_DIRECTIVES = T.let(T.unsafe(nil), Array)
+
+# source://rdoc//lib/rdoc/comment.rb#237
+RDoc::Comment::DIRECTIVE_OR_ESCAPED_DIRECTIV_REGEXP = T.let(T.unsafe(nil), Regexp)
+
+# source://rdoc//lib/rdoc/comment.rb#232
+RDoc::Comment::MULTILINE_DIRECTIVES = T.let(T.unsafe(nil), Array)
 
 # A constant
 #
@@ -1281,15 +1369,20 @@ class RDoc::Constant < ::RDoc::CodeObject
   # source://rdoc//lib/rdoc/code_object/constant.rb#153
   def path; end
 
-  # source://rdoc//lib/rdoc/code_object/constant.rb#157
+  # source://rdoc//lib/rdoc/code_object/constant.rb#166
   def pretty_print(q); end
+
+  # Returns an HTML snippet of the comment for search results.
+  #
+  # source://rdoc//lib/rdoc/code_object/constant.rb#160
+  def search_snippet; end
 
   # Sets the store for this class or module and its contained code objects.
   #
-  # source://rdoc//lib/rdoc/code_object/constant.rb#171
+  # source://rdoc//lib/rdoc/code_object/constant.rb#180
   def store=(store); end
 
-  # source://rdoc//lib/rdoc/code_object/constant.rb#177
+  # source://rdoc//lib/rdoc/code_object/constant.rb#186
   def to_s; end
 
   # The constant's value
@@ -2124,6 +2217,63 @@ end
 # source://rdoc//lib/rdoc/encoding.rb#10
 RDoc::Encoding::HEADER_REGEXP = T.let(T.unsafe(nil), Regexp)
 
+# Aliki theme for RDoc documentation
+#
+# Author: Stan Lo
+#
+# source://rdoc//lib/rdoc/generator/aliki.rb#11
+class RDoc::Generator::Aliki < ::RDoc::Generator::Darkfish
+  # @return [Aliki] a new instance of Aliki
+  #
+  # source://rdoc//lib/rdoc/generator/aliki.rb#14
+  def initialize(store, options); end
+
+  # Build a search index array for Aliki's searcher.
+  #
+  # source://rdoc//lib/rdoc/generator/aliki.rb#72
+  def build_search_index; end
+
+  # Generate documentation. Overrides Darkfish to use Aliki's own search index
+  # instead of the JsonIndex generator.
+  #
+  # source://rdoc//lib/rdoc/generator/aliki.rb#24
+  def generate; end
+
+  # Resolves a URL for use in templates. Absolute URLs are returned unchanged.
+  # Relative URLs are prefixed with rel_prefix to ensure they resolve correctly from any page.
+  #
+  # source://rdoc//lib/rdoc/generator/aliki.rb#124
+  def resolve_url(rel_prefix, url); end
+
+  # Write the search index as a JavaScript file
+  # Format: var search_data = { index: [...] }
+  #
+  # We still write to a .js instead of a .json because loading a JSON file triggers CORS check in browsers.
+  # And if we simply inspect the generated pages using file://, which is often the case due to lack of the server mode,
+  # the JSON file will be blocked by the browser.
+  #
+  # source://rdoc//lib/rdoc/generator/aliki.rb#106
+  def write_search_index; end
+
+  # Copy only the static assets required by the Aliki theme. Unlike Darkfish we
+  # don't ship embedded fonts or image sprites, so limit the asset list to keep
+  # generated documentation lightweight.
+  #
+  # source://rdoc//lib/rdoc/generator/aliki.rb#49
+  def write_style_sheet; end
+
+  private
+
+  # source://rdoc//lib/rdoc/generator/aliki.rb#137
+  def build_class_module_entry(klass); end
+
+  # source://rdoc//lib/rdoc/generator/aliki.rb#171
+  def build_constant_entry(const, parent); end
+
+  # source://rdoc//lib/rdoc/generator/aliki.rb#156
+  def build_method_entry(method); end
+end
+
 # source://rdoc//lib/rdoc/generator/darkfish.rb#55
 class RDoc::Generator::Darkfish
   include ::ERB::Escape
@@ -2141,7 +2291,7 @@ class RDoc::Generator::Darkfish
   # For backwards compatibility, if +body_file+ contains "<html" the body is
   # used directly.
   #
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#589
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#595
   def assemble_template(body_file); end
 
   # The relative path to style sheets and javascript.  By default this is set
@@ -2190,7 +2340,7 @@ class RDoc::Generator::Darkfish
 
   # Returns an excerpt of the comment for usage in meta description tags
   #
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#704
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#710
   def excerpt(comment); end
 
   # When false the generate methods return a String instead of writing to a
@@ -2222,7 +2372,7 @@ class RDoc::Generator::Darkfish
   # source://rdoc//lib/rdoc/generator/darkfish.rb#219
   def generate; end
 
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#732
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#738
   def generate_ancestor_list(ancestors, klass); end
 
   # Generates a class file for +klass+
@@ -2232,18 +2382,18 @@ class RDoc::Generator::Darkfish
 
   # Generate a documentation file for each class and module
   #
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#346
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#350
   def generate_class_files; end
 
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#758
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#764
   def generate_class_index_content(classes, rel_prefix); end
 
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#750
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#756
   def generate_class_link(klass, rel_prefix); end
 
   # Generate a documentation file for each file
   #
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#371
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#377
   def generate_file_files; end
 
   # Generate an index page which lists all the classes which are documented.
@@ -2253,22 +2403,22 @@ class RDoc::Generator::Darkfish
 
   # Generate a page file for +file+
   #
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#438
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#444
   def generate_page(file); end
 
   # Generates the 404 page for the RDoc servlet
   #
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#465
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#471
   def generate_servlet_not_found(message); end
 
   # Generates the servlet root page for the RDoc servlet
   #
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#496
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#502
   def generate_servlet_root(installed); end
 
   # Generate an index page which lists all the classes which are documented.
   #
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#521
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#527
   def generate_table_of_contents; end
 
   # Return a list of the documented modules sorted by salience first, then
@@ -2277,10 +2427,10 @@ class RDoc::Generator::Darkfish
   # source://rdoc//lib/rdoc/generator/darkfish.rb#272
   def get_sorted_module_list(classes); end
 
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#783
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#789
   def group_classes_by_namespace_for_sidebar(classes); end
 
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#550
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#556
   def install_rdoc_static_file(source, destination, options); end
 
   # The JSON index generator for this Darkfish generator
@@ -2306,7 +2456,7 @@ class RDoc::Generator::Darkfish
   # Renders the ERb contained in +file_name+ relative to the template
   # directory and returns the result based on the current context.
   #
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#610
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#616
   def render(file_name); end
 
   # Load and render the erb template in the given +template_file+ and write
@@ -2316,12 +2466,12 @@ class RDoc::Generator::Darkfish
   #
   # An io will be yielded which must be captured by binding in the caller.
   #
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#628
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#634
   def render_template(template_file, out_file = T.unsafe(nil)); end
 
   # Prepares for generation of output from the current directory
   #
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#570
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#576
   def setup; end
 
   # The RDoc::Store that is the source of the generated content
@@ -2336,16 +2486,16 @@ class RDoc::Generator::Darkfish
 
   # Retrieves a cache template for +file+, if present, or fills the cache.
   #
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#675
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#681
   def template_for(file, page = T.unsafe(nil), klass = T.unsafe(nil)); end
 
   # Creates the result for +template+ with +context+.  If an error is raised a
   # Pathname +template_file+ will indicate the file where the error occurred.
   #
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#662
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#668
   def template_result(template, context, template_file); end
 
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#766
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#772
   def traverse_classes(klasses, grouped_classes, rel_prefix, solo = T.unsafe(nil)); end
 
   # Copy over the stylesheet into the appropriate place in the output
@@ -2356,21 +2506,21 @@ class RDoc::Generator::Darkfish
 
   private
 
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#806
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#812
   def generate_nesting_namespaces_breadcrumb(klass, rel_prefix); end
 
-  # source://rdoc//lib/rdoc/generator/darkfish.rb#796
+  # source://rdoc//lib/rdoc/generator/darkfish.rb#802
   def nesting_namespaces_to_class_modules(klass); end
 end
 
 # :stopdoc:
 #
-# source://rdoc//lib/rdoc/generator/darkfish.rb#698
+# source://rdoc//lib/rdoc/generator/darkfish.rb#704
 RDoc::Generator::Darkfish::ParagraphExcerptRegexpOther = T.let(T.unsafe(nil), Regexp)
 
 # use \p/\P{letter} instead of \w/\W in Unicode
 #
-# source://rdoc//lib/rdoc/generator/darkfish.rb#700
+# source://rdoc//lib/rdoc/generator/darkfish.rb#706
 RDoc::Generator::Darkfish::ParagraphExcerptRegexpUnicode = T.let(T.unsafe(nil), Regexp)
 
 # source://rdoc//lib/rdoc/generator/json_index.rb#77
@@ -2830,1242 +2980,1242 @@ class RDoc::Markdown
 
   # Alphanumeric = %literals.Alphanumeric
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14727
+  # source://rdoc//lib/rdoc/markdown.rb#14588
   def _Alphanumeric; end
 
   # AlphanumericAscii = %literals.AlphanumericAscii
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14734
+  # source://rdoc//lib/rdoc/markdown.rb#14595
   def _AlphanumericAscii; end
 
   # AtxHeading = AtxStart:s @Spacechar+ AtxInline+:a (@Sp /#*/ @Sp)? @Newline { RDoc::Markup::Heading.new(s, a.join) }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#1162
+  # source://rdoc//lib/rdoc/markdown.rb#1213
   def _AtxHeading; end
 
   # AtxInline = !@Newline !(@Sp /#*/ @Sp @Newline) Inline
   #
-  # source://rdoc//lib/rdoc/markdown.rb#1080
+  # source://rdoc//lib/rdoc/markdown.rb#1131
   def _AtxInline; end
 
   # AtxStart = < /\#{1,6}/ > { text.length }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#1136
+  # source://rdoc//lib/rdoc/markdown.rb#1187
   def _AtxStart; end
 
   # AutoLink = (AutoLinkUrl | AutoLinkEmail)
   #
-  # source://rdoc//lib/rdoc/markdown.rb#11596
+  # source://rdoc//lib/rdoc/markdown.rb#11647
   def _AutoLink; end
 
   # AutoLinkEmail = "<" "mailto:"? < /[\w+.\/!%~$-]+/i "@" (!@Newline !">" .)+ > ">" { "mailto:#{text}" }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#11729
+  # source://rdoc//lib/rdoc/markdown.rb#11780
   def _AutoLinkEmail; end
 
   # AutoLinkUrl = "<" < /[A-Za-z]+/ "://" (!@Newline !">" .)+ > ">" { text }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#11614
+  # source://rdoc//lib/rdoc/markdown.rb#11665
   def _AutoLinkUrl; end
 
   # BOM = %literals.BOM
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14741
+  # source://rdoc//lib/rdoc/markdown.rb#14602
   def _BOM; end
 
   # BlankLine = @Sp @Newline { "\n" }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14170
+  # source://rdoc//lib/rdoc/markdown.rb#14031
   def _BlankLine; end
 
   # Block = @BlankLine* (BlockQuote | Verbatim | CodeFence | Table | Note | Reference | HorizontalRule | Heading | OrderedList | BulletList | DefinitionList | HtmlBlock | StyleBlock | Para | Plain)
   #
-  # source://rdoc//lib/rdoc/markdown.rb#939
+  # source://rdoc//lib/rdoc/markdown.rb#990
   def _Block; end
 
   # BlockQuote = BlockQuoteRaw:a { RDoc::Markup::BlockQuote.new(*a) }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#1576
+  # source://rdoc//lib/rdoc/markdown.rb#1627
   def _BlockQuote; end
 
   # BlockQuoteRaw = @StartList:a (">" " "? Line:l { a << l } (!">" !@BlankLine Line:c { a << c })* (@BlankLine:n { a << n })*)+ { inner_parse a.join }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#1599
+  # source://rdoc//lib/rdoc/markdown.rb#1650
   def _BlockQuoteRaw; end
 
   # Bullet = !HorizontalRule @NonindentSpace /[+*-]/ @Spacechar+
   #
-  # source://rdoc//lib/rdoc/markdown.rb#2164
+  # source://rdoc//lib/rdoc/markdown.rb#2215
   def _Bullet; end
 
   # BulletList = &Bullet (ListTight | ListLoose):a { RDoc::Markup::List.new(:BULLET, *a) }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#2208
+  # source://rdoc//lib/rdoc/markdown.rb#2259
   def _BulletList; end
 
   # CharEntity = "&" < /[A-Za-z0-9]+/ > ";" { if entity = HTML_ENTITIES[text] then                  entity.pack 'U*'                else                  "&#{text};"                end              }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14834
+  # source://rdoc//lib/rdoc/markdown.rb#14695
   def _CharEntity; end
 
-  # Code = (Ticks1 @Sp < ((!"`" Nonspacechar)+ | !Ticks1 /`+/ | !(@Sp Ticks1) (@Spacechar | @Newline !@BlankLine))+ > @Sp Ticks1 | Ticks2 @Sp < ((!"`" Nonspacechar)+ | !Ticks2 /`+/ | !(@Sp Ticks2) (@Spacechar | @Newline !@BlankLine))+ > @Sp Ticks2 | Ticks3 @Sp < ((!"`" Nonspacechar)+ | !Ticks3 /`+/ | !(@Sp Ticks3) (@Spacechar | @Newline !@BlankLine))+ > @Sp Ticks3 | Ticks4 @Sp < ((!"`" Nonspacechar)+ | !Ticks4 /`+/ | !(@Sp Ticks4) (@Spacechar | @Newline !@BlankLine))+ > @Sp Ticks4 | Ticks5 @Sp < ((!"`" Nonspacechar)+ | !Ticks5 /`+/ | !(@Sp Ticks5) (@Spacechar | @Newline !@BlankLine))+ > @Sp Ticks5) { "<code>#{text}</code>" }
+  # Code = (Ticks1 < ((!"`" Nonspacechar)+ | !Ticks1 /`+/ | !Ticks1 (@Spacechar | @Newline !@BlankLine))+ > Ticks1 | Ticks2 < ((!"`" Nonspacechar)+ | !Ticks2 /`+/ | !Ticks2 (@Spacechar | @Newline !@BlankLine))+ > Ticks2 | Ticks3 < ((!"`" Nonspacechar)+ | !Ticks3 /`+/ | !Ticks3 (@Spacechar | @Newline !@BlankLine))+ > Ticks3 | Ticks4 < ((!"`" Nonspacechar)+ | !Ticks4 /`+/ | !Ticks4 (@Spacechar | @Newline !@BlankLine))+ > Ticks4 | Ticks5 < ((!"`" Nonspacechar)+ | !Ticks5 /`+/ | !Ticks5 (@Spacechar | @Newline !@BlankLine))+ > Ticks5) { code text }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#12533
+  # source://rdoc//lib/rdoc/markdown.rb#12584
   def _Code; end
 
   # CodeFence = &{ github? } Ticks3 (@Sp StrChunk:format)? Spnl < ((!"`" Nonspacechar)+ | !Ticks3 /`+/ | Spacechar | @Newline)+ > Ticks3 @Sp @Newline* { verbatim = RDoc::Markup::Verbatim.new text               verbatim.format = format.intern if format.instance_of?(String)               verbatim             }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#15703
+  # source://rdoc//lib/rdoc/markdown.rb#15564
   def _CodeFence; end
 
   # DecEntity = "&#" < /[0-9]+/ > ";" { [text.to_i].pack 'U' }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14798
+  # source://rdoc//lib/rdoc/markdown.rb#14659
   def _DecEntity; end
 
   # DefinitionList = &{ definition_lists? } DefinitionListItem+:list { RDoc::Markup::List.new :NOTE, *list.flatten }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#16361
+  # source://rdoc//lib/rdoc/markdown.rb#16225
   def _DefinitionList; end
 
   # DefinitionListDefinition = @NonindentSpace ":" @Space Inlines:a @BlankLine+ { paragraph a }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#16504
+  # source://rdoc//lib/rdoc/markdown.rb#16368
   def _DefinitionListDefinition; end
 
   # DefinitionListItem = DefinitionListLabel+:label DefinitionListDefinition+:defns { list_items = []                        list_items <<                          RDoc::Markup::ListItem.new(label, defns.shift)                         list_items.concat defns.map { |defn|                          RDoc::Markup::ListItem.new nil, defn                        } unless list_items.empty?                         list_items                      }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#16405
+  # source://rdoc//lib/rdoc/markdown.rb#16269
   def _DefinitionListItem; end
 
   # DefinitionListLabel = Inline:label @Sp @Newline { label }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#16471
+  # source://rdoc//lib/rdoc/markdown.rb#16335
   def _DefinitionListLabel; end
 
   # Digit = [0-9]
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14713
+  # source://rdoc//lib/rdoc/markdown.rb#14574
   def _Digit; end
 
   # Doc = BOM? Block*:a { RDoc::Markup::Document.new(*a.compact) }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#899
+  # source://rdoc//lib/rdoc/markdown.rb#950
   def _Doc; end
 
   # Emph = (EmphStar | EmphUl)
   #
-  # source://rdoc//lib/rdoc/markdown.rb#10293
+  # source://rdoc//lib/rdoc/markdown.rb#10344
   def _Emph; end
 
   # EmphStar = "*" !@Whitespace @StartList:a (!"*" Inline:b { a << b } | StrongStar:b { a << b })+ "*" { emphasis a.join }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#10329
+  # source://rdoc//lib/rdoc/markdown.rb#10380
   def _EmphStar; end
 
   # EmphUl = "_" !@Whitespace @StartList:a (!"_" Inline:b { a << b } | StrongUl:b { a << b })+ "_" { emphasis a.join }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#10487
+  # source://rdoc//lib/rdoc/markdown.rb#10538
   def _EmphUl; end
 
   # EmptyTitle = ""
   #
-  # source://rdoc//lib/rdoc/markdown.rb#12108
+  # source://rdoc//lib/rdoc/markdown.rb#12159
   def _EmptyTitle; end
 
   # Endline = (@LineBreak | @TerminalEndline | @NormalEndline)
   #
-  # source://rdoc//lib/rdoc/markdown.rb#9927
+  # source://rdoc//lib/rdoc/markdown.rb#9978
   def _Endline; end
 
   # Entity = (HexEntity | DecEntity | CharEntity):a { a }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#9890
+  # source://rdoc//lib/rdoc/markdown.rb#9941
   def _Entity; end
 
   # Enumerator = @NonindentSpace [0-9]+ "." @Spacechar+
   #
-  # source://rdoc//lib/rdoc/markdown.rb#2697
+  # source://rdoc//lib/rdoc/markdown.rb#2748
   def _Enumerator; end
 
   # Eof = !.
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14564
+  # source://rdoc//lib/rdoc/markdown.rb#14425
   def _Eof; end
 
   # EscapedChar = "\\" !@Newline < /[:\\`|*_{}\[\]()#+.!><-]/ > { text }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#9851
+  # source://rdoc//lib/rdoc/markdown.rb#9902
   def _EscapedChar; end
 
   # ExplicitLink = ExplicitLinkWithLabel:a { "{#{a[:label]}}[#{a[:link]}]" }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#11146
+  # source://rdoc//lib/rdoc/markdown.rb#11197
   def _ExplicitLink; end
 
   # ExplicitLinkWithLabel = Label:label "(" @Sp Source:link Spnl Title @Sp ")" { { label: label, link: link } }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#11169
+  # source://rdoc//lib/rdoc/markdown.rb#11220
   def _ExplicitLinkWithLabel; end
 
   # ExtendedSpecialChar = &{ notes? } "^"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#15206
+  # source://rdoc//lib/rdoc/markdown.rb#15067
   def _ExtendedSpecialChar; end
 
   # Heading = (SetextHeading | AtxHeading)
   #
-  # source://rdoc//lib/rdoc/markdown.rb#1558
+  # source://rdoc//lib/rdoc/markdown.rb#1609
   def _Heading; end
 
   # HexEntity = /&#x/i < /[0-9a-fA-F]+/ > ";" { [text.to_i(16)].pack 'U' }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14762
+  # source://rdoc//lib/rdoc/markdown.rb#14623
   def _HexEntity; end
 
   # HorizontalRule = @NonindentSpace ("*" @Sp "*" @Sp "*" (@Sp "*")* | "-" @Sp "-" @Sp "-" (@Sp "-")* | "_" @Sp "_" @Sp "_" (@Sp "_")*) @Sp @Newline @BlankLine+ { RDoc::Markup::Rule.new 1 }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#1942
+  # source://rdoc//lib/rdoc/markdown.rb#1993
   def _HorizontalRule; end
 
   # HtmlAnchor = HtmlOpenAnchor (HtmlAnchor | !HtmlCloseAnchor .)* HtmlCloseAnchor
   #
-  # source://rdoc//lib/rdoc/markdown.rb#2981
+  # source://rdoc//lib/rdoc/markdown.rb#3032
   def _HtmlAnchor; end
 
   # HtmlAttribute = (AlphanumericAscii | "-")+ Spnl ("=" Spnl (Quoted | (!">" Nonspacechar)+))? Spnl
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14295
+  # source://rdoc//lib/rdoc/markdown.rb#14156
   def _HtmlAttribute; end
 
   # HtmlBlock = < (HtmlBlockInTags | HtmlComment | HtmlBlockSelfClosing | HtmlUnclosed) > @BlankLine+ { if html? then                 RDoc::Markup::Raw.new text               end }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#8778
+  # source://rdoc//lib/rdoc/markdown.rb#8829
   def _HtmlBlock; end
 
   # HtmlBlockAddress = HtmlBlockOpenAddress (HtmlBlockAddress | !HtmlBlockCloseAddress .)* HtmlBlockCloseAddress
   #
-  # source://rdoc//lib/rdoc/markdown.rb#3147
+  # source://rdoc//lib/rdoc/markdown.rb#3198
   def _HtmlBlockAddress; end
 
   # HtmlBlockBlockquote = HtmlBlockOpenBlockquote (HtmlBlockBlockquote | !HtmlBlockCloseBlockquote .)* HtmlBlockCloseBlockquote
   #
-  # source://rdoc//lib/rdoc/markdown.rb#3313
+  # source://rdoc//lib/rdoc/markdown.rb#3364
   def _HtmlBlockBlockquote; end
 
   # HtmlBlockCenter = HtmlBlockOpenCenter (HtmlBlockCenter | !HtmlBlockCloseCenter .)* HtmlBlockCloseCenter
   #
-  # source://rdoc//lib/rdoc/markdown.rb#3479
+  # source://rdoc//lib/rdoc/markdown.rb#3530
   def _HtmlBlockCenter; end
 
   # HtmlBlockCloseAddress = "<" Spnl "/" ("address" | "ADDRESS") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#3095
+  # source://rdoc//lib/rdoc/markdown.rb#3146
   def _HtmlBlockCloseAddress; end
 
   # HtmlBlockCloseBlockquote = "<" Spnl "/" ("blockquote" | "BLOCKQUOTE") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#3261
+  # source://rdoc//lib/rdoc/markdown.rb#3312
   def _HtmlBlockCloseBlockquote; end
 
   # HtmlBlockCloseCenter = "<" Spnl "/" ("center" | "CENTER") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#3427
+  # source://rdoc//lib/rdoc/markdown.rb#3478
   def _HtmlBlockCloseCenter; end
 
   # HtmlBlockCloseDd = "<" Spnl "/" ("dd" | "DD") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#6747
+  # source://rdoc//lib/rdoc/markdown.rb#6798
   def _HtmlBlockCloseDd; end
 
   # HtmlBlockCloseDir = "<" Spnl "/" ("dir" | "DIR") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#3593
+  # source://rdoc//lib/rdoc/markdown.rb#3644
   def _HtmlBlockCloseDir; end
 
   # HtmlBlockCloseDiv = "<" Spnl "/" ("div" | "DIV") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#3759
+  # source://rdoc//lib/rdoc/markdown.rb#3810
   def _HtmlBlockCloseDiv; end
 
   # HtmlBlockCloseDl = "<" Spnl "/" ("dl" | "DL") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#3925
+  # source://rdoc//lib/rdoc/markdown.rb#3976
   def _HtmlBlockCloseDl; end
 
   # HtmlBlockCloseDt = "<" Spnl "/" ("dt" | "DT") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#6913
+  # source://rdoc//lib/rdoc/markdown.rb#6964
   def _HtmlBlockCloseDt; end
 
   # HtmlBlockCloseFieldset = "<" Spnl "/" ("fieldset" | "FIELDSET") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#4091
+  # source://rdoc//lib/rdoc/markdown.rb#4142
   def _HtmlBlockCloseFieldset; end
 
   # HtmlBlockCloseForm = "<" Spnl "/" ("form" | "FORM") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#4257
+  # source://rdoc//lib/rdoc/markdown.rb#4308
   def _HtmlBlockCloseForm; end
 
   # HtmlBlockCloseFrameset = "<" Spnl "/" ("frameset" | "FRAMESET") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#7079
+  # source://rdoc//lib/rdoc/markdown.rb#7130
   def _HtmlBlockCloseFrameset; end
 
   # HtmlBlockCloseH1 = "<" Spnl "/" ("h1" | "H1") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#4423
+  # source://rdoc//lib/rdoc/markdown.rb#4474
   def _HtmlBlockCloseH1; end
 
   # HtmlBlockCloseH2 = "<" Spnl "/" ("h2" | "H2") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#4589
+  # source://rdoc//lib/rdoc/markdown.rb#4640
   def _HtmlBlockCloseH2; end
 
   # HtmlBlockCloseH3 = "<" Spnl "/" ("h3" | "H3") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#4755
+  # source://rdoc//lib/rdoc/markdown.rb#4806
   def _HtmlBlockCloseH3; end
 
   # HtmlBlockCloseH4 = "<" Spnl "/" ("h4" | "H4") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#4921
+  # source://rdoc//lib/rdoc/markdown.rb#4972
   def _HtmlBlockCloseH4; end
 
   # HtmlBlockCloseH5 = "<" Spnl "/" ("h5" | "H5") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#5087
+  # source://rdoc//lib/rdoc/markdown.rb#5138
   def _HtmlBlockCloseH5; end
 
   # HtmlBlockCloseH6 = "<" Spnl "/" ("h6" | "H6") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#5253
+  # source://rdoc//lib/rdoc/markdown.rb#5304
   def _HtmlBlockCloseH6; end
 
   # HtmlBlockCloseHead = "<" Spnl "/" ("head" | "HEAD") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#8562
+  # source://rdoc//lib/rdoc/markdown.rb#8613
   def _HtmlBlockCloseHead; end
 
   # HtmlBlockCloseLi = "<" Spnl "/" ("li" | "LI") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#7245
+  # source://rdoc//lib/rdoc/markdown.rb#7296
   def _HtmlBlockCloseLi; end
 
   # HtmlBlockCloseMenu = "<" Spnl "/" ("menu" | "MENU") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#5419
+  # source://rdoc//lib/rdoc/markdown.rb#5470
   def _HtmlBlockCloseMenu; end
 
   # HtmlBlockCloseNoframes = "<" Spnl "/" ("noframes" | "NOFRAMES") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#5585
+  # source://rdoc//lib/rdoc/markdown.rb#5636
   def _HtmlBlockCloseNoframes; end
 
   # HtmlBlockCloseNoscript = "<" Spnl "/" ("noscript" | "NOSCRIPT") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#5751
+  # source://rdoc//lib/rdoc/markdown.rb#5802
   def _HtmlBlockCloseNoscript; end
 
   # HtmlBlockCloseOl = "<" Spnl "/" ("ol" | "OL") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#5917
+  # source://rdoc//lib/rdoc/markdown.rb#5968
   def _HtmlBlockCloseOl; end
 
   # HtmlBlockCloseP = "<" Spnl "/" ("p" | "P") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#6083
+  # source://rdoc//lib/rdoc/markdown.rb#6134
   def _HtmlBlockCloseP; end
 
   # HtmlBlockClosePre = "<" Spnl "/" ("pre" | "PRE") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#6249
+  # source://rdoc//lib/rdoc/markdown.rb#6300
   def _HtmlBlockClosePre; end
 
   # HtmlBlockCloseScript = "<" Spnl "/" ("script" | "SCRIPT") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#8407
+  # source://rdoc//lib/rdoc/markdown.rb#8458
   def _HtmlBlockCloseScript; end
 
   # HtmlBlockCloseTable = "<" Spnl "/" ("table" | "TABLE") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#6415
+  # source://rdoc//lib/rdoc/markdown.rb#6466
   def _HtmlBlockCloseTable; end
 
   # HtmlBlockCloseTbody = "<" Spnl "/" ("tbody" | "TBODY") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#7411
+  # source://rdoc//lib/rdoc/markdown.rb#7462
   def _HtmlBlockCloseTbody; end
 
   # HtmlBlockCloseTd = "<" Spnl "/" ("td" | "TD") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#7577
+  # source://rdoc//lib/rdoc/markdown.rb#7628
   def _HtmlBlockCloseTd; end
 
   # HtmlBlockCloseTfoot = "<" Spnl "/" ("tfoot" | "TFOOT") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#7743
+  # source://rdoc//lib/rdoc/markdown.rb#7794
   def _HtmlBlockCloseTfoot; end
 
   # HtmlBlockCloseTh = "<" Spnl "/" ("th" | "TH") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#7909
+  # source://rdoc//lib/rdoc/markdown.rb#7960
   def _HtmlBlockCloseTh; end
 
   # HtmlBlockCloseThead = "<" Spnl "/" ("thead" | "THEAD") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#8075
+  # source://rdoc//lib/rdoc/markdown.rb#8126
   def _HtmlBlockCloseThead; end
 
   # HtmlBlockCloseTr = "<" Spnl "/" ("tr" | "TR") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#8241
+  # source://rdoc//lib/rdoc/markdown.rb#8292
   def _HtmlBlockCloseTr; end
 
   # HtmlBlockCloseUl = "<" Spnl "/" ("ul" | "UL") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#6581
+  # source://rdoc//lib/rdoc/markdown.rb#6632
   def _HtmlBlockCloseUl; end
 
   # HtmlBlockDd = HtmlBlockOpenDd (HtmlBlockDd | !HtmlBlockCloseDd .)* HtmlBlockCloseDd
   #
-  # source://rdoc//lib/rdoc/markdown.rb#6799
+  # source://rdoc//lib/rdoc/markdown.rb#6850
   def _HtmlBlockDd; end
 
   # HtmlBlockDir = HtmlBlockOpenDir (HtmlBlockDir | !HtmlBlockCloseDir .)* HtmlBlockCloseDir
   #
-  # source://rdoc//lib/rdoc/markdown.rb#3645
+  # source://rdoc//lib/rdoc/markdown.rb#3696
   def _HtmlBlockDir; end
 
   # HtmlBlockDiv = HtmlBlockOpenDiv (HtmlBlockDiv | !HtmlBlockCloseDiv .)* HtmlBlockCloseDiv
   #
-  # source://rdoc//lib/rdoc/markdown.rb#3811
+  # source://rdoc//lib/rdoc/markdown.rb#3862
   def _HtmlBlockDiv; end
 
   # HtmlBlockDl = HtmlBlockOpenDl (HtmlBlockDl | !HtmlBlockCloseDl .)* HtmlBlockCloseDl
   #
-  # source://rdoc//lib/rdoc/markdown.rb#3977
+  # source://rdoc//lib/rdoc/markdown.rb#4028
   def _HtmlBlockDl; end
 
   # HtmlBlockDt = HtmlBlockOpenDt (HtmlBlockDt | !HtmlBlockCloseDt .)* HtmlBlockCloseDt
   #
-  # source://rdoc//lib/rdoc/markdown.rb#6965
+  # source://rdoc//lib/rdoc/markdown.rb#7016
   def _HtmlBlockDt; end
 
   # HtmlBlockFieldset = HtmlBlockOpenFieldset (HtmlBlockFieldset | !HtmlBlockCloseFieldset .)* HtmlBlockCloseFieldset
   #
-  # source://rdoc//lib/rdoc/markdown.rb#4143
+  # source://rdoc//lib/rdoc/markdown.rb#4194
   def _HtmlBlockFieldset; end
 
   # HtmlBlockForm = HtmlBlockOpenForm (HtmlBlockForm | !HtmlBlockCloseForm .)* HtmlBlockCloseForm
   #
-  # source://rdoc//lib/rdoc/markdown.rb#4309
+  # source://rdoc//lib/rdoc/markdown.rb#4360
   def _HtmlBlockForm; end
 
   # HtmlBlockFrameset = HtmlBlockOpenFrameset (HtmlBlockFrameset | !HtmlBlockCloseFrameset .)* HtmlBlockCloseFrameset
   #
-  # source://rdoc//lib/rdoc/markdown.rb#7131
+  # source://rdoc//lib/rdoc/markdown.rb#7182
   def _HtmlBlockFrameset; end
 
   # HtmlBlockH1 = HtmlBlockOpenH1 (HtmlBlockH1 | !HtmlBlockCloseH1 .)* HtmlBlockCloseH1
   #
-  # source://rdoc//lib/rdoc/markdown.rb#4475
+  # source://rdoc//lib/rdoc/markdown.rb#4526
   def _HtmlBlockH1; end
 
   # HtmlBlockH2 = HtmlBlockOpenH2 (HtmlBlockH2 | !HtmlBlockCloseH2 .)* HtmlBlockCloseH2
   #
-  # source://rdoc//lib/rdoc/markdown.rb#4641
+  # source://rdoc//lib/rdoc/markdown.rb#4692
   def _HtmlBlockH2; end
 
   # HtmlBlockH3 = HtmlBlockOpenH3 (HtmlBlockH3 | !HtmlBlockCloseH3 .)* HtmlBlockCloseH3
   #
-  # source://rdoc//lib/rdoc/markdown.rb#4807
+  # source://rdoc//lib/rdoc/markdown.rb#4858
   def _HtmlBlockH3; end
 
   # HtmlBlockH4 = HtmlBlockOpenH4 (HtmlBlockH4 | !HtmlBlockCloseH4 .)* HtmlBlockCloseH4
   #
-  # source://rdoc//lib/rdoc/markdown.rb#4973
+  # source://rdoc//lib/rdoc/markdown.rb#5024
   def _HtmlBlockH4; end
 
   # HtmlBlockH5 = HtmlBlockOpenH5 (HtmlBlockH5 | !HtmlBlockCloseH5 .)* HtmlBlockCloseH5
   #
-  # source://rdoc//lib/rdoc/markdown.rb#5139
+  # source://rdoc//lib/rdoc/markdown.rb#5190
   def _HtmlBlockH5; end
 
   # HtmlBlockH6 = HtmlBlockOpenH6 (HtmlBlockH6 | !HtmlBlockCloseH6 .)* HtmlBlockCloseH6
   #
-  # source://rdoc//lib/rdoc/markdown.rb#5305
+  # source://rdoc//lib/rdoc/markdown.rb#5356
   def _HtmlBlockH6; end
 
   # HtmlBlockHead = HtmlBlockOpenHead (!HtmlBlockCloseHead .)* HtmlBlockCloseHead
   #
-  # source://rdoc//lib/rdoc/markdown.rb#8614
+  # source://rdoc//lib/rdoc/markdown.rb#8665
   def _HtmlBlockHead; end
 
   # HtmlBlockInTags = (HtmlAnchor | HtmlBlockAddress | HtmlBlockBlockquote | HtmlBlockCenter | HtmlBlockDir | HtmlBlockDiv | HtmlBlockDl | HtmlBlockFieldset | HtmlBlockForm | HtmlBlockH1 | HtmlBlockH2 | HtmlBlockH3 | HtmlBlockH4 | HtmlBlockH5 | HtmlBlockH6 | HtmlBlockMenu | HtmlBlockNoframes | HtmlBlockNoscript | HtmlBlockOl | HtmlBlockP | HtmlBlockPre | HtmlBlockTable | HtmlBlockUl | HtmlBlockDd | HtmlBlockDt | HtmlBlockFrameset | HtmlBlockLi | HtmlBlockTbody | HtmlBlockTd | HtmlBlockTfoot | HtmlBlockTh | HtmlBlockThead | HtmlBlockTr | HtmlBlockScript | HtmlBlockHead)
   #
-  # source://rdoc//lib/rdoc/markdown.rb#8661
+  # source://rdoc//lib/rdoc/markdown.rb#8712
   def _HtmlBlockInTags; end
 
   # HtmlBlockLi = HtmlBlockOpenLi (HtmlBlockLi | !HtmlBlockCloseLi .)* HtmlBlockCloseLi
   #
-  # source://rdoc//lib/rdoc/markdown.rb#7297
+  # source://rdoc//lib/rdoc/markdown.rb#7348
   def _HtmlBlockLi; end
 
   # HtmlBlockMenu = HtmlBlockOpenMenu (HtmlBlockMenu | !HtmlBlockCloseMenu .)* HtmlBlockCloseMenu
   #
-  # source://rdoc//lib/rdoc/markdown.rb#5471
+  # source://rdoc//lib/rdoc/markdown.rb#5522
   def _HtmlBlockMenu; end
 
   # HtmlBlockNoframes = HtmlBlockOpenNoframes (HtmlBlockNoframes | !HtmlBlockCloseNoframes .)* HtmlBlockCloseNoframes
   #
-  # source://rdoc//lib/rdoc/markdown.rb#5637
+  # source://rdoc//lib/rdoc/markdown.rb#5688
   def _HtmlBlockNoframes; end
 
   # HtmlBlockNoscript = HtmlBlockOpenNoscript (HtmlBlockNoscript | !HtmlBlockCloseNoscript .)* HtmlBlockCloseNoscript
   #
-  # source://rdoc//lib/rdoc/markdown.rb#5803
+  # source://rdoc//lib/rdoc/markdown.rb#5854
   def _HtmlBlockNoscript; end
 
   # HtmlBlockOl = HtmlBlockOpenOl (HtmlBlockOl | !HtmlBlockCloseOl .)* HtmlBlockCloseOl
   #
-  # source://rdoc//lib/rdoc/markdown.rb#5969
+  # source://rdoc//lib/rdoc/markdown.rb#6020
   def _HtmlBlockOl; end
 
   # HtmlBlockOpenAddress = "<" Spnl ("address" | "ADDRESS") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#3039
+  # source://rdoc//lib/rdoc/markdown.rb#3090
   def _HtmlBlockOpenAddress; end
 
   # HtmlBlockOpenBlockquote = "<" Spnl ("blockquote" | "BLOCKQUOTE") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#3205
+  # source://rdoc//lib/rdoc/markdown.rb#3256
   def _HtmlBlockOpenBlockquote; end
 
   # HtmlBlockOpenCenter = "<" Spnl ("center" | "CENTER") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#3371
+  # source://rdoc//lib/rdoc/markdown.rb#3422
   def _HtmlBlockOpenCenter; end
 
   # HtmlBlockOpenDd = "<" Spnl ("dd" | "DD") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#6691
+  # source://rdoc//lib/rdoc/markdown.rb#6742
   def _HtmlBlockOpenDd; end
 
   # HtmlBlockOpenDir = "<" Spnl ("dir" | "DIR") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#3537
+  # source://rdoc//lib/rdoc/markdown.rb#3588
   def _HtmlBlockOpenDir; end
 
   # HtmlBlockOpenDiv = "<" Spnl ("div" | "DIV") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#3703
+  # source://rdoc//lib/rdoc/markdown.rb#3754
   def _HtmlBlockOpenDiv; end
 
   # HtmlBlockOpenDl = "<" Spnl ("dl" | "DL") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#3869
+  # source://rdoc//lib/rdoc/markdown.rb#3920
   def _HtmlBlockOpenDl; end
 
   # HtmlBlockOpenDt = "<" Spnl ("dt" | "DT") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#6857
+  # source://rdoc//lib/rdoc/markdown.rb#6908
   def _HtmlBlockOpenDt; end
 
   # HtmlBlockOpenFieldset = "<" Spnl ("fieldset" | "FIELDSET") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#4035
+  # source://rdoc//lib/rdoc/markdown.rb#4086
   def _HtmlBlockOpenFieldset; end
 
   # HtmlBlockOpenForm = "<" Spnl ("form" | "FORM") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#4201
+  # source://rdoc//lib/rdoc/markdown.rb#4252
   def _HtmlBlockOpenForm; end
 
   # HtmlBlockOpenFrameset = "<" Spnl ("frameset" | "FRAMESET") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#7023
+  # source://rdoc//lib/rdoc/markdown.rb#7074
   def _HtmlBlockOpenFrameset; end
 
   # HtmlBlockOpenH1 = "<" Spnl ("h1" | "H1") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#4367
+  # source://rdoc//lib/rdoc/markdown.rb#4418
   def _HtmlBlockOpenH1; end
 
   # HtmlBlockOpenH2 = "<" Spnl ("h2" | "H2") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#4533
+  # source://rdoc//lib/rdoc/markdown.rb#4584
   def _HtmlBlockOpenH2; end
 
   # HtmlBlockOpenH3 = "<" Spnl ("h3" | "H3") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#4699
+  # source://rdoc//lib/rdoc/markdown.rb#4750
   def _HtmlBlockOpenH3; end
 
   # HtmlBlockOpenH4 = "<" Spnl ("h4" | "H4") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#4865
+  # source://rdoc//lib/rdoc/markdown.rb#4916
   def _HtmlBlockOpenH4; end
 
   # HtmlBlockOpenH5 = "<" Spnl ("h5" | "H5") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#5031
+  # source://rdoc//lib/rdoc/markdown.rb#5082
   def _HtmlBlockOpenH5; end
 
   # HtmlBlockOpenH6 = "<" Spnl ("h6" | "H6") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#5197
+  # source://rdoc//lib/rdoc/markdown.rb#5248
   def _HtmlBlockOpenH6; end
 
   # HtmlBlockOpenHead = "<" Spnl ("head" | "HEAD") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#8506
+  # source://rdoc//lib/rdoc/markdown.rb#8557
   def _HtmlBlockOpenHead; end
 
   # HtmlBlockOpenLi = "<" Spnl ("li" | "LI") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#7189
+  # source://rdoc//lib/rdoc/markdown.rb#7240
   def _HtmlBlockOpenLi; end
 
   # HtmlBlockOpenMenu = "<" Spnl ("menu" | "MENU") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#5363
+  # source://rdoc//lib/rdoc/markdown.rb#5414
   def _HtmlBlockOpenMenu; end
 
   # HtmlBlockOpenNoframes = "<" Spnl ("noframes" | "NOFRAMES") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#5529
+  # source://rdoc//lib/rdoc/markdown.rb#5580
   def _HtmlBlockOpenNoframes; end
 
   # HtmlBlockOpenNoscript = "<" Spnl ("noscript" | "NOSCRIPT") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#5695
+  # source://rdoc//lib/rdoc/markdown.rb#5746
   def _HtmlBlockOpenNoscript; end
 
   # HtmlBlockOpenOl = "<" Spnl ("ol" | "OL") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#5861
+  # source://rdoc//lib/rdoc/markdown.rb#5912
   def _HtmlBlockOpenOl; end
 
   # HtmlBlockOpenP = "<" Spnl ("p" | "P") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#6027
+  # source://rdoc//lib/rdoc/markdown.rb#6078
   def _HtmlBlockOpenP; end
 
   # HtmlBlockOpenPre = "<" Spnl ("pre" | "PRE") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#6193
+  # source://rdoc//lib/rdoc/markdown.rb#6244
   def _HtmlBlockOpenPre; end
 
   # HtmlBlockOpenScript = "<" Spnl ("script" | "SCRIPT") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#8351
+  # source://rdoc//lib/rdoc/markdown.rb#8402
   def _HtmlBlockOpenScript; end
 
   # HtmlBlockOpenTable = "<" Spnl ("table" | "TABLE") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#6359
+  # source://rdoc//lib/rdoc/markdown.rb#6410
   def _HtmlBlockOpenTable; end
 
   # HtmlBlockOpenTbody = "<" Spnl ("tbody" | "TBODY") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#7355
+  # source://rdoc//lib/rdoc/markdown.rb#7406
   def _HtmlBlockOpenTbody; end
 
   # HtmlBlockOpenTd = "<" Spnl ("td" | "TD") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#7521
+  # source://rdoc//lib/rdoc/markdown.rb#7572
   def _HtmlBlockOpenTd; end
 
   # HtmlBlockOpenTfoot = "<" Spnl ("tfoot" | "TFOOT") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#7687
+  # source://rdoc//lib/rdoc/markdown.rb#7738
   def _HtmlBlockOpenTfoot; end
 
   # HtmlBlockOpenTh = "<" Spnl ("th" | "TH") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#7853
+  # source://rdoc//lib/rdoc/markdown.rb#7904
   def _HtmlBlockOpenTh; end
 
   # HtmlBlockOpenThead = "<" Spnl ("thead" | "THEAD") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#8019
+  # source://rdoc//lib/rdoc/markdown.rb#8070
   def _HtmlBlockOpenThead; end
 
   # HtmlBlockOpenTr = "<" Spnl ("tr" | "TR") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#8185
+  # source://rdoc//lib/rdoc/markdown.rb#8236
   def _HtmlBlockOpenTr; end
 
   # HtmlBlockOpenUl = "<" Spnl ("ul" | "UL") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#6525
+  # source://rdoc//lib/rdoc/markdown.rb#6576
   def _HtmlBlockOpenUl; end
 
   # HtmlBlockP = HtmlBlockOpenP (HtmlBlockP | !HtmlBlockCloseP .)* HtmlBlockCloseP
   #
-  # source://rdoc//lib/rdoc/markdown.rb#6135
+  # source://rdoc//lib/rdoc/markdown.rb#6186
   def _HtmlBlockP; end
 
   # HtmlBlockPre = HtmlBlockOpenPre (HtmlBlockPre | !HtmlBlockClosePre .)* HtmlBlockClosePre
   #
-  # source://rdoc//lib/rdoc/markdown.rb#6301
+  # source://rdoc//lib/rdoc/markdown.rb#6352
   def _HtmlBlockPre; end
 
   # HtmlBlockScript = HtmlBlockOpenScript (!HtmlBlockCloseScript .)* HtmlBlockCloseScript
   #
-  # source://rdoc//lib/rdoc/markdown.rb#8459
+  # source://rdoc//lib/rdoc/markdown.rb#8510
   def _HtmlBlockScript; end
 
   # HtmlBlockSelfClosing = "<" Spnl HtmlBlockType Spnl HtmlAttribute* "/" Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#8906
+  # source://rdoc//lib/rdoc/markdown.rb#8957
   def _HtmlBlockSelfClosing; end
 
   # HtmlBlockTable = HtmlBlockOpenTable (HtmlBlockTable | !HtmlBlockCloseTable .)* HtmlBlockCloseTable
   #
-  # source://rdoc//lib/rdoc/markdown.rb#6467
+  # source://rdoc//lib/rdoc/markdown.rb#6518
   def _HtmlBlockTable; end
 
   # HtmlBlockTbody = HtmlBlockOpenTbody (HtmlBlockTbody | !HtmlBlockCloseTbody .)* HtmlBlockCloseTbody
   #
-  # source://rdoc//lib/rdoc/markdown.rb#7463
+  # source://rdoc//lib/rdoc/markdown.rb#7514
   def _HtmlBlockTbody; end
 
   # HtmlBlockTd = HtmlBlockOpenTd (HtmlBlockTd | !HtmlBlockCloseTd .)* HtmlBlockCloseTd
   #
-  # source://rdoc//lib/rdoc/markdown.rb#7629
+  # source://rdoc//lib/rdoc/markdown.rb#7680
   def _HtmlBlockTd; end
 
   # HtmlBlockTfoot = HtmlBlockOpenTfoot (HtmlBlockTfoot | !HtmlBlockCloseTfoot .)* HtmlBlockCloseTfoot
   #
-  # source://rdoc//lib/rdoc/markdown.rb#7795
+  # source://rdoc//lib/rdoc/markdown.rb#7846
   def _HtmlBlockTfoot; end
 
   # HtmlBlockTh = HtmlBlockOpenTh (HtmlBlockTh | !HtmlBlockCloseTh .)* HtmlBlockCloseTh
   #
-  # source://rdoc//lib/rdoc/markdown.rb#7961
+  # source://rdoc//lib/rdoc/markdown.rb#8012
   def _HtmlBlockTh; end
 
   # HtmlBlockThead = HtmlBlockOpenThead (HtmlBlockThead | !HtmlBlockCloseThead .)* HtmlBlockCloseThead
   #
-  # source://rdoc//lib/rdoc/markdown.rb#8127
+  # source://rdoc//lib/rdoc/markdown.rb#8178
   def _HtmlBlockThead; end
 
   # HtmlBlockTr = HtmlBlockOpenTr (HtmlBlockTr | !HtmlBlockCloseTr .)* HtmlBlockCloseTr
   #
-  # source://rdoc//lib/rdoc/markdown.rb#8293
+  # source://rdoc//lib/rdoc/markdown.rb#8344
   def _HtmlBlockTr; end
 
   # HtmlBlockType = ("ADDRESS" | "BLOCKQUOTE" | "CENTER" | "DD" | "DIR" | "DIV" | "DL" | "DT" | "FIELDSET" | "FORM" | "FRAMESET" | "H1" | "H2" | "H3" | "H4" | "H5" | "H6" | "HR" | "ISINDEX" | "LI" | "MENU" | "NOFRAMES" | "NOSCRIPT" | "OL" | "P" | "PRE" | "SCRIPT" | "TABLE" | "TBODY" | "TD" | "TFOOT" | "TH" | "THEAD" | "TR" | "UL" | "address" | "blockquote" | "center" | "dd" | "dir" | "div" | "dl" | "dt" | "fieldset" | "form" | "frameset" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "hr" | "isindex" | "li" | "menu" | "noframes" | "noscript" | "ol" | "p" | "pre" | "script" | "table" | "tbody" | "td" | "tfoot" | "th" | "thead" | "tr" | "ul")
   #
-  # source://rdoc//lib/rdoc/markdown.rb#8961
+  # source://rdoc//lib/rdoc/markdown.rb#9012
   def _HtmlBlockType; end
 
   # HtmlBlockUl = HtmlBlockOpenUl (HtmlBlockUl | !HtmlBlockCloseUl .)* HtmlBlockCloseUl
   #
-  # source://rdoc//lib/rdoc/markdown.rb#6633
+  # source://rdoc//lib/rdoc/markdown.rb#6684
   def _HtmlBlockUl; end
 
   # HtmlCloseAnchor = "<" Spnl "/" ("a" | "A") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#2929
+  # source://rdoc//lib/rdoc/markdown.rb#2980
   def _HtmlCloseAnchor; end
 
   # HtmlComment = "<!--" (!"-->" .)* "-->"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14437
+  # source://rdoc//lib/rdoc/markdown.rb#14298
   def _HtmlComment; end
 
   # HtmlOpenAnchor = "<" Spnl ("a" | "A") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#2873
+  # source://rdoc//lib/rdoc/markdown.rb#2924
   def _HtmlOpenAnchor; end
 
   # HtmlTag = "<" Spnl "/"? AlphanumericAscii+ Spnl HtmlAttribute* "/"? Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14484
+  # source://rdoc//lib/rdoc/markdown.rb#14345
   def _HtmlTag; end
 
   # HtmlUnclosed = "<" Spnl HtmlUnclosedType Spnl HtmlAttribute* Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#8838
+  # source://rdoc//lib/rdoc/markdown.rb#8889
   def _HtmlUnclosed; end
 
   # HtmlUnclosedType = ("HR" | "hr")
   #
-  # source://rdoc//lib/rdoc/markdown.rb#8888
+  # source://rdoc//lib/rdoc/markdown.rb#8939
   def _HtmlUnclosedType; end
 
   # Image = "!" ExplicitLinkWithLabel:a { "rdoc-image:#{a[:link]}:#{a[:label]}" }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#10982
+  # source://rdoc//lib/rdoc/markdown.rb#11033
   def _Image; end
 
   # InStyleTags = StyleOpen (!StyleClose .)* StyleClose
   #
-  # source://rdoc//lib/rdoc/markdown.rb#9291
+  # source://rdoc//lib/rdoc/markdown.rb#9342
   def _InStyleTags; end
 
   # Indent = /\t|    /
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14882
+  # source://rdoc//lib/rdoc/markdown.rb#14743
   def _Indent; end
 
   # IndentedLine = Indent Line
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14889
+  # source://rdoc//lib/rdoc/markdown.rb#14750
   def _IndentedLine; end
 
   # Inline = (Str | @Endline | UlOrStarLine | @Space | Strong | Emph | Strike | Image | Link | NoteReference | InlineNote | Code | RawHtml | Entity | EscapedChar | Symbol)
   #
-  # source://rdoc//lib/rdoc/markdown.rb#9596
+  # source://rdoc//lib/rdoc/markdown.rb#9647
   def _Inline; end
 
   # InlineNote = &{ notes? } "^[" @StartList:a (!"]" Inline:l { a << l })+ "]" { ref = [:inline, @note_order.length]                @footnotes[ref] = paragraph a                 note_for ref              }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#15453
+  # source://rdoc//lib/rdoc/markdown.rb#15314
   def _InlineNote; end
 
   # Inlines = (!@Endline Inline:i { i } | @Endline:c !(&{ github? } Ticks3 /[^`\n]*$/) &Inline { c })+:chunks @Endline? { chunks }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#9375
+  # source://rdoc//lib/rdoc/markdown.rb#9426
   def _Inlines; end
 
   # Label = "[" (!"^" &{ notes? } | &. &{ !notes? }) @StartList:a (!"]" Inline:l { a << l })* "]" { a.join.gsub(/\s+/, ' ') }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#11929
+  # source://rdoc//lib/rdoc/markdown.rb#11980
   def _Label; end
 
   # Line = @RawLine:a { a }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14960
+  # source://rdoc//lib/rdoc/markdown.rb#14821
   def _Line; end
 
   # LineBreak = "  " @NormalEndline { RDoc::Markup::HardBreak.new }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#10052
+  # source://rdoc//lib/rdoc/markdown.rb#10103
   def _LineBreak; end
 
   # Link = (ExplicitLink | ReferenceLink | AutoLink)
   #
-  # source://rdoc//lib/rdoc/markdown.rb#11010
+  # source://rdoc//lib/rdoc/markdown.rb#11061
   def _Link; end
 
   # ListBlock = !@BlankLine Line:a ListBlockLine*:c { [a, *c] }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#2558
+  # source://rdoc//lib/rdoc/markdown.rb#2609
   def _ListBlock; end
 
   # ListBlockLine = !@BlankLine !(Indent? (Bullet | Enumerator)) !HorizontalRule OptionallyIndentedLine
   #
-  # source://rdoc//lib/rdoc/markdown.rb#2803
+  # source://rdoc//lib/rdoc/markdown.rb#2854
   def _ListBlockLine; end
 
   # ListContinuationBlock = @StartList:a @BlankLine* { a << "\n" } (Indent ListBlock:b { a.concat b })+ { a }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#2602
+  # source://rdoc//lib/rdoc/markdown.rb#2653
   def _ListContinuationBlock; end
 
   # ListItem = (Bullet | Enumerator) @StartList:a ListBlock:b { a << b } (ListContinuationBlock:c { a.push(*c) })* { list_item_from a }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#2402
+  # source://rdoc//lib/rdoc/markdown.rb#2453
   def _ListItem; end
 
   # ListItemTight = (Bullet | Enumerator) ListBlock:a (!@BlankLine ListContinuationBlock:b { a.push(*b) })* !ListContinuationBlock { list_item_from a }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#2478
+  # source://rdoc//lib/rdoc/markdown.rb#2529
   def _ListItemTight; end
 
   # ListLoose = @StartList:a (ListItem:b @BlankLine* { a << b })+ { a }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#2314
+  # source://rdoc//lib/rdoc/markdown.rb#2365
   def _ListLoose; end
 
   # ListTight = ListItemTight+:a @BlankLine* !(Bullet | Enumerator) { a }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#2249
+  # source://rdoc//lib/rdoc/markdown.rb#2300
   def _ListTight; end
 
   # Newline = %literals.Newline
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14748
+  # source://rdoc//lib/rdoc/markdown.rb#14609
   def _Newline; end
 
   # NonblankIndentedLine = !@BlankLine IndentedLine
   #
-  # source://rdoc//lib/rdoc/markdown.rb#1831
+  # source://rdoc//lib/rdoc/markdown.rb#1882
   def _NonblankIndentedLine; end
 
   # NonindentSpace = / {0,3}/
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14875
+  # source://rdoc//lib/rdoc/markdown.rb#14736
   def _NonindentSpace; end
 
   # Nonspacechar = !@Spacechar !@Newline .
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14574
+  # source://rdoc//lib/rdoc/markdown.rb#14435
   def _Nonspacechar; end
 
   # NormalChar = !(@SpecialChar | @Spacechar | @Newline) .
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14675
+  # source://rdoc//lib/rdoc/markdown.rb#14536
   def _NormalChar; end
 
   # NormalEndline = @Sp @Newline !@BlankLine !">" !AtxStart !(Line /={1,}|-{1,}/ @Newline) { "\n" }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#9948
+  # source://rdoc//lib/rdoc/markdown.rb#9999
   def _NormalEndline; end
 
   # Note = &{ notes? } @NonindentSpace RawNoteReference:ref ":" @Sp @StartList:a RawNoteBlock:i { a.concat i } (&Indent RawNoteBlock:i { a.concat i })* { @footnotes[ref] = paragraph a                    nil                 }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#15355
+  # source://rdoc//lib/rdoc/markdown.rb#15216
   def _Note; end
 
   # NoteReference = &{ notes? } RawNoteReference:ref { note_for ref }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#15229
+  # source://rdoc//lib/rdoc/markdown.rb#15090
   def _NoteReference; end
 
   # Notes = (Note | SkipBlock)*
   #
-  # source://rdoc//lib/rdoc/markdown.rb#15560
+  # source://rdoc//lib/rdoc/markdown.rb#15421
   def _Notes; end
 
   # OptionallyIndentedLine = Indent? Line
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14910
+  # source://rdoc//lib/rdoc/markdown.rb#14771
   def _OptionallyIndentedLine; end
 
   # OrderedList = &Enumerator (ListTight | ListLoose):a { RDoc::Markup::List.new(:NUMBER, *a) }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#2762
+  # source://rdoc//lib/rdoc/markdown.rb#2813
   def _OrderedList; end
 
   # Para = @NonindentSpace Inlines:a @BlankLine+ { paragraph a }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#1014
+  # source://rdoc//lib/rdoc/markdown.rb#1065
   def _Para; end
 
   # Plain = Inlines:a { paragraph a }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#1057
+  # source://rdoc//lib/rdoc/markdown.rb#1108
   def _Plain; end
 
   # Quoted = ("\"" (!"\"" .)* "\"" | "'" (!"'" .)* "'")
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14197
+  # source://rdoc//lib/rdoc/markdown.rb#14058
   def _Quoted; end
 
   # RawHtml = < (HtmlComment | HtmlBlockScript | HtmlTag) > { if html? then text else '' end }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14130
+  # source://rdoc//lib/rdoc/markdown.rb#13991
   def _RawHtml; end
 
   # RawLine = (< /[^\r\n]*/ @Newline > | < .+ > @Eof) { text }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14983
+  # source://rdoc//lib/rdoc/markdown.rb#14844
   def _RawLine; end
 
   # RawNoteBlock = @StartList:a (!@BlankLine !RawNoteReference OptionallyIndentedLine:l { a << l })+ < @BlankLine* > { a << text } { a }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#15582
+  # source://rdoc//lib/rdoc/markdown.rb#15443
   def _RawNoteBlock; end
 
   # RawNoteReference = "[^" < (!@Newline !"]" .)+ > "]" { text }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#15259
+  # source://rdoc//lib/rdoc/markdown.rb#15120
   def _RawNoteReference; end
 
   # RefSrc = < Nonspacechar+ > { text }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#12048
+  # source://rdoc//lib/rdoc/markdown.rb#12099
   def _RefSrc; end
 
   # RefTitle = (RefTitleSingle | RefTitleDouble | RefTitleParens | EmptyTitle)
   #
-  # source://rdoc//lib/rdoc/markdown.rb#12084
+  # source://rdoc//lib/rdoc/markdown.rb#12135
   def _RefTitle; end
 
   # RefTitleDouble = Spnl "\"" < (!("\"" @Sp @Newline | @Newline) .)* > "\"" { text }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#12207
+  # source://rdoc//lib/rdoc/markdown.rb#12258
   def _RefTitleDouble; end
 
   # RefTitleParens = Spnl "(" < (!(")" @Sp @Newline | @Newline) .)* > ")" { text }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#12299
+  # source://rdoc//lib/rdoc/markdown.rb#12350
   def _RefTitleParens; end
 
   # RefTitleSingle = Spnl "'" < (!("'" @Sp @Newline | @Newline) .)* > "'" { text }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#12115
+  # source://rdoc//lib/rdoc/markdown.rb#12166
   def _RefTitleSingle; end
 
   # Reference = @NonindentSpace !"[]" Label:label ":" Spnl RefSrc:link RefTitle @BlankLine+ { # TODO use title               reference label, link               nil             }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#11854
+  # source://rdoc//lib/rdoc/markdown.rb#11905
   def _Reference; end
 
   # ReferenceLink = (ReferenceLinkDouble | ReferenceLinkSingle)
   #
-  # source://rdoc//lib/rdoc/markdown.rb#11031
+  # source://rdoc//lib/rdoc/markdown.rb#11082
   def _ReferenceLink; end
 
   # ReferenceLinkDouble = Label:content < Spnl > !"[]" Label:label { link_to content, label, text }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#11049
+  # source://rdoc//lib/rdoc/markdown.rb#11100
   def _ReferenceLinkDouble; end
 
   # ReferenceLinkSingle = Label:content < (Spnl "[]")? > { link_to content, content, text }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#11095
+  # source://rdoc//lib/rdoc/markdown.rb#11146
   def _ReferenceLinkSingle; end
 
   # References = (Reference | SkipBlock)*
   #
-  # source://rdoc//lib/rdoc/markdown.rb#12391
+  # source://rdoc//lib/rdoc/markdown.rb#12442
   def _References; end
 
   # SetextBottom1 = /={1,}/ @Newline
   #
-  # source://rdoc//lib/rdoc/markdown.rb#1272
+  # source://rdoc//lib/rdoc/markdown.rb#1323
   def _SetextBottom1; end
 
   # SetextBottom2 = /-{1,}/ @Newline
   #
-  # source://rdoc//lib/rdoc/markdown.rb#1293
+  # source://rdoc//lib/rdoc/markdown.rb#1344
   def _SetextBottom2; end
 
   # SetextHeading = (SetextHeading1 | SetextHeading2)
   #
-  # source://rdoc//lib/rdoc/markdown.rb#1254
+  # source://rdoc//lib/rdoc/markdown.rb#1305
   def _SetextHeading; end
 
   # SetextHeading1 = &(@RawLine SetextBottom1) @StartList:a (!@Endline Inline:b { a << b })+ @Sp @Newline SetextBottom1 { RDoc::Markup::Heading.new(1, a.join) }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#1314
+  # source://rdoc//lib/rdoc/markdown.rb#1365
   def _SetextHeading1; end
 
   # SetextHeading2 = &(@RawLine SetextBottom2) @StartList:a (!@Endline Inline:b { a << b })+ @Sp @Newline SetextBottom2 { RDoc::Markup::Heading.new(2, a.join) }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#1436
+  # source://rdoc//lib/rdoc/markdown.rb#1487
   def _SetextHeading2; end
 
   # SkipBlock = (HtmlBlock | (!"#" !SetextBottom1 !SetextBottom2 !@BlankLine @RawLine)+ @BlankLine* | @BlankLine+ | @RawLine)
   #
-  # source://rdoc//lib/rdoc/markdown.rb#15062
+  # source://rdoc//lib/rdoc/markdown.rb#14923
   def _SkipBlock; end
 
   # Source = ("<" < SourceContents > ">" | < SourceContents >) { text }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#11228
+  # source://rdoc//lib/rdoc/markdown.rb#11279
   def _Source; end
 
   # SourceContents = ((!"(" !")" !">" Nonspacechar)+ | "(" SourceContents ")")*
   #
-  # source://rdoc//lib/rdoc/markdown.rb#11288
+  # source://rdoc//lib/rdoc/markdown.rb#11339
   def _SourceContents; end
 
   # Sp = @Spacechar*
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14606
+  # source://rdoc//lib/rdoc/markdown.rb#14467
   def _Sp; end
 
   # Space = @Spacechar+ { " " }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#9656
+  # source://rdoc//lib/rdoc/markdown.rb#9707
   def _Space; end
 
   # Spacechar = %literals.Spacechar
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14755
+  # source://rdoc//lib/rdoc/markdown.rb#14616
   def _Spacechar; end
 
   # SpecialChar = (/[~*_`&\[\]()<!#\\'"]/ | @ExtendedSpecialChar)
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14657
+  # source://rdoc//lib/rdoc/markdown.rb#14518
   def _SpecialChar; end
 
   # Spnl = @Sp (@Newline @Sp)?
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14617
+  # source://rdoc//lib/rdoc/markdown.rb#14478
   def _Spnl; end
 
   # StarLine = (< /\*{4,}/ > { text } | < @Spacechar /\*+/ &@Spacechar > { text })
   #
-  # source://rdoc//lib/rdoc/markdown.rb#10139
+  # source://rdoc//lib/rdoc/markdown.rb#10190
   def _StarLine; end
 
   # StartList = &. { [] }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#14936
+  # source://rdoc//lib/rdoc/markdown.rb#14797
   def _StartList; end
 
   # Str = @StartList:a < @NormalChar+ > { a = text } (StrChunk:c { a << c })* { a }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#9688
+  # source://rdoc//lib/rdoc/markdown.rb#9739
   def _Str; end
 
   # StrChunk = < (@NormalChar | /_+/ &Alphanumeric)+ > { text }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#9761
+  # source://rdoc//lib/rdoc/markdown.rb#9812
   def _StrChunk; end
 
   # Strike = &{ strike? } "~~" !@Whitespace @StartList:a (!"~~" Inline:b { a << b })+ "~~" { strike a.join }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#10871
+  # source://rdoc//lib/rdoc/markdown.rb#10922
   def _Strike; end
 
   # Strong = (StrongStar | StrongUl)
   #
-  # source://rdoc//lib/rdoc/markdown.rb#10645
+  # source://rdoc//lib/rdoc/markdown.rb#10696
   def _Strong; end
 
   # StrongStar = "**" !@Whitespace @StartList:a (!"**" Inline:b { a << b })+ "**" { strong a.join }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#10663
+  # source://rdoc//lib/rdoc/markdown.rb#10714
   def _StrongStar; end
 
   # StrongUl = "__" !@Whitespace @StartList:a (!"__" Inline:b { a << b })+ "__" { strong a.join }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#10767
+  # source://rdoc//lib/rdoc/markdown.rb#10818
   def _StrongUl; end
 
   # StyleBlock = < InStyleTags > @BlankLine* { if css? then                     RDoc::Markup::Raw.new text                   end }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#9338
+  # source://rdoc//lib/rdoc/markdown.rb#9389
   def _StyleBlock; end
 
   # StyleClose = "<" Spnl "/" ("style" | "STYLE") Spnl ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#9239
+  # source://rdoc//lib/rdoc/markdown.rb#9290
   def _StyleClose; end
 
   # StyleOpen = "<" Spnl ("style" | "STYLE") Spnl HtmlAttribute* ">"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#9183
+  # source://rdoc//lib/rdoc/markdown.rb#9234
   def _StyleOpen; end
 
   # Symbol = < @SpecialChar > { text }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#10079
+  # source://rdoc//lib/rdoc/markdown.rb#10130
   def _Symbol; end
 
-  # Table = &{ github? } TableHead:header TableLine:line TableRow+:body { table = RDoc::Markup::Table.new(header, line, body) }
+  # Table = &{ github? } TableHead:header TableLine:line TableRow+:body {           table = RDoc::Markup::Table.new(header, line, body)           parse_table_cells(table)         }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#15959
+  # source://rdoc//lib/rdoc/markdown.rb#15820
   def _Table; end
 
   # TableAlign = < /:?-+:?/ > @Sp {                 text.start_with?(":") ?                 (text.end_with?(":") ? :center : :left) :                 (text.end_with?(":") ? :right : nil)               }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#16326
+  # source://rdoc//lib/rdoc/markdown.rb#16190
   def _TableAlign; end
 
   # TableAlign2 = "|" @Sp TableAlign
   #
-  # source://rdoc//lib/rdoc/markdown.rb#16300
+  # source://rdoc//lib/rdoc/markdown.rb#16164
   def _TableAlign2; end
 
   # TableHead = TableItem2+:items "|"? @Newline { items }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#16015
+  # source://rdoc//lib/rdoc/markdown.rb#15879
   def _TableHead; end
 
-  # TableItem = < /(?:\\.|[^|\n])+/ > { text.strip.gsub(/\\(.)/, '\1')  }
+  # TableItem = < /(?:\\.|[^|\n])+/ > { text.strip.gsub(/\\([|])/, '\1')  }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#16181
+  # source://rdoc//lib/rdoc/markdown.rb#16045
   def _TableItem; end
 
   # TableItem2 = "|" TableItem
   #
-  # source://rdoc//lib/rdoc/markdown.rb#16160
+  # source://rdoc//lib/rdoc/markdown.rb#16024
   def _TableItem2; end
 
   # TableLine = ((TableAlign:align1 TableAlign2*:aligns {[align1, *aligns] }):line | TableAlign2+:line) "|"? @Newline { line }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#16207
+  # source://rdoc//lib/rdoc/markdown.rb#16071
   def _TableLine; end
 
   # TableRow = ((TableItem:item1 TableItem2*:items { [item1, *items] }):row | TableItem2+:row) "|"? @Newline { row }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#16067
+  # source://rdoc//lib/rdoc/markdown.rb#15931
   def _TableRow; end
 
   # TerminalEndline = @Sp @Newline @Eof
   #
-  # source://rdoc//lib/rdoc/markdown.rb#10026
+  # source://rdoc//lib/rdoc/markdown.rb#10077
   def _TerminalEndline; end
 
   # Ticks1 = "`" !"`"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#12413
+  # source://rdoc//lib/rdoc/markdown.rb#12464
   def _Ticks1; end
 
   # Ticks2 = "``" !"`"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#12437
+  # source://rdoc//lib/rdoc/markdown.rb#12488
   def _Ticks2; end
 
   # Ticks3 = "```" !"`"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#12461
+  # source://rdoc//lib/rdoc/markdown.rb#12512
   def _Ticks3; end
 
   # Ticks4 = "````" !"`"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#12485
+  # source://rdoc//lib/rdoc/markdown.rb#12536
   def _Ticks4; end
 
   # Ticks5 = "`````" !"`"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#12509
+  # source://rdoc//lib/rdoc/markdown.rb#12560
   def _Ticks5; end
 
   # Title = (TitleSingle | TitleDouble | ""):a { a }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#11405
+  # source://rdoc//lib/rdoc/markdown.rb#11456
   def _Title; end
 
   # TitleDouble = "\"" (!("\"" @Sp (")" | @Newline)) .)* "\""
   #
-  # source://rdoc//lib/rdoc/markdown.rb#11519
+  # source://rdoc//lib/rdoc/markdown.rb#11570
   def _TitleDouble; end
 
   # TitleSingle = "'" (!("'" @Sp (")" | @Newline)) .)* "'"
   #
-  # source://rdoc//lib/rdoc/markdown.rb#11442
+  # source://rdoc//lib/rdoc/markdown.rb#11493
   def _TitleSingle; end
 
   # UlLine = (< /_{4,}/ > { text } | < @Spacechar /_+/ &@Spacechar > { text })
   #
-  # source://rdoc//lib/rdoc/markdown.rb#10216
+  # source://rdoc//lib/rdoc/markdown.rb#10267
   def _UlLine; end
 
   # UlOrStarLine = (UlLine | StarLine):a { a }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#10105
+  # source://rdoc//lib/rdoc/markdown.rb#10156
   def _UlOrStarLine; end
 
   # Verbatim = VerbatimChunk+:a { RDoc::Markup::Verbatim.new(*a.flatten) }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#1905
+  # source://rdoc//lib/rdoc/markdown.rb#1956
   def _Verbatim; end
 
   # VerbatimChunk = @BlankLine*:a NonblankIndentedLine+:b { a.concat b }
   #
-  # source://rdoc//lib/rdoc/markdown.rb#1855
+  # source://rdoc//lib/rdoc/markdown.rb#1906
   def _VerbatimChunk; end
 
   # Whitespace = (@Spacechar | @Newline)
   #
-  # source://rdoc//lib/rdoc/markdown.rb#10311
+  # source://rdoc//lib/rdoc/markdown.rb#10362
   def _Whitespace; end
 
   # root = Doc
   #
-  # source://rdoc//lib/rdoc/markdown.rb#892
+  # source://rdoc//lib/rdoc/markdown.rb#943
   def _root; end
 
   # source://rdoc//lib/rdoc/markdown.rb#502
@@ -4079,6 +4229,11 @@ class RDoc::Markdown
 
   # source://rdoc//lib/rdoc/markdown.rb#606
   def break_on_newline?; end
+
+  # Wraps `text` in code markup for rdoc inline formatting
+  #
+  # source://rdoc//lib/rdoc/markdown.rb#888
+  def code(text); end
 
   # source://rdoc//lib/rdoc/markdown.rb#610
   def css=(enable); end
@@ -4230,6 +4385,16 @@ class RDoc::Markdown
   # source://rdoc//lib/rdoc/markdown.rb#414
   def parse(markdown); end
 
+  # Parses inline markdown in a single table cell
+  #
+  # source://rdoc//lib/rdoc/markdown.rb#914
+  def parse_cell_inline(text); end
+
+  # Parses inline markdown in table cells
+  #
+  # source://rdoc//lib/rdoc/markdown.rb#899
+  def parse_table_cells(table); end
+
   # The internal kpeg parse method
   #
   # source://rdoc//lib/rdoc/markdown.rb#787
@@ -4286,7 +4451,7 @@ class RDoc::Markdown
 
   # :stopdoc:
   #
-  # source://rdoc//lib/rdoc/markdown.rb#887
+  # source://rdoc//lib/rdoc/markdown.rb#938
   def setup_foreign_grammar; end
 
   # Prepares for parsing +str+.  If you define a custom initialize you must
@@ -5172,22 +5337,22 @@ class RDoc::Markup::Attributes
   def regexp_handling; end
 end
 
-# An empty line.  This class is a singleton.
+# An empty line
 #
-# source://rdoc//lib/rdoc/markup/blank_line.rb#5
-class RDoc::Markup::BlankLine
+# source://rdoc//lib/rdoc/markup/blank_line.rb#6
+class RDoc::Markup::BlankLine < ::RDoc::Markup::Element
   # Calls #accept_blank_line on +visitor+
   #
-  # source://rdoc//lib/rdoc/markup/blank_line.rb#19
+  # source://rdoc//lib/rdoc/markup/blank_line.rb#18
   def accept(visitor); end
 
-  # source://rdoc//lib/rdoc/markup/blank_line.rb#23
+  # source://rdoc//lib/rdoc/markup/blank_line.rb#24
   def pretty_print(q); end
 
   class << self
     # RDoc::Markup::BlankLine is a singleton
     #
-    # source://rdoc//lib/rdoc/markup/blank_line.rb#12
+    # source://rdoc//lib/rdoc/markup/blank_line.rb#11
     def new; end
   end
 end
@@ -5304,6 +5469,25 @@ class RDoc::Markup::Document
   #
   # source://rdoc//lib/rdoc/markup/document.rb#160
   def table_of_contents; end
+end
+
+# Base class defining the interface for all markup elements found in documentation
+#
+# @abstract
+#
+# source://rdoc//lib/rdoc/markup/element.rb#7
+class RDoc::Markup::Element
+  # @abstract
+  # @raise [NotImplementedError]
+  #
+  # source://rdoc//lib/rdoc/markup/element.rb#10
+  def accept(visitor); end
+
+  # @abstract
+  # @raise [NotImplementedError]
+  #
+  # source://rdoc//lib/rdoc/markup/element.rb#16
+  def pretty_print(q); end
 end
 
 # Base class for RDoc markup formatters
@@ -5497,111 +5681,88 @@ end
 
 # A hard-break in the middle of a paragraph.
 #
-# source://rdoc//lib/rdoc/markup/hard_break.rb#5
-class RDoc::Markup::HardBreak
+# source://rdoc//lib/rdoc/markup/hard_break.rb#6
+class RDoc::Markup::HardBreak < ::RDoc::Markup::Element
   # source://rdoc//lib/rdoc/markup/hard_break.rb#23
   def ==(other); end
 
   # Calls #accept_hard_break on +visitor+
   #
-  # source://rdoc//lib/rdoc/markup/hard_break.rb#19
+  # source://rdoc//lib/rdoc/markup/hard_break.rb#18
   def accept(visitor); end
 
-  # source://rdoc//lib/rdoc/markup/hard_break.rb#27
+  # source://rdoc//lib/rdoc/markup/hard_break.rb#29
   def pretty_print(q); end
 
   class << self
     # RDoc::Markup::HardBreak is a singleton
     #
-    # source://rdoc//lib/rdoc/markup/hard_break.rb#12
+    # source://rdoc//lib/rdoc/markup/hard_break.rb#11
     def new; end
   end
 end
 
 # A heading with a level (1-6) and text
 #
-# source://rdoc//lib/rdoc/markup/heading.rb#6
-class RDoc::Markup::Heading < ::Struct
-  # Calls #accept_heading on +visitor+
+#  RDoc syntax:
+#   = Heading 1
+#   == Heading 2
+#   === Heading 3
+#
+#  Markdown syntax:
+#   # Heading 1
+#   ## Heading 2
+#   ### Heading 3
+#
+# source://rdoc//lib/rdoc/markup/heading.rb#16
+class RDoc::Markup::Heading < ::RDoc::Markup::Element
+  # @return [Heading] a new instance of Heading
   #
-  # source://rdoc//lib/rdoc/markup/heading.rb#40
+  # source://rdoc//lib/rdoc/markup/heading.rb#47
+  def initialize(level, text); end
+
+  # source://rdoc//lib/rdoc/markup/heading.rb#55
+  def ==(other); end
+
+  # source://rdoc//lib/rdoc/markup/heading.rb#61
   def accept(visitor); end
 
   # An HTML-safe anchor reference for this header.
   #
-  # source://rdoc//lib/rdoc/markup/heading.rb#47
+  # source://rdoc//lib/rdoc/markup/heading.rb#67
   def aref; end
 
-  # Creates a fully-qualified label which will include the label from
-  # +context+.  This helps keep ids unique in HTML.
+  # Creates a fully-qualified label which will include the label from +context+. This helps keep ids unique in HTML.
   #
-  # source://rdoc//lib/rdoc/markup/heading.rb#55
+  # source://rdoc//lib/rdoc/markup/heading.rb#73
   def label(context = T.unsafe(nil)); end
 
-  # Returns the value of attribute level
-  #
-  # @return [Object] the current value of level
-  #
-  # source://rdoc//lib/rdoc/markup/heading.rb#6
+  # source://rdoc//lib/rdoc/markup/heading.rb#21
   def level; end
 
-  # Sets the attribute level
-  #
-  # @param value [Object] the value to set the attribute level to.
-  # @return [Object] the newly set value
-  #
-  # source://rdoc//lib/rdoc/markup/heading.rb#6
-  def level=(_); end
+  # source://rdoc//lib/rdoc/markup/heading.rb#21
+  def level=(_arg0); end
 
-  # HTML markup of the text of this label without the surrounding header
-  # element.
+  # HTML markup of the text of this label without the surrounding header element.
   #
-  # source://rdoc//lib/rdoc/markup/heading.rb#68
+  # source://rdoc//lib/rdoc/markup/heading.rb#82
   def plain_html; end
 
-  # source://rdoc//lib/rdoc/markup/heading.rb#78
+  # source://rdoc//lib/rdoc/markup/heading.rb#94
   def pretty_print(q); end
 
-  # Returns the value of attribute text
-  #
-  # @return [Object] the current value of text
-  #
-  # source://rdoc//lib/rdoc/markup/heading.rb#6
+  # source://rdoc//lib/rdoc/markup/heading.rb#18
   def text; end
 
-  # Sets the attribute text
-  #
-  # @param value [Object] the value to set the attribute text to.
-  # @return [Object] the newly set value
-  #
-  # source://rdoc//lib/rdoc/markup/heading.rb#6
-  def text=(_); end
-
   class << self
-    # source://rdoc//lib/rdoc/markup/heading.rb#6
-    def [](*_arg0); end
-
-    # source://rdoc//lib/rdoc/markup/heading.rb#6
-    def inspect; end
-
-    # source://rdoc//lib/rdoc/markup/heading.rb#6
-    def keyword_init?; end
-
-    # source://rdoc//lib/rdoc/markup/heading.rb#6
-    def members; end
-
-    # source://rdoc//lib/rdoc/markup/heading.rb#6
-    def new(*_arg0); end
-
-    # A singleton plain HTML formatter for headings.  Used for creating labels
-    # for the Table of Contents
+    # A singleton plain HTML formatter for headings. Used for creating labels for the Table of Contents
     #
-    # source://rdoc//lib/rdoc/markup/heading.rb#22
+    # source://rdoc//lib/rdoc/markup/heading.rb#31
     def to_html; end
 
     # A singleton RDoc::Markup::ToLabel formatter for headings.
     #
-    # source://rdoc//lib/rdoc/markup/heading.rb#14
+    # source://rdoc//lib/rdoc/markup/heading.rb#25
     def to_label; end
   end
 end
@@ -5667,6 +5828,22 @@ class RDoc::Markup::IndentedParagraph < ::RDoc::Markup::Raw
   #
   # source://rdoc//lib/rdoc/markup/indented_paragraph.rb#37
   def text(hard_break = T.unsafe(nil)); end
+end
+
+# Formatter dedicated to rendering tidy link labels without mutating the
+# calling formatter's state.
+#
+# source://rdoc//lib/rdoc/markup/to_html.rb#599
+class RDoc::Markup::LinkLabelToHtml < ::RDoc::Markup::ToHtml
+  # @return [LinkLabelToHtml] a new instance of LinkLabelToHtml
+  #
+  # source://rdoc//lib/rdoc/markup/to_html.rb#604
+  def initialize(options, from_path = T.unsafe(nil)); end
+
+  class << self
+    # source://rdoc//lib/rdoc/markup/to_html.rb#600
+    def render(label, options, from_path); end
+  end
 end
 
 # A List is a homogeneous set of ListItems.
@@ -6026,7 +6203,7 @@ class RDoc::Markup::PreProcess
   # Look for the given file in the directory containing the current file,
   # and then in each of the directories specified in the RDOC_INCLUDE path
   #
-  # source://rdoc//lib/rdoc/markup/pre_process.rb#308
+  # source://rdoc//lib/rdoc/markup/pre_process.rb#332
   def find_include_file(name); end
 
   # Look for directives in the given +text+.
@@ -6056,8 +6233,8 @@ class RDoc::Markup::PreProcess
   # --
   # When 1.8.7 support is ditched prefix can be defaulted to ''
   #
-  # source://rdoc//lib/rdoc/markup/pre_process.rb#153
-  def handle_directive(prefix, directive, param, code_object = T.unsafe(nil), encoding = T.unsafe(nil), line = T.unsafe(nil)); end
+  # source://rdoc//lib/rdoc/markup/pre_process.rb#177
+  def handle_directive(prefix, directive, param, code_object = T.unsafe(nil), encoding = T.unsafe(nil)); end
 
   # Handles the <tt>:include: _filename_</tt> directive.
   #
@@ -6073,7 +6250,7 @@ class RDoc::Markup::PreProcess
   # TODO shift left the whole file content in that case
   # TODO comment stop/start #-- and #++ in included file must be processed here
   #
-  # source://rdoc//lib/rdoc/markup/pre_process.rb#282
+  # source://rdoc//lib/rdoc/markup/pre_process.rb#306
   def include_file(name, indent, encoding); end
 
   # An RDoc::Options instance that will be filled in with overrides from
@@ -6087,6 +6264,21 @@ class RDoc::Markup::PreProcess
   #
   # source://rdoc//lib/rdoc/markup/pre_process.rb#23
   def options=(_arg0); end
+
+  # Parse comment and return [normalized_comment_text, directives_hash]
+  #
+  # source://rdoc//lib/rdoc/markup/pre_process.rb#160
+  def parse_comment(text, line_no, type); end
+
+  # Perform post preocesses to a code object
+  #
+  # source://rdoc//lib/rdoc/markup/pre_process.rb#152
+  def run_post_processes(comment, code_object); end
+
+  # Apply directives to a code object
+  #
+  # source://rdoc//lib/rdoc/markup/pre_process.rb#138
+  def run_pre_processes(comment_text, code_object, start_line_no, type); end
 
   class << self
     # Adds a post-process handler for directives.  The handler will be called
@@ -6129,49 +6321,49 @@ end
 
 # A section of text that is added to the output document as-is
 #
-# source://rdoc//lib/rdoc/markup/raw.rb#5
+# source://rdoc//lib/rdoc/markup/raw.rb#6
 class RDoc::Markup::Raw
   # Creates a new Raw containing +parts+
   #
   # @return [Raw] a new instance of Raw
   #
-  # source://rdoc//lib/rdoc/markup/raw.rb#15
+  # source://rdoc//lib/rdoc/markup/raw.rb#13
   def initialize(*parts); end
 
   # Appends +text+
   #
-  # source://rdoc//lib/rdoc/markup/raw.rb#23
+  # source://rdoc//lib/rdoc/markup/raw.rb#19
   def <<(text); end
 
-  # source://rdoc//lib/rdoc/markup/raw.rb#27
+  # source://rdoc//lib/rdoc/markup/raw.rb#24
   def ==(other); end
 
   # Calls #accept_raw+ on +visitor+
   #
-  # source://rdoc//lib/rdoc/markup/raw.rb#34
+  # source://rdoc//lib/rdoc/markup/raw.rb#31
   def accept(visitor); end
 
   # Appends +other+'s parts
   #
-  # source://rdoc//lib/rdoc/markup/raw.rb#41
+  # source://rdoc//lib/rdoc/markup/raw.rb#37
   def merge(other); end
 
   # The component parts of the list
   #
-  # source://rdoc//lib/rdoc/markup/raw.rb#10
+  # source://rdoc//lib/rdoc/markup/raw.rb#9
   def parts; end
 
-  # source://rdoc//lib/rdoc/markup/raw.rb#45
+  # source://rdoc//lib/rdoc/markup/raw.rb#43
   def pretty_print(q); end
 
   # Appends +texts+ onto this Paragraph
   #
-  # source://rdoc//lib/rdoc/markup/raw.rb#58
+  # source://rdoc//lib/rdoc/markup/raw.rb#55
   def push(*texts); end
 
   # The raw text
   #
-  # source://rdoc//lib/rdoc/markup/raw.rb#65
+  # source://rdoc//lib/rdoc/markup/raw.rb#61
   def text; end
 end
 
@@ -6228,54 +6420,50 @@ end
 
 # A section of table
 #
-# source://rdoc//lib/rdoc/markup/table.rb#5
-class RDoc::Markup::Table
-  # Creates new instance
-  #
+# source://rdoc//lib/rdoc/markup/table.rb#6
+class RDoc::Markup::Table < ::RDoc::Markup::Element
   # @return [Table] a new instance of Table
   #
-  # source://rdoc//lib/rdoc/markup/table.rb#16
+  # source://rdoc//lib/rdoc/markup/table.rb#20
   def initialize(header, align, body); end
 
-  # :stopdoc:
-  #
-  # source://rdoc//lib/rdoc/markup/table.rb#21
+  # source://rdoc//lib/rdoc/markup/table.rb#25
   def ==(other); end
 
-  # source://rdoc//lib/rdoc/markup/table.rb#28
+  # source://rdoc//lib/rdoc/markup/table.rb#32
   def accept(visitor); end
 
-  # alignments of each column
+  # Alignments of each column
   #
-  # source://rdoc//lib/rdoc/markup/table.rb#10
+  # source://rdoc//lib/rdoc/markup/table.rb#13
   def align; end
 
-  # alignments of each column
+  # Alignments of each column
   #
-  # source://rdoc//lib/rdoc/markup/table.rb#10
+  # source://rdoc//lib/rdoc/markup/table.rb#13
   def align=(_arg0); end
 
-  # body texts of each column
+  # Body texts of each column
   #
-  # source://rdoc//lib/rdoc/markup/table.rb#13
+  # source://rdoc//lib/rdoc/markup/table.rb#17
   def body; end
 
-  # body texts of each column
+  # Body texts of each column
   #
-  # source://rdoc//lib/rdoc/markup/table.rb#13
+  # source://rdoc//lib/rdoc/markup/table.rb#17
   def body=(_arg0); end
 
-  # headers of each column
+  # Headers of each column
   #
-  # source://rdoc//lib/rdoc/markup/table.rb#7
+  # source://rdoc//lib/rdoc/markup/table.rb#9
   def header; end
 
-  # headers of each column
+  # Headers of each column
   #
-  # source://rdoc//lib/rdoc/markup/table.rb#7
+  # source://rdoc//lib/rdoc/markup/table.rb#9
   def header=(_arg0); end
 
-  # source://rdoc//lib/rdoc/markup/table.rb#32
+  # source://rdoc//lib/rdoc/markup/table.rb#38
   def pretty_print(q); end
 end
 
@@ -6300,6 +6488,9 @@ class RDoc::Markup::ToAnsi < ::RDoc::Markup::ToRdoc
   # source://rdoc//lib/rdoc/markup/to_ansi.rb#55
   def accept_list_item_start(list_item); end
 
+  # source://rdoc//lib/rdoc/markup/to_ansi.rb#84
+  def calculate_text_width(text); end
+
   # Maps attributes to ANSI sequences
   #
   # source://rdoc//lib/rdoc/markup/to_ansi.rb#22
@@ -6307,7 +6498,7 @@ class RDoc::Markup::ToAnsi < ::RDoc::Markup::ToRdoc
 
   # Starts accepting with a reset screen
   #
-  # source://rdoc//lib/rdoc/markup/to_ansi.rb#87
+  # source://rdoc//lib/rdoc/markup/to_ansi.rb#91
   def start_accepting; end
 end
 
@@ -6337,17 +6528,20 @@ class RDoc::Markup::ToBs < ::RDoc::Markup::ToRdoc
 
   # Turns on or off regexp handling for +convert_string+
   #
-  # source://rdoc//lib/rdoc/markup/to_bs.rb#71
+  # source://rdoc//lib/rdoc/markup/to_bs.rb#75
   def annotate(tag); end
+
+  # source://rdoc//lib/rdoc/markup/to_bs.rb#68
+  def calculate_text_width(text); end
 
   # Calls convert_string on the result of convert_regexp_handling
   #
-  # source://rdoc//lib/rdoc/markup/to_bs.rb#84
+  # source://rdoc//lib/rdoc/markup/to_bs.rb#88
   def convert_regexp_handling(target); end
 
   # Adds bold or underline mixed with backspaces
   #
-  # source://rdoc//lib/rdoc/markup/to_bs.rb#91
+  # source://rdoc//lib/rdoc/markup/to_bs.rb#95
   def convert_string(string); end
 
   # Sets a flag that is picked up by #annotate to do the right thing in
@@ -6372,63 +6566,63 @@ class RDoc::Markup::ToHtml < ::RDoc::Markup::Formatter
 
   # Adds +blank_line+ to the output
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#300
+  # source://rdoc//lib/rdoc/markup/to_html.rb#297
   def accept_blank_line(blank_line); end
 
   # Adds +block_quote+ to the output
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#199
+  # source://rdoc//lib/rdoc/markup/to_html.rb#196
   def accept_block_quote(block_quote); end
 
   # Adds +heading+ to the output.  The headings greater than 6 are trimmed to
   # level 6.
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#308
+  # source://rdoc//lib/rdoc/markup/to_html.rb#305
   def accept_heading(heading); end
 
   # Finishes consumption of +list+
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#271
+  # source://rdoc//lib/rdoc/markup/to_html.rb#268
   def accept_list_end(list); end
 
   # Finishes consumption of +list_item+
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#293
+  # source://rdoc//lib/rdoc/markup/to_html.rb#290
   def accept_list_item_end(list_item); end
 
   # Prepares the visitor for consuming +list_item+
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#282
+  # source://rdoc//lib/rdoc/markup/to_html.rb#279
   def accept_list_item_start(list_item); end
 
   # Prepares the visitor for consuming +list+
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#262
+  # source://rdoc//lib/rdoc/markup/to_html.rb#259
   def accept_list_start(list); end
 
   # Adds +paragraph+ to the output
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#212
+  # source://rdoc//lib/rdoc/markup/to_html.rb#209
   def accept_paragraph(paragraph); end
 
   # Adds +raw+ to the output
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#329
+  # source://rdoc//lib/rdoc/markup/to_html.rb#328
   def accept_raw(raw); end
 
   # Adds +rule+ to the output
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#255
+  # source://rdoc//lib/rdoc/markup/to_html.rb#252
   def accept_rule(rule); end
 
   # Adds +table+ to the output
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#336
+  # source://rdoc//lib/rdoc/markup/to_html.rb#335
   def accept_table(header, body, aligns); end
 
   # Adds +verbatim+ to the output
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#225
+  # source://rdoc//lib/rdoc/markup/to_html.rb#222
   def accept_verbatim(verbatim); end
 
   # The RDoc::CodeObject HTML is being generated for.  This is used to
@@ -6445,12 +6639,12 @@ class RDoc::Markup::ToHtml < ::RDoc::Markup::Formatter
 
   # CGI-escapes +text+
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#361
+  # source://rdoc//lib/rdoc/markup/to_html.rb#360
   def convert_string(text); end
 
   # Returns the generated output
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#192
+  # source://rdoc//lib/rdoc/markup/to_html.rb#189
   def end_accepting; end
 
   # Path to this document for relative links
@@ -6466,7 +6660,7 @@ class RDoc::Markup::ToHtml < ::RDoc::Markup::Formatter
   # Generate a link to +url+ with content +text+.  Handles the special cases
   # for img: and link: described under handle_regexp_HYPERLINK
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#369
+  # source://rdoc//lib/rdoc/markup/to_html.rb#368
   def gen_url(url, text); end
 
   # source://rdoc//lib/rdoc/markup/to_html.rb#86
@@ -6512,7 +6706,7 @@ class RDoc::Markup::ToHtml < ::RDoc::Markup::Formatter
   #
   # @raise [RDoc::Error]
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#394
+  # source://rdoc//lib/rdoc/markup/to_html.rb#393
   def html_list_name(list_type, open_tag); end
 
   # source://rdoc//lib/rdoc/markup/to_html.rb#27
@@ -6530,7 +6724,7 @@ class RDoc::Markup::ToHtml < ::RDoc::Markup::Formatter
 
   # Maps attributes to HTML tags
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#403
+  # source://rdoc//lib/rdoc/markup/to_html.rb#402
   def init_tags; end
 
   # source://rdoc//lib/rdoc/markup/to_html.rb#28
@@ -6538,20 +6732,20 @@ class RDoc::Markup::ToHtml < ::RDoc::Markup::Formatter
 
   # Returns the HTML end-tag for +list_type+
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#429
+  # source://rdoc//lib/rdoc/markup/to_html.rb#428
   def list_end_for(list_type); end
 
   # Returns the HTML tag for +list_type+, possible using a label from
   # +list_item+
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#413
+  # source://rdoc//lib/rdoc/markup/to_html.rb#412
   def list_item_start(list_item, list_type); end
 
   # Returns true if text is valid ruby syntax
   #
   # @return [Boolean]
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#443
+  # source://rdoc//lib/rdoc/markup/to_html.rb#442
   def parseable?(text); end
 
   # source://rdoc//lib/rdoc/markup/to_html.rb#26
@@ -6559,14 +6753,81 @@ class RDoc::Markup::ToHtml < ::RDoc::Markup::Formatter
 
   # Prepares the visitor for HTML generation
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#183
+  # source://rdoc//lib/rdoc/markup/to_html.rb#180
   def start_accepting; end
 
   # Converts +item+ to HTML using RDoc::Text#to_html
   #
-  # source://rdoc//lib/rdoc/markup/to_html.rb#457
+  # source://rdoc//lib/rdoc/markup/to_html.rb#456
   def to_html(item); end
+
+  private
+
+  # source://rdoc//lib/rdoc/markup/to_html.rb#482
+  def append_flow_fragment(res, fragment); end
+
+  # source://rdoc//lib/rdoc/markup/to_html.rb#488
+  def append_to_tidy_label(fragment); end
+
+  # source://rdoc//lib/rdoc/markup/to_html.rb#516
+  def convert_complete_tidy_link(text); end
+
+  # source://rdoc//lib/rdoc/markup/to_html.rb#462
+  def convert_flow(flow_items); end
+
+  # source://rdoc//lib/rdoc/markup/to_html.rb#532
+  def emit_tidy_link_fragment(res, fragment); end
+
+  # source://rdoc//lib/rdoc/markup/to_html.rb#555
+  def extract_tidy_link_parts(text); end
+
+  # source://rdoc//lib/rdoc/markup/to_html.rb#540
+  def finish_tidy_link(text); end
+
+  # source://rdoc//lib/rdoc/markup/to_html.rb#574
+  def off_tags(res, item); end
+
+  # source://rdoc//lib/rdoc/markup/to_html.rb#567
+  def on_tags(res, item); end
+
+  # source://rdoc//lib/rdoc/markup/to_html.rb#590
+  def render_tidy_link_label(label); end
+
+  # source://rdoc//lib/rdoc/markup/to_html.rb#581
+  def start_tidy_link(text); end
+
+  # @return [Boolean]
+  #
+  # source://rdoc//lib/rdoc/markup/to_html.rb#586
+  def tidy_link_capturing?; end
 end
+
+# Matches a tidy link with a single-word label "label[url]".
+#
+# Capture 1: the single-word label (no whitespace).
+# Capture 2: URL text between the brackets.
+#
+# source://rdoc//lib/rdoc/markup/to_html.rb#514
+RDoc::Markup::ToHtml::TIDY_LINK_SINGLE_WORD = T.let(T.unsafe(nil), Regexp)
+
+# Matches an entire tidy link with a braced label "{label}[url]".
+#
+# Capture 1: label contents.
+# Capture 2: URL text.
+# Capture 3: trailing content.
+#
+# source://rdoc//lib/rdoc/markup/to_html.rb#498
+RDoc::Markup::ToHtml::TIDY_LINK_WITH_BRACES = T.let(T.unsafe(nil), Regexp)
+
+# Matches the tail of a braced tidy link when the opening brace was
+# consumed earlier while accumulating the label text.
+#
+# Capture 1: remaining label content.
+# Capture 2: URL text.
+# Capture 3: trailing content.
+#
+# source://rdoc//lib/rdoc/markup/to_html.rb#507
+RDoc::Markup::ToHtml::TIDY_LINK_WITH_BRACES_TAIL = T.let(T.unsafe(nil), Regexp)
 
 # source://rdoc//lib/rdoc/markup/to_html.rb#66
 RDoc::Markup::ToHtml::URL_CHARACTERS_REGEXP_STR = T.let(T.unsafe(nil), String)
@@ -6599,7 +6860,7 @@ class RDoc::Markup::ToHtmlCrossref < ::RDoc::Markup::ToHtml
   def context=(_arg0); end
 
   # source://rdoc//lib/rdoc/markup/to_html_crossref.rb#187
-  def convert_flow(flow); end
+  def convert_flow(flow_items, &block); end
 
   # Creates a link to the reference +name+ if the name exists.  If +text+ is
   # given it is used as the link text, otherwise +name+ is used.
@@ -6655,6 +6916,15 @@ class RDoc::Markup::ToHtmlCrossref < ::RDoc::Markup::ToHtml
   #
   # source://rdoc//lib/rdoc/markup/to_html_crossref.rb#24
   def show_hash=(_arg0); end
+
+  private
+
+  # Detects <tt>...</tt> spans that contain a single cross-reference candidate.
+  # When the candidate occupies the whole span (aside from trailing
+  # punctuation), the tt markup is replaced by the resolved cross-reference.
+  #
+  # source://rdoc//lib/rdoc/markup/to_html_crossref.rb#231
+  def convert_tt_crossref(flow_items, index); end
 end
 
 # Outputs RDoc markup as paragraphs with inline markup only.
@@ -7080,22 +7350,25 @@ class RDoc::Markup::ToRdoc < ::RDoc::Markup::Formatter
 
   # Applies attribute-specific markup to +text+ using RDoc::AttributeManager
   #
-  # source://rdoc//lib/rdoc/markup/to_rdoc.rb#280
+  # source://rdoc//lib/rdoc/markup/to_rdoc.rb#288
   def attributes(text); end
+
+  # source://rdoc//lib/rdoc/markup/to_rdoc.rb#281
+  def calculate_text_width(text); end
 
   # Returns the generated output
   #
-  # source://rdoc//lib/rdoc/markup/to_rdoc.rb#288
+  # source://rdoc//lib/rdoc/markup/to_rdoc.rb#296
   def end_accepting; end
 
   # Adds a newline to the output
   #
-  # source://rdoc//lib/rdoc/markup/to_rdoc.rb#304
+  # source://rdoc//lib/rdoc/markup/to_rdoc.rb#312
   def handle_regexp_HARD_BREAK(target); end
 
   # Removes preceding \\ from the suppressed crossref +target+
   #
-  # source://rdoc//lib/rdoc/markup/to_rdoc.rb#295
+  # source://rdoc//lib/rdoc/markup/to_rdoc.rb#303
   def handle_regexp_SUPPRESSED_CROSSREF(target); end
 
   # Current indent amount for output in characters
@@ -7140,13 +7413,13 @@ class RDoc::Markup::ToRdoc < ::RDoc::Markup::Formatter
 
   # Prepares the visitor for text generation
   #
-  # source://rdoc//lib/rdoc/markup/to_rdoc.rb#311
+  # source://rdoc//lib/rdoc/markup/to_rdoc.rb#319
   def start_accepting; end
 
   # Adds the stored #prefix to the output and clears it.  Lists generate a
   # prefix for later consumption.
   #
-  # source://rdoc//lib/rdoc/markup/to_rdoc.rb#325
+  # source://rdoc//lib/rdoc/markup/to_rdoc.rb#333
   def use_prefix; end
 
   # Output width in characters
@@ -7161,7 +7434,7 @@ class RDoc::Markup::ToRdoc < ::RDoc::Markup::Formatter
 
   # Wraps +text+ to #width
   #
-  # source://rdoc//lib/rdoc/markup/to_rdoc.rb#335
+  # source://rdoc//lib/rdoc/markup/to_rdoc.rb#343
   def wrap(text); end
 end
 
@@ -7612,7 +7885,7 @@ class RDoc::MethodAttr < ::RDoc::CodeObject
   # source://rdoc//lib/rdoc/code_object/method_attr.rb#12
   def name=(_arg0); end
 
-  # source://rdoc//lib/rdoc/code_object/method_attr.rb#399
+  # source://rdoc//lib/rdoc/code_object/method_attr.rb#411
   def name_ord_range; end
 
   # '::' for a class method/attribute, '#' for an instance method.
@@ -7651,8 +7924,16 @@ class RDoc::MethodAttr < ::RDoc::CodeObject
   # Used by RDoc::Generator::JsonIndex to create a record for the search
   # engine.
   #
-  # source://rdoc//lib/rdoc/code_object/method_attr.rb#379
+  # TODO: Remove this method after dropping the darkfish theme and JsonIndex generator.
+  # Use #search_snippet instead for getting documentation snippets.
+  #
+  # source://rdoc//lib/rdoc/code_object/method_attr.rb#382
   def search_record; end
+
+  # Returns an HTML snippet of the comment for search results.
+  #
+  # source://rdoc//lib/rdoc/code_object/method_attr.rb#397
+  def search_snippet; end
 
   # A method/attribute to look at,
   # in particular if this method/attribute has no documentation.
@@ -7690,7 +7971,7 @@ class RDoc::MethodAttr < ::RDoc::CodeObject
   # source://rdoc//lib/rdoc/code_object/method_attr.rb#27
   def text; end
 
-  # source://rdoc//lib/rdoc/code_object/method_attr.rb#391
+  # source://rdoc//lib/rdoc/code_object/method_attr.rb#403
   def to_s; end
 
   # Type of method/attribute (class or instance)
@@ -7926,10 +8207,10 @@ end
 class RDoc::Options
   # @return [Options] a new instance of Options
   #
-  # source://rdoc//lib/rdoc/options.rb#381
+  # source://rdoc//lib/rdoc/options.rb#396
   def initialize(loaded_options = T.unsafe(nil)); end
 
-  # source://rdoc//lib/rdoc/options.rb#513
+  # source://rdoc//lib/rdoc/options.rb#530
   def ==(other); end
 
   # Exclude the default patterns as well if true.
@@ -7969,12 +8250,12 @@ class RDoc::Options
 
   # Check that the files on the command line exist
   #
-  # source://rdoc//lib/rdoc/options.rb#540
+  # source://rdoc//lib/rdoc/options.rb#557
   def check_files; end
 
   # Ensure only one generator is loaded
   #
-  # source://rdoc//lib/rdoc/options.rb#561
+  # source://rdoc//lib/rdoc/options.rb#578
   def check_generator; end
 
   # The prefix to use for class and module page paths
@@ -8001,7 +8282,7 @@ class RDoc::Options
   # from a source file, so that a title set from the command line
   # will have the priority.
   #
-  # source://rdoc//lib/rdoc/options.rb#573
+  # source://rdoc//lib/rdoc/options.rb#590
   def default_title=(string); end
 
   # If true, RDoc will not write any files.
@@ -8042,7 +8323,7 @@ class RDoc::Options
 
   # Create a regexp for #exclude
   #
-  # source://rdoc//lib/rdoc/options.rb#601
+  # source://rdoc//lib/rdoc/options.rb#618
   def exclude; end
 
   # Files matching this pattern will be excluded
@@ -8074,14 +8355,44 @@ class RDoc::Options
   # existent files, creating a regexp for #exclude and setting a default
   # #template.
   #
-  # source://rdoc//lib/rdoc/options.rb#619
+  # source://rdoc//lib/rdoc/options.rb#636
   def finish; end
 
   # Fixes the page_dir to be relative to the root_dir and adds the page_dir to
   # the files list.
   #
-  # source://rdoc//lib/rdoc/options.rb#660
+  # source://rdoc//lib/rdoc/options.rb#677
   def finish_page_dir; end
+
+  # Custom footer content configuration for themes that support it.
+  # Currently only supported by the Aliki theme.
+  #
+  # A hash where keys are column titles and values are hashes of link text => URL pairs.
+  # Each column will be displayed in the upper footer section.
+  #
+  # Example:
+  #   {
+  #     "DOCUMENTATION" => {"Home" => "/index.html", "Guide" => "/guide.html"},
+  #     "RESOURCES" => {"RDoc" => "https://ruby.github.io/rdoc/", "GitHub" => "https://github.com/ruby/rdoc"}
+  #   }
+  #
+  # source://rdoc//lib/rdoc/options.rb#394
+  def footer_content; end
+
+  # Custom footer content configuration for themes that support it.
+  # Currently only supported by the Aliki theme.
+  #
+  # A hash where keys are column titles and values are hashes of link text => URL pairs.
+  # Each column will be displayed in the upper footer section.
+  #
+  # Example:
+  #   {
+  #     "DOCUMENTATION" => {"Home" => "/index.html", "Guide" => "/guide.html"},
+  #     "RESOURCES" => {"RDoc" => "https://ruby.github.io/rdoc/", "GitHub" => "https://github.com/ruby/rdoc"}
+  #   }
+  #
+  # source://rdoc//lib/rdoc/options.rb#394
+  def footer_content=(_arg0); end
 
   # Create the output even if the output directory does not look
   # like an rdoc output directory
@@ -8127,7 +8438,7 @@ class RDoc::Options
 
   # Returns a properly-space list of generators and their descriptions.
   #
-  # source://rdoc//lib/rdoc/options.rb#679
+  # source://rdoc//lib/rdoc/options.rb#696
   def generator_descriptions; end
 
   # For #==
@@ -8159,10 +8470,10 @@ class RDoc::Options
   # source://rdoc//lib/rdoc/options.rb#212
   def hyperlink_all=(_arg0); end
 
-  # source://rdoc//lib/rdoc/options.rb#391
+  # source://rdoc//lib/rdoc/options.rb#406
   def init_ivars; end
 
-  # source://rdoc//lib/rdoc/options.rb#440
+  # source://rdoc//lib/rdoc/options.rb#455
   def init_with(map); end
 
   # Include line numbers in the source code
@@ -8251,7 +8562,7 @@ class RDoc::Options
   # source://rdoc//lib/rdoc/options.rb#258
   def output_decoration=(_arg0); end
 
-  # source://rdoc//lib/rdoc/options.rb#475
+  # source://rdoc//lib/rdoc/options.rb#491
   def override(map); end
 
   # Directory where guides, FAQ, and other pages not associated with a class
@@ -8268,7 +8579,7 @@ class RDoc::Options
 
   # Parses command line options.
   #
-  # source://rdoc//lib/rdoc/options.rb#705
+  # source://rdoc//lib/rdoc/options.rb#722
   def parse(argv); end
 
   # Is RDoc in pipe mode?
@@ -8283,12 +8594,12 @@ class RDoc::Options
 
   # Don't display progress as we process the files
   #
-  # source://rdoc//lib/rdoc/options.rb#1277
+  # source://rdoc//lib/rdoc/options.rb#1288
   def quiet; end
 
   # Set quietness to +bool+
   #
-  # source://rdoc//lib/rdoc/options.rb#1284
+  # source://rdoc//lib/rdoc/options.rb#1295
   def quiet=(bool); end
 
   # Array of directories to search for files to satisfy an :include:
@@ -8317,7 +8628,7 @@ class RDoc::Options
 
   # Removes directories from +path+ that are outside the current directory
   #
-  # source://rdoc//lib/rdoc/options.rb#1291
+  # source://rdoc//lib/rdoc/options.rb#1302
   def sanitize_path(path); end
 
   # Set up an output generator for the named +generator_name+.
@@ -8326,7 +8637,7 @@ class RDoc::Options
   # the options instance.  This allows generators to add custom options or set
   # default options.
   #
-  # source://rdoc//lib/rdoc/options.rb#1318
+  # source://rdoc//lib/rdoc/options.rb#1329
   def setup_generator(generator_name = T.unsafe(nil)); end
 
   # Include the '#' at the front of hyperlinked instance method names
@@ -8391,7 +8702,7 @@ class RDoc::Options
 
   # Finds the template dir for +template+
   #
-  # source://rdoc//lib/rdoc/options.rb#1340
+  # source://rdoc//lib/rdoc/options.rb#1351
   def template_dir_for(template); end
 
   # Additional template stylesheets
@@ -8416,7 +8727,7 @@ class RDoc::Options
 
   # For dumping YAML
   #
-  # source://rdoc//lib/rdoc/options.rb#580
+  # source://rdoc//lib/rdoc/options.rb#597
   def to_yaml(*options); end
 
   # Should RDoc update the timestamps in the output dir?
@@ -8455,22 +8766,22 @@ class RDoc::Options
   # When +:all+ is passed, visibility is set to +:private+, similarly to
   # RDOCOPT="--all", see #visibility for more information.
   #
-  # source://rdoc//lib/rdoc/options.rb#1357
+  # source://rdoc//lib/rdoc/options.rb#1368
   def visibility=(visibility); end
 
   # Displays a warning using Kernel#warn if we're being verbose
   #
-  # source://rdoc//lib/rdoc/options.rb#1369
+  # source://rdoc//lib/rdoc/options.rb#1380
   def warn(message); end
 
   # Warn if rdoc-ref links can't be resolved
-  # Default is +false+
+  # Default is +true+
   #
   # source://rdoc//lib/rdoc/options.rb#332
   def warn_missing_rdoc_ref; end
 
   # Warn if rdoc-ref links can't be resolved
-  # Default is +false+
+  # Default is +true+
   #
   # source://rdoc//lib/rdoc/options.rb#332
   def warn_missing_rdoc_ref=(_arg0); end
@@ -8488,10 +8799,10 @@ class RDoc::Options
   # Writes the YAML file .rdoc_options to the current directory containing the
   # parsed options.
   #
-  # source://rdoc//lib/rdoc/options.rb#1377
+  # source://rdoc//lib/rdoc/options.rb#1388
   def write_options; end
 
-  # source://rdoc//lib/rdoc/options.rb#471
+  # source://rdoc//lib/rdoc/options.rb#487
   def yaml_initialize(tag, map); end
 
   class << self
@@ -8500,12 +8811,12 @@ class RDoc::Options
     #
     # @raise [RDoc::Error]
     #
-    # source://rdoc//lib/rdoc/options.rb#1391
+    # source://rdoc//lib/rdoc/options.rb#1402
     def load_options; end
   end
 end
 
-# source://rdoc//lib/rdoc/options.rb#386
+# source://rdoc//lib/rdoc/options.rb#401
 RDoc::Options::DEFAULT_EXCLUDE = T.let(T.unsafe(nil), Array)
 
 # A parser is simple a class that subclasses RDoc::Parser and implements #scan
@@ -8866,7 +9177,7 @@ class RDoc::Parser::C < ::RDoc::Parser
 
   # Finds a RDoc::NormalClass or RDoc::NormalModule for +raw_name+
   #
-  # source://rdoc//lib/rdoc/parser/c.rb#681
+  # source://rdoc//lib/rdoc/parser/c.rb#676
   def find_class(raw_name, name, base_name = T.unsafe(nil)); end
 
   # Look for class or module documentation above Init_+class_name+(void),
@@ -8894,23 +9205,23 @@ class RDoc::Parser::C < ::RDoc::Parser
   #    */
   #   VALUE cFoo = rb_define_class("Foo", rb_cObject);
   #
-  # source://rdoc//lib/rdoc/parser/c.rb#722
+  # source://rdoc//lib/rdoc/parser/c.rb#717
   def find_class_comment(class_name, class_mod); end
 
   # Finds a comment matching +type+ and +const_name+ either above the
   # comment or in the matching Document- section.
   #
-  # source://rdoc//lib/rdoc/parser/c.rb#792
+  # source://rdoc//lib/rdoc/parser/c.rb#786
   def find_const_comment(type, const_name, class_name = T.unsafe(nil)); end
 
   # Handles modifiers in +comment+ and updates +meth_obj+ as appropriate.
   #
-  # source://rdoc//lib/rdoc/parser/c.rb#809
+  # source://rdoc//lib/rdoc/parser/c.rb#803
   def find_modifiers(comment, meth_obj); end
 
   # Finds a <tt>Document-method</tt> override for +meth_obj+ on +class_name+
   #
-  # source://rdoc//lib/rdoc/parser/c.rb#819
+  # source://rdoc//lib/rdoc/parser/c.rb#810
   def find_override_comment(class_name, meth_obj); end
 
   # Generate a Ruby-method table
@@ -8920,19 +9231,19 @@ class RDoc::Parser::C < ::RDoc::Parser
 
   # Generate a const table
   #
-  # source://rdoc//lib/rdoc/parser/c.rb#755
+  # source://rdoc//lib/rdoc/parser/c.rb#749
   def gen_const_table(file_content); end
 
   # Creates a new RDoc::Attr +attr_name+ on class +var_name+ that is either
   # +read+, +write+ or both
   #
-  # source://rdoc//lib/rdoc/parser/c.rb#841
+  # source://rdoc//lib/rdoc/parser/c.rb#832
   def handle_attr(var_name, attr_name, read, write); end
 
   # Creates a new RDoc::NormalClass or RDoc::NormalModule based on +type+
   # named +class_name+ in +parent+ which was assigned to the C +var_name+.
   #
-  # source://rdoc//lib/rdoc/parser/c.rb#870
+  # source://rdoc//lib/rdoc/parser/c.rb#861
   def handle_class_module(var_name, type, class_name, parent, in_module); end
 
   # Adds constants.  By providing some_value: at the start of the comment you
@@ -8944,24 +9255,24 @@ class RDoc::Parser::C < ::RDoc::Parser
   # Will override <tt>INT2FIX(300)</tt> with the value +300+ in the output
   # RDoc.  Values may include quotes and escaped colons (\:).
   #
-  # source://rdoc//lib/rdoc/parser/c.rb#935
+  # source://rdoc//lib/rdoc/parser/c.rb#926
   def handle_constants(type, var_name, const_name, definition); end
 
   # Removes #ifdefs that would otherwise confuse us
   #
-  # source://rdoc//lib/rdoc/parser/c.rb#985
+  # source://rdoc//lib/rdoc/parser/c.rb#976
   def handle_ifdefs_in(body); end
 
   # Adds an RDoc::AnyMethod +meth_name+ defined on a class or module assigned
   # to +var_name+.  +type+ is the type of method definition function used.
   # +singleton_method+ and +module_function+ create a singleton method.
   #
-  # source://rdoc//lib/rdoc/parser/c.rb#994
+  # source://rdoc//lib/rdoc/parser/c.rb#985
   def handle_method(type, var_name, meth_name, function, param_count, source_file = T.unsafe(nil)); end
 
   # Registers a singleton class +sclass_var+ as a singleton of +class_var+
   #
-  # source://rdoc//lib/rdoc/parser/c.rb#1063
+  # source://rdoc//lib/rdoc/parser/c.rb#1054
   def handle_singleton(sclass_var, class_var); end
 
   # Maps C variable names to names of Ruby classes (and singleton classes)
@@ -8972,7 +9283,7 @@ class RDoc::Parser::C < ::RDoc::Parser
   # Loads the variable map with the given +name+ from the RDoc::Store, if
   # present.
   #
-  # source://rdoc//lib/rdoc/parser/c.rb#1074
+  # source://rdoc//lib/rdoc/parser/c.rb#1068
   def load_variable_map(map_name); end
 
   # Look for directives in a normal comment block:
@@ -8984,7 +9295,7 @@ class RDoc::Parser::C < ::RDoc::Parser
   # This method modifies the +comment+
   # Both :main: and :title: directives are deprecated and will be removed in RDoc 7.
   #
-  # source://rdoc//lib/rdoc/parser/c.rb#1104
+  # source://rdoc//lib/rdoc/parser/c.rb#1098
   def look_for_directives_in(context, comment); end
 
   # Classes found while parsing the C file that were not yet registered due to
@@ -8995,25 +9306,25 @@ class RDoc::Parser::C < ::RDoc::Parser
 
   # Creates a RDoc::Comment instance.
   #
-  # source://rdoc//lib/rdoc/parser/c.rb#1252
+  # source://rdoc//lib/rdoc/parser/c.rb#1221
   def new_comment(text = T.unsafe(nil), location = T.unsafe(nil), language = T.unsafe(nil)); end
 
   # Extracts parameters from the +method_body+ and returns a method
   # parameter string.  Follows 1.9.3dev's scan-arg-spec, see README.EXT
   #
-  # source://rdoc//lib/rdoc/parser/c.rb#1141
+  # source://rdoc//lib/rdoc/parser/c.rb#1110
   def rb_scan_args(method_body); end
 
   # Removes lines that are commented out that might otherwise get picked up
   # when scanning for classes and methods
   #
-  # source://rdoc//lib/rdoc/parser/c.rb#1224
+  # source://rdoc//lib/rdoc/parser/c.rb#1193
   def remove_commented_out_lines; end
 
   # Extracts the classes, modules, methods, attributes, constants and aliases
   # from a C file and returns an RDoc::TopLevel for this file
   #
-  # source://rdoc//lib/rdoc/parser/c.rb#1232
+  # source://rdoc//lib/rdoc/parser/c.rb#1201
   def scan; end
 
   # Maps C variable names to names of Ruby singleton classes
@@ -9571,7 +9882,7 @@ end
 #   # :singleton-method: some_method!
 #
 # You can define arguments for metaprogrammed methods via either the
-# :call-seq:, :arg: or :args: directives.
+# \:call-seq:, :arg: or :args: directives.
 #
 # Additionally you can mark a method as an attribute by
 # using :attr:, :attr_reader:, :attr_writer: or :attr_accessor:.  Just like
@@ -9762,7 +10073,7 @@ class RDoc::Parser::Ruby < ::RDoc::Parser
   def parse_class_singleton(container, name, comment); end
 
   # Generates an RDoc::Method or RDoc::Attr from +comment+ by looking for
-  # :method: or :attr: directives in +comment+.
+  # \:method: or :attr: directives in +comment+.
   #
   # source://rdoc//lib/rdoc/parser/ruby.rb#1093
   def parse_comment(container, tk, comment); end
@@ -10075,52 +10386,52 @@ module RDoc::Parser::RubyTools
   # Reads and returns all tokens up to one of +tokens+.  Leaves the matched
   # token in the token list.
   #
-  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#52
+  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#50
   def get_tk_until(*tokens); end
 
   # Retrieves a String representation of the read tokens
   #
-  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#73
+  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#71
   def get_tkread; end
 
   # Peek equivalent for get_tkread
   #
-  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#82
+  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#80
   def peek_read; end
 
   # Peek at the next token, but don't remove it from the stream
   #
-  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#89
+  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#87
   def peek_tk; end
 
   # Removes the token listener +obj+
   #
-  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#97
+  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#95
   def remove_token_listener(obj); end
 
   # Resets the tools
   #
-  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#104
+  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#102
   def reset; end
 
   # Skips whitespace tokens including newlines
   #
-  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#115
+  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#113
   def skip_tkspace; end
 
   # Skips whitespace tokens excluding newlines
   #
-  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#129
+  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#127
   def skip_tkspace_without_nl; end
 
   # Has +obj+ listen to tokens
   #
-  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#143
+  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#141
   def token_listener(obj); end
 
   # Returns +tk+ to the scanner
   #
-  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#153
+  # source://rdoc//lib/rdoc/parser/ruby_tools.rb#151
   def unget_tk(tk); end
 end
 
@@ -10146,18 +10457,9 @@ class RDoc::Parser::Simple < ::RDoc::Parser
   # source://rdoc//lib/rdoc/parser/simple.rb#41
   def remove_coding_comment(text); end
 
-  # Removes private comments.
-  #
-  # Unlike RDoc::Comment#remove_private this implementation only looks for two
-  # dashes at the beginning of the line.  Three or more dashes are considered
-  # to be a rule and ignored.
-  #
-  # source://rdoc//lib/rdoc/parser/simple.rb#52
-  def remove_private_comment(comment); end
-
   # Extract the file contents and attach them to the TopLevel as a comment
   #
-  # source://rdoc//lib/rdoc/parser/simple.rb#28
+  # source://rdoc//lib/rdoc/parser/simple.rb#29
   def scan; end
 end
 
@@ -12081,7 +12383,7 @@ class RDoc::Store
   # source://rdoc//lib/rdoc/store.rb#97
   def options; end
 
-  # Returns the RDoc::TopLevel that is a text file and has the given +name+
+  # Returns the RDoc::TopLevel that is a file and has the given +name+
   #
   # source://rdoc//lib/rdoc/store.rb#725
   def page(name); end
@@ -12262,8 +12564,8 @@ end
 #   require 'rdoc/task'
 #
 #   RDoc::Task.new do |rdoc|
-#     rdoc.main = "README.rdoc"
-#     rdoc.rdoc_files.include("README.rdoc", "lib/**/*.rb")
+#     rdoc.main = "README.md"
+#     rdoc.rdoc_files.include("README.md", "lib/**/*.rb")
 #   end
 #
 # The +rdoc+ object passed to the block is an RDoc::Task object. See the
@@ -12278,8 +12580,8 @@ end
 #   require 'rdoc/task'
 #
 #   RDoc::Task.new :rdoc_dev do |rdoc|
-#     rdoc.main = "README.rdoc"
-#     rdoc.rdoc_files.include("README.rdoc", "lib/**/*.rb")
+#     rdoc.main = "README.md"
+#     rdoc.rdoc_files.include("README.md", "lib/**/*.rb")
 #     rdoc.options << "--all"
 #   end
 #
@@ -12498,11 +12800,6 @@ end
 #
 # source://rdoc//lib/rdoc/text.rb#11
 module RDoc::Text
-  # Expands tab characters in +text+ to eight spaces
-  #
-  # source://rdoc//lib/rdoc/text.rb#63
-  def expand_tabs(text); end
-
   # Flush +text+ left based on the shortest line
   #
   # source://rdoc//lib/rdoc/text.rb#82
@@ -12565,11 +12862,23 @@ module RDoc::Text
   # source://rdoc//lib/rdoc/text.rb#287
   def wrap(txt, line_len = T.unsafe(nil)); end
 
+  private
+
+  # Expands tab characters in +text+ to eight spaces
+  #
+  # source://rdoc//lib/rdoc/text.rb#63
+  def expand_tabs(text); end
+
   class << self
     # Transcodes +character+ to +encoding+ with a +fallback+ character.
     #
     # source://rdoc//lib/rdoc/text.rb#55
     def encode_fallback(character, encoding, fallback); end
+
+    # Expands tab characters in +text+ to eight spaces
+    #
+    # source://rdoc//lib/rdoc/text.rb#63
+    def expand_tabs(text); end
   end
 end
 
@@ -12585,41 +12894,48 @@ RDoc::Text::SPACE_SEPARATED_LETTER_CLASS = T.let(T.unsafe(nil), Regexp)
 # outside, you use such an object by calling the start_collecting_tokens
 # method, followed by calls to add_token and pop_token.
 #
-# source://rdoc//lib/rdoc/token_stream.rb#9
+# source://rdoc//lib/rdoc/token_stream.rb#10
 module RDoc::TokenStream
   # Adds one +token+ to the collected tokens
   #
-  # source://rdoc//lib/rdoc/token_stream.rb#84
+  # source://rdoc//lib/rdoc/token_stream.rb#85
   def add_token(token); end
 
   # Adds +tokens+ to the collected tokens
   #
-  # source://rdoc//lib/rdoc/token_stream.rb#77
+  # source://rdoc//lib/rdoc/token_stream.rb#78
   def add_tokens(tokens); end
 
   # Starts collecting tokens
   #
-  # source://rdoc//lib/rdoc/token_stream.rb#91
-  def collect_tokens; end
+  # source://rdoc//lib/rdoc/token_stream.rb#93
+  def collect_tokens(language); end
 
   # Remove the last token from the collected tokens
   #
-  # source://rdoc//lib/rdoc/token_stream.rb#100
+  # source://rdoc//lib/rdoc/token_stream.rb#103
   def pop_token; end
+
+  # Returns the source language of the token stream as a string
+  #
+  # Returns 'c' or 'ruby'
+  #
+  # source://rdoc//lib/rdoc/token_stream.rb#126
+  def source_language; end
 
   # Starts collecting tokens
   #
-  # source://rdoc//lib/rdoc/token_stream.rb#95
-  def start_collecting_tokens; end
+  # source://rdoc//lib/rdoc/token_stream.rb#98
+  def start_collecting_tokens(language); end
 
   # Current token stream
   #
-  # source://rdoc//lib/rdoc/token_stream.rb#107
+  # source://rdoc//lib/rdoc/token_stream.rb#110
   def token_stream; end
 
   # Returns a string representation of the token stream
   #
-  # source://rdoc//lib/rdoc/token_stream.rb#114
+  # source://rdoc//lib/rdoc/token_stream.rb#117
   def tokens_to_s; end
 
   class << self
@@ -12627,7 +12943,7 @@ module RDoc::TokenStream
     # <tt><span></tt> elements. Some tokens types are wrapped in spans
     # with the given class names. Other token types are not wrapped in spans.
     #
-    # source://rdoc//lib/rdoc/token_stream.rb#16
+    # source://rdoc//lib/rdoc/token_stream.rb#17
     def to_html(token_stream); end
   end
 end
@@ -12770,12 +13086,12 @@ class RDoc::TopLevel < ::RDoc::Context
   #
   # @return [TopLevel] a new instance of TopLevel
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#36
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#46
   def initialize(absolute_name, relative_name = T.unsafe(nil)); end
 
   # An RDoc::TopLevel is equal to another with the same relative_name
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#58
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#76
   def ==(other); end
 
   # Absolute name of this file
@@ -12790,40 +13106,40 @@ class RDoc::TopLevel < ::RDoc::Context
 
   # Adds +an_alias+ to +Object+ instead of +self+.
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#67
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#85
   def add_alias(an_alias); end
 
   # Adds +constant+ to +Object+ instead of +self+.
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#76
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#94
   def add_constant(constant); end
 
   # Adds +include+ to +Object+ instead of +self+.
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#85
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#103
   def add_include(include); end
 
   # Adds +method+ to +Object+ instead of +self+.
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#94
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#112
   def add_method(method); end
 
   # Adds class or module +mod+. Used in the building phase
   # by the Ruby parser.
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#104
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#122
   def add_to_classes_or_modules(mod); end
 
   # Base name of this file
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#111
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#22
   def base_name; end
 
   # All the classes or modules that were declared in
   # this file. These are assigned to either +#classes_hash+
   # or +#modules_hash+ once we know what they really are.
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#24
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#34
   def classes_or_modules; end
 
   # Returns a URL for this source file on some web repository.  Use the -W
@@ -12832,17 +13148,9 @@ class RDoc::TopLevel < ::RDoc::Context
   # source://rdoc//lib/rdoc/generator/markup.rb#161
   def cvs_url; end
 
-  # Only a TopLevel that contains text file) will be displayed.  See also
-  # RDoc::CodeObject#display?
-  #
-  # @return [Boolean]
-  #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#121
-  def display?; end
-
   # An RDoc::TopLevel is equal to another with the same relative_name
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#62
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#80
   def eql?(other); end
 
   # See RDoc::TopLevel::find_class_or_module
@@ -12850,81 +13158,81 @@ class RDoc::TopLevel < ::RDoc::Context
   # TODO Why do we search through all classes/modules found, not just the
   #       ones of this instance?
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#131
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#134
   def find_class_or_module(name); end
 
   # Finds a class or module named +symbol+
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#138
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#141
   def find_local_symbol(symbol); end
 
   # Finds a module or class with +name+
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#145
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#148
   def find_module_named(name); end
 
   # Returns the relative name of this file
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#152
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#155
   def full_name; end
 
   # An RDoc::TopLevel has the same hash as another with the same
   # relative_name
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#160
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#163
   def hash; end
 
   # URL for this with a +prefix+
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#167
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#170
   def http_url; end
 
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#171
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#174
   def inspect; end
 
   # Dumps this TopLevel for use by ri.  See also #marshal_load
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#183
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#186
   def marshal_dump; end
 
   # Loads this TopLevel from +array+.
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#195
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#198
   def marshal_load(array); end
 
   # Base name of this file
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#115
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#126
   def name; end
 
   # Returns the NormalClass "Object", creating it if not found.
   #
   # Records +self+ as a location in "Object".
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#207
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#210
   def object_class; end
 
   # Base name of this file without the extension
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#218
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#27
   def page_name; end
 
   # The parser class that processed this file
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#29
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#39
   def parser; end
 
   # Sets the parser for this toplevel context, also the store.
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#49
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#67
   def parser=(val); end
 
   # Path to this file for use with HTML generator output.
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#228
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#221
   def path; end
 
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#234
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#227
   def pretty_print(q); end
 
   # Relative name of this file
@@ -12939,17 +13247,25 @@ class RDoc::TopLevel < ::RDoc::Context
 
   # Search record used by RDoc::Generator::JsonIndex
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#248
+  # TODO: Remove this method after dropping the darkfish theme and JsonIndex generator.
+  # Use #search_snippet instead for getting documentation snippets.
+  #
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#244
   def search_record; end
+
+  # Returns an HTML snippet of the comment for search results.
+  #
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#261
+  def search_snippet; end
 
   # Is this TopLevel from a text file instead of a source code file?
   #
   # @return [Boolean]
   #
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#265
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#270
   def text?; end
 
-  # source://rdoc//lib/rdoc/code_object/top_level.rb#269
+  # source://rdoc//lib/rdoc/code_object/top_level.rb#274
   def to_s; end
 end
 
