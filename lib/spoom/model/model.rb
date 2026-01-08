@@ -192,12 +192,34 @@ module Spoom
     class AttrWriter < Attr; end
     class AttrAccessor < Attr; end
 
-    class Visibility < T::Enum
-      enums do
-        Public = new("public")
-        Protected = new("protected")
-        Private = new("private")
+    class Visibility
+      class << self
+        #: (String) -> Visibility
+        def from_string(name)
+          case name
+          when "public" then Public
+          when "protected" then Protected
+          when "private" then Private
+          else
+            raise Error, "Invalid visibility: #{name}"
+          end
+        end
       end
+
+      #: (String) -> void
+      def initialize(name)
+        @name = name
+      end
+
+      # @override
+      #: -> String
+      def to_s
+        @name
+      end
+
+      Public = new("public") #: Visibility
+      Protected = new("protected") #: Visibility
+      Private = new("private") #: Visibility
     end
 
     # A mixin (include, prepend, extend) to a namespace
