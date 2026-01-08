@@ -40,3 +40,6 @@ Sorbet/EnforceSigilOrder:
 
 Sorbet/ForbidTStruct:
   Enabled: true
+
+Sorbet/ForbidTEnum:
+  Enabled: true
