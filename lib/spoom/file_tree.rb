@@ -4,14 +4,14 @@
 module Spoom
   # Build a file hierarchy from a set of file paths.
   class FileTree
-    #: (?T::Enumerable[String] paths) -> void
+    #: (?Enumerable[String] paths) -> void
     def initialize(paths = [])
       @roots = {} #: Hash[String, Node]
       add_paths(paths)
     end
 
     # Add all `paths` to the tree
-    #: (T::Enumerable[String] paths) -> void
+    #: (Enumerable[String] paths) -> void
     def add_paths(paths)
       paths.each { |path| add_path(path) }
     end
