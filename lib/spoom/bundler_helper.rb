@@ -3,8 +3,6 @@
 
 module Spoom
   module BundlerHelper
-    extend T::Sig
-
     class << self
       # Generate a gem requirement for the given gem name, using that gem's version in the "real" current bundle.
       #
