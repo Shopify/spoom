@@ -4,7 +4,7 @@
 module Spoom
   module Deadcode
     # A definition is a class, module, method, constant, etc. being defined in the code
-    class Definition < T::Struct
+    class Definition
       class Kind < T::Enum
         enums do
           AttrReader = new("attr_reader")
@@ -27,11 +27,29 @@ module Spoom
         end
       end
 
-      const :kind, Kind
-      const :name, String
-      const :full_name, String
-      const :location, Location
-      const :status, Status, default: Status::DEAD
+      #: Kind
+      attr_reader :kind
+
+      #: String
+      attr_reader :name
+
+      #: String
+      attr_reader :full_name
+
+      #: Location
+      attr_reader :location
+
+      #: Status
+      attr_reader :status
+
+      #: (kind: Kind, name: String, full_name: String, location: Location, ?status: Status) -> void
+      def initialize(kind:, name:, full_name:, location:, status: Status::DEAD)
+        @kind = kind
+        @name = name
+        @full_name = full_name
+        @location = location
+        @status = status
+      end
 
       # Kind
 
