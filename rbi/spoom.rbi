@@ -85,6 +85,8 @@ module Spoom::Cli::Helper
   def yellow(string); end
 end
 
+Spoom::Cli::Helper::HIGHLIGHT_COLOR = T.let(T.unsafe(nil), Spoom::Color)
+
 class Spoom::Cli::Main < ::Thor
   include ::Spoom::Colorize
   include ::Spoom::Cli::Helper
@@ -212,31 +214,32 @@ Spoom::Cli::Srb::Tc::SORT_CODE = T.let(T.unsafe(nil), String)
 Spoom::Cli::Srb::Tc::SORT_ENUM = T.let(T.unsafe(nil), Array)
 Spoom::Cli::Srb::Tc::SORT_LOC = T.let(T.unsafe(nil), String)
 
-class Spoom::Color < ::T::Enum
-  enums do
-    BLACK = new
-    BLUE = new
-    BOLD = new
-    CLEAR = new
-    CYAN = new
-    GREEN = new
-    LIGHT_BLACK = new
-    LIGHT_BLUE = new
-    LIGHT_CYAN = new
-    LIGHT_GREEN = new
-    LIGHT_MAGENTA = new
-    LIGHT_RED = new
-    LIGHT_WHITE = new
-    LIGHT_YELLOW = new
-    MAGENTA = new
-    RED = new
-    WHITE = new
-    YELLOW = new
-  end
+class Spoom::Color
+  sig { params(ansi_code: ::String).void }
+  def initialize(ansi_code); end
 
   sig { returns(::String) }
   def ansi_code; end
 end
+
+Spoom::Color::BLACK = T.let(T.unsafe(nil), Spoom::Color)
+Spoom::Color::BLUE = T.let(T.unsafe(nil), Spoom::Color)
+Spoom::Color::BOLD = T.let(T.unsafe(nil), Spoom::Color)
+Spoom::Color::CLEAR = T.let(T.unsafe(nil), Spoom::Color)
+Spoom::Color::CYAN = T.let(T.unsafe(nil), Spoom::Color)
+Spoom::Color::GREEN = T.let(T.unsafe(nil), Spoom::Color)
+Spoom::Color::LIGHT_BLACK = T.let(T.unsafe(nil), Spoom::Color)
+Spoom::Color::LIGHT_BLUE = T.let(T.unsafe(nil), Spoom::Color)
+Spoom::Color::LIGHT_CYAN = T.let(T.unsafe(nil), Spoom::Color)
+Spoom::Color::LIGHT_GREEN = T.let(T.unsafe(nil), Spoom::Color)
+Spoom::Color::LIGHT_MAGENTA = T.let(T.unsafe(nil), Spoom::Color)
+Spoom::Color::LIGHT_RED = T.let(T.unsafe(nil), Spoom::Color)
+Spoom::Color::LIGHT_WHITE = T.let(T.unsafe(nil), Spoom::Color)
+Spoom::Color::LIGHT_YELLOW = T.let(T.unsafe(nil), Spoom::Color)
+Spoom::Color::MAGENTA = T.let(T.unsafe(nil), Spoom::Color)
+Spoom::Color::RED = T.let(T.unsafe(nil), Spoom::Color)
+Spoom::Color::WHITE = T.let(T.unsafe(nil), Spoom::Color)
+Spoom::Color::YELLOW = T.let(T.unsafe(nil), Spoom::Color)
 
 module Spoom::Colorize
   sig { params(string: ::String, color: ::Spoom::Color).returns(::String) }
@@ -999,24 +1002,24 @@ class Spoom::Deadcode::Definition < ::T::Struct
   def to_json(*args); end
 end
 
-class Spoom::Deadcode::Definition::Kind < ::T::Enum
-  enums do
-    AttrReader = new
-    AttrWriter = new
-    Class = new
-    Constant = new
-    Method = new
-    Module = new
-  end
+class Spoom::Deadcode::Definition::Kind
+  sig { params(name: ::String).void }
+  def initialize(name); end
+
+  sig { override.returns(::String) }
+  def to_s; end
 end
 
-class Spoom::Deadcode::Definition::Status < ::T::Enum
-  enums do
-    ALIVE = new
-    DEAD = new
-    IGNORED = new
-  end
-end
+Spoom::Deadcode::Definition::Kind::AttrReader = T.let(T.unsafe(nil), Spoom::Deadcode::Definition::Kind)
+Spoom::Deadcode::Definition::Kind::AttrWriter = T.let(T.unsafe(nil), Spoom::Deadcode::Definition::Kind)
+Spoom::Deadcode::Definition::Kind::Class = T.let(T.unsafe(nil), Spoom::Deadcode::Definition::Kind)
+Spoom::Deadcode::Definition::Kind::Constant = T.let(T.unsafe(nil), Spoom::Deadcode::Definition::Kind)
+Spoom::Deadcode::Definition::Kind::Method = T.let(T.unsafe(nil), Spoom::Deadcode::Definition::Kind)
+Spoom::Deadcode::Definition::Kind::Module = T.let(T.unsafe(nil), Spoom::Deadcode::Definition::Kind)
+class Spoom::Deadcode::Definition::Status; end
+Spoom::Deadcode::Definition::Status::ALIVE = T.let(T.unsafe(nil), Spoom::Deadcode::Definition::Status)
+Spoom::Deadcode::Definition::Status::DEAD = T.let(T.unsafe(nil), Spoom::Deadcode::Definition::Status)
+Spoom::Deadcode::Definition::Status::IGNORED = T.let(T.unsafe(nil), Spoom::Deadcode::Definition::Status)
 
 class Spoom::Deadcode::ERB < ::Erubi::Engine
   sig { params(input: T.untyped, properties: T.untyped).void }
@@ -2277,12 +2280,13 @@ class Spoom::Model::Reference < ::T::Struct
   end
 end
 
-class Spoom::Model::Reference::Kind < ::T::Enum
-  enums do
-    Constant = new
-    Method = new
-  end
+class Spoom::Model::Reference::Kind
+  sig { params(name: ::String).void }
+  def initialize(name); end
 end
+
+Spoom::Model::Reference::Kind::Constant = T.let(T.unsafe(nil), Spoom::Model::Reference::Kind)
+Spoom::Model::Reference::Kind::Method = T.let(T.unsafe(nil), Spoom::Model::Reference::Kind)
 
 class Spoom::Model::ReferencesVisitor < ::Spoom::Visitor
   sig { params(file: ::String).void }
@@ -2433,14 +2437,22 @@ class Spoom::Model::UnresolvedSymbol < ::Spoom::Model::Symbol
   def to_s; end
 end
 
-class Spoom::Model::Visibility < ::T::Enum
-  enums do
-    Private = new
-    Protected = new
-    Public = new
+class Spoom::Model::Visibility
+  sig { params(name: ::String).void }
+  def initialize(name); end
+
+  sig { override.returns(::String) }
+  def to_s; end
+
+  class << self
+    sig { params(name: ::String).returns(::Spoom::Model::Visibility) }
+    def from_string(name); end
   end
 end
 
+Spoom::Model::Visibility::Private = T.let(T.unsafe(nil), Spoom::Model::Visibility)
+Spoom::Model::Visibility::Protected = T.let(T.unsafe(nil), Spoom::Model::Visibility)
+Spoom::Model::Visibility::Public = T.let(T.unsafe(nil), Spoom::Model::Visibility)
 class Spoom::ParseError < ::Spoom::Error; end
 
 class Spoom::Poset
