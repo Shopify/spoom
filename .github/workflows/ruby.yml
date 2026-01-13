@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        ruby: ["3.2", "3.3", "3.4"]
+        ruby: ["3.2", "3.3", "3.4", "4.0"]
     name: ${{ matrix.os }} ${{ matrix.ruby }}
     runs-on: ${{ matrix.os }}
     steps:
