@@ -50,5 +50,7 @@ end
 
 require "minitest/autorun"
 require "minitest/reporters"
+require "minitest/minitest_reporter_plugin"
+Minitest.register_plugin(:minitest_reporter)
 
 Minitest::Reporters.use!(Minitest::Reporters::SpecReporter.new(color: true))
