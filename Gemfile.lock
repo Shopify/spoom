@@ -48,7 +48,7 @@ GEM
     pp (0.6.3)
       prettyprint
     prettyprint (0.2.0)
-    prism (1.7.0)
+    prism (1.8.0)
     psych (5.3.1)
       date
       stringio
@@ -91,14 +91,14 @@ GEM
       lint_roller
       rubocop (>= 1.75.2)
     ruby-progressbar (1.13.0)
-    sorbet (0.6.12875)
-      sorbet-static (= 0.6.12875)
-    sorbet-runtime (0.6.12875)
-    sorbet-static (0.6.12875-universal-darwin)
-    sorbet-static (0.6.12875-x86_64-linux)
-    sorbet-static-and-runtime (0.6.12875)
-      sorbet (= 0.6.12875)
-      sorbet-runtime (= 0.6.12875)
+    sorbet (0.6.12894)
+      sorbet-static (= 0.6.12894)
+    sorbet-runtime (0.6.12894)
+    sorbet-static (0.6.12894-universal-darwin)
+    sorbet-static (0.6.12894-x86_64-linux)
+    sorbet-static-and-runtime (0.6.12894)
+      sorbet (= 0.6.12894)
+      sorbet-runtime (= 0.6.12894)
     stringio (3.2.0)
     tapioca (0.17.10)
       benchmark
