@@ -214,7 +214,7 @@ module Spoom
           result = @project.spoom("srb lsp --no-color sigs lib/sigs.rb 12 4")
           assert_equal(<<~MSG, result.out)
             Signature for `lib/sigs.rb:12:4`:
-              * SigsTest#bar(a: Integer, <blk>: T.untyped)
+              * SigsTest#bar(a: Integer, <blk>: T.noreturn)
           MSG
         end
 
