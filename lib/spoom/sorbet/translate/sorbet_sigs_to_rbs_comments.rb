@@ -59,6 +59,8 @@ module Spoom
           visit_scope(node) { super }
         end
 
+        ABSTRACT_METHOD_BODY = "defined?(super) ? super : raise(NotImplementedError, \"Abstract method called\")"
+
         # @override
         #: (Prism::DefNode) -> void
         def visit_def_node(node)
@@ -87,9 +89,9 @@ module Spoom
               node.location.end_offset - 1,
               if node.name.end_with?("=")
                 indent = " " * node.location.start_column
-                "\n#{indent}  raise NotImplementedError, \"Abstract method called\"\n#{indent}end"
+                "\n#{indent}  #{ABSTRACT_METHOD_BODY}\n#{indent}end"
               else
-                " = raise NotImplementedError, \"Abstract method called\""
+                " = #{ABSTRACT_METHOD_BODY}"
               end,
             )
           end
