@@ -59,7 +59,7 @@ module Spoom
             .select { |key, _value| key.start_with?("rbs_") }
             .sort_by { |_key, value| -value }
             .each do |key, value|
-            say(" * #{key}: `#{value}`")
+              say(" * #{key}: `#{value}`")
           end
         end
       end
