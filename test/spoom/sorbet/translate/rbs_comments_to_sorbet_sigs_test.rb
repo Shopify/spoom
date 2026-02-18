@@ -256,9 +256,14 @@ module Spoom
 
           assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
             sig { returns(::T::Array[Integer]) }
+
+
             attr_accessor :foo
 
             sig { params(a: Integer, b: Integer).returns(Integer) }
+
+
+
             def foo(a, b); end
           RB
         end
