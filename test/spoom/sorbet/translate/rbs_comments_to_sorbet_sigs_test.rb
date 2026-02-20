@@ -124,6 +124,36 @@ module Spoom
           RB
         end
 
+        def test_translate_to_rbi_method_added_is_always_without_runtime
+          contents = <<~RB
+            class A
+              class << self
+                # @override
+                #: (Symbol) -> void
+                def method_added(m); end
+
+                # @override
+                #: (Symbol) -> void
+                def singleton_method_added(m); end
+              end
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            class A
+              class << self
+                # @override
+                T::Sig::WithoutRuntime.sig { override.params(m: Symbol).void }
+                def method_added(m); end
+
+                # @override
+                T::Sig::WithoutRuntime.sig { override.params(m: Symbol).void }
+                def singleton_method_added(m); end
+              end
+            end
+          RB
+        end
+
         def test_translate_to_rbi_singleton_method_sigs
           contents = <<~RB
             class A
