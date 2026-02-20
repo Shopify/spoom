@@ -139,6 +139,12 @@ module Spoom
 
             apply_member_annotations(comments.method_annotations, sig)
 
+            # Sorbet runtime doesn't support `sig` on `method_added` or
+            # `singleton_method_added`, so we always use `without_runtime` for them.
+            if def_node.name == :method_added || def_node.name == :singleton_method_added
+              sig.without_runtime = true
+            end
+
             @rewriter << Source::Replace.new(
               signature.location.start_offset,
               signature.location.end_offset,
