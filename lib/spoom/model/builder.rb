@@ -226,7 +226,7 @@ module Spoom
             current_namespace.mixins << Extend.new(arg.slice)
           end
         when :public, :private, :protected
-          @visibility_stack << Visibility.from_serialized(node.name.to_s)
+          @visibility_stack << Visibility.from_string(node.name.to_s)
           if node.arguments
             super
             @visibility_stack.pop
