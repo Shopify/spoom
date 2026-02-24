@@ -585,6 +585,8 @@ module Spoom
               node.is_a?(Prism::DefNode)
             when Definition::Kind::Module
               node.is_a?(Prism::ModuleNode)
+            else
+              raise Error, "Unsupported node kind: #{node.class}"
             end
           end
         end
