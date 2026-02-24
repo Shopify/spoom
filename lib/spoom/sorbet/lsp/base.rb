@@ -4,7 +4,6 @@
 module Spoom
   module LSP
     # Base messaging
-    # We don't use T::Struct for those so we can subclass them
 
     # A general message as defined by JSON-RPC.
     #
