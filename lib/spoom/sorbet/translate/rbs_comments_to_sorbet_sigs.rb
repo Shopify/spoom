@@ -73,6 +73,21 @@ module Spoom
 
         private
 
+        # Preserves line numbers by adding blank lines after the replacement string
+        # to match the number of lines in the original location
+        #: (Prism::Location, String) -> String
+        def preserve_line_numbers(location, replacement_string)
+          original_lines = location.end_line - location.start_line + 1
+          replacement_lines = replacement_string.lines.count
+
+          if original_lines > replacement_lines
+            padding = "\n" * (original_lines - replacement_lines)
+            replacement_string + padding
+          else
+            replacement_string
+          end
+        end
+
         #: (Prism::CallNode) -> void
         def visit_attr(node)
           comments = node_rbs_comments(node)
@@ -100,10 +115,13 @@ module Spoom
 
             apply_member_annotations(comments.method_annotations, sig)
 
+            sig_string = sig.string(max_line_length: @max_line_length)
+            replacement = preserve_line_numbers(signature.location, sig_string)
+
             @rewriter << Source::Replace.new(
               signature.location.start_offset,
               signature.location.end_offset,
-              sig.string(max_line_length: @max_line_length),
+              replacement,
             )
           rescue ::RBS::ParsingError, ::RBI::Error
             # Ignore signatures with errors
@@ -139,10 +157,13 @@ module Spoom
 
             apply_member_annotations(comments.method_annotations, sig)
 
+            sig_string = sig.string(max_line_length: @max_line_length)
+            replacement = preserve_line_numbers(signature.location, sig_string)
+
             @rewriter << Source::Replace.new(
               signature.location.start_offset,
               signature.location.end_offset,
-              sig.string(max_line_length: @max_line_length),
+              replacement,
             )
           end
         end
