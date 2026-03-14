@@ -3063,6 +3063,8 @@ class Spoom::Sorbet::Translate::SorbetSigsToRBSComments < ::Spoom::Sorbet::Trans
   def visit_sig(node); end
 end
 
+Spoom::Sorbet::Translate::SorbetSigsToRBSComments::ABSTRACT_METHOD_BODY = T.let(T.unsafe(nil), String)
+
 class Spoom::Sorbet::Translate::StripSorbetSigs < ::Spoom::Sorbet::Translate::Translator
   sig { override.params(node: ::Prism::CallNode).void }
   def visit_call_node(node); end
