@@ -63,17 +63,17 @@ module Spoom
             function strictnessColor(strictness) {
               switch(strictness) {
                 case "ignore":
-                  return "#{palette.ignore}";
+                  return "#{palette.ignore_color}";
                 case "false":
-                  return "#{palette.false}";
+                  return "#{palette.false_color}";
                 case "true":
-                  return "#{palette.true}";
+                  return "#{palette.true_color}";
                 case "strict":
-                  return "#{palette.strict}";
+                  return "#{palette.strict_color}";
                 case "strong":
-                  return "#{palette.strong}";
+                  return "#{palette.strong_color}";
               }
-              return "#{palette.false}";
+              return "#{palette.false_color}";
             }
 
             function toPercent(value, sum) {
@@ -98,12 +98,36 @@ module Spoom
         end
       end
 
-      class ColorPalette < T::Struct
-        prop :ignore, String
-        prop :false, String
-        prop :true, String
-        prop :strict, String
-        prop :strong, String
+      class ColorPalette
+        #: String
+        attr_accessor :ignore_color
+
+        #: String
+        attr_accessor :false_color
+
+        #: String
+        attr_accessor :true_color
+
+        #: String
+        attr_accessor :strict_color
+
+        #: String
+        attr_accessor :strong_color
+
+        #: (
+        #|   ignore_color: String,
+        #|   false_color: String,
+        #|   true_color: String,
+        #|   strict_color: String,
+        #|   strong_color: String
+        #| ) -> void
+        def initialize(ignore_color:, false_color:, true_color:, strict_color:, strong_color:)
+          @ignore_color = ignore_color
+          @false_color = false_color
+          @true_color = true_color
+          @strict_color = strict_color
+          @strong_color = strong_color
+        end
       end
     end
   end
