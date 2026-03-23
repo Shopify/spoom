@@ -60,9 +60,9 @@ GEM
     rbi (0.3.9)
       prism (~> 1.0)
       rbs (>= 3.4.4)
-    rbs (4.0.0.dev.5)
+    rbs (4.0.1)
       logger
-      prism (>= 1.3.0)
+      prism (>= 1.6.0)
       tsort
     rdoc (7.0.3)
       erb
@@ -71,7 +71,7 @@ GEM
     regexp_parser (2.11.3)
     reline (0.6.3)
       io-console (~> 0.5)
-    require-hooks (0.2.2)
+    require-hooks (0.2.3)
     rexml (3.4.4)
     rubocop (1.84.2)
       json (~> 2.3)
@@ -93,16 +93,16 @@ GEM
       lint_roller
       rubocop (>= 1.75.2)
     ruby-progressbar (1.13.0)
-    sorbet (0.6.13029)
-      sorbet-static (= 0.6.13029)
-    sorbet-runtime (0.6.13029)
-    sorbet-static (0.6.13029-universal-darwin)
-    sorbet-static (0.6.13029-x86_64-linux)
-    sorbet-static-and-runtime (0.6.13029)
-      sorbet (= 0.6.13029)
-      sorbet-runtime (= 0.6.13029)
+    sorbet (0.6.13055)
+      sorbet-static (= 0.6.13055)
+    sorbet-runtime (0.6.13055)
+    sorbet-static (0.6.13055-universal-darwin)
+    sorbet-static (0.6.13055-x86_64-linux)
+    sorbet-static-and-runtime (0.6.13055)
+      sorbet (= 0.6.13055)
+      sorbet-runtime (= 0.6.13055)
     stringio (3.2.0)
-    tapioca (0.17.10)
+    tapioca (0.18.0)
       benchmark
       bundler (>= 2.2.25)
       netrc (>= 0.11.0)
@@ -112,6 +112,7 @@ GEM
       sorbet-static-and-runtime (>= 0.5.11087)
       spoom (>= 1.7.9)
       thor (>= 1.2.0)
+      tsort
       yard-sorbet
     thor (1.5.0)
     tsort (0.2.0)
