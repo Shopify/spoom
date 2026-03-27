@@ -476,6 +476,42 @@ module Spoom
           RBS
         end
 
+        def test_translate_to_rbi_abstract_methods_are_checked_never
+          contents = <<~RB
+            # @abstract
+            #: -> void
+            def foo; end
+
+            # @abstract
+            #: (Integer) -> String
+            def bar(x); end
+
+            # @override
+            #: (Integer) -> String
+            def bar(x); end
+
+            #: -> void
+            def baz; end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            # @abstract
+            sig { abstract.checked(:never).void }
+            def foo; end
+
+            # @abstract
+            sig { abstract.checked(:never).params(x: Integer).returns(String) }
+            def bar(x); end
+
+            # @override
+            sig { override.params(x: Integer).returns(String) }
+            def bar(x); end
+
+            sig { void }
+            def baz; end
+          RB
+        end
+
         def test_translate_to_rbi_selects_right_comments
           contents = <<~RB
             #: -> void

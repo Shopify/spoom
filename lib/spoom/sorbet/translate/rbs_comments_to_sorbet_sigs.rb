@@ -139,6 +139,12 @@ module Spoom
 
             apply_member_annotations(comments.method_annotations, sig)
 
+            # Abstract methods should not be runtime-checked — Sorbet's
+            # validate_override_types can crash when comparing types that
+            # reference classes with abstract methods (e.g., to_s raises
+            # NotImplementedError).
+            sig.checked = :never if sig.is_abstract
+
             # Sorbet runtime doesn't support `sig` on `method_added` or
             # `singleton_method_added`, so we always use `without_runtime` for them.
             if def_node.name == :method_added || def_node.name == :singleton_method_added
