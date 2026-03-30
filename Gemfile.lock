@@ -60,7 +60,7 @@ GEM
     rbi (0.3.9)
       prism (~> 1.0)
       rbs (>= 3.4.4)
-    rbs (4.0.1)
+    rbs (4.0.2)
       logger
       prism (>= 1.6.0)
       tsort
@@ -93,14 +93,14 @@ GEM
       lint_roller
       rubocop (>= 1.75.2)
     ruby-progressbar (1.13.0)
-    sorbet (0.6.13055)
-      sorbet-static (= 0.6.13055)
-    sorbet-runtime (0.6.13055)
-    sorbet-static (0.6.13055-universal-darwin)
-    sorbet-static (0.6.13055-x86_64-linux)
-    sorbet-static-and-runtime (0.6.13055)
-      sorbet (= 0.6.13055)
-      sorbet-runtime (= 0.6.13055)
+    sorbet (0.6.13067)
+      sorbet-static (= 0.6.13067)
+    sorbet-runtime (0.6.13067)
+    sorbet-static (0.6.13067-universal-darwin)
+    sorbet-static (0.6.13067-x86_64-linux)
+    sorbet-static-and-runtime (0.6.13067)
+      sorbet (= 0.6.13067)
+      sorbet-runtime (= 0.6.13067)
     stringio (3.2.0)
     tapioca (0.18.0)
       benchmark
