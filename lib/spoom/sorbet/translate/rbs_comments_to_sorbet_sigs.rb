@@ -238,9 +238,12 @@ module Spoom
                 newline = node.body.nil? ? "" : "\n"
                 @rewriter << Source::Insert.new(insert_pos, "\n#{indent}#{type_member}#{newline}")
               rescue ::RBS::ParsingError, ::RBI::Error
-                # Ignore signatures with errors
+                # Ignore type params with errors
                 next
               end
+            rescue ::RBS::ParsingError, ::RBI::Error
+              # Ignore signatures with errors
+              next
             end
           end
         end
