@@ -3,7 +3,7 @@
 
 module Spoom
   module Git
-    class Commit < T::Struct
+    class Commit
       class << self
         # Parse a line formatted as `%h %at` into a `Commit`
         #: (String string) -> Commit?
@@ -16,8 +16,17 @@ module Spoom
         end
       end
 
-      const :sha, String
-      const :time, Time
+      #: String
+      attr_reader :sha
+
+      #: Time
+      attr_reader :time
+
+      #: (sha: String, time: Time) -> void
+      def initialize(sha:, time:)
+        @sha = sha
+        @time = time
+      end
 
       #: -> Integer
       def timestamp

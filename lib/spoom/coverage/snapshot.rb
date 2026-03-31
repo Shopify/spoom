@@ -3,26 +3,126 @@
 
 module Spoom
   module Coverage
-    class Snapshot < T::Struct
-      prop :timestamp, Integer, default: Time.new.getutc.to_i
-      prop :version_static, T.nilable(String), default: nil
-      prop :version_runtime, T.nilable(String), default: nil
-      prop :duration, Integer, default: 0
-      prop :commit_sha, T.nilable(String), default: nil
-      prop :commit_timestamp, T.nilable(Integer), default: nil
-      prop :files, Integer, default: 0
-      prop :rbi_files, Integer, default: 0
-      prop :modules, Integer, default: 0
-      prop :classes, Integer, default: 0
-      prop :singleton_classes, Integer, default: 0
-      prop :methods_without_sig, Integer, default: 0
-      prop :methods_with_sig, Integer, default: 0
-      prop :calls_untyped, Integer, default: 0
-      prop :calls_typed, Integer, default: 0
-      prop :sigils, T::Hash[String, Integer], default: Hash.new(0)
-      prop :methods_with_sig_excluding_rbis, Integer, default: 0
-      prop :methods_without_sig_excluding_rbis, Integer, default: 0
-      prop :sigils_excluding_rbis, T::Hash[String, Integer], default: Hash.new(0)
+    class Snapshot
+      #: Integer
+      attr_accessor :timestamp
+
+      #: String?
+      attr_accessor :version_static
+
+      #: String?
+      attr_accessor :version_runtime
+
+      #: Integer
+      attr_accessor :duration
+
+      #: String?
+      attr_accessor :commit_sha
+
+      #: Integer?
+      attr_accessor :commit_timestamp
+
+      #: Integer
+      attr_accessor :files
+
+      #: Integer
+      attr_accessor :rbi_files
+
+      #: Integer
+      attr_accessor :modules
+
+      #: Integer
+      attr_accessor :classes
+
+      #: Integer
+      attr_accessor :singleton_classes
+
+      #: Integer
+      attr_accessor :methods_without_sig
+
+      #: Integer
+      attr_accessor :methods_with_sig
+
+      #: Integer
+      attr_accessor :calls_untyped
+
+      #: Integer
+      attr_accessor :calls_typed
+
+      #: Hash[String, Integer]
+      attr_accessor :sigils
+
+      #: Integer
+      attr_accessor :methods_with_sig_excluding_rbis
+
+      #: Integer
+      attr_accessor :methods_without_sig_excluding_rbis
+
+      #: Hash[String, Integer]
+      attr_accessor :sigils_excluding_rbis
+
+      #: (
+      #|   ?timestamp: Integer,
+      #|   ?version_static: String?,
+      #|   ?version_runtime: String?,
+      #|   ?duration: Integer,
+      #|   ?commit_sha: String?,
+      #|   ?commit_timestamp: Integer?,
+      #|   ?files: Integer,
+      #|   ?rbi_files: Integer,
+      #|   ?modules: Integer,
+      #|   ?classes: Integer,
+      #|   ?singleton_classes: Integer,
+      #|   ?methods_without_sig: Integer,
+      #|   ?methods_with_sig: Integer,
+      #|   ?calls_untyped: Integer,
+      #|   ?calls_typed: Integer,
+      #|   ?sigils: Hash[String, Integer],
+      #|   ?methods_with_sig_excluding_rbis: Integer,
+      #|   ?methods_without_sig_excluding_rbis: Integer,
+      #|   ?sigils_excluding_rbis: Hash[String, Integer],
+      #|  ) -> void
+      def initialize(
+        timestamp: Time.new.getutc.to_i,
+        version_static: nil,
+        version_runtime: nil,
+        duration: 0,
+        commit_sha: nil,
+        commit_timestamp: nil,
+        files: 0,
+        rbi_files: 0,
+        modules: 0,
+        classes: 0,
+        singleton_classes: 0,
+        methods_without_sig: 0,
+        methods_with_sig: 0,
+        calls_untyped: 0,
+        calls_typed: 0,
+        sigils: Hash.new(0),
+        methods_with_sig_excluding_rbis: 0,
+        methods_without_sig_excluding_rbis: 0,
+        sigils_excluding_rbis: Hash.new(0)
+      )
+        @timestamp = timestamp
+        @version_static = version_static
+        @version_runtime = version_runtime
+        @duration = duration
+        @commit_sha = commit_sha
+        @commit_timestamp = commit_timestamp
+        @files = files
+        @rbi_files = rbi_files
+        @modules = modules
+        @classes = classes
+        @singleton_classes = singleton_classes
+        @methods_without_sig = methods_without_sig
+        @methods_with_sig = methods_with_sig
+        @calls_untyped = calls_untyped
+        @calls_typed = calls_typed
+        @sigils = sigils
+        @methods_with_sig_excluding_rbis = methods_with_sig_excluding_rbis
+        @methods_without_sig_excluding_rbis = methods_without_sig_excluding_rbis
+        @sigils_excluding_rbis = sigils_excluding_rbis
+      end
 
       # The strictness name as found in the Sorbet metrics file
       STRICTNESSES = ["ignore", "false", "true", "strict", "strong", "stdlib"].freeze #: Array[String]
@@ -35,7 +135,33 @@ module Spoom
 
       #: (*untyped arg) -> String
       def to_json(*arg)
-        serialize.to_json(*arg)
+        to_h #: untyped
+          .to_json(*arg)
+      end
+
+      #: -> Hash[String, untyped]
+      def to_h
+        {
+          "timestamp" => timestamp,
+          "version_static" => version_static,
+          "version_runtime" => version_runtime,
+          "duration" => duration,
+          "commit_sha" => commit_sha,
+          "commit_timestamp" => commit_timestamp,
+          "files" => files,
+          "rbi_files" => rbi_files,
+          "modules" => modules,
+          "classes" => classes,
+          "singleton_classes" => singleton_classes,
+          "methods_with_sig" => methods_with_sig,
+          "methods_without_sig" => methods_without_sig,
+          "calls_typed" => calls_typed,
+          "calls_untyped" => calls_untyped,
+          "sigils" => sigils,
+          "methods_with_sig_excluding_rbis" => methods_with_sig_excluding_rbis,
+          "methods_without_sig_excluding_rbis" => methods_without_sig_excluding_rbis,
+          "sigils_excluding_rbis" => sigils_excluding_rbis,
+        }
       end
 
       class << self
