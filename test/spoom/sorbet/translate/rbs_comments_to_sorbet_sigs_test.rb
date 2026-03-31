@@ -540,6 +540,24 @@ module Spoom
           RB
         end
 
+        def test_translate_type_alias_as_leading_comment_on_class
+          contents = <<~RB
+            module Foo
+              #: type serialized_range = [Integer, Integer]
+              class Range
+              end
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            module Foo
+              SerializedRange = T.type_alias { [Integer, Integer] }
+              class Range
+              end
+            end
+          RB
+        end
+
         def test_translate_type_alias_with_generics
           contents = <<~RB
             #: type list = Array[Integer]

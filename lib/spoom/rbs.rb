@@ -105,6 +105,10 @@ module Spoom
               location = location.join(continuation_comment.location)
             end
             continuation_comments.clear
+
+            # Type aliases are handled in RBSCommentsToSorbetSigs#collect_type_aliases
+            next if string.start_with?("type ")
+
             res.signatures << Signature.new(string, location)
           elsif string.start_with?("#|")
             continuation_comments << comment
