@@ -620,6 +620,16 @@ module Spoom
           RB
         end
 
+        def test_translate_non_rbs_comment_as_leading_comment_on_class
+          contents = <<~RB
+            #: not a valid rbs comment
+            class Foo
+            end
+          RB
+
+          assert_equal(contents, rbs_comments_to_sorbet_sigs(contents))
+        end
+
         private
 
         #: (String, ?max_line_length: Integer?) -> String

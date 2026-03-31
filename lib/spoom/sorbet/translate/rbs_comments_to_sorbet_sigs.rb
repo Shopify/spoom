@@ -202,6 +202,9 @@ module Spoom
           signatures = comments.signatures
           if signatures.any?
             signatures.each do |signature|
+              # Only type param signatures (e.g. `#: [A, B]`) are valid on class/module nodes
+              next unless signature.string.start_with?("[")
+
               type_params = ::RBS::Parser.parse_type_params(signature.string)
               next if type_params.empty?
 
