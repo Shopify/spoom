@@ -32,12 +32,30 @@ module Spoom
       #: bool
       attr_accessor :no_stdlib
 
+      #: String?
+      attr_accessor :cache_dir
+
+      #: Symbol?
+      attr_accessor :parser
+
+      #: bool
+      attr_accessor :use_rbs
+
+      #: -> bool
+      def parse_with_prism? = @parser == :prism
+
+      #: -> bool
+      def use_rbs? = @use_rbs
+
       #: -> void
       def initialize
         @paths = [] #: Array[String]
         @ignore = [] #: Array[String]
         @allowed_extensions = [] #: Array[String]
         @no_stdlib = false #: bool
+        @cache_dir = nil #: String?
+        @parser = nil #: Symbol?
+        @use_rbs = false #: bool
       end
 
       #: -> Config
@@ -47,6 +65,9 @@ module Spoom
         new_config.ignore.concat(@ignore)
         new_config.allowed_extensions.concat(@allowed_extensions)
         new_config.no_stdlib = @no_stdlib
+        new_config.cache_dir = @cache_dir
+        new_config.parser = @parser
+        new_config.use_rbs = @use_rbs
         new_config
       end
 
@@ -69,6 +90,8 @@ module Spoom
         opts.concat(ignore.map { |p| "--ignore '#{p}'" })
         opts.concat(allowed_extensions.map { |ext| "--allowed-extension '#{ext}'" })
         opts << "--no-stdlib" if @no_stdlib
+        opts << "--cache-dir='#{@cache_dir}'" if @cache_dir
+        opts << "--parser=#{@parser}" if @parser
         opts.join(" ")
       end
 
@@ -110,6 +133,16 @@ module Spoom
             when /^--no-stdlib(=|$)/
               config.no_stdlib = parse_bool_option(line)
               next
+            when /^--cache-dir=/
+              value = parse_option(line)
+              config.cache_dir = value.empty? ? nil : value
+              next
+            when /^--parser=/
+              config.parser = parse_option(line).to_sym
+              next
+            when /^--enable-experimental-rbs-(comments|signatures|assertions)(=|$)/
+              config.use_rbs = parse_bool_option(line)
+              next
             when /^--.*=/
               next
             when /^--/
@@ -141,7 +174,7 @@ module Spoom
 
         #: (String line) -> String
         def parse_option(line)
-          T.must(line.split("=").last).strip
+          T.must(line.split("=", 2).last).strip
         end
 
         #: (String line) -> bool

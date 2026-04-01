@@ -2604,6 +2604,11 @@ class Spoom::Sorbet::Config
   def allowed_extensions; end
   def allowed_extensions=(_arg0); end
 
+  sig { returns(T.nilable(::String)) }
+  def cache_dir; end
+
+  def cache_dir=(_arg0); end
+
   sig { returns(::Spoom::Sorbet::Config) }
   def copy; end
 
@@ -2618,10 +2623,26 @@ class Spoom::Sorbet::Config
   sig { returns(::String) }
   def options_string; end
 
+  sig { returns(T::Boolean) }
+  def parse_with_prism?; end
+
+  sig { returns(T.nilable(::Symbol)) }
+  def parser; end
+
+  def parser=(_arg0); end
+
   sig { returns(T::Array[::String]) }
   def paths; end
 
   def paths=(_arg0); end
+
+  sig { returns(T::Boolean) }
+  def use_rbs; end
+
+  def use_rbs=(_arg0); end
+
+  sig { returns(T::Boolean) }
+  def use_rbs?; end
 
   class << self
     sig { params(sorbet_config_path: ::String).returns(::Spoom::Sorbet::Config) }
