@@ -133,6 +133,21 @@ module Spoom
         refute_predicate(config, :no_stdlib)
       end
 
+      def test_cache_dir_defaults_to_nil
+        config = Spoom::Sorbet::Config.parse_string(".")
+        assert_nil(config.cache_dir)
+      end
+
+      def test_parses_cache_dir
+        config = Spoom::Sorbet::Config.parse_string("--cache-dir=/tmp/sorbet-cache")
+        assert_equal("/tmp/sorbet-cache", config.cache_dir)
+      end
+
+      def test_parses_empty_cache_dir_as_nil
+        config = Spoom::Sorbet::Config.parse_string("--cache-dir=")
+        assert_nil(config.cache_dir)
+      end
+
       def test_parses_parser_option_prism
         config = Spoom::Sorbet::Config.parse_string(<<~CONFIG)
           .

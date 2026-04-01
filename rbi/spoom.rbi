@@ -2604,6 +2604,11 @@ class Spoom::Sorbet::Config
   def allowed_extensions; end
   def allowed_extensions=(_arg0); end
 
+  sig { returns(T.nilable(::String)) }
+  def cache_dir; end
+
+  def cache_dir=(_arg0); end
+
   sig { returns(::Spoom::Sorbet::Config) }
   def copy; end
 
