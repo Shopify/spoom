@@ -38,8 +38,14 @@ module Spoom
       #: Symbol?
       attr_accessor :parser
 
+      #: bool
+      attr_accessor :use_rbs
+
       #: -> bool
       def parse_with_prism? = @parser == :prism
+
+      #: -> bool
+      def use_rbs? = @use_rbs
 
       #: -> void
       def initialize
@@ -49,6 +55,7 @@ module Spoom
         @no_stdlib = false #: bool
         @cache_dir = nil #: String?
         @parser = nil #: Symbol?
+        @use_rbs = false #: bool
       end
 
       #: -> Config
@@ -60,6 +67,7 @@ module Spoom
         new_config.no_stdlib = @no_stdlib
         new_config.cache_dir = @cache_dir
         new_config.parser = @parser
+        new_config.use_rbs = @use_rbs
         new_config
       end
 
@@ -131,6 +139,9 @@ module Spoom
               next
             when /^--parser=/
               config.parser = parse_option(line).to_sym
+              next
+            when /^--enable-experimental-rbs-(comments|signatures|assertions)(=|$)/
+              config.use_rbs = parse_bool_option(line)
               next
             when /^--.*=/
               next

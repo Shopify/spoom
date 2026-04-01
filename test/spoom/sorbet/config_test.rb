@@ -172,6 +172,36 @@ module Spoom
         refute_predicate(config, :parse_with_prism?)
       end
 
+      def test_use_rbs_defaults_to_false
+        config = Spoom::Sorbet::Config.parse_string(".")
+        refute_predicate(config, :use_rbs?)
+      end
+
+      def test_use_rbs_with_rbs_comments
+        config = Spoom::Sorbet::Config.parse_string("--enable-experimental-rbs-comments")
+        assert_predicate(config, :use_rbs?)
+      end
+
+      def test_use_rbs_with_rbs_signatures
+        config = Spoom::Sorbet::Config.parse_string("--enable-experimental-rbs-signatures")
+        assert_predicate(config, :use_rbs?)
+      end
+
+      def test_use_rbs_with_rbs_assertions
+        config = Spoom::Sorbet::Config.parse_string("--enable-experimental-rbs-assertions")
+        assert_predicate(config, :use_rbs?)
+      end
+
+      def test_use_rbs_equals_false
+        config = Spoom::Sorbet::Config.parse_string("--enable-experimental-rbs-comments=false")
+        refute_predicate(config, :use_rbs?)
+      end
+
+      def test_use_rbs_equals_true
+        config = Spoom::Sorbet::Config.parse_string("--enable-experimental-rbs-comments=true")
+        assert_predicate(config, :use_rbs?)
+      end
+
       def test_parses_a_config_string_with_mixed_options
         config = Spoom::Sorbet::Config.parse_string(<<~CONFIG)
           a

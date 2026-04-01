@@ -2636,6 +2636,14 @@ class Spoom::Sorbet::Config
 
   def paths=(_arg0); end
 
+  sig { returns(T::Boolean) }
+  def use_rbs; end
+
+  def use_rbs=(_arg0); end
+
+  sig { returns(T::Boolean) }
+  def use_rbs?; end
+
   class << self
     sig { params(sorbet_config_path: ::String).returns(::Spoom::Sorbet::Config) }
     def parse_file(sorbet_config_path); end
