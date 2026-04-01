@@ -2632,6 +2632,9 @@ class Spoom::Sorbet::Config
 
     private
 
+    sig { params(line: ::String).returns(T::Boolean) }
+    def parse_bool_option(line); end
+
     sig { params(line: ::String).returns(::String) }
     def parse_option(line); end
   end
