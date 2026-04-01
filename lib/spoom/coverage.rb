@@ -15,7 +15,7 @@ module Spoom
         config = context.sorbet_config
         config.allowed_extensions.push(".rb", ".rbi") if config.allowed_extensions.empty?
 
-        new_config = config.copy
+        new_config = config.dup
         new_config.allowed_extensions.reject! { |ext| !rbi && ext == ".rbi" }
         flags = [
           "--no-config",
