@@ -32,12 +32,19 @@ module Spoom
       #: bool
       attr_accessor :no_stdlib
 
+      #: Symbol?
+      attr_accessor :parser
+
+      #: -> bool
+      def parse_with_prism? = @parser == :prism
+
       #: -> void
       def initialize
         @paths = [] #: Array[String]
         @ignore = [] #: Array[String]
         @allowed_extensions = [] #: Array[String]
         @no_stdlib = false #: bool
+        @parser = nil #: Symbol?
       end
 
       #: -> Config
@@ -47,6 +54,7 @@ module Spoom
         new_config.ignore.concat(@ignore)
         new_config.allowed_extensions.concat(@allowed_extensions)
         new_config.no_stdlib = @no_stdlib
+        new_config.parser = @parser
         new_config
       end
 
@@ -69,6 +77,7 @@ module Spoom
         opts.concat(ignore.map { |p| "--ignore '#{p}'" })
         opts.concat(allowed_extensions.map { |ext| "--allowed-extension '#{ext}'" })
         opts << "--no-stdlib" if @no_stdlib
+        opts << "--parser=#{@parser}" if @parser
         opts.join(" ")
       end
 
@@ -109,6 +118,9 @@ module Spoom
               next
             when /^--no-stdlib(=|$)/
               config.no_stdlib = parse_bool_option(line)
+              next
+            when /^--parser=/
+              config.parser = parse_option(line).to_sym
               next
             when /^--.*=/
               next

@@ -133,6 +133,30 @@ module Spoom
         refute_predicate(config, :no_stdlib)
       end
 
+      def test_parses_parser_option_prism
+        config = Spoom::Sorbet::Config.parse_string(<<~CONFIG)
+          .
+          --parser=prism
+        CONFIG
+        assert_equal(:prism, config.parser)
+        assert_predicate(config, :parse_with_prism?)
+      end
+
+      def test_parses_parser_option_original
+        config = Spoom::Sorbet::Config.parse_string(<<~CONFIG)
+          .
+          --parser=original
+        CONFIG
+        assert_equal(:original, config.parser)
+        refute_predicate(config, :parse_with_prism?)
+      end
+
+      def test_parser_defaults_to_nil
+        config = Spoom::Sorbet::Config.parse_string(".")
+        assert_nil(config.parser)
+        refute_predicate(config, :parse_with_prism?)
+      end
+
       def test_parses_a_config_string_with_mixed_options
         config = Spoom::Sorbet::Config.parse_string(<<~CONFIG)
           a

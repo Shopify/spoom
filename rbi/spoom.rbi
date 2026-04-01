@@ -2618,6 +2618,14 @@ class Spoom::Sorbet::Config
   sig { returns(::String) }
   def options_string; end
 
+  sig { returns(T::Boolean) }
+  def parse_with_prism?; end
+
+  sig { returns(T.nilable(::Symbol)) }
+  def parser; end
+
+  def parser=(_arg0); end
+
   sig { returns(T::Array[::String]) }
   def paths; end
 
