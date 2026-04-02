@@ -100,7 +100,7 @@ module Spoom
       #: (Context context) -> FileTree
       def file_tree(context)
         config = context.sorbet_config
-        config.ignore += ["test"]
+        config.ignore << "test"
 
         files = context.srb_files(with_config: config, include_rbis: false)
         FileTree.new(files)
