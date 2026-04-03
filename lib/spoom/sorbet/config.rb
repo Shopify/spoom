@@ -40,14 +40,6 @@ module Spoom
         @no_stdlib = false #: bool
       end
 
-      #: (Config source) -> void
-      def initialize_copy(source)
-        super
-        @paths = @paths.dup
-        @ignore = @ignore.dup
-        @allowed_extensions = @allowed_extensions.dup
-      end
-
       # Returns self as a string of options that can be passed to Sorbet
       #
       # Example:
