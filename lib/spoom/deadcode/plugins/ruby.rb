@@ -33,6 +33,12 @@ module Spoom
             if last_arg.is_a?(Prism::SymbolNode) || last_arg.is_a?(Prism::StringNode)
               @index.reference_method(last_arg.unescaped, send.location)
             end
+          when "dup"
+            @index.reference_method("initialize_dup", send.location)
+            @index.reference_method("initialize_copy", send.location)
+          when "clone"
+            @index.reference_method("initialize_clone", send.location)
+            @index.reference_method("initialize_copy", send.location)
           when "method"
             arg = send.args.first
             @index.reference_method(arg.unescaped, send.location) if arg.is_a?(Prism::SymbolNode)

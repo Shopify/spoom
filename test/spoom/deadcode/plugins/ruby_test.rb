@@ -163,6 +163,38 @@ module Spoom
           assert_dead(index, "DEAD")
         end
 
+        def test_alive_initialize_copy_with_dup
+          @project.write!("foo.rb", <<~RB)
+            def initialize_copy(source); end # called by both `#dup` and `#clone`
+            def initialize_dup(source);  end # only called by `#dup`
+
+            def initialize_clone(source); end # dead
+
+            obj.dup
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "initialize_copy")
+          assert_alive(index, "initialize_dup")
+          assert_dead(index, "initialize_clone")
+        end
+
+        def test_alive_initialize_copy_with_clone
+          @project.write!("foo.rb", <<~RB)
+            def initialize_copy(source);  end # called by both `#dup` and `#clone`
+            def initialize_clone(source); end # only called by `#clone`
+
+            def initialize_dup(source); end # dead
+
+            obj.clone
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "initialize_copy")
+          assert_alive(index, "initialize_clone")
+          assert_dead(index, "initialize_dup")
+        end
+
         def test_alive_methods_with_method
           @project.write!("foo.rb", <<~RB)
             def alive1; end
