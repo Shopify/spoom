@@ -13,7 +13,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    ansi (1.5.0)
+    ansi (1.6.0)
     ast (2.4.3)
     benchmark (0.5.0)
     builder (3.3.0)
@@ -33,17 +33,17 @@ GEM
     language_server-protocol (3.17.0.5)
     lint_roller (1.1.0)
     logger (1.7.0)
-    minitest (6.0.2)
+    minitest (6.0.3)
       drb (~> 2.0)
       prism (~> 1.5)
     minitest-mock (5.27.0)
-    minitest-reporters (1.7.1)
+    minitest-reporters (1.8.0)
       ansi
       builder
-      minitest (>= 5.0)
+      minitest (>= 5.0, < 7)
       ruby-progressbar
     netrc (0.11.0)
-    parallel (1.27.0)
+    parallel (1.28.0)
     parser (3.3.10.1)
       ast (~> 2.4.1)
       racc
@@ -57,9 +57,9 @@ GEM
     racc (1.8.1)
     rainbow (3.1.1)
     rake (13.3.1)
-    rbi (0.3.9)
+    rbi (0.3.10)
       prism (~> 1.0)
-      rbs (>= 3.4.4)
+      rbs (>= 4.0.1)
     rbs (4.0.2)
       logger
       prism (>= 1.6.0)
@@ -93,36 +93,34 @@ GEM
       lint_roller
       rubocop (>= 1.75.2)
     ruby-progressbar (1.13.0)
-    sorbet (0.6.13067)
-      sorbet-static (= 0.6.13067)
-    sorbet-runtime (0.6.13067)
-    sorbet-static (0.6.13067-universal-darwin)
-    sorbet-static (0.6.13067-x86_64-linux)
-    sorbet-static-and-runtime (0.6.13067)
-      sorbet (= 0.6.13067)
-      sorbet-runtime (= 0.6.13067)
+    rubydex (0.1.0.beta11-arm64-darwin)
+    rubydex (0.1.0.beta11-x86_64-linux)
+    sorbet (0.6.13096)
+      sorbet-static (= 0.6.13096)
+    sorbet-runtime (0.6.13096)
+    sorbet-static (0.6.13096-universal-darwin)
+    sorbet-static (0.6.13096-x86_64-linux)
+    sorbet-static-and-runtime (0.6.13096)
+      sorbet (= 0.6.13096)
+      sorbet-runtime (= 0.6.13096)
     stringio (3.2.0)
-    tapioca (0.18.0)
+    tapioca (0.19.0)
       benchmark
       bundler (>= 2.2.25)
       netrc (>= 0.11.0)
       parallel (>= 1.21.0)
       rbi (>= 0.3.7)
       require-hooks (>= 0.2.2)
+      rubydex (>= 0.1.0.beta10)
       sorbet-static-and-runtime (>= 0.5.11087)
       spoom (>= 1.7.9)
       thor (>= 1.2.0)
       tsort
-      yard-sorbet
     thor (1.5.0)
     tsort (0.2.0)
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
     unicode-emoji (4.2.0)
-    yard (0.9.38)
-    yard-sorbet (0.9.0)
-      sorbet-runtime
-      yard
 
 PLATFORMS
   arm64-darwin-21
