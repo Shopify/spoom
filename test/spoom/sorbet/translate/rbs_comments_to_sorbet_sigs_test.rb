@@ -560,7 +560,7 @@ module Spoom
 
           assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
             class Example
-              Status = T.type_alias { ::T.untyped }
+              Status = T.type_alias { Symbol }
 
               sig { returns(Status) }
               def get_status
