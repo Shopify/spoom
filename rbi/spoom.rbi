@@ -3023,6 +3023,9 @@ class Spoom::Sorbet::Translate::SorbetSigsToRBSComments < ::Spoom::Sorbet::Trans
 
   private
 
+  sig { params(sig_node: ::Prism::CallNode, out: ::String).returns(::String) }
+  def add_inline_sig_comments(sig_node, out); end
+
   sig do
     params(
       parent: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode),
