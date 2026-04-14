@@ -22,6 +22,7 @@ module Spoom
           node, comments = Spoom.parse_ruby(ruby_contents, file: file)
           @node = node #: Prism::Node
           @comments = comments #: Array[Prism::Comment]
+          @comments_by_line = comments.to_h { |comment| [comment.location.start_line, comment] } #: Hash[Integer, Prism::Comment]
           @ruby_bytes = ruby_contents.bytes #: Array[Integer]
           @rewriter = Spoom::Source::Rewriter.new #: Source::Rewriter
         end

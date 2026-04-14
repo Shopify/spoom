@@ -78,6 +78,7 @@ module Spoom
             out = rbs_print(node.location.start_column) do |printer|
               printer.print_method_sig(rbi_node, sig)
             end
+            out = add_sig_comments(node, out)
             @rewriter << Source::Replace.new(node.location.start_offset, node.location.end_offset, out)
           end
 
@@ -179,7 +180,7 @@ module Spoom
         def visit_sig(node)
           return unless sorbet_sig?(node)
 
-          builder = RBI::Parser::SigBuilder.new(@ruby_contents, file: @file)
+          builder = RBI::Parser::SigBuilder.new(@ruby_contents, comments_by_line: @comments_by_line, file: @file)
           builder.current.loc = node.location
           builder.visit_call_node(node)
           builder.current.comments = []
@@ -207,6 +208,7 @@ module Spoom
             out = rbs_print(node.location.start_column) do |printer|
               printer.print_attr_sig(rbi_node, sig)
             end
+            out = add_sig_comments(node, out)
             @rewriter << Source::Replace.new(node.location.start_offset, node.location.end_offset, out)
           end
         end
@@ -377,6 +379,20 @@ module Spoom
           end
 
           @extend_t_generics.clear
+        end
+
+        # `RBI::SigBuilder` consumes parameter comments and attaches them to `RBI::SigParam`.
+        # Preserve any other comments left inside the sig body, like comments before `returns`.
+        #: (Prism::CallNode, String) -> String
+        def add_sig_comments(sig_node, out)
+          comments = @comments_by_line.values.select do |comment|
+            comment.location.start_offset > sig_node.location.start_offset &&
+              comment.location.end_offset <= sig_node.location.end_offset
+          end
+          return out if comments.empty?
+
+          indent = " " * sig_node.location.start_column
+          comments.map { |comment| "#{comment.slice}\n#{indent}" }.join + out
         end
 
         # Collects the last signatures visited and clears the current list
