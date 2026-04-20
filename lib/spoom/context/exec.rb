@@ -4,11 +4,26 @@
 require "shellwords"
 
 module Spoom
-  class ExecResult < T::Struct
-    const :out, String
-    const :err, T.nilable(String)
-    const :status, T::Boolean
-    const :exit_code, Integer
+  class ExecResult
+    #: String
+    attr_reader :out
+
+    #: String?
+    attr_reader :err
+
+    #: bool
+    attr_reader :status
+
+    #: Integer
+    attr_reader :exit_code
+
+    #: (out: String, status: bool, exit_code: Integer, ?err: String?) -> void
+    def initialize(out:, status:, exit_code:, err: nil)
+      @out = out
+      @err = err
+      @status = status
+      @exit_code = exit_code
+    end
 
     #: -> String
     def to_s
