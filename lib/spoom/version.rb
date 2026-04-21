@@ -2,5 +2,5 @@
 # frozen_string_literal: true
 
 module Spoom
-  VERSION = "1.7.12"
+  VERSION = "1.7.13"
 end
