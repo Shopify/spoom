@@ -149,6 +149,7 @@ module Spoom
 
             #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("rbs")}
             #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("tapioca")}
+            #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("sorbet-static-and-runtime")}
 
             gem "#{spec.name}", path: "#{copy_context.absolute_path}"
           GEMFILE
