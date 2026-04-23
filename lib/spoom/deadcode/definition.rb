@@ -5,26 +5,33 @@ module Spoom
   module Deadcode
     # A definition is a class, module, method, constant, etc. being defined in the code
     class Definition < T::Struct
-      class Kind < T::Enum
-        enums do
-          AttrReader = new("attr_reader")
-          AttrWriter = new("attr_writer")
-          Class = new("class")
-          Constant = new("constant")
-          Method = new("method")
-          Module = new("module")
+      class Kind
+        #: (String) -> void
+        def initialize(name)
+          @name = name
         end
+
+        # @override
+        #: -> String
+        def to_s
+          @name
+        end
+
+        AttrReader = new("attr_reader") #: Kind
+        AttrWriter = new("attr_writer") #: Kind
+        Class = new("class") #: Kind
+        Constant = new("constant") #: Kind
+        Method = new("method") #: Kind
+        Module = new("module") #: Kind
       end
 
-      class Status < T::Enum
-        enums do
-          # A definition is marked as `ALIVE` if it has at least one reference with the same name
-          ALIVE = new
-          # A definition is marked as `DEAD` if it has no reference with the same name
-          DEAD = new
-          # A definition can be marked as `IGNORED` if it is not relevant for the analysis
-          IGNORED = new
-        end
+      class Status
+        # A definition is marked as `ALIVE` if it has at least one reference with the same name
+        ALIVE = new #: Status
+        # A definition is marked as `DEAD` if it has no reference with the same name
+        DEAD = new #: Status
+        # A definition can be marked as `IGNORED` if it is not relevant for the analysis
+        IGNORED = new #: Status
       end
 
       const :kind, Kind
