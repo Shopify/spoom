@@ -466,6 +466,59 @@ module Spoom
           RBS
         end
 
+        def test_translate_to_rbs_sig_with_inline_param_comments
+          contents = <<~RB
+            sig do
+              params(
+                # First param
+                a: Integer,
+                # Second param
+                b: String
+              ).void
+            end
+            def foo(a, b); end
+
+            sig do
+              # A comment
+              returns(Integer)
+            end
+            attr_reader :x
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            # First param
+            # Second param
+            #: (Integer a, String b) -> void
+            def foo(a, b); end
+
+            # A comment
+            #: Integer
+            attr_reader :x
+          RBS
+        end
+
+        def test_translate_to_rbs_sig_with_inline_param_comments_indented
+          contents = <<~RB
+            class Foo
+              sig do
+                params(
+                  # First param
+                  a: Integer
+                ).void
+              end
+              def foo(a); end
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            class Foo
+              # First param
+              #: (Integer a) -> void
+              def foo(a); end
+            end
+          RBS
+        end
+
         def test_translate_to_rbs_defs_within_send
           contents = <<~RB
             sig { void }
