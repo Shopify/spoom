@@ -305,7 +305,7 @@ module Spoom
           end
 
           if sigs.any? { |_, sig| sig.is_overridable }
-            @rewriter << Source::Insert.new(insert_pos, "# @overridable\n")
+            @rewriter << Source::Insert.new(insert_pos, "# @overridable\n#{indent}")
           end
         end
 
