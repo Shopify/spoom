@@ -159,6 +159,23 @@ module Spoom
           RBS
         end
 
+        def test_translate_to_rbs_method_sigs_with_overridable_annotation_indented
+          contents = <<~RB
+            class Foo
+              sig { overridable.params(x: Integer).returns(String) }
+              def foo(x); end
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            class Foo
+              # @overridable
+              #: (Integer x) -> String
+              def foo(x); end
+            end
+          RBS
+        end
+
         def test_translate_to_rbs_method_sigs_with_override_annotations
           contents = <<~RB
             sig { override(allow_incompatible: true).void }
