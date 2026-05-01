@@ -461,6 +461,83 @@ module Spoom
           refute(result.status)
         end
 
+        def test_ignore_errors_all_ignored
+          @project.write!("sorbet/ignored_errors.cfg", <<~CFG)
+            # Ignore all errors in errors/errors.rb
+            5002:errors/errors.rb:5
+            7003:errors/errors.rb:5
+            7004:errors/errors.rb:10
+            7003:errors/errors.rb:11
+            7004:errors/errors.rb:11
+          CFG
+          result = @project.spoom("srb tc --no-color")
+          assert_equal(<<~MSG, result.err)
+            Errors: 7 ignored, 7 total
+          MSG
+          assert(result.status)
+        end
+
+        def test_ignore_errors_partial
+          @project.write!("sorbet/ignored_errors.cfg", <<~CFG)
+            5002:errors/errors.rb:5
+          CFG
+          result = @project.spoom("srb tc --no-color")
+          assert_equal(<<~MSG, result.err)
+            7003 - errors/errors.rb:5: Method `params` does not exist on `T.class_of(Foo)`
+            7003 - errors/errors.rb:5: Method `sig` does not exist on `T.class_of(Foo)`
+            7004 - errors/errors.rb:10: Wrong number of arguments for constructor. Expected: `0`, got: `1`
+            7003 - errors/errors.rb:11: Method `c` does not exist on `T.class_of(<root>)`
+            7004 - errors/errors.rb:11: Too many arguments provided for method `Foo#foo`. Expected: `1`, got: `2`
+            Errors: 2 ignored, 7 total
+          MSG
+          refute(result.status)
+        end
+
+        def test_ignore_errors_with_custom_path
+          @project.write!("custom_ignores.cfg", <<~CFG)
+            5002:errors/errors.rb:5
+            7003:errors/errors.rb:5
+            7004:errors/errors.rb:10
+            7003:errors/errors.rb:11
+            7004:errors/errors.rb:11
+          CFG
+          result = @project.spoom("srb tc --no-color --ignore-errors=custom_ignores.cfg")
+          assert_equal(<<~MSG, result.err)
+            Errors: 7 ignored, 7 total
+          MSG
+          assert(result.status)
+        end
+
+        def test_ignore_errors_with_comments_and_blank_lines
+          @project.write!("sorbet/ignored_errors.cfg", <<~CFG)
+            # This is a comment
+
+            5002:errors/errors.rb:5
+
+            # Another comment
+          CFG
+          result = @project.spoom("srb tc --no-color")
+          assert_equal(<<~MSG, result.err)
+            7003 - errors/errors.rb:5: Method `params` does not exist on `T.class_of(Foo)`
+            7003 - errors/errors.rb:5: Method `sig` does not exist on `T.class_of(Foo)`
+            7004 - errors/errors.rb:10: Wrong number of arguments for constructor. Expected: `0`, got: `1`
+            7003 - errors/errors.rb:11: Method `c` does not exist on `T.class_of(<root>)`
+            7004 - errors/errors.rb:11: Too many arguments provided for method `Foo#foo`. Expected: `1`, got: `2`
+            Errors: 2 ignored, 7 total
+          MSG
+          refute(result.status)
+        end
+
+        def test_ignore_errors_stale_entry
+          @project.write!("sorbet/ignored_errors.cfg", <<~CFG)
+            5002:errors/errors.rb:5
+            9999:nonexistent.rb:1
+          CFG
+          result = @project.spoom("srb tc --no-color")
+          assert_includes(result.err, "Stale entry in ignore file: 9999:nonexistent.rb:1")
+          refute(result.status)
+        end
+
         def test_deprecated_command_spoom_tc
           @project.remove!("errors")
           result = @project.spoom("tc --no-color")

@@ -2656,6 +2656,9 @@ class Spoom::Sorbet::Error::Segfault < ::Spoom::Sorbet::Error; end
 
 module Spoom::Sorbet::Errors
   class << self
+    sig { params(path: ::String).returns(T::Set[[::Integer, ::String, ::Integer]]) }
+    def parse_ignored_errors(path); end
+
     sig { params(errors: T::Array[::Spoom::Sorbet::Errors::Error]).returns(T::Array[::Spoom::Sorbet::Errors::Error]) }
     def sort_errors_by_code(errors); end
 
@@ -2665,6 +2668,7 @@ module Spoom::Sorbet::Errors
 end
 
 Spoom::Sorbet::Errors::DEFAULT_ERROR_URL_BASE = T.let(T.unsafe(nil), String)
+Spoom::Sorbet::Errors::DEFAULT_IGNORED_ERRORS_PATH = T.let(T.unsafe(nil), String)
 
 class Spoom::Sorbet::Errors::Error
   include ::Comparable
