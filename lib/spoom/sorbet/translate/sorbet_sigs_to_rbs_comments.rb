@@ -78,6 +78,7 @@ module Spoom
             out = rbs_print(node.location.start_column) do |printer|
               printer.print_method_sig(rbi_node, sig)
             end
+            out = add_inline_sig_comments(node, out)
             @rewriter << Source::Replace.new(node.location.start_offset, node.location.end_offset, out)
           end
 
@@ -207,6 +208,7 @@ module Spoom
             out = rbs_print(node.location.start_column) do |printer|
               printer.print_attr_sig(rbi_node, sig)
             end
+            out = add_inline_sig_comments(node, out)
             @rewriter << Source::Replace.new(node.location.start_offset, node.location.end_offset, out)
           end
         end
@@ -377,6 +379,19 @@ module Spoom
           end
 
           @extend_t_generics.clear
+        end
+
+        #: (Prism::CallNode, String) -> String
+        def add_inline_sig_comments(sig_node, out)
+          inline_comments = @comments.select do |comment|
+            comment.location.start_offset > sig_node.location.start_offset &&
+              comment.location.end_offset <= sig_node.location.end_offset
+          end
+          return out if inline_comments.empty?
+
+          indent_str = " " * sig_node.location.start_column
+          comment_string = inline_comments.map { |c| "#{c.slice}\n#{indent_str}" }.join
+          comment_string + out
         end
 
         # Collects the last signatures visited and clears the current list
