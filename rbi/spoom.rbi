@@ -2598,26 +2598,27 @@ Spoom::Sorbet::BIN_PATH = T.let(T.unsafe(nil), String)
 Spoom::Sorbet::CONFIG_PATH = T.let(T.unsafe(nil), String)
 
 class Spoom::Sorbet::Config
-  sig { void }
-  def initialize; end
+  sig do
+    params(
+      paths: T::Array[::String],
+      ignore: T::Array[::String],
+      allowed_extensions: T::Array[::String],
+      no_stdlib: T::Boolean
+    ).void
+  end
+  def initialize(paths: T.unsafe(nil), ignore: T.unsafe(nil), allowed_extensions: T.unsafe(nil), no_stdlib: T.unsafe(nil)); end
 
   def allowed_extensions; end
-  def allowed_extensions=(_arg0); end
   def ignore; end
-  def ignore=(_arg0); end
 
   sig { returns(T::Boolean) }
   def no_stdlib; end
-
-  def no_stdlib=(_arg0); end
 
   sig { returns(::String) }
   def options_string; end
 
   sig { returns(T::Array[::String]) }
   def paths; end
-
-  def paths=(_arg0); end
 
   private
 
