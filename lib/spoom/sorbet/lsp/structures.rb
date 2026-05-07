@@ -13,35 +13,6 @@ module Spoom
       def accept_printer(printer) = raise NotImplementedError, "Abstract method called"
     end
 
-    class Hover < T::Struct
-      include PrintableSymbol
-
-      const :contents, String
-      const :range, T.nilable(Range)
-
-      class << self
-        #: (Hash[untyped, untyped] json) -> Hover
-        def from_json(json)
-          Hover.new(
-            contents: json["contents"]["value"],
-            range: json["range"] ? Range.from_json(json["range"]) : nil,
-          )
-        end
-      end
-
-      # @override
-      #: (SymbolPrinter printer) -> void
-      def accept_printer(printer)
-        printer.print("#{contents}\n")
-        printer.print_object(range) if range
-      end
-
-      #: -> String
-      def to_s
-        "#{contents} (#{range})."
-      end
-    end
-
     class Position < T::Struct
       include PrintableSymbol
 
@@ -97,6 +68,35 @@ module Spoom
       #: -> String
       def to_s
         "#{start}-#{self.end}"
+      end
+    end
+
+    class Hover < T::Struct
+      include PrintableSymbol
+
+      const :contents, String
+      const :range, T.nilable(Range)
+
+      class << self
+        #: (Hash[untyped, untyped] json) -> Hover
+        def from_json(json)
+          Hover.new(
+            contents: json["contents"]["value"],
+            range: json["range"] ? Range.from_json(json["range"]) : nil,
+          )
+        end
+      end
+
+      # @override
+      #: (SymbolPrinter printer) -> void
+      def accept_printer(printer)
+        printer.print("#{contents}\n")
+        printer.print_object(range) if range
+      end
+
+      #: -> String
+      def to_s
+        "#{contents} (#{range})."
       end
     end
 
