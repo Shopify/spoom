@@ -1836,7 +1836,7 @@ class Spoom::LSP::Hover < ::T::Struct
   include ::Spoom::LSP::PrintableSymbol
 
   const :contents, ::String
-  const :range, T.nilable(T::Range[T.untyped])
+  const :range, T.nilable(::Spoom::LSP::Range)
 
   sig { override.params(printer: ::Spoom::LSP::SymbolPrinter).void }
   def accept_printer(printer); end
