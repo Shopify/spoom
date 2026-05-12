@@ -817,7 +817,7 @@ module Spoom
 
         #: (String, ?max_line_length: Integer?) -> String
         def rbs_comments_to_sorbet_sigs(ruby_contents, max_line_length: nil)
-          Translate.rbs_comments_to_sorbet_sigs(ruby_contents, file: "test.rb", max_line_length: max_line_length)
+          RBSCommentsToSorbetSigs.new(ruby_contents, file: "test.rb", max_line_length: max_line_length).rewrite
         end
       end
     end
