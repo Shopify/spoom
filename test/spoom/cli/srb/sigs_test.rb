@@ -76,6 +76,24 @@ module Spoom
           refute(result.status)
         end
 
+        def test_translate_does_not_count_files_with_nothing_to_translate
+          @project.write!("file.rb", <<~RB)
+            # typed: true
+
+            def foo; end
+          RB
+
+          result = @project.spoom("srb sigs translate --from rbs --to rbi --no-color")
+
+          assert_empty(result.err)
+          assert(result.status)
+          assert_equal(<<~OUT, result.out)
+            Translating signatures from `rbs` to `rbi` in `1` file...
+
+            Translated signatures in `0` files.
+          OUT
+        end
+
         def test_translate_only_selected_files
           @project.write!("a/file1.rb", <<~RB)
             sig { void }
