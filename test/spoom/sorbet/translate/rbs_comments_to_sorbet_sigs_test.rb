@@ -678,6 +678,141 @@ module Spoom
           RB
         end
 
+        def test_contains_rbs_syntax_returns_true_for_supported_rbs_annotations
+          [
+            "# @abstract",
+            "# @interface",
+            "# @sealed",
+            "# @final",
+            "# @requires_ancestor:",
+            "# @override",
+            "# @override(allow_incompatible: true)",
+            "# @override(allow_incompatible: false)",
+            "# @override(allow_incompatible: :visibility)",
+            "# @overridable",
+            "# @without_runtime",
+          ].each do |marker|
+            assert(
+              RBSCommentsToSorbetSigs.contains_rbs_syntax?(<<~RB),
+                # typed: true
+
+                #{marker}
+                class Foo; end
+              RB
+              "#contains_rbs_syntax? should return true for files containing #{marker}",
+            )
+          end
+        end
+
+        def test_contains_rbs_syntax_returns_true_for_supported_typed_sigils
+          [
+            "# typed: ignore",
+            "# typed: false",
+            "# typed: true",
+            "# typed: strict",
+            "# typed: strong",
+            "# typed: __STDLIB_INTERNAL",
+          ].each do |sigil|
+            assert(
+              RBSCommentsToSorbetSigs.contains_rbs_syntax?(<<~RB),
+                #{sigil}
+
+                #: -> void
+                def foo; end
+              RB
+              "#contains_rbs_syntax? should return true for files containing #{sigil}",
+            )
+          end
+        end
+
+        def test_contains_rbs_syntax_returns_true_when_typed_sigil_is_after_other_magic_comments
+          assert(RBSCommentsToSorbetSigs.contains_rbs_syntax?(<<~RB))
+            # frozen_string_literal: true
+            # typed: true
+
+            class Foo
+              #: -> String
+              def foo; end
+            end
+          RB
+
+          assert(RBSCommentsToSorbetSigs.contains_rbs_syntax?(<<~RB))
+            # frozen_string_literal: true
+
+            # typed: true
+
+            class Foo
+              #: -> String
+              def foo; end
+            end
+          RB
+        end
+
+        def test_contains_rbs_syntax_returns_true_for_rbs_comments
+          assert(RBSCommentsToSorbetSigs.contains_rbs_syntax?(<<~RB))
+            # typed: true
+
+            class Foo
+              #: -> String
+              def foo; end
+            end
+          RB
+        end
+
+        def test_contains_rbs_syntax_returns_true_for_multiline_rbs_comments
+          assert(RBSCommentsToSorbetSigs.contains_rbs_syntax?(<<~RB))
+            # typed: true
+
+            class Foo
+              #: -> Array[
+              #| String
+              #| ]
+              def foo; end
+            end
+          RB
+        end
+
+        def test_contains_rbs_syntax_returns_false_for_files_without_typed_sigil
+          refute(RBSCommentsToSorbetSigs.contains_rbs_syntax?(<<~RB))
+            #: -> void
+            def foo; end
+          RB
+        end
+
+        def test_contains_rbs_syntax_returns_false_for_files_without_rbs_syntax
+          refute(RBSCommentsToSorbetSigs.contains_rbs_syntax?(<<~RB))
+            # typed: true
+
+            class Foo
+              def foo; end
+            end
+          RB
+        end
+
+        def test_contains_rbs_syntax_returns_false_for_unrelated_yard_tags
+          refute(RBSCommentsToSorbetSigs.contains_rbs_syntax?(<<~RB))
+            # typed: true
+
+            # @param value [String]
+            # @return [String]
+            def foo(value); end
+          RB
+        end
+
+        def test_rewrite_does_not_call_new_for_files_without_rbs_syntax
+          source = <<~RB
+            # typed: true
+
+            class Foo
+              def foo; end
+            end
+          RB
+
+          RBSCommentsToSorbetSigs.stub(:new, ->(*) { flunk("should not be called") }) do
+            assert_equal(source, RBSCommentsToSorbetSigs.rewrite_if_needed(source, file: "test.rb"))
+          end
+        end
+
         private
 
         #: (String, ?max_line_length: Integer?) -> String

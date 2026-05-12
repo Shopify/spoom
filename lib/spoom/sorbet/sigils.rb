@@ -44,6 +44,13 @@ module Spoom
           SIGIL_REGEXP.match(content)&.[](1)
         end
 
+        # returns true if the passed content contains a valid sigil
+        #: (String content) -> bool
+        def contains_valid_sigil?(content)
+          strictness = strictness_in_content(content)
+          !!strictness && valid_strictness?(strictness)
+        end
+
         # returns a string which is the passed content but with the sigil updated to a new strictness
         #: (String content, String new_strictness) -> String
         def update_sigil(content, new_strictness)

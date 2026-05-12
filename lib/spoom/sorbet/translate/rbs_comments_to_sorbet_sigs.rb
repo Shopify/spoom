@@ -7,6 +7,33 @@ module Spoom
       class RBSCommentsToSorbetSigs < Translator
         include Spoom::RBS::ExtractRBSComments
 
+        RBS_ANNOTATION_MARKERS = [
+          "# @abstract",
+          "# @interface",
+          "# @sealed",
+          "# @final",
+          "# @requires_ancestor:",
+          "# @override",
+          "# @overridable",
+          "# @without_runtime",
+        ].freeze #: Array[String]
+        RBS_REWRITE_PATTERN = Regexp.union(["#:", "#|", *RBS_ANNOTATION_MARKERS]).freeze #: Regexp
+        private_constant :RBS_ANNOTATION_MARKERS, :RBS_REWRITE_PATTERN
+
+        class << self
+          #: (String source) -> bool
+          def contains_rbs_syntax?(source)
+            Sigils.contains_valid_sigil?(source) && source.match?(RBS_REWRITE_PATTERN)
+          end
+
+          #: (String ruby_contents, file: String, ?max_line_length: Integer?) -> String
+          def rewrite_if_needed(ruby_contents, file:, max_line_length: nil)
+            return ruby_contents unless contains_rbs_syntax?(ruby_contents)
+
+            new(ruby_contents, file:, max_line_length:).rewrite
+          end
+        end
+
         #: (String, file: String, ?max_line_length: Integer?) -> void
         def initialize(ruby_contents, file:, max_line_length: nil)
           super(ruby_contents, file: file)

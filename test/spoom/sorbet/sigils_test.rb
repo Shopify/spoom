@@ -85,6 +85,12 @@ module Spoom
         refute(Sigils.valid_strictness?(T.must(strictness)))
       end
 
+      def test_contains_valid_sigil
+        assert(Sigils.contains_valid_sigil?("# typed: true\nclass A; end\n"))
+        refute(Sigils.contains_valid_sigil?("class A; end\n"))
+        refute(Sigils.contains_valid_sigil?("# typed: foo\nclass A; end\n"))
+      end
+
       def test_update_sigil_to_use_valid_strictness
         content = <<~STR
           # typed: ignore
