@@ -10,6 +10,7 @@ module Spoom
         DEFAULT_PREFIX = "ruby_typer.unknown."
 
         class << self
+          # Raises if `path` doesn't point to a valid file that we have access to (see `File.read` for details)
           #: (String path, ?String prefix) -> Hash[String, Integer]
           def parse_file(path, prefix = DEFAULT_PREFIX)
             parse_string(File.read(path), prefix)
