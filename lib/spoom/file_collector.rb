@@ -43,7 +43,7 @@ module Spoom
         visit_file(path)
       elsif stat.directory?
         visit_directory(path)
-      else # rubocop:disable Style/EmptyElse
+      else
         # Ignore aliases, sockets, etc.
       end
     end

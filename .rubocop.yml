@@ -21,6 +21,10 @@ Layout/LineLength:
   Enabled: true
   Max: 120
 
+Style/EmptyElse:
+  Enabled: true
+  AllowComments: true
+
 Sorbet:
   Enabled: true
 
