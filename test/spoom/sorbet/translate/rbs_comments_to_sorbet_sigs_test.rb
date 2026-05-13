@@ -678,6 +678,72 @@ module Spoom
           RB
         end
 
+        def test_translate_overloads_translate_all_is_default
+          contents = <<~RB
+            class Foo
+              #: () { (Integer) -> void } -> void
+              #: () -> Enumerator[Integer, void]
+              def each(&block); end
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            class Foo
+              sig { params(block: ::T.proc.params(arg0: Integer).void).void }
+              sig { returns(::T::Enumerator[Integer, void]) }
+              def each(&block); end
+            end
+          RB
+        end
+
+        def test_translate_overloads_translate_last
+          contents = <<~RB
+            class Foo
+              #: () { (Integer) -> void } -> void
+              #: () -> Enumerator[Integer, void]
+              def each(&block); end
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents, overloads_strategy: :translate_last))
+            class Foo
+              sig { returns(::T::Enumerator[Integer, void]) }
+              def each(&block); end
+            end
+          RB
+        end
+
+        def test_translate_overloads_raise
+          contents = <<~RB
+            class Foo
+              #: () { (Integer) -> void } -> void
+              #: () -> Enumerator[Integer, void]
+              def each(&block); end
+            end
+          RB
+
+          error = assert_raises(Translate::Error) do
+            rbs_comments_to_sorbet_sigs(contents, overloads_strategy: :raise)
+          end
+          assert_equal("Method `each` at test.rb:4 has multiple overloaded signatures", error.message)
+        end
+
+        def test_translate_overloads_single_signature_unaffected
+          contents = <<~RB
+            class Foo
+              #: () -> void
+              def foo; end
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents, overloads_strategy: :translate_last))
+            class Foo
+              sig { void }
+              def foo; end
+            end
+          RB
+        end
+
         def test_contains_rbs_syntax_returns_true_for_supported_rbs_annotations
           [
             "# @abstract",
@@ -815,9 +881,14 @@ module Spoom
 
         private
 
-        #: (String, ?max_line_length: Integer?) -> String
-        def rbs_comments_to_sorbet_sigs(ruby_contents, max_line_length: nil)
-          RBSCommentsToSorbetSigs.new(ruby_contents, file: "test.rb", max_line_length: max_line_length).rewrite
+        #: (String, ?max_line_length: Integer?, ?overloads_strategy: Symbol) -> String
+        def rbs_comments_to_sorbet_sigs(ruby_contents, max_line_length: nil, overloads_strategy: :translate_all)
+          RBSCommentsToSorbetSigs.new(
+            ruby_contents,
+            file: "test.rb",
+            max_line_length: max_line_length,
+            overloads_strategy: overloads_strategy,
+          ).rewrite
         end
       end
     end
