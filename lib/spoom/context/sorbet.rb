@@ -42,10 +42,15 @@ module Spoom
           sorbet_bin: sorbet_bin,
           capture_err: capture_err,
         )
-        return unless file?(metrics_file)
 
         metrics_path = absolute_path_to(metrics_file)
-        metrics = Spoom::Sorbet::Metrics::MetricsFileParser.parse_file(metrics_path)
+
+        begin
+          metrics = Spoom::Sorbet::Metrics::MetricsFileParser.parse_file(metrics_path)
+        rescue Errno::ENOENT, Errno::EACCES
+          return
+        end
+
         remove!(metrics_file)
         metrics
       end

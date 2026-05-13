@@ -33,9 +33,15 @@ module Spoom
 
       return if excluded_path?(path)
 
-      if File.file?(path)
+      begin
+        stat = File.stat(path)
+      rescue Errno::ENOENT, Errno::EACCES
+        return
+      end
+
+      if stat.file?
         visit_file(path)
-      elsif File.directory?(path)
+      elsif stat.directory?
         visit_directory(path)
       else # rubocop:disable Style/EmptyElse
         # Ignore aliases, sockets, etc.
