@@ -87,6 +87,10 @@ GEM
     rubocop-ast (1.49.0)
       parser (>= 3.3.7.2)
       prism (~> 1.7)
+    rubocop-minitest (0.38.1)
+      lint_roller (~> 1.1)
+      rubocop (>= 1.75.0, < 2.0)
+      rubocop-ast (>= 1.38.0, < 2.0)
     rubocop-shopify (2.18.0)
       rubocop (~> 1.62)
     rubocop-sorbet (0.12.0)
@@ -137,6 +141,7 @@ DEPENDENCIES
   minitest-mock
   minitest-reporters
   rake (~> 13.4.2)
+  rubocop-minitest
   rubocop-shopify
   rubocop-sorbet
   spoom!

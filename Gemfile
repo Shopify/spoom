@@ -12,5 +12,6 @@ group :development do
   gem "debug"
   gem "rubocop-shopify", require: false
   gem "rubocop-sorbet", require: false
+  gem "rubocop-minitest", require: false
   gem "tapioca", require: false
 end
