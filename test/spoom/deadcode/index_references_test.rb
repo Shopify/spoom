@@ -170,7 +170,7 @@ module Spoom
           when "[]", "!"
             next
           else
-            assert(ref.name =~ /^m(\d+)(=)?$/)
+            assert_match(/^m(\d+)(=)?$/, ref.name)
           end
         end
       end

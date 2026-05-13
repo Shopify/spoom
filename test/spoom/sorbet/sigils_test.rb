@@ -120,7 +120,7 @@ module Spoom
 
         new_content = Sigils.update_sigil(content, "true")
 
-        assert(/^# typed: ignore$/.match?(new_content))
+        assert_match(/^# typed: ignore$/, new_content)
 
         strictness = Sigils.strictness_in_content(new_content)
 
