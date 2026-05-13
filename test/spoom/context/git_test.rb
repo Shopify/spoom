@@ -105,7 +105,7 @@ module Spoom
         res = context.git_commit!
 
         assert(res.status)
-        assert(context.git_workdir_clean?)
+        assert_predicate(context, :git_workdir_clean?)
         assert(context.file?("b"))
 
         context.destroy!
@@ -242,7 +242,7 @@ module Spoom
         context.write!("file")
         context.git_commit!
 
-        assert(context.git_workdir_clean?)
+        assert_predicate(context, :git_workdir_clean?)
 
         context.destroy!
       end

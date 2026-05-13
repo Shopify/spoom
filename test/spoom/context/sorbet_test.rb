@@ -177,7 +177,7 @@ module Spoom
         refute(context.has_sorbet_config?)
 
         context.write_sorbet_config!(".")
-        assert(context.has_sorbet_config?)
+        assert_predicate(context, :has_sorbet_config?)
 
         context.destroy!
       end
