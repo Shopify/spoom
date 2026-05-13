@@ -176,7 +176,7 @@ module Spoom
         assert(sha.size < 40)
 
         sha = T.must(context.git_last_commit(short_sha: false)).sha
-        assert(sha.size == 40)
+        assert_equal(sha.size, 40)
 
         last_commit = context.git_last_commit
         assert_equal(time.to_i, last_commit&.timestamp)
