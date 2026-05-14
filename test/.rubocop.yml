@@ -2,3 +2,6 @@ inherit_from: ../.rubocop.yml
 
 Minitest/AssertPredicate:
   Enabled: true
+
+Minitest/LiteralAsActualArgument:
+  Enabled: true
