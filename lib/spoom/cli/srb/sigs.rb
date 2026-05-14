@@ -213,8 +213,10 @@ module Spoom
                 contents = contents.force_encoding(encoding)
               end
 
-              contents = block.call(file, contents)
-              File.write(file, contents)
+              new_contents = block.call(file, contents)
+              next if new_contents == contents
+
+              File.write(file, new_contents)
               transformed_count += 1
             rescue RBI::Error => error
               say_warning("Can't parse #{file}: #{error.message}")
