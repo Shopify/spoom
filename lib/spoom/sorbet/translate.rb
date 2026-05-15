@@ -15,6 +15,22 @@ module Spoom
     module Translate
       class Error < Spoom::Error; end
 
+      # The result of an RBS-to-Sorbet translation: the (possibly rewritten)
+      # source and a flag indicating whether the source bytes actually changed.
+      class RewriteResult
+        #: String
+        attr_reader :source
+
+        #: bool
+        attr_reader :rewritten
+
+        #: (String, bool) -> void
+        def initialize(source, rewritten)
+          @source = source
+          @rewritten = rewritten
+        end
+      end
+
       class << self
         # Deletes all `sig` nodes from the given Ruby code.
         # It doesn't handle type members and class annotations.
@@ -53,9 +69,16 @@ module Spoom
 
         # Converts all the RBS comments in the given Ruby code to `sig` nodes.
         # It also handles type members and class annotations.
-        #: (String ruby_contents, file: String, ?max_line_length: Integer?) -> String
+        # Returns a `RewriteResult` carrying the (possibly rewritten) source
+        # and a flag indicating whether the source bytes actually changed.
+        #: (String ruby_contents, file: String, ?max_line_length: Integer?) -> RewriteResult
         def rbs_comments_to_sorbet_sigs(ruby_contents, file:, max_line_length: nil)
-          RBSCommentsToSorbetSigs.rewrite_if_needed(ruby_contents, file: file, max_line_length: max_line_length)
+          source, rewritten = RBSCommentsToSorbetSigs.rewrite_if_needed(
+            ruby_contents,
+            file: file,
+            max_line_length: max_line_length,
+          )
+          RewriteResult.new(source, rewritten)
         end
 
         # Converts all `T.let` and `T.cast` nodes to RBS comments in the given Ruby code.

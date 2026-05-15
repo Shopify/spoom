@@ -26,11 +26,14 @@ module Spoom
             Sigils.contains_valid_sigil?(source) && source.match?(RBS_REWRITE_PATTERN)
           end
 
-          #: (String ruby_contents, file: String, ?max_line_length: Integer?) -> String
+          #: (String ruby_contents, file: String, ?max_line_length: Integer?) -> [String, bool]
           def rewrite_if_needed(ruby_contents, file:, max_line_length: nil)
-            return ruby_contents unless contains_rbs_syntax?(ruby_contents)
+            if ENV["SPOOM_RBS_FORCE_REWRITE"] != "1"
+              return [ruby_contents, false] unless contains_rbs_syntax?(ruby_contents)
+            end
 
-            new(ruby_contents, file:, max_line_length:).rewrite
+            new_contents = new(ruby_contents, file:, max_line_length:).rewrite
+            [new_contents, true]
           end
         end
 
