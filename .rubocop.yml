@@ -3,6 +3,7 @@
 
 plugins:
   - rubocop-sorbet
+  - rubocop-minitest
 
 inherit_gem:
   rubocop-shopify: rubocop.yml

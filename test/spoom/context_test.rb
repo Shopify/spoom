@@ -8,7 +8,7 @@ module Spoom
     class ContextTest < Minitest::Test
       def test_context_mktmp!
         context = Context.mktmp!
-        assert(context.exist?)
+        assert_predicate(context, :exist?)
         context.destroy!
       end
 
@@ -16,7 +16,7 @@ module Spoom
         context = Context.new("/tmp/spoom-context-test")
         refute(context.exist?)
         context.mkdir!
-        assert(context.exist?)
+        assert_predicate(context, :exist?)
         context.destroy!
         refute(context.exist?)
       end

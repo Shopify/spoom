@@ -105,7 +105,7 @@ module Spoom
         res = context.git_commit!
 
         assert(res.status)
-        assert(context.git_workdir_clean?)
+        assert_predicate(context, :git_workdir_clean?)
         assert(context.file?("b"))
 
         context.destroy!
@@ -176,7 +176,7 @@ module Spoom
         assert(sha.size < 40)
 
         sha = T.must(context.git_last_commit(short_sha: false)).sha
-        assert(sha.size == 40)
+        assert_equal(40, sha.size)
 
         last_commit = context.git_last_commit
         assert_equal(time.to_i, last_commit&.timestamp)
@@ -242,7 +242,7 @@ module Spoom
         context.write!("file")
         context.git_commit!
 
-        assert(context.git_workdir_clean?)
+        assert_predicate(context, :git_workdir_clean?)
 
         context.destroy!
       end
