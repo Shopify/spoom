@@ -11,8 +11,9 @@ module Spoom
 
           ALLOWED_OVERLOAD_STRATEGIES = [:translate_all, :translate_last, :raise].freeze #: Array[Symbol]
 
-          #: (String, file: String, ?max_line_length: Integer?, ?overloads_strategy: Symbol) -> void
-          def initialize(ruby_contents, file:, max_line_length: nil, overloads_strategy: :translate_all)
+          #: (String, file: String, ?max_line_length: Integer?, ?overloads_strategy: Symbol, ?erase_generic_types: bool) -> void
+          def initialize(ruby_contents, file:, max_line_length: nil, overloads_strategy: :translate_all,
+            erase_generic_types: false)
             super(ruby_contents, file: file)
 
             unless ALLOWED_OVERLOAD_STRATEGIES.include?(overloads_strategy)
@@ -22,7 +23,8 @@ module Spoom
 
             @max_line_length = max_line_length
             @overloads_strategy = overloads_strategy
-            @type_translator = RBI::RBS::TypeTranslator.new #: RBI::RBS::TypeTranslator
+            @erase_generic_types = erase_generic_types
+            @type_translator = RBI::RBS::TypeTranslator.new(erase_generic_types:) #: RBI::RBS::TypeTranslator
           end
 
           # @override
@@ -150,7 +152,7 @@ module Spoom
                 next
               end
 
-              translator = RBI::RBS::MethodTypeTranslator.new(rbi_node)
+              translator = RBI::RBS::MethodTypeTranslator.new(rbi_node, erase_generic_types: @erase_generic_types)
 
               begin
                 translator.visit(method_type)
@@ -263,6 +265,17 @@ module Spoom
                 from = adjust_to_line_start(signature.location.start_offset)
                 to = adjust_to_line_end(signature.location.end_offset)
                 @rewriter << Source::Delete.new(from, to)
+
+                if @erase_generic_types
+                  type_params.each do |type_param|
+                    @rewriter << Source::Insert.new(
+                      insert_pos,
+                      "\n#{indent}#{type_param.name} = T.type_alias { ::T.anything }\n",
+                    )
+                  end
+
+                  next
+                end
 
                 unless already_extends?(node, /^(::)?T::Generic$/)
                   @rewriter << Source::Insert.new(insert_pos, "\n#{indent}extend T::Generic\n")

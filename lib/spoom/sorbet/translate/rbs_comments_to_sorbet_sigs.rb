@@ -24,11 +24,18 @@ module Spoom
             Sigils.contains_valid_sigil?(source) && source.match?(RBS_REWRITE_PATTERN)
           end
 
-          #: (String ruby_contents, file: String, ?max_line_length: Integer?, ?overloads_strategy: Symbol) -> String
-          def rewrite_if_needed(ruby_contents, file:, max_line_length: nil, overloads_strategy: :translate_all)
+          #: (String ruby_contents, file: String, ?max_line_length: Integer?, ?overloads_strategy: Symbol, ?erase_generic_types: bool) -> String
+          def rewrite_if_needed(ruby_contents, file:, max_line_length: nil, overloads_strategy: :translate_all,
+            erase_generic_types: false)
             return ruby_contents unless contains_rbs_syntax?(ruby_contents)
 
-            HumanReadableTranslator.new(ruby_contents, file:, max_line_length:, overloads_strategy:).rewrite
+            HumanReadableTranslator.new(
+              ruby_contents,
+              file:,
+              max_line_length:,
+              overloads_strategy:,
+              erase_generic_types:,
+            ).rewrite
           end
         end
       end

@@ -449,6 +449,126 @@ module Spoom
           )
         end
 
+        def test_translate_to_rbi_preserves_generic_types
+          contents = <<~RB
+            #: -> Array[Integer]
+            def foo
+              []
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            sig { returns(::T::Array[Integer]) }
+            def foo
+              []
+            end
+          RB
+        end
+
+        def test_translate_to_rbi_with_erase_generic_class_types
+          contents = <<~RB
+            #: [T, in A, out B, C < Numeric, D > Numeric, E = String]
+            class Result
+              #: (T, E?) -> void
+              def initialize(value, error)
+                @value = value
+                @error = error
+              end
+
+              #: T
+              attr_reader :value
+
+              #: E?
+              attr_writer :error
+            end
+
+            #: (String) -> Result[Integer, String]
+            def parse_int(str)
+              Result.new(Integer(str), nil) #: Result[Integer, String]
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents, erase_generic_types: true))
+            class Result
+              T = T.type_alias { ::T.anything }
+
+              A = T.type_alias { ::T.anything }
+
+              B = T.type_alias { ::T.anything }
+
+              C = T.type_alias { ::T.anything }
+
+              D = T.type_alias { ::T.anything }
+
+              E = T.type_alias { ::T.anything }
+
+              sig { params(value: T, error: ::T.nilable(E)).void }
+              def initialize(value, error)
+                @value = value
+                @error = error
+              end
+
+              sig { returns(T) }
+              attr_reader :value
+
+              sig { params(error: ::T.nilable(E)).returns(::T.nilable(E)) }
+              attr_writer :error
+            end
+
+            sig { params(str: String).returns(Result) }
+            def parse_int(str)
+              Result.new(Integer(str), nil) #: Result[Integer, String]
+            end
+          RB
+        end
+
+        def test_translate_to_rbi_with_erase_generic_method_types
+          contents = <<~RB
+            class Factory
+              #: [T] (T?) -> T?
+              def self.identity(value)
+                value
+              end
+
+              class << self
+                #: [U] (U) -> U
+                def wrap(value)
+                  value
+                end
+              end
+
+              #: [V]
+              class << self
+                #: -> V
+                def build; end
+              end
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents, erase_generic_types: true))
+            class Factory
+              sig { params(value: ::T.nilable(::T.anything)).returns(::T.nilable(::T.anything)) }
+              def self.identity(value)
+                value
+              end
+
+              class << self
+                sig { params(value: ::T.anything).returns(::T.anything) }
+                def wrap(value)
+                  value
+                end
+              end
+
+              class << self
+                V = T.type_alias { ::T.anything }
+
+                sig { returns(V) }
+                def build; end
+              end
+            end
+          RB
+        end
+
         def test_translate_to_rbi_in_block
           assert_rewrites_rbs(
             from: <<~RUBY,
@@ -671,6 +791,30 @@ module Spoom
               end
             RUBY
           )
+        end
+
+        def test_translate_type_alias_with_erase_generic_types
+          contents = <<~RB
+            class Box; end
+
+            #: type boxed_string = Box[String]
+
+            #: () -> boxed_string
+            def build_box
+              Box.new
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents, erase_generic_types: true))
+            class Box; end
+
+            BoxedString = T.type_alias { Box }
+
+            sig { returns(BoxedString) }
+            def build_box
+              Box.new
+            end
+          RB
         end
 
         def test_translate_type_alias_with_union
@@ -983,13 +1127,15 @@ module Spoom
 
         private
 
-        #: (String, ?max_line_length: Integer?, ?overloads_strategy: Symbol) -> String
-        def rbs_comments_to_sorbet_sigs(ruby_contents, max_line_length: nil, overloads_strategy: :translate_all)
+        #: (String, ?max_line_length: Integer?, ?overloads_strategy: Symbol, ?erase_generic_types: bool) -> String
+        def rbs_comments_to_sorbet_sigs(ruby_contents, max_line_length: nil, overloads_strategy: :translate_all,
+          erase_generic_types: false)
           RBSCommentsToSorbetSigs::HumanReadableTranslator.new(
             ruby_contents,
             file: "test.rb",
             max_line_length: max_line_length,
             overloads_strategy: overloads_strategy,
+            erase_generic_types: erase_generic_types,
           ).rewrite
         end
 
