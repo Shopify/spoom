@@ -449,6 +449,262 @@ module Spoom
           )
         end
 
+        def test_translate_to_rbi_generic_types
+          contents = <<~RB
+            #: -> Array[Integer]
+            def foo
+              []
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            sig { returns(::T::Array[Integer]) }
+            def foo
+              []
+            end
+          RB
+        end
+
+        def test_translate_to_rbi_erase_generic_types
+          contents = <<~RB
+            #: [E]
+            class Box
+              #: -> void
+              def initialize
+                @elems = [] #: Array[E]
+              end
+            end
+
+            #: -> Box[Integer]
+            def box_of_int
+              Box.new
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents, erase_generic_types: true))
+            class Box
+              E = T.type_alias { T.anything }
+
+              sig { void }
+              def initialize
+                @elems = [] #: Array[E]
+              end
+            end
+
+            sig { returns(Box) }
+            def box_of_int
+              Box.new
+            end
+          RB
+        end
+
+        def test_translate_to_rbi_erase_generic_types_in_class_member_sigs
+          contents = <<~RB
+            #: [E]
+            class Stack
+              #: -> void
+              def initialize
+                @items = [] #: Array[E]
+              end
+
+              #: (E) -> void
+              def push(item)
+                @items << item
+              end
+
+              #: -> E?
+              def pop
+                @items.pop
+              end
+
+              #: E
+              attr_reader :last_pushed
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents, erase_generic_types: true))
+            class Stack
+              E = T.type_alias { T.anything }
+
+              sig { void }
+              def initialize
+                @items = [] #: Array[E]
+              end
+
+              sig { params(item: E).void }
+              def push(item)
+                @items << item
+              end
+
+              sig { returns(::T.nilable(E)) }
+              def pop
+                @items.pop
+              end
+
+              sig { returns(E) }
+              attr_reader :last_pushed
+            end
+          RB
+        end
+
+        def test_translate_to_rbi_erase_generic_types_in_generic_method_sigs
+          contents = <<~RB
+            class Utils
+              #: [T] (Array[T]) -> T?
+              def self.first_or_nil(arr)
+                arr.first
+              end
+
+              #: [T] (Array[T], T) -> Array[T]
+              def self.append(arr, item)
+                arr + [item]
+              end
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents, erase_generic_types: true))
+            class Utils
+              sig { params(arr: Array).returns(::T.nilable(::T.anything)) }
+              def self.first_or_nil(arr)
+                arr.first
+              end
+
+              sig { params(arr: Array, item: ::T.anything).returns(Array) }
+              def self.append(arr, item)
+                arr + [item]
+              end
+            end
+          RB
+        end
+
+        def test_translate_to_rbi_erase_generic_types_with_class_and_method_type_params
+          contents = <<~RB
+            #: [E]
+            class Container
+              #: [T] (E, T) -> void
+              def store(element, extra); end
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents, erase_generic_types: true))
+            class Container
+              E = T.type_alias { T.anything }
+
+              sig { params(element: E, extra: ::T.anything).void }
+              def store(element, extra); end
+            end
+          RB
+        end
+
+        def test_translate_to_rbi_erase_generic_types_in_attr_writer_and_accessor
+          contents = <<~RB
+            #: [E]
+            class Box
+              #: E
+              attr_writer :value
+
+              #: E
+              attr_accessor :other
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents, erase_generic_types: true))
+            class Box
+              E = T.type_alias { T.anything }
+
+              sig { params(value: E).returns(E) }
+              attr_writer :value
+
+              sig { returns(E) }
+              attr_accessor :other
+            end
+          RB
+        end
+
+        def test_translate_to_rbi_erase_generic_types_with_multiple_class_type_params
+          contents = <<~RB
+            #: [K, V]
+            class Map
+              #: (K) -> V?
+              def get(key); end
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents, erase_generic_types: true))
+            class Map
+              K = T.type_alias { T.anything }
+
+              V = T.type_alias { T.anything }
+
+              sig { params(key: K).returns(::T.nilable(V)) }
+              def get(key); end
+            end
+          RB
+        end
+
+        def test_translate_to_rbi_erase_generic_types_in_nested_generic_classes
+          contents = <<~RB
+            #: [E]
+            class Outer
+              #: (E) -> void
+              def outer_m(x); end
+
+              #: [F]
+              class Inner
+                #: (F) -> void
+                def inner_m(y); end
+              end
+
+              #: (E) -> void
+              def after_inner(z); end
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents, erase_generic_types: true))
+            class Outer
+              E = T.type_alias { T.anything }
+
+              sig { params(x: E).void }
+              def outer_m(x); end
+
+              class Inner
+                F = T.type_alias { T.anything }
+
+                sig { params(y: F).void }
+                def inner_m(y); end
+              end
+
+              sig { params(z: E).void }
+              def after_inner(z); end
+            end
+          RB
+        end
+
+        def test_translate_to_rbi_erase_generic_types_in_nested_generic_and_block
+          contents = <<~RB
+            #: [E]
+            class Holder
+              #: (Hash[String, E]) -> void
+              def consume(h); end
+
+              #: () { (E) -> void } -> void
+              def each(&blk); end
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents, erase_generic_types: true))
+            class Holder
+              E = T.type_alias { T.anything }
+
+              sig { params(h: Hash).void }
+              def consume(h); end
+
+              sig { params(blk: ::T.proc.params(arg0: E).void).void }
+              def each(&blk); end
+            end
+          RB
+        end
+
         def test_translate_to_rbi_in_block
           assert_rewrites_rbs(
             from: <<~RUBY,
@@ -961,13 +1217,15 @@ module Spoom
 
         private
 
-        #: (String, ?max_line_length: Integer?, ?overloads_strategy: Symbol) -> String
-        def rbs_comments_to_sorbet_sigs(ruby_contents, max_line_length: nil, overloads_strategy: :translate_all)
+        #: (String, ?max_line_length: Integer?, ?overloads_strategy: Symbol, ?erase_generic_types: bool) -> String
+        def rbs_comments_to_sorbet_sigs(ruby_contents, max_line_length: nil, overloads_strategy: :translate_all,
+          erase_generic_types: false)
           RBSCommentsToSorbetSigs.new(
             ruby_contents,
             file: "test.rb",
             max_line_length: max_line_length,
             overloads_strategy: overloads_strategy,
+            erase_generic_types: erase_generic_types,
           ).rewrite
         end
 
