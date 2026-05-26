@@ -26,7 +26,8 @@ module Spoom
 
             @overloads_strategy = options.overloads_strategy #: Symbol
             @translate_abstract_methods = options.translate_abstract_methods #: bool
-            @type_translator = RBI::RBS::TypeTranslator.new #: RBI::RBS::TypeTranslator
+            @options = options #: Options
+            @type_translator = RBI::RBS::TypeTranslator.new(options: options.rbi_options) #: RBI::RBS::TypeTranslator
           end
 
           # @override
@@ -163,7 +164,7 @@ module Spoom
                 next
               end
 
-              translator = RBI::RBS::MethodTypeTranslator.new(rbi_node)
+              translator = RBI::RBS::MethodTypeTranslator.new(rbi_node, options: @options.rbi_options)
 
               begin
                 translator.visit(method_type)
@@ -272,6 +273,18 @@ module Spoom
                 type_params = ::RBS::Parser.parse_type_params(signature.string)
                 rewrite_type_params_signature(signature, type_params:)
                 next if type_params.empty?
+
+                if @options.erase_generic_types
+                  type_params.each do |type_param|
+                    insert_type_member(
+                      "#{type_param.name} = ::T.type_alias { ::T.anything }",
+                      parent_node: node,
+                      insert_pos:,
+                    )
+                  end
+
+                  next
+                end
 
                 unless already_extends?(node, /^(::)?T::Generic$/)
                   extend_with("T::Generic", into: node, at: insert_pos)

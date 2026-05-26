@@ -622,6 +622,176 @@ module Spoom
           )
         end
 
+        def test_translate_to_rbi_preserves_generic_types
+          contents = <<~RB
+            #: -> Array[Integer]
+            def foo
+              []
+            end
+          RB
+
+          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
+            sig { returns(::T::Array[Integer]) }
+            def foo
+              []
+            end
+          RB
+        end
+
+        def test_translate_to_rbi_with_erase_generic_class_types
+          assert_rewrites_rbs(
+            erase_generic_types: true,
+            from: <<~RB,
+              #: [T, in A, out B, C < Numeric, D > Numeric, E = String]
+              class Result
+                #: (T, E?) -> void
+                def initialize(value, error)
+                  @value = value
+                  @error = error
+                end
+
+                #: T
+                attr_reader :value
+
+                #: E?
+                attr_writer :error
+              end
+
+              #: (String) -> Result[Integer, String]
+              def parse_int(str)
+                Result.new(Integer(str), nil) #: Result[Integer, String]
+              end
+            RB
+
+            to_pretty_format_for_humans: <<~RB,
+              class Result
+                T = ::T.type_alias { ::T.anything }
+
+                A = ::T.type_alias { ::T.anything }
+
+                B = ::T.type_alias { ::T.anything }
+
+                C = ::T.type_alias { ::T.anything }
+
+                D = ::T.type_alias { ::T.anything }
+
+                E = ::T.type_alias { ::T.anything }
+
+                sig { params(value: T, error: ::T.nilable(E)).void }
+                def initialize(value, error)
+                  @value = value
+                  @error = error
+                end
+
+                sig { returns(T) }
+                attr_reader :value
+
+                sig { params(error: ::T.nilable(E)).returns(::T.nilable(E)) }
+                attr_writer :error
+              end
+
+              sig { params(str: String).returns(Result) }
+              def parse_int(str)
+                Result.new(Integer(str), nil) #: Result[Integer, String]
+              end
+            RB
+
+            to_line_matched_format_for_machines: <<~RB,
+              # RBS_WRITTEN_ANNOTATION: [T, in A, out B, C < Numeric, D > Numeric, E = String]
+              class Result; T = ::T.type_alias { ::T.anything }; A = ::T.type_alias { ::T.anything }; B = ::T.type_alias { ::T.anything }; C = ::T.type_alias { ::T.anything }; D = ::T.type_alias { ::T.anything }; E = ::T.type_alias { ::T.anything }
+                sig { params(value: T, error: ::T.nilable(E)).void }
+                def initialize(value, error)
+                  @value = value
+                  @error = error
+                end
+
+                sig { returns(T) }
+                attr_reader :value
+
+                sig { params(error: ::T.nilable(E)).returns(::T.nilable(E)) }
+                attr_writer :error
+              end
+
+              sig { params(str: String).returns(Result) }
+              def parse_int(str)
+                Result.new(Integer(str), nil) #: Result[Integer, String]
+              end
+            RB
+          )
+        end
+
+        def test_translate_to_rbi_with_erase_generic_method_types
+          assert_rewrites_rbs(
+            erase_generic_types: true,
+            from: <<~RB,
+              class Factory
+                #: [T] (T?) -> T?
+                def self.identity(value)
+                  value
+                end
+
+                class << self
+                  #: [U] (U) -> U
+                  def wrap(value)
+                    value
+                  end
+                end
+
+                #: [V]
+                class << self
+                  #: -> V
+                  def build; end
+                end
+              end
+            RB
+
+            to_pretty_format_for_humans: <<~RB,
+              class Factory
+                sig { params(value: ::T.nilable(::T.anything)).returns(::T.nilable(::T.anything)) }
+                def self.identity(value)
+                  value
+                end
+
+                class << self
+                  sig { params(value: ::T.anything).returns(::T.anything) }
+                  def wrap(value)
+                    value
+                  end
+                end
+
+                class << self
+                  V = ::T.type_alias { ::T.anything }
+
+                  sig { returns(V) }
+                  def build; end
+                end
+              end
+            RB
+
+            to_line_matched_format_for_machines: <<~RB,
+              class Factory
+                sig { params(value: ::T.nilable(::T.anything)).returns(::T.nilable(::T.anything)) }
+                def self.identity(value)
+                  value
+                end
+
+                class << self
+                  sig { params(value: ::T.anything).returns(::T.anything) }
+                  def wrap(value)
+                    value
+                  end
+                end
+
+                # RBS_WRITTEN_ANNOTATION: [V]
+                class << self; V = ::T.type_alias { ::T.anything }
+                  sig { returns(V) }
+                  def build; end
+                end
+              end
+            RB
+          )
+        end
+
         def test_translate_to_rbi_in_block
           assert_rewrites_rbs(
             from: <<~RUBY,
@@ -877,6 +1047,35 @@ module Spoom
                 items.map { |x| x * 2 }
               end
             RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
+          )
+        end
+
+        def test_translate_type_alias_with_erase_generic_types
+          assert_rewrites_rbs(
+            erase_generic_types: true,
+            from: <<~RB,
+              class Box; end
+
+              #: type boxed_string = Box[String]
+
+              #: () -> boxed_string
+              def build_box
+                Box.new
+              end
+            RB
+
+            to_pretty_format_for_humans: <<~RB,
+              class Box; end
+
+              BoxedString = ::T.type_alias { Box }
+
+              sig { returns(BoxedString) }
+              def build_box
+                Box.new
+              end
+            RB
 
             to_line_matched_format_for_machines: :same_as_pretty_output,
           )
@@ -1343,19 +1542,22 @@ module Spoom
         #: (String,
         #|   ?max_line_length: Integer?,
         #|   ?overloads_strategy: Symbol,
-        #|   ?translate_abstract_methods: bool
+        #|   ?translate_abstract_methods: bool,
+        #|   ?erase_generic_types: bool
         #| ) -> String
         def rbs_comments_to_sorbet_sigs(
           ruby_contents,
           max_line_length: nil,
           overloads_strategy: :translate_all,
-          translate_abstract_methods: true
+          translate_abstract_methods: true,
+          erase_generic_types: false
         )
           RBSCommentsToSorbetSigs::HumanReadableTranslator.new(
             ruby_contents,
             file: "test.rb",
             options: RBSCommentsToSorbetSigs::Options.new(
               overloads_strategy:,
+              erase_generic_types: erase_generic_types,
               translate_abstract_methods:,
               output_format: RBSCommentsToSorbetSigs::HumanReadableRBIFormat.new(
                 max_line_length:,
@@ -1370,7 +1572,8 @@ module Spoom
         #|   to_line_matched_format_for_machines: String | Symbol,
         #|   ?max_line_length: Integer?,
         #|   ?overloads_strategy: Symbol,
-        #|   ?translate_abstract_methods: bool
+        #|   ?translate_abstract_methods: bool,
+        #|   ?erase_generic_types: bool
         #| ) -> void
         def assert_rewrites_rbs(
           from:,
@@ -1378,7 +1581,8 @@ module Spoom
           to_line_matched_format_for_machines:,
           max_line_length: nil,
           overloads_strategy: :translate_all,
-          translate_abstract_methods: true
+          translate_abstract_methods: true,
+          erase_generic_types: false
         )
           source_with_rbs = from
           expected_pretty_format = to_pretty_format_for_humans
@@ -1390,6 +1594,7 @@ module Spoom
               max_line_length:,
               overloads_strategy:,
               translate_abstract_methods:,
+              erase_generic_types:,
             )
 
             assert_equal(expected_pretty_format, rewritten_output)
@@ -1421,6 +1626,7 @@ module Spoom
               options: RBSCommentsToSorbetSigs::Options.new(
                 overloads_strategy:,
                 translate_abstract_methods:,
+                erase_generic_types:,
                 output_format: RBSCommentsToSorbetSigs::LineMatchedRBIFormat.default,
               ),
             ).rewrite

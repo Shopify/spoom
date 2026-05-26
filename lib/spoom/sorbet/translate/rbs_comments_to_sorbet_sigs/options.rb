@@ -47,6 +47,9 @@ module Spoom
           #: bool
           attr_reader :erase_generic_types
 
+          #: RBI::RBS::MethodTypeTranslator::Options
+          attr_reader :rbi_options
+
           #: BaseRBIFormat
           attr_reader :output_format
 
@@ -72,6 +75,7 @@ module Spoom
 
             @overloads_strategy = overloads_strategy
             @erase_generic_types = erase_generic_types
+            @rbi_options = RBI::RBS::MethodTypeTranslator::Options.new(erase_generic_types:) #: RBI::RBS::MethodTypeTranslator::Options
             @output_format = output_format
             @translate_abstract_methods = translate_abstract_methods
 

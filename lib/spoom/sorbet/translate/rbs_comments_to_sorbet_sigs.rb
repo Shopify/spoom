@@ -28,17 +28,20 @@ module Spoom
           #|   String ruby_contents,
           #|   file: String,
           #|   ?max_line_length: Integer?,
-          #|   ?overloads_strategy: Symbol) -> String
+          #|   ?overloads_strategy: Symbol,
+          #|   ?erase_generic_types: bool) -> String
           def rewrite_if_needed(
             ruby_contents,
             file:,
             max_line_length: nil,
-            overloads_strategy: :translate_all
+            overloads_strategy: :translate_all,
+            erase_generic_types: false
           )
             return ruby_contents unless contains_rbs_syntax?(ruby_contents)
 
             options = Options.new(
               overloads_strategy:,
+              erase_generic_types:,
               output_format: HumanReadableRBIFormat.new(
                 max_line_length:,
               ),
