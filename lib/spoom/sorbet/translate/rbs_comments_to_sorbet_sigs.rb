@@ -20,25 +20,33 @@ module Spoom
         RBS_REWRITE_PATTERN = Regexp.union(["#:", "#|", *RBS_ANNOTATION_MARKERS]).freeze #: Regexp
         private_constant :RBS_ANNOTATION_MARKERS, :RBS_REWRITE_PATTERN
 
+        ALLOWED_OVERLOAD_STRATEGIES = [:translate_all, :translate_last, :raise].freeze #: Array[Symbol]
+
         class << self
           #: (String source) -> bool
           def contains_rbs_syntax?(source)
             Sigils.contains_valid_sigil?(source) && source.match?(RBS_REWRITE_PATTERN)
           end
 
-          #: (String ruby_contents, file: String, ?max_line_length: Integer?) -> String
-          def rewrite_if_needed(ruby_contents, file:, max_line_length: nil)
+          #: (String ruby_contents, file: String, ?max_line_length: Integer?, ?overloads_strategy: Symbol) -> String
+          def rewrite_if_needed(ruby_contents, file:, max_line_length: nil, overloads_strategy: :translate_all)
             return ruby_contents unless contains_rbs_syntax?(ruby_contents)
 
-            new(ruby_contents, file:, max_line_length:).rewrite
+            new(ruby_contents, file:, max_line_length:, overloads_strategy:).rewrite
           end
         end
 
-        #: (String, file: String, ?max_line_length: Integer?) -> void
-        def initialize(ruby_contents, file:, max_line_length: nil)
+        #: (String, file: String, ?max_line_length: Integer?, ?overloads_strategy: Symbol) -> void
+        def initialize(ruby_contents, file:, max_line_length: nil, overloads_strategy: :translate_all)
           super(ruby_contents, file: file)
 
+          unless ALLOWED_OVERLOAD_STRATEGIES.include?(overloads_strategy)
+            raise ArgumentError, "Unknown overloads_strategy: #{overloads_strategy.inspect}. " \
+              "Must be one of: #{ALLOWED_OVERLOAD_STRATEGIES.map(&:inspect).join(", ")}"
+          end
+
           @max_line_length = max_line_length
+          @overloads_strategy = overloads_strategy
         end
 
         # @override
@@ -107,7 +115,13 @@ module Spoom
 
           return if comments.signatures.empty?
 
-          comments.signatures.each do |signature|
+          signatures = apply_overloads_strategy(
+            comments.signatures,
+            method_name: node.message.to_s,
+            location: "#{@file}:#{node.location.start_line}",
+          )
+
+          signatures.each do |signature|
             attr_type = ::RBS::Parser.parse_type(signature.string)
             sig = RBI::Sig.new
 
@@ -143,11 +157,17 @@ module Spoom
           return if comments.empty?
           return if comments.signatures.empty?
 
+          signatures = apply_overloads_strategy(
+            comments.signatures,
+            method_name: def_node.name.to_s,
+            location: "#{@file}:#{def_node.location.start_line}",
+          )
+
           builder = RBI::Parser::TreeBuilder.new(@ruby_contents, comments: [], file: @file)
           builder.visit(def_node)
           rbi_node = builder.tree.nodes.first #: as RBI::Method
 
-          comments.signatures.each do |signature|
+          signatures.each do |signature|
             begin
               method_type = ::RBS::Parser.parse_method_type(signature.string)
             rescue ::RBS::ParsingError
@@ -177,6 +197,29 @@ module Spoom
               signature.location.end_offset,
               sig.string(max_line_length: @max_line_length),
             )
+          end
+        end
+
+        #: (Array[RBS::Signature], method_name: String, location: String) -> Array[RBS::Signature]
+        def apply_overloads_strategy(signatures, method_name:, location:)
+          return signatures if signatures.size <= 1
+
+          case @overloads_strategy
+          when :translate_all
+            signatures
+          when :translate_last
+            kept = signatures.last #: as RBS::Signature
+            others = signatures[0...-1] #: as !nil
+
+            # Delete all the signatures we didn't keep
+            others.each do |signature|
+              from = adjust_to_line_start(signature.location.start_offset)
+              to = adjust_to_line_end(signature.location.end_offset)
+              @rewriter << Source::Delete.new(from, to)
+            end
+            [kept]
+          else # :raise
+            raise Error, "Method `#{method_name}` at #{location} has multiple overloaded signatures"
           end
         end
 
