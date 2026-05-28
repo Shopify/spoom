@@ -223,12 +223,14 @@ module Spoom
             # typed: true
 
             class Box
+              E = T.type_alias { T.anything }
+
               sig { returns(Array) }
               def values
                 []
               end
 
-              sig { params(value: ::T.untyped).void }
+              sig { params(value: E).void }
               def push(value)
               end
             end
