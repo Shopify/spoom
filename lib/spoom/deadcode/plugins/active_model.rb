@@ -47,17 +47,17 @@ module Spoom
         private
 
         NESTED_METHOD_REFERENCE_KEYS = T.let(
-          %w[
-            if
-            unless
-            in
-            with
-            less_than
-            greater_than
-            less_than_or_equal_to
-            greater_than_or_equal_to
-            equal_to
-            other_than
+          [
+            "if",
+            "unless",
+            "in",
+            "with",
+            "less_than",
+            "greater_than",
+            "less_than_or_equal_to",
+            "greater_than_or_equal_to",
+            "equal_to",
+            "other_than",
           ].freeze,
           T::Array[String],
         )
