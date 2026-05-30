@@ -37,9 +37,10 @@ module Spoom
 
                     assoc_key = assoc.key.slice.delete_suffix(":")
                     next unless assoc_key == "in" || assoc_key == "with"
-                    next unless assoc.value.is_a?(Prism::SymbolNode)
+                    value = assoc.value
+                    next unless value.is_a?(Prism::SymbolNode)
 
-                    @index.reference_method(assoc.value.unescaped, send.location)
+                    @index.reference_method(value.unescaped, send.location)
                   end
                 end
               end
