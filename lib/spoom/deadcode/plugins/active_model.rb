@@ -69,9 +69,11 @@ module Spoom
 
             nested_key = assoc.key.slice.delete_suffix(":")
             next unless NESTED_METHOD_REFERENCE_KEYS.include?(nested_key)
-            next unless assoc.value.is_a?(Prism::SymbolNode)
 
-            @index.reference_method(assoc.value.unescaped, location)
+            value = assoc.value
+            next unless value.is_a?(Prism::SymbolNode)
+
+            @index.reference_method(value.unescaped, location)
           end
         end
       end
