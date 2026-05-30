@@ -65,6 +65,66 @@ module Spoom
           assert_dead(index, "dead")
         end
 
+        def test_alive_argument_prepare
+          @project.write!("foo.rb", <<~RB)
+            class SomeMutation
+              argument :input, String, required: true, prepare: :transform_input
+
+              def transform_input(value); end
+              def dead; end
+            end
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "transform_input")
+          assert_dead(index, "dead")
+        end
+
+        def test_alive_builds
+          @project.write!("foo.rb", <<~RB)
+            class SomeMutation
+              builds :thing
+
+              def build_thing; end
+              def dead; end
+            end
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "build_thing")
+          assert_dead(index, "dead")
+        end
+
+        def test_alive_field_method
+          @project.write!("foo.rb", <<~RB)
+            class SomeType
+              field :name, String, null: false, method: :custom_name
+
+              def custom_name; end
+              def dead; end
+            end
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "custom_name")
+          assert_dead(index, "dead")
+        end
+
+        def test_alive_argument_method
+          @project.write!("foo.rb", <<~RB)
+            class SomeMutation
+              argument :input, String, required: true, method: :custom_input
+
+              def custom_input; end
+              def dead; end
+            end
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "custom_input")
+          assert_dead(index, "dead")
+        end
+
         def test_ignore_method_splats
           @project.write!("foo.rb", <<~RB)
             field(:field1)
