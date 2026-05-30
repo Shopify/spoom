@@ -1248,7 +1248,21 @@ end
 class Spoom::Deadcode::Plugins::GraphQL < ::Spoom::Deadcode::Plugins::Base
   sig { override.params(send: ::Spoom::Deadcode::Send).void }
   def on_send(send); end
+
+  private
+
+  sig { params(send: ::Spoom::Deadcode::Send).void }
+  def on_argument(send); end
+
+  sig { params(send: ::Spoom::Deadcode::Send).void }
+  def on_builds(send); end
+
+  sig { params(send: ::Spoom::Deadcode::Send).void }
+  def on_field(send); end
 end
+
+Spoom::Deadcode::Plugins::GraphQL::ARGUMENT_SYMBOL_OPTION_KEYS = T.let(T.unsafe(nil), Array)
+Spoom::Deadcode::Plugins::GraphQL::FIELD_SYMBOL_OPTION_KEYS = T.let(T.unsafe(nil), Array)
 
 class Spoom::Deadcode::Plugins::Minitest < ::Spoom::Deadcode::Plugins::Base
   sig { override.params(definition: ::Spoom::Model::Method).void }
