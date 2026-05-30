@@ -24,7 +24,7 @@ module Spoom
           case send.name
           when "const_defined?", "const_get", "const_source_location"
             reference_symbol_as_constant(send, T.must(send.args.first))
-          when "send", "__send__", "try"
+          when "send", "__send__", "public_send", "try"
             arg = send.args.first
             @index.reference_method(arg.unescaped, send.location) if arg.is_a?(Prism::SymbolNode)
           when "alias_method"

@@ -25,19 +25,35 @@ module Spoom
         # @override
         #: (Send send) -> void
         def on_send(send)
-          return unless send.recv.nil? && send.name == "field"
+          return if send.recv
 
-          arg = send.args.first
-          return unless arg.is_a?(Prism::SymbolNode)
+          case send.name
+          when "field"
+            arg = send.args.first
+            return unless arg.is_a?(Prism::SymbolNode)
 
-          @index.reference_method(arg.unescaped, send.location)
+            @index.reference_method(arg.unescaped, send.location)
 
-          send.each_arg_assoc do |key, value|
-            key = key.slice.delete_suffix(":")
-            next unless key == "resolver_method"
-            next unless value
+            send.each_arg_assoc do |key, value|
+              key = key.slice.delete_suffix(":")
+              next unless key == "resolver_method" || key == "method"
+              next unless value
 
-            @index.reference_method(value.slice.delete_prefix(":"), send.location)
+              @index.reference_method(value.slice.delete_prefix(":"), send.location)
+            end
+          when "argument"
+            send.each_arg_assoc do |key, value|
+              key = key.slice.delete_suffix(":")
+              next unless key == "prepare" || key == "method"
+              next unless value
+
+              @index.reference_method(value.slice.delete_prefix(":"), send.location)
+            end
+          when "builds"
+            arg = send.args.first
+            return unless arg.is_a?(Prism::SymbolNode)
+
+            @index.reference_method("build_#{arg.unescaped}", send.location)
           end
         end
       end

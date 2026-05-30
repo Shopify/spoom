@@ -65,6 +65,23 @@ module Spoom
           assert_dead(index, "dead")
         end
 
+        def test_alive_public_sends
+          @project.write!("foo.rb", <<~RB)
+            public_send(:alive1)
+            public_send :alive2, :dead, nil
+
+            def alive1; end
+            def alive2; end
+
+            def dead; end
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "alive1")
+          assert_alive(index, "alive2")
+          assert_dead(index, "dead")
+        end
+
         def test_alive_tries
           @project.write!("foo.rb", <<~RB)
             try(:alive1)

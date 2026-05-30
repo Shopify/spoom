@@ -30,6 +30,18 @@ module Spoom
                 @index.reference_method(value.slice.delete_prefix(":"), send.location) if value
               else
                 @index.reference_constant(camelize(key), send.location)
+
+                if value.is_a?(Prism::HashNode)
+                  value.elements.each do |assoc|
+                    next unless assoc.is_a?(Prism::AssocNode)
+
+                    assoc_key = assoc.key.slice.delete_suffix(":")
+                    next unless assoc_key == "in" || assoc_key == "with"
+                    next unless assoc.value.is_a?(Prism::SymbolNode)
+
+                    @index.reference_method(assoc.value.unescaped, send.location)
+                  end
+                end
               end
             end
           when "validates_with"
