@@ -82,6 +82,20 @@ module Spoom
           assert_dead(index, "dead")
         end
 
+        def test_alive_public_sends
+          @project.write!("foo.rb", <<~RB)
+            class Foo
+              def foo; end
+            end
+
+            obj = Foo.new
+            obj.public_send(:foo)
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "foo")
+        end
+
         def test_alive_aliases
           @project.write!("foo.rb", <<~RB)
             def dead1; end
