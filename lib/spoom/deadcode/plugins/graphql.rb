@@ -22,22 +22,59 @@ module Spoom
           "unsubscribed",
         )
 
+        FIELD_SYMBOL_OPTION_KEYS = ["resolver_method", "method"].freeze #: Array[String]
+        ARGUMENT_SYMBOL_OPTION_KEYS = ["prepare", "method"].freeze #: Array[String]
+
         # @override
         #: (Send send) -> void
         def on_send(send)
-          return unless send.recv.nil? && send.name == "field"
+          return unless send.recv.nil?
 
+          case send.name
+          when "field"
+            on_field(send)
+          when "argument"
+            on_argument(send)
+          when "builds"
+            on_builds(send)
+          end
+        end
+
+        private
+
+        #: (Send send) -> void
+        def on_field(send)
           arg = send.args.first
           return unless arg.is_a?(Prism::SymbolNode)
 
           @index.reference_method(arg.unescaped, send.location)
 
           send.each_arg_assoc do |key, value|
-            key = key.slice.delete_suffix(":")
-            next unless key == "resolver_method"
+            key_name = key.slice.delete_suffix(":")
+            next unless FIELD_SYMBOL_OPTION_KEYS.include?(key_name)
             next unless value
 
             @index.reference_method(value.slice.delete_prefix(":"), send.location)
+          end
+        end
+
+        #: (Send send) -> void
+        def on_argument(send)
+          send.each_arg_assoc do |key, value|
+            key_name = key.slice.delete_suffix(":")
+            next unless ARGUMENT_SYMBOL_OPTION_KEYS.include?(key_name)
+            next unless value
+
+            @index.reference_method(value.slice.delete_prefix(":"), send.location)
+          end
+        end
+
+        #: (Send send) -> void
+        def on_builds(send)
+          send.args.each do |arg|
+            next unless arg.is_a?(Prism::SymbolNode)
+
+            @index.reference_method("build_#{arg.unescaped}", send.location)
           end
         end
       end
