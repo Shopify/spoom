@@ -125,6 +125,38 @@ module Spoom
           assert_dead(index, "dead")
         end
 
+        def test_alive_argument_prepare_with_quoted_symbol
+          # Quoted symbols must be parsed via Prism's #value, not `slice.delete_prefix(":")`,
+          # which would leave the surrounding quotes and miss the real method (see #933).
+          @project.write!("foo.rb", <<~RB)
+            class SomeMutation
+              argument :input, String, required: true, prepare: :"transform_input"
+
+              def transform_input(value); end
+              def dead; end
+            end
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "transform_input")
+          assert_dead(index, "dead")
+        end
+
+        def test_alive_field_method_with_quoted_symbol
+          @project.write!("foo.rb", <<~RB)
+            class SomeType
+              field :name, String, null: false, method: :"custom_name"
+
+              def custom_name; end
+              def dead; end
+            end
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "custom_name")
+          assert_dead(index, "dead")
+        end
+
         def test_ignore_method_splats
           @project.write!("foo.rb", <<~RB)
             field(:field1)
