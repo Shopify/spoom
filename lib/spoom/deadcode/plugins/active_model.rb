@@ -30,6 +30,10 @@ module Spoom
                 @index.reference_method(value.slice.delete_prefix(":"), send.location) if value
               else
                 @index.reference_constant(camelize(key), send.location)
+
+                if value.is_a?(Prism::HashNode)
+                  reference_nested_symbol_options(value, send.location)
+                end
               end
             end
           when "validates_with"
@@ -37,6 +41,39 @@ module Spoom
             if arg.is_a?(Prism::SymbolNode)
               @index.reference_constant(arg.unescaped, send.location)
             end
+          end
+        end
+
+        private
+
+        NESTED_METHOD_REFERENCE_KEYS = T.let(
+          [
+            "if",
+            "unless",
+            "in",
+            "with",
+            "less_than",
+            "greater_than",
+            "less_than_or_equal_to",
+            "greater_than_or_equal_to",
+            "equal_to",
+            "other_than",
+          ].freeze,
+          T::Array[String],
+        )
+
+        #: (Prism::HashNode hash_node, Location location) -> void
+        def reference_nested_symbol_options(hash_node, location)
+          hash_node.elements.each do |assoc|
+            next unless assoc.is_a?(Prism::AssocNode)
+
+            nested_key = assoc.key.slice.delete_suffix(":")
+            next unless NESTED_METHOD_REFERENCE_KEYS.include?(nested_key)
+
+            value = assoc.value
+            next unless value.is_a?(Prism::SymbolNode)
+
+            @index.reference_method(value.unescaped, location)
           end
         end
       end

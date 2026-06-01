@@ -83,6 +83,42 @@ module Spoom
           assert_alive(index, "method5")
         end
 
+        def test_alive_nested_validation_option_symbols
+          @project.write!("app/models/my_model.rb", <<~RB)
+            class MyModel
+              validates :attr1, inclusion: { in: :allowed_values }
+              validates :attr2, numericality: { less_than: :max_value, greater_than: :min_value }
+              validates :attr3, format: { with: :pattern_method }
+              validates :attr4, exclusion: { in: :excluded_values }
+              validates :attr5, numericality: { equal_to: :target_value, other_than: :avoid_value }
+              validates :attr6, numericality: { less_than_or_equal_to: :upper_bound, greater_than_or_equal_to: :lower_bound }
+
+              def allowed_values; end
+              def max_value; end
+              def min_value; end
+              def pattern_method; end
+              def excluded_values; end
+              def target_value; end
+              def avoid_value; end
+              def upper_bound; end
+              def lower_bound; end
+              def dead_method; end
+            end
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "allowed_values")
+          assert_alive(index, "max_value")
+          assert_alive(index, "min_value")
+          assert_alive(index, "pattern_method")
+          assert_alive(index, "excluded_values")
+          assert_alive(index, "target_value")
+          assert_alive(index, "avoid_value")
+          assert_alive(index, "upper_bound")
+          assert_alive(index, "lower_bound")
+          assert_dead(index, "dead_method")
+        end
+
         def test_dead_serializer_attribute
           @project.write!("app/model/serializers/my_serializer.rb", <<~RB)
             class MySerializer < ActiveModel::Serializer
