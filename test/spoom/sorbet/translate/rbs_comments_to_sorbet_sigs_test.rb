@@ -890,6 +890,45 @@ module Spoom
             overloads_strategy: overloads_strategy,
           ).rewrite
         end
+
+        def test_rbs_comments_to_sorbet_sigs_anonymous_block_param
+          res = Spoom::Sorbet::Translate.rbs_comments_to_sorbet_sigs(<<~RUBY, file: "test.rb")
+            # typed: true
+            class Foo
+              #: (String) ?{ (String) -> void } -> String
+              def bar(request, &); end
+            end
+          RUBY
+
+          assert_equal(<<~RUBY, res)
+            # typed: true
+            class Foo
+              sig { params(request: String, block: ::T.nilable(::T.proc.params(arg0: String).void)).returns(String) }
+              def bar(request, &); end
+            end
+          RUBY
+
+          # Must also be valid Ruby
+          assert RubyVM::InstructionSequence.compile(res)
+        end
+
+        def test_rbs_comments_to_sorbet_sigs_named_block_param_unchanged
+          res = Spoom::Sorbet::Translate.rbs_comments_to_sorbet_sigs(<<~RUBY, file: "test.rb")
+            # typed: true
+            class Foo
+              #: (String) ?{ (String) -> void } -> String
+              def bar(request, &block); end
+            end
+          RUBY
+
+          assert_equal(<<~RUBY, res)
+            # typed: true
+            class Foo
+              sig { params(request: String, block: ::T.nilable(::T.proc.params(arg0: String).void)).returns(String) }
+              def bar(request, &block); end
+            end
+          RUBY
+        end
       end
     end
   end
