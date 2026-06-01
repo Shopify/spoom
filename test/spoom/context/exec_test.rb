@@ -9,9 +9,11 @@ module Spoom
       def test_context_exec
         context = Context.mktmp!
 
-        assert_raises(Errno::ENOENT) do
-          context.exec("command/not/found")
-        end
+        # Test that unknown commands return a failed status (not raise an exception)
+        # due to shell wrapping in exec method
+        res = context.exec("command_that_does_not_exist")
+        refute(res.status)
+        refute_empty(res.err)
 
         res = context.exec("echo 'Hello, world!'")
         assert_equal("Hello, world!\n", res.out)

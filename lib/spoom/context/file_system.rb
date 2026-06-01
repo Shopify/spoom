@@ -4,11 +4,8 @@
 module Spoom
   class Context
     # File System features for a context
+    # @requires_ancestor: Context
     module FileSystem
-      extend T::Helpers
-
-      requires_ancestor { Context }
-
       # Returns the absolute path to `relative_path` in the context's directory
       #: (String relative_path) -> String
       def absolute_path_to(relative_path)
@@ -42,7 +39,11 @@ module Spoom
         glob("*")
       end
 
-      #: (?allow_extensions: Array[String], ?allow_mime_types: Array[String], ?exclude_patterns: Array[String]) -> Array[String]
+      #: (
+      #|   ?allow_extensions: Array[String],
+      #|   ?allow_mime_types: Array[String],
+      #|   ?exclude_patterns: Array[String]
+      #| ) -> Array[String]
       def collect_files(allow_extensions: [], allow_mime_types: [], exclude_patterns: [])
         collector = FileCollector.new(
           allow_extensions: allow_extensions,

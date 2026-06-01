@@ -167,7 +167,7 @@ module Spoom
         assert_equal(51, refs.size) # 49 + 2 (including `[]` and `!`)
 
         refs.each do |ref|
-          assert(ref =~ /^(m(\d+)(=)?)|\[\]|!$/)
+          assert_match(/^(m(\d+)(=)?)|\[\]|!$/, ref)
         end
       end
 
@@ -296,7 +296,7 @@ module Spoom
       private
 
       def visit(code)
-        node = Spoom.parse_ruby(code, file: "-")
+        node, _ = Spoom.parse_ruby(code, file: "-")
 
         v = ReferencesVisitor.new("-")
         v.visit(node)

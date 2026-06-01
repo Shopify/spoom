@@ -51,8 +51,8 @@ module Spoom
         plugins = plugins_classes_for_gemfile(<<~GEMFILE)
           source "https://rubygems.org"
 
-          gem "sorbet"
-          gem "sorbet-runtime"
+          #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("sorbet")}
+          #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("sorbet-runtime")}
         GEMFILE
 
         assert_equal(

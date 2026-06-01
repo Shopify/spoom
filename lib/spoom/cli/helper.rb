@@ -7,12 +7,9 @@ require "stringio"
 
 module Spoom
   module Cli
+    # @requires_ancestor: Thor
     module Helper
-      extend T::Helpers
-
       include Colorize
-
-      requires_ancestor { Thor }
 
       # Print `message` on `$stdout`
       #: (String message) -> void

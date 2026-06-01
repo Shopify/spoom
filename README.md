@@ -375,7 +375,25 @@ $ spoom deadcode remove path/to/file.rb:42:18-47:23
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `bin/test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment. Don't forget to run `bin/sanity` before pushing your changes.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+To install this gem onto your local machine, run `bundle exec rake install`.
+
+## Releasing
+
+### Bump the gem version
+
+- [ ] Locally, update the version number in [`version.rb`](https://github.com/Shopify/spoom/blob/main/lib/spoom/version.rb)
+- [ ] Run `bundle install` to update the version number in `Gemfile.lock`
+- [ ] Commit this change with the message `Bump version to vx.y.z`
+- [ ] Push this change directly to main or open a PR
+
+### Create a new tag
+
+- [ ] Locally, create a new tag with the new version number: `git tag vx.y.z`
+- [ ] Push this tag up to the remote `git push origin vx.y.z`
+
+### Release workflow will run automatically
+
+We have a [release workflow](https://github.com/Shopify/spoom/actions/workflows/release.yml) that will publish your new gem version to rubygems.org via [Trusted Publishing](https://guides.rubygems.org/trusted-publishing/). This workflow must be approved by a member of the Ruby and Rails Infrastructure team at Shopify before it will run. Once it is approved, it will automatically publish a new gem version to rubygems.org and create a new GitHub release.
 
 ## Contributing
 

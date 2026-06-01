@@ -41,6 +41,11 @@ module Spoom
           "before_validation",
         ].freeze #: Array[String]
 
+        CALLBACK_CONDITIONS = [
+          "if",
+          "unless",
+        ].freeze #: Array[String]
+
         CRUD_METHODS = [
           "assign_attributes",
           "create",
@@ -63,9 +68,23 @@ module Spoom
         #: (Send send) -> void
         def on_send(send)
           if send.recv.nil? && CALLBACKS.include?(send.name)
+            # Process direct symbol arguments
             send.each_arg(Prism::SymbolNode) do |arg|
               @index.reference_method(arg.unescaped, send.location)
             end
+
+            # Process hash arguments for conditions like if: :method_name
+            send.each_arg_assoc do |key, value|
+              key = key.slice.delete_suffix(":")
+
+              case key
+              when *CALLBACK_CONDITIONS
+                if value&.is_a?(Prism::SymbolNode)
+                  @index.reference_method(value.unescaped, send.location)
+                end
+              end
+            end
+
             return
           end
 

@@ -22,7 +22,7 @@ module Spoom
           Error while parsing foo.rb:
           - unexpected end-of-input; expected a `)` to close the parameters (at 1:8)
           - unexpected end-of-input, assuming it is closing the parent top level context (at 1:8)
-          - expected an `end` to close the `def` statement (at 1:8)
+          - expected an `end` to close the `def` statement (at 1:0)
         ERRORS
       end
 

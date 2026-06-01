@@ -19,9 +19,9 @@ module Spoom
             ruby_contents.encode("UTF-8")
           end #: String
 
-          node, comments = Spoom.parse_ruby_with_comments(ruby_contents, file: file)
+          node, comments = Spoom.parse_ruby(ruby_contents, file: file)
           @node = node #: Prism::Node
-          @comments_by_line = comments.to_h { |c| [c.location.start_line, c] } #: Hash[Integer, Prism::Comment]
+          @comments = comments #: Array[Prism::Comment]
           @ruby_bytes = ruby_contents.bytes #: Array[Integer]
           @rewriter = Spoom::Source::Rewriter.new #: Source::Rewriter
         end
@@ -54,6 +54,16 @@ module Spoom
         #: (Integer) -> Integer
         def adjust_to_line_end(offset)
           offset += 1 while offset < @ruby_bytes.size && @ruby_bytes[offset] != "\n".ord
+          offset
+        end
+
+        # Consume the next blank line if any
+        #: (Integer) -> Integer
+        def adjust_to_new_line(offset)
+          if offset + 1 < @ruby_bytes.size && @ruby_bytes[offset + 1] == "\n".ord
+            offset += 1
+          end
+
           offset
         end
       end

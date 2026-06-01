@@ -25,23 +25,72 @@ module Spoom
 
         # Converts all `sig` nodes to RBS comments in the given Ruby code.
         # It also handles type members and class annotations.
-        #: (String ruby_contents, file: String, ?positional_names: bool) -> String
-        def sorbet_sigs_to_rbs_comments(ruby_contents, file:, positional_names: true)
-          SorbetSigsToRBSComments.new(ruby_contents, file: file, positional_names: positional_names).rewrite
+        #: (
+        #|   String,
+        #|   file: String,
+        #|   ?positional_names: bool,
+        #|   ?max_line_length: Integer?,
+        #|   ?translate_generics: bool,
+        #|   ?translate_helpers: bool,
+        #|   ?translate_abstract_methods: bool
+        #| ) -> String
+        def sorbet_sigs_to_rbs_comments(
+          ruby_contents, file:, positional_names: true, max_line_length: nil,
+          translate_generics: true,
+          translate_helpers: true,
+          translate_abstract_methods: true
+        )
+          SorbetSigsToRBSComments.new(
+            ruby_contents,
+            file: file,
+            positional_names: positional_names,
+            max_line_length: max_line_length,
+            translate_generics: translate_generics,
+            translate_helpers: translate_helpers,
+            translate_abstract_methods: translate_abstract_methods,
+          ).rewrite
         end
 
         # Converts all the RBS comments in the given Ruby code to `sig` nodes.
         # It also handles type members and class annotations.
-        #: (String ruby_contents, file: String) -> String
-        def rbs_comments_to_sorbet_sigs(ruby_contents, file:)
-          RBSCommentsToSorbetSigs.new(ruby_contents, file: file).rewrite
+        #: (String ruby_contents, file: String, ?max_line_length: Integer?, ?overloads_strategy: Symbol) -> String
+        def rbs_comments_to_sorbet_sigs(ruby_contents, file:, max_line_length: nil, overloads_strategy: :translate_all)
+          RBSCommentsToSorbetSigs.rewrite_if_needed(
+            ruby_contents,
+            file: file,
+            max_line_length: max_line_length,
+            overloads_strategy: overloads_strategy,
+          )
         end
 
         # Converts all `T.let` and `T.cast` nodes to RBS comments in the given Ruby code.
         # It also handles type members and class annotations.
-        #: (String ruby_contents, file: String) -> String
-        def sorbet_assertions_to_rbs_comments(ruby_contents, file:)
-          SorbetAssertionsToRBSComments.new(ruby_contents, file: file).rewrite
+        #: (
+        #|  String,
+        #|  file: String,
+        #|  ?translate_t_let: bool,
+        #|  ?translate_t_cast: bool,
+        #|  ?translate_t_bind: bool,
+        #|  ?translate_t_must: bool,
+        #|  ?translate_t_unsafe: bool
+        #| ) -> String
+        def sorbet_assertions_to_rbs_comments(
+          ruby_contents, file:,
+          translate_t_let: true,
+          translate_t_cast: true,
+          translate_t_bind: true,
+          translate_t_must: true,
+          translate_t_unsafe: true
+        )
+          SorbetAssertionsToRBSComments.new(
+            ruby_contents,
+            file: file,
+            translate_t_let: translate_t_let,
+            translate_t_cast: translate_t_cast,
+            translate_t_bind: translate_t_bind,
+            translate_t_must: translate_t_must,
+            translate_t_unsafe: translate_t_unsafe,
+          ).rewrite
         end
       end
     end

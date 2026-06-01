@@ -76,6 +76,24 @@ module Spoom
           refute(result.status)
         end
 
+        def test_translate_does_not_count_files_with_nothing_to_translate
+          @project.write!("file.rb", <<~RB)
+            # typed: true
+
+            def foo; end
+          RB
+
+          result = @project.spoom("srb sigs translate --from rbs --to rbi --no-color")
+
+          assert_empty(result.err)
+          assert(result.status)
+          assert_equal(<<~OUT, result.out)
+            Translating signatures from `rbs` to `rbi` in `1` file...
+
+            Translated signatures in `0` files.
+          OUT
+        end
+
         def test_translate_only_selected_files
           @project.write!("a/file1.rb", <<~RB)
             sig { void }
@@ -206,10 +224,153 @@ module Spoom
           RB
         end
 
+        def test_translate_to_rbs_with_max_line_length_error
+          result = @project.spoom("srb sigs translate --no-color --max-line-length -1")
+
+          assert_equal(<<~ERR, result.err)
+            Error: --max-line-length can't be negative
+          ERR
+          refute(result.status)
+        end
+
+        def test_translate_to_rbs_with_max_line_length_by_default
+          @project.write!("file.rb", <<~RB)
+            sig do
+              params(
+                param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
+                param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
+              ).void
+            end
+            def foo(param1:, param2:); end
+          RB
+
+          result = @project.spoom("srb sigs translate --no-color")
+
+          assert_empty(result.err)
+          assert(result.status)
+
+          assert_equal(<<~RB, @project.read("file.rb"))
+            #: (
+            #|   param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
+            #|   param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
+            #| ) -> void
+            def foo(param1:, param2:); end
+          RB
+        end
+
+        def test_translate_to_rbs_without_max_line_length
+          @project.write!("file.rb", <<~RB)
+            sig do
+              params(
+                param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
+                param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
+              ).void
+            end
+            def foo(param1:, param2:); end
+          RB
+
+          result = @project.spoom("srb sigs translate --no-color --max-line-length 0")
+
+          assert_empty(result.err)
+          assert(result.status)
+
+          assert_equal(<<~RB, @project.read("file.rb"))
+            #: (param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType, param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType) -> void
+            def foo(param1:, param2:); end
+          RB
+        end
+
+        def test_translate_to_rbs_translate_generics_option
+          contents = <<~RB
+            class A
+              extend T::Generic
+
+              E = type_member
+            end
+          RB
+
+          @project.write!("file.rb", contents)
+
+          result = @project.spoom("srb sigs translate --no-color --from rbs --to rbi")
+
+          assert_empty(result.err)
+          assert(result.status)
+          assert_equal(contents, @project.read("file.rb"))
+
+          result = @project.spoom("srb sigs translate --no-color --from rbi --to rbs --translate-generics")
+
+          assert_empty(result.err)
+          assert(result.status)
+          assert_equal(<<~RB, @project.read("file.rb"))
+            #: [E]
+            class A
+            end
+          RB
+        end
+
+        def test_translate_to_rbs_translate_helpers_option
+          contents = <<~RB
+            class A
+              extend T::Helpers
+
+              abstract!
+            end
+          RB
+
+          @project.write!("file.rb", contents)
+
+          result = @project.spoom("srb sigs translate --no-color --from rbi --to rbs")
+
+          assert_empty(result.err)
+          assert(result.status)
+          assert_equal(contents, @project.read("file.rb"))
+
+          result = @project.spoom("srb sigs translate --no-color --from rbi --to rbs --translate-helpers")
+
+          assert_empty(result.err)
+          assert(result.status)
+          assert_equal(<<~RB, @project.read("file.rb"))
+            # @abstract
+            class A
+            end
+          RB
+        end
+
+        def test_translate_to_rbs_translate_abstract_methods_option
+          contents = <<~RB
+            class A
+              sig { abstract.void }
+              def foo; end
+            end
+          RB
+
+          @project.write!("file.rb", contents)
+
+          result = @project.spoom("srb sigs translate --no-color --from rbi --to rbs")
+
+          assert_empty(result.err)
+          assert(result.status)
+          assert_equal(contents, @project.read("file.rb"))
+
+          result = @project.spoom("srb sigs translate --no-color --from rbi --to rbs --translate-abstract-methods")
+
+          assert_empty(result.err)
+          assert(result.status)
+          assert_equal(<<~RB, @project.read("file.rb"))
+            class A
+              # @abstract
+              #: -> void
+              def foo = raise NotImplementedError, "Abstract method called"
+            end
+          RB
+        end
+
         # translate --from rbs --to rbi
 
         def test_translate_from_rbs_to_rbi
           @project.write!("file.rb", <<~RB)
+            # typed: true
+
             #: -> void
             def foo; end
           RB
@@ -225,8 +386,63 @@ module Spoom
           assert(result.status)
 
           assert_equal(<<~RB, @project.read("file.rb"))
+            # typed: true
+
             sig { void }
             def foo; end
+          RB
+        end
+
+        def test_translate_to_rbi_with_max_line_length_by_default
+          @project.write!("file.rb", <<~RB)
+            # typed: true
+
+            #: (
+            #|   param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
+            #|   param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
+            #| ) -> void
+            def foo(param1:, param2:); end
+          RB
+
+          result = @project.spoom("srb sigs translate --no-color --from rbs --to rbi")
+
+          assert_empty(result.err)
+          assert(result.status)
+
+          assert_equal(<<~RB, @project.read("file.rb"))
+            # typed: true
+
+            sig do
+              params(
+                param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
+                param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
+              ).void
+            end
+            def foo(param1:, param2:); end
+          RB
+        end
+
+        def test_translate_to_rbi_without_max_line_length
+          @project.write!("file.rb", <<~RB)
+            # typed: true
+
+            #: (
+            #|   param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
+            #|   param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
+            #| ) -> void
+            def foo(param1:, param2:); end
+          RB
+
+          result = @project.spoom("srb sigs translate --no-color --from rbs --to rbi --max-line-length 0")
+
+          assert_empty(result.err)
+          assert(result.status)
+
+          assert_equal(<<~RB, @project.read("file.rb"))
+            # typed: true
+
+            sig { params(param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType, param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType).void }
+            def foo(param1:, param2:); end
           RB
         end
 
@@ -258,6 +474,8 @@ module Spoom
         def test_export_create_rbi_file
           @project.write!("foo.gemspec", GEMSPEC)
           @project.write!("lib/foo.rb", <<~RB)
+            # typed: true
+
             class Foo
               # ignored comment
               #: -> void
@@ -275,7 +493,7 @@ module Spoom
 
             # DO NOT EDIT MANUALLY
             # This is an autogenerated file for types exported from the `foo` gem.
-            # Please instead update this file by running `spoom srb sigs export`.
+            # Please instead update this file by running `bundle exec spoom srb sigs export`.
 
             class Foo
               sig { void }
@@ -287,6 +505,8 @@ module Spoom
         def test_export_check_sync_raises_if_rbi_is_not_up_to_date
           @project.write!("foo.gemspec", GEMSPEC)
           @project.write!("lib/foo.rb", <<~RB)
+            # typed: true
+
             class Foo
               #: -> void
               def bar; end
@@ -301,7 +521,7 @@ module Spoom
 
             # DO NOT EDIT MANUALLY
             # This is an autogenerated file for types exported from the `foo` gem.
-            # Please instead update this file by running `spoom srb sigs export`.
+            # Please instead update this file by running `bundle exec spoom srb sigs export`.
 
             class Foo
               sig { void }
@@ -328,7 +548,7 @@ module Spoom
 
             Error: The RBI file at `rbi/foo.rbi` is not up to date
 
-            Please run `spoom srb sigs export` to update it.
+            Please run `bundle exec spoom srb sigs export` to update it.
           ERR
 
           # Original RBI file is not modified
@@ -338,6 +558,8 @@ module Spoom
         def test_export_check_sync_does_not_raise_if_rbi_is_up_to_date
           @project.write!("foo.gemspec", GEMSPEC)
           @project.write!("lib/foo.rb", <<~RB)
+            # typed: true
+
             class Foo
               #: -> void
               def bar; end
@@ -352,7 +574,7 @@ module Spoom
 
             # DO NOT EDIT MANUALLY
             # This is an autogenerated file for types exported from the `foo` gem.
-            # Please instead update this file by running `spoom srb sigs export`.
+            # Please instead update this file by running `bundle exec spoom srb sigs export`.
 
             class Foo
               sig { void }

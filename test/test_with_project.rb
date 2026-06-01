@@ -4,11 +4,9 @@
 require "test_helper"
 
 module Spoom
+  # @abstract
   class TestWithProject < Minitest::Test
-    extend T::Helpers
     include TestHelper
-
-    abstract!
 
     #: TestProject
     attr_reader :project

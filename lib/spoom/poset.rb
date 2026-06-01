@@ -6,12 +6,9 @@ module Spoom
   #
   # The partial order relation is a binary relation that is reflexive, antisymmetric, and transitive.
   # It can be used to represent a hierarchy of classes or modules, the dependencies between gems, etc.
+  #: [E < Object]
   class Poset
-    extend T::Generic
-
     class Error < Spoom::Error; end
-
-    E = type_member { { upper: Object } }
 
     #: -> void
     def initialize
@@ -35,7 +32,7 @@ module Spoom
       element = @elements[value]
       return element if element
 
-      @elements[value] = Element[E].new(value)
+      @elements[value] = Element.new(value) #: Element[E]
     end
 
     # Is the given value a element in the POSet?
@@ -122,7 +119,7 @@ module Spoom
             dot << "  \"#{value}\" -> \"#{to}\";\n"
           end
         end
-        if transitive # rubocop:disable Style/Next
+        if transitive
           element.ancestors.each do |ancestor|
             dot << "  \"#{value}\" -> \"#{ancestor}\" [style=dotted];\n"
           end
@@ -132,11 +129,9 @@ module Spoom
     end
 
     # An element in a POSet
+    #: [E < Object]
     class Element
-      extend T::Generic
       include Comparable
-
-      E = type_member { { upper: Object } }
 
       # The value held by this element
       #: E

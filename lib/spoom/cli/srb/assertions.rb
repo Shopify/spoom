@@ -10,6 +10,11 @@ module Spoom
         desc "translate", "Translate type assertions from/to RBI and RBS"
         option :from, type: :string, aliases: :f, desc: "From format", enum: ["rbi"], default: "rbi"
         option :to, type: :string, aliases: :t, desc: "To format", enum: ["rbs"], default: "rbs"
+        option :translate_t_let, type: :boolean, aliases: :t_let, desc: "Translate `T.let`", default: true
+        option :translate_t_cast, type: :boolean, aliases: :t_cast, desc: "Translate `T.cast`", default: true
+        option :translate_t_bind, type: :boolean, aliases: :t_bind, desc: "Translate `T.bind`", default: true
+        option :translate_t_must, type: :boolean, aliases: :t_must, desc: "Translate `T.must`", default: true
+        option :translate_t_unsafe, type: :boolean, aliases: :t_unsafe, desc: "Translate `T.unsafe`", default: true
         def translate(*paths)
           from = options[:from]
           to = options[:to]
@@ -19,7 +24,15 @@ module Spoom
             "in `#{files.size}` file#{files.size == 1 ? "" : "s"}...\n\n")
 
           transformed_files = transform_files(files) do |file, contents|
-            Spoom::Sorbet::Translate.sorbet_assertions_to_rbs_comments(contents, file: file)
+            Spoom::Sorbet::Translate.sorbet_assertions_to_rbs_comments(
+              contents,
+              file: file,
+              translate_t_let: options[:translate_t_let],
+              translate_t_cast: options[:translate_t_cast],
+              translate_t_bind: options[:translate_t_bind],
+              translate_t_must: options[:translate_t_must],
+              translate_t_unsafe: options[:translate_t_unsafe],
+            )
           end
 
           say("Translated type assertions in `#{transformed_files}` file#{transformed_files == 1 ? "" : "s"}.")

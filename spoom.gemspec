@@ -28,13 +28,13 @@ Gem::Specification.new do |spec|
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
 
   spec.add_development_dependency("bundler", ">= 2.2.10")
-  spec.add_development_dependency("minitest", "~> 5.0")
   spec.add_development_dependency("minitest-reporters")
-  spec.add_development_dependency("rake", "~> 13.2.1")
+  spec.add_development_dependency("rake", "~> 13.4.2")
 
   spec.add_dependency("erubi", ">= 1.10.0")
   spec.add_dependency("prism", ">= 0.28.0")
   spec.add_dependency("rbi", ">= 0.3.3")
+  spec.add_dependency("rbs", ">= 4.0.0.dev.5")
   spec.add_dependency("rexml", ">= 3.2.6")
   spec.add_dependency("sorbet-static-and-runtime", ">= 0.5.10187")
   spec.add_dependency("thor", ">= 0.19.2")

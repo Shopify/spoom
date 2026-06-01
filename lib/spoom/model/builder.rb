@@ -5,15 +5,12 @@ module Spoom
   class Model
     # Populate a Model by visiting the nodes from a Ruby file
     class Builder < NamespaceVisitor
-      #: (Model model, String file, comments: Array[Prism::Comment]) -> void
-      def initialize(model, file, comments:)
+      #: (Model model, String file) -> void
+      def initialize(model, file)
         super()
 
         @model = model
         @file = file
-        @comments_by_line = comments.to_h do |c|
-          [c.location.start_line, c]
-        end #: Hash[Integer, Prism::Comment]
         @namespace_nesting = [] #: Array[Namespace]
         @visibility_stack = [Visibility::Public] #: Array[Visibility]
         @last_sigs = [] #: Array[Sig]
@@ -263,22 +260,20 @@ module Spoom
 
       #: (Prism::Node node) -> Array[Comment]
       def node_comments(node)
+        last_line = node.location.start_line
         comments = []
 
-        start_line = node.location.start_line
-        start_line -= 1 unless @comments_by_line.key?(start_line)
+        node.location.leading_comments.reverse_each do |comment|
+          if comment.location.start_line < last_line - 1
+            break
+          end
 
-        start_line.downto(1) do |line|
-          comment = @comments_by_line[line]
-          break unless comment
+          last_line = comment.location.start_line
 
-          spoom_comment = Comment.new(
+          comments.unshift(Comment.new(
             comment.slice.gsub(/^#\s?/, "").rstrip,
             Location.from_prism(@file, comment.location),
-          )
-
-          comments.unshift(spoom_comment)
-          @comments_by_line.delete(line)
+          ))
         end
 
         comments

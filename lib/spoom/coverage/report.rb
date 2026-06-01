@@ -7,11 +7,8 @@ require "erb"
 
 module Spoom
   module Coverage
+    # @abstract
     class Template
-      extend T::Helpers
-
-      abstract!
-
       # Create a new template from an Erb file path
       #: (template: String) -> void
       def initialize(template:)
@@ -34,12 +31,8 @@ module Spoom
       end
     end
 
+    # @abstract
     class Page < Template
-      extend T::Sig
-      extend T::Helpers
-
-      abstract!
-
       TEMPLATE = "#{Spoom::SPOOM_PATH}/templates/page.erb" #: String
 
       #: String
@@ -75,8 +68,9 @@ module Spoom
         cards.map(&:html).join("\n")
       end
 
-      sig { abstract.returns(T::Array[Cards::Card]) }
-      def cards; end
+      # @abstract
+      #: -> Array[Cards::Card]
+      def cards = raise NotImplementedError, "Abstract method called"
 
       #: -> String
       def footer_html
@@ -86,8 +80,6 @@ module Spoom
 
     module Cards
       class Card < Template
-        extend T::Sig
-
         TEMPLATE = "#{Spoom::SPOOM_PATH}/templates/card.erb" #: String
 
         #: String?
@@ -101,11 +93,8 @@ module Spoom
         end
       end
 
+      # @abstract
       class Erb < Card
-        extend T::Helpers
-
-        abstract!
-
         #: -> void
         def initialize; end # rubocop:disable Lint/MissingSuper
 
@@ -115,8 +104,9 @@ module Spoom
           ERB.new(erb).result(get_binding)
         end
 
-        sig { abstract.returns(String) }
-        def erb; end
+        # @abstract
+        #: -> String
+        def erb = raise NotImplementedError, "Abstract method called"
       end
 
       class Snapshot < Card
@@ -148,7 +138,12 @@ module Spoom
       end
 
       class Map < Card
-        #: (file_tree: FileTree, nodes_strictnesses: Hash[FileTree::Node, String?], nodes_strictness_scores: Hash[FileTree::Node, Float], ?title: String) -> void
+        #: (
+        #|   file_tree: FileTree,
+        #|   nodes_strictnesses: Hash[FileTree::Node, String?],
+        #|   nodes_strictness_scores: Hash[FileTree::Node, Float],
+        #|   ?title: String
+        #| ) -> void
         def initialize(file_tree:, nodes_strictnesses:, nodes_strictness_scores:, title: "Strictness Map")
           super(
             title: title,
@@ -232,7 +227,16 @@ module Spoom
     end
 
     class Report < Page
-      #: (project_name: String, palette: D3::ColorPalette, snapshots: Array[Snapshot], file_tree: FileTree, nodes_strictnesses: Hash[FileTree::Node, String?], nodes_strictness_scores: Hash[FileTree::Node, Float], ?sorbet_intro_commit: String?, ?sorbet_intro_date: Time?) -> void
+      #: (
+      #|   project_name: String,
+      #|   palette: D3::ColorPalette,
+      #|   snapshots: Array[Snapshot],
+      #|   file_tree: FileTree,
+      #|   nodes_strictnesses: Hash[FileTree::Node, String?],
+      #|   nodes_strictness_scores: Hash[FileTree::Node, Float],
+      #|   ?sorbet_intro_commit: String?,
+      #|   ?sorbet_intro_date: Time?
+      #| ) -> void
       def initialize(
         project_name:,
         palette:,

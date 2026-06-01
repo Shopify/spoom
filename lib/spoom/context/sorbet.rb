@@ -4,11 +4,8 @@
 module Spoom
   class Context
     # Sorbet features for a context
+    # @requires_ancestor: Context
     module Sorbet
-      extend T::Helpers
-
-      requires_ancestor { Context }
-
       # Run `bundle exec srb` in this context directory
       #: (*String arg, ?sorbet_bin: String?, ?capture_err: bool) -> ExecResult
       def srb(*arg, sorbet_bin: nil, capture_err: true)
@@ -45,10 +42,15 @@ module Spoom
           sorbet_bin: sorbet_bin,
           capture_err: capture_err,
         )
-        return unless file?(metrics_file)
 
         metrics_path = absolute_path_to(metrics_file)
-        metrics = Spoom::Sorbet::MetricsParser.parse_file(metrics_path)
+
+        begin
+          metrics = Spoom::Sorbet::Metrics::MetricsFileParser.parse_file(metrics_path)
+        rescue Errno::ENOENT, Errno::EACCES
+          return
+        end
+
         remove!(metrics_file)
         metrics
       end

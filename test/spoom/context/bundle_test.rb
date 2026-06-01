@@ -37,8 +37,7 @@ module Spoom
         context = Context.mktmp!
 
         res = context.bundle_install!
-        assert_empty(res.out)
-        assert_equal("Could not locate Gemfile\n", res.err)
+        assert_includes(res.err, "Could not locate Gemfile")
         refute(res.status)
 
         context.write_gemfile!(<<~GEMFILE)

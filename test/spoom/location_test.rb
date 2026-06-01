@@ -71,39 +71,39 @@ module Spoom
       def test_include
         location1 = Location.new("foo.rb", start_line: 1, start_column: 2, end_line: 3, end_column: 4)
         location2 = Location.new("foo.rb", start_line: 1, start_column: 2, end_line: 3, end_column: 4)
-        assert(location1.include?(location2))
+        assert_includes(location1, location2)
 
         location3 = Location.new("foo.rb", start_line: 1, start_column: 2, end_line: 3, end_column: 5)
-        refute(location1.include?(location3))
-        assert(location3.include?(location1))
+        refute_includes(location1, location3)
+        assert_includes(location3, location1)
 
         location4 = Location.new("foo.rb", start_line: 1, start_column: 2, end_line: 4, end_column: 4)
-        refute(location1.include?(location4))
-        assert(location4.include?(location1))
+        refute_includes(location1, location4)
+        assert_includes(location4, location1)
 
         location5 = Location.new("foo.rb", start_line: 1, start_column: 3, end_line: 3, end_column: 4)
-        assert(location1.include?(location5))
-        refute(location5.include?(location1))
+        assert_includes(location1, location5)
+        refute_includes(location5, location1)
 
         location6 = Location.new("foo.rb", start_line: 2, start_column: 2, end_line: 3, end_column: 4)
-        assert(location1.include?(location6))
-        refute(location6.include?(location1))
+        assert_includes(location1, location6)
+        refute_includes(location6, location1)
 
         location7 = Location.new("bar.rb", start_line: 1, start_column: 2, end_line: 3, end_column: 4)
-        refute(location1.include?(location7))
-        refute(location7.include?(location1))
+        refute_includes(location1, location7)
+        refute_includes(location7, location1)
 
         location8 = Location.new("foo.rb")
         location9 = Location.new("foo.rb")
-        assert(location8.include?(location9))
-        assert(location9.include?(location8))
+        assert_includes(location8, location9)
+        assert_includes(location9, location8)
 
-        assert(location8.include?(location1))
-        refute(location1.include?(location8))
+        assert_includes(location8, location1)
+        refute_includes(location1, location8)
 
         location10 = Location.new("foo.rb", start_line: 1, end_line: 3)
-        assert(location10.include?(location1))
-        refute(location1.include?(location10))
+        assert_includes(location10, location1)
+        refute_includes(location1, location10)
       end
 
       def test_comparison

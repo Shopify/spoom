@@ -40,14 +40,12 @@ module Spoom
         @no_stdlib = false #: bool
       end
 
-      #: -> Config
-      def copy
-        new_config = Sorbet::Config.new
-        new_config.paths.concat(@paths)
-        new_config.ignore.concat(@ignore)
-        new_config.allowed_extensions.concat(@allowed_extensions)
-        new_config.no_stdlib = @no_stdlib
-        new_config
+      #: (Config source) -> void
+      def initialize_copy(source)
+        super
+        @paths = @paths.dup
+        @ignore = @ignore.dup
+        @allowed_extensions = @allowed_extensions.dup
       end
 
       # Returns self as a string of options that can be passed to Sorbet
@@ -107,8 +105,8 @@ module Spoom
             when /^--dir=/
               config.paths << parse_option(line)
               next
-            when /^--no-stdlib$/
-              config.no_stdlib = true
+            when /^--no-stdlib(=|$)/
+              config.no_stdlib = parse_bool_option(line)
               next
             when /^--.*=/
               next
@@ -142,6 +140,17 @@ module Spoom
         #: (String line) -> String
         def parse_option(line)
           T.must(line.split("=").last).strip
+        end
+
+        #: (String line) -> bool
+        def parse_bool_option(line)
+          return true unless line.include?("=") # `--foo` is equivalent to `--foo=true`
+
+          case parse_option(line)
+          when "true", "True", "t", "T", "1" then true
+          when "false", "False", "f", "F", "0" then false
+          else raise ArgumentError, "invalid boolean value: #{parse_option(line).inspect}"
+          end
         end
       end
     end

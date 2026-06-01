@@ -4,21 +4,22 @@
 module Spoom
   class Context
     # Bundle features for a context
+    # @requires_ancestor: Context
     module Bundle
-      extend T::Helpers
-
-      requires_ancestor { Context }
-
       # Read the contents of the Gemfile in this context directory
       #: -> String?
       def read_gemfile
         read("Gemfile")
+      rescue Errno::ENOENT, Errno::EACCES
+        nil
       end
 
       # Read the contents of the Gemfile.lock in this context directory
       #: -> String?
       def read_gemfile_lock
         read("Gemfile.lock")
+      rescue Errno::ENOENT, Errno::EACCES
+        nil
       end
 
       # Set the `contents` of the Gemfile in this context directory
@@ -48,10 +49,11 @@ module Spoom
 
       #: -> Hash[String, Bundler::LazySpecification]
       def gemfile_lock_specs
-        return {} unless file?("Gemfile.lock")
+        lockfile = read_gemfile_lock
+        return {} unless lockfile
 
-        parser = Bundler::LockfileParser.new(read_gemfile_lock)
-        parser.specs.map { |spec| [spec.name, spec] }.to_h
+        parser = Bundler::LockfileParser.new(lockfile)
+        parser.specs.to_h { |spec| [spec.name, spec] }
       end
 
       # Get `gem` version from the `Gemfile.lock` content

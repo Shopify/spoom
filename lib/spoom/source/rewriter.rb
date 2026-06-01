@@ -29,11 +29,11 @@ module Spoom
     class Edit
       # @abstract
       #: (Array[Integer]) -> void
-      def apply(bytes); end
+      def apply(bytes) = raise NotImplementedError, "Abstract method called"
 
       # @abstract
       #: -> [Integer, Integer]
-      def range; end
+      def range = raise NotImplementedError, "Abstract method called"
     end
 
     class Insert < Edit
@@ -92,7 +92,8 @@ module Spoom
       # @override
       #: (Array[Integer]) -> void
       def apply(bytes)
-        raise PositionError, "Position is out of bounds" if from < 0 || to < 0 || from > bytes.size || to > bytes.size || from > to
+        raise PositionError,
+          "Position is out of bounds" if from < 0 || to < 0 || from > bytes.size || to > bytes.size || from > to
 
         bytes[from..to] = *text.bytes
       end
@@ -125,7 +126,8 @@ module Spoom
       # @override
       #: (Array[untyped]) -> void
       def apply(bytes)
-        raise PositionError, "Position is out of bounds" if from < 0 || to < 0 || from > bytes.size || to > bytes.size || from > to
+        raise PositionError,
+          "Position is out of bounds" if from < 0 || to < 0 || from > bytes.size || to > bytes.size || from > to
 
         bytes[from..to] = "".bytes
       end
@@ -158,7 +160,10 @@ module Spoom
       def rewrite!(bytes)
         # To avoid remapping positions after each edit,
         # we sort the changes by position and apply them in reverse order.
-        @edits.sort_by(&:range).reverse_each do |edit|
+        # When ranges are equal, preserve the original order
+        @edits.each_with_index.sort_by do |(edit, idx)|
+          [edit.range, idx]
+        end.reverse_each do |(edit, _)|
           edit.apply(bytes)
         end
       end

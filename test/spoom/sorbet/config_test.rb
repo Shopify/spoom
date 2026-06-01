@@ -86,15 +86,51 @@ module Spoom
         assert_empty(config.allowed_extensions)
       end
 
-      def test_parses_a_config_string_with_no_stdlib
+      def test_parses_a_config_string_with_bool_option
+        example_bool_option = "--no-stdlib"
+
         config = Spoom::Sorbet::Config.parse_string(<<~CONFIG)
           a
           b
-          --no-stdlib
+          #{example_bool_option}
           c
         CONFIG
         assert_equal(["a", "b", "c"], config.paths)
-        assert(config.no_stdlib)
+        assert_predicate(config, :no_stdlib)
+      end
+
+      def test_parses_bool_option_value_defaults_to_true
+        config = Spoom::Sorbet::Config.parse_string("--no-stdlib")
+
+        assert_predicate(config, :no_stdlib)
+      end
+
+      def test_parses_bool_option_truthy_values
+        example_bool_option = "--no-stdlib"
+
+        ["true", "True", "t", "T", "1"].each do |value|
+          config = Spoom::Sorbet::Config.parse_string("#{example_bool_option}=#{value}")
+          assert_predicate(config, :no_stdlib)
+        end
+      end
+
+      def test_parses_bool_option_falsy_values
+        example_bool_option = "--no-stdlib"
+
+        ["false", "False", "f", "F", "0"].each do |value|
+          config = Spoom::Sorbet::Config.parse_string("#{example_bool_option}=#{value}")
+          refute_predicate(config, :no_stdlib)
+        end
+      end
+
+      def test_parses_no_stdlib_equals_true
+        config = Spoom::Sorbet::Config.parse_string("--no-stdlib=true")
+        assert_predicate(config, :no_stdlib)
+      end
+
+      def test_parses_no_stdlib_equals_false
+        config = Spoom::Sorbet::Config.parse_string("--no-stdlib=false")
+        refute_predicate(config, :no_stdlib)
       end
 
       def test_parses_a_config_string_with_mixed_options
@@ -171,7 +207,7 @@ module Spoom
         assert_equal(["."], config.paths)
         assert_equal([".git/", ".idea/", "vendor/"], config.ignore)
         assert_equal([".rb", ".rbi", ".rake", ".ru"], config.allowed_extensions)
-        assert(config.no_stdlib)
+        assert_predicate(config, :no_stdlib)
       end
 
       def test_parses_a_config_file_with_errors

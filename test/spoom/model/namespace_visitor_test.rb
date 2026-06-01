@@ -101,7 +101,7 @@ module Spoom
 
       #: (String rb) -> Hash[String, String]
       def namespaces_for_locs(rb)
-        node = Spoom.parse_ruby(rb, file: "foo.rb")
+        node, _ = Spoom.parse_ruby(rb, file: "foo.rb")
 
         visitor = NamespacesForLocs.new
         visitor.visit(node)

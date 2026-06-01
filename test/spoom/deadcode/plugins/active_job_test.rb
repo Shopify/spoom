@@ -49,6 +49,36 @@ module Spoom
           )
         end
 
+        def test_ignore_active_job_callbacks
+          @project.write!("app/jobs/foo.rb", <<~RB)
+            class FooJob
+              after_enqueue(:ignored1)
+              after_perform(:ignored2)
+              around_enqueue(:ignored3)
+              around_perform(:ignored4)
+              before_enqueue(:ignored5)
+              before_perform(:ignored6)
+
+              def ignored1; end
+              def ignored2; end
+              def ignored3; end
+              def ignored4; end
+              def ignored5; end
+              def ignored6; end
+              def dead; end
+            end
+          RB
+
+          index = index_with_plugins
+          assert_alive(index, "ignored1")
+          assert_alive(index, "ignored2")
+          assert_alive(index, "ignored3")
+          assert_alive(index, "ignored4")
+          assert_alive(index, "ignored5")
+          assert_alive(index, "ignored6")
+          assert_dead(index, "dead")
+        end
+
         private
 
         #: -> Deadcode::Index

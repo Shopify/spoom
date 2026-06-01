@@ -6,11 +6,8 @@ require_relative "base"
 module Spoom
   module Coverage
     module D3
+      # @abstract
       class Pie < Base
-        extend T::Helpers
-
-        abstract!
-
         #: (String id, String title, untyped data) -> void
         def initialize(id, title, data)
           super(id, data)

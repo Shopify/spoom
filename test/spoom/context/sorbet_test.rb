@@ -34,7 +34,7 @@ module Spoom
         context.write_gemfile!(<<~GEMFILE)
           source "https://rubygems.org"
 
-          gem "sorbet"
+          #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("sorbet")}
         GEMFILE
         context.bundle("config set --local path $GEM_HOME")
         context.bundle_install!
@@ -48,8 +48,8 @@ module Spoom
           a.rb:3: Method `foo` does not exist on `T.class_of(<root>)` https://srb.help/7003
                3 |foo(42)
                   ^^^
-          Errors: 1
         ERR
+        assert_includes(res.err, "Errors: 1")
         refute(res.status)
 
         context.write!("b.rb", <<~RB)
@@ -67,7 +67,7 @@ module Spoom
         context.write_gemfile!(<<~GEMFILE)
           source "https://rubygems.org"
 
-          gem "sorbet"
+          #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("sorbet")}
         GEMFILE
         context.bundle_install!
 
@@ -143,7 +143,7 @@ module Spoom
         context = Context.mktmp!
 
         res = context.srb_metrics("-e ''", sorbet_bin: Spoom::Sorbet::BIN_PATH)
-        assert_instance_of(Hash, res)
+        assert_instance_of(Counters, res)
         refute_empty(res)
 
         context.destroy!
@@ -163,7 +163,7 @@ module Spoom
         context.write_gemfile!(<<~GEMFILE)
           source "https://rubygems.org"
 
-          gem "sorbet"
+          #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("sorbet")}
         GEMFILE
         context.bundle_install!
 
@@ -177,7 +177,7 @@ module Spoom
         refute(context.has_sorbet_config?)
 
         context.write_sorbet_config!(".")
-        assert(context.has_sorbet_config?)
+        assert_predicate(context, :has_sorbet_config?)
 
         context.destroy!
       end

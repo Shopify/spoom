@@ -3,11 +3,8 @@
 
 module Spoom
   class Model
+    # @abstract
     class NamespaceVisitor < Visitor
-      extend T::Helpers
-
-      abstract!
-
       #: -> void
       def initialize
         super()
