@@ -8,18 +8,15 @@ module Spoom
     module Translate
       class RBSCommentsToLineMatchedSorbetSigsTest < Minitest::Test
         def test_translate_to_rbi_empty
-          contents = ""
-          assert_rewrites_rbs(from: contents, to: contents)
+          assert_rewrites_rbs_no_op("")
         end
 
         def test_translate_to_rbi_no_sigs
-          contents = <<~RB
+          assert_rewrites_rbs_no_op(<<~RBS)
             class A
               def foo; end
             end
-          RB
-
-          assert_rewrites_rbs(from: contents, to: contents)
+          RBS
         end
 
         def test_translate_to_rbi_top_level_sig
@@ -256,18 +253,16 @@ module Spoom
         end
 
         def test_translate_to_rbi_skips_sigs_with_errors
-          contents = <<~RB
+          assert_rewrites_rbs_no_op(<<~RBS)
             class A
               #: foo
               def foo; end
             end
-          RB
-
-          assert_rewrites_rbs(from: contents, to: contents)
+          RBS
         end
 
         def test_translate_to_rbi_ignores_yard_comments
-          contents = <<~RB
+          assert_rewrites_rbs_no_op(<<~RBS)
             class A
               #:nodoc:
               def foo; end
@@ -275,9 +270,7 @@ module Spoom
               #:yields:
               def bar; end
             end
-          RB
-
-          assert_rewrites_rbs(from: contents, to: contents)
+          RBS
         end
 
         def test_translate_to_rbi_multiline_sigs
@@ -346,13 +339,11 @@ module Spoom
         end
 
         def test_translate_to_rbi_does_not_insert_t_helpers_for_random_annotations
-          contents = <<~RB
+          assert_rewrites_rbs_no_op(<<~RBS)
             # @private
             class Foo
             end
-          RB
-
-          assert_rewrites_rbs(from: contents, to: contents)
+          RBS
         end
 
         def test_translate_to_rbi_helpers_with_right_order
@@ -495,7 +486,7 @@ module Spoom
         end
 
         def test_translate_to_rbi_selects_right_comments
-          contents = <<~RB
+          assert_rewrites_rbs_no_op(<<~RBS)
             #: -> void
 
             class Foo
@@ -509,9 +500,7 @@ module Spoom
                 def bar; end
               end
             end
-          RB
-
-          assert_rewrites_rbs(from: contents, to: contents)
+          RBS
         end
 
         def test_translate_type_alias
@@ -676,13 +665,11 @@ module Spoom
         end
 
         def test_translate_non_rbs_comment_as_leading_comment_on_class
-          contents = <<~RB
+          assert_rewrites_rbs_no_op(<<~RBS)
             #: not a valid rbs comment
             class Foo
             end
-          RB
-
-          assert_rewrites_rbs(from: contents, to: contents)
+          RBS
         end
 
         def test_translate_type_alias_as_leading_comment_on_class
@@ -799,6 +786,10 @@ module Spoom
           )
 
           assert_equal(expected_output, rewritten_output)
+        end
+
+        def assert_rewrites_rbs_no_op(content)
+          assert_rewrites_rbs(from: content, to: content)
         end
       end
     end
