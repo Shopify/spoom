@@ -50,22 +50,22 @@ module Spoom
           @index.reference_method(arg.unescaped, send.location)
 
           send.each_arg_assoc do |key, value|
-            key_name = key.slice.delete_suffix(":")
-            next unless FIELD_SYMBOL_OPTION_KEYS.include?(key_name)
-            next unless value
+            next unless key.is_a?(Prism::SymbolNode)
+            next unless FIELD_SYMBOL_OPTION_KEYS.include?(key.unescaped)
+            next unless value.is_a?(Prism::SymbolNode)
 
-            @index.reference_method(value.slice.delete_prefix(":"), send.location)
+            @index.reference_method(value.unescaped, send.location)
           end
         end
 
         #: (Send send) -> void
         def on_argument(send)
           send.each_arg_assoc do |key, value|
-            key_name = key.slice.delete_suffix(":")
-            next unless ARGUMENT_SYMBOL_OPTION_KEYS.include?(key_name)
-            next unless value
+            next unless key.is_a?(Prism::SymbolNode)
+            next unless ARGUMENT_SYMBOL_OPTION_KEYS.include?(key.unescaped)
+            next unless value.is_a?(Prism::SymbolNode)
 
-            @index.reference_method(value.slice.delete_prefix(":"), send.location)
+            @index.reference_method(value.unescaped, send.location)
           end
         end
 

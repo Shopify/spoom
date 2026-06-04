@@ -99,14 +99,20 @@ module Spoom
           @project.write!("foo.rb", <<~RB)
             class SomeType
               field :name, String, null: false, method: :custom_name
+              field :name2, String, null: false, method: %s[custom_name2]
+              field :name3, String, null: false, method: :"custom_name3"
 
               def custom_name; end
+              def custom_name2; end
+              def custom_name3; end
               def dead; end
             end
           RB
 
           index = index_with_plugins
           assert_alive(index, "custom_name")
+          assert_alive(index, "custom_name2")
+          assert_alive(index, "custom_name3")
           assert_dead(index, "dead")
         end
 
@@ -114,14 +120,17 @@ module Spoom
           @project.write!("foo.rb", <<~RB)
             class SomeMutation
               argument :input, String, required: true, method: :custom_input
+              argument :input2, String, required: true, method: %s[custom_input2]
 
               def custom_input; end
+              def custom_input2; end
               def dead; end
             end
           RB
 
           index = index_with_plugins
           assert_alive(index, "custom_input")
+          assert_alive(index, "custom_input2")
           assert_dead(index, "dead")
         end
 

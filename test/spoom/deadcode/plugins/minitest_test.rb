@@ -64,11 +64,15 @@ module Spoom
             class FooTest
               def alive1; end
               def alive2; end
+              def alive3; end
+              def alive4; end
               def dead; end
 
               def test_something
                 assert_predicate(foo, :alive1)
                 refute_predicate(foo, :alive2)
+                assert_predicate(foo, %s[alive3])
+                refute_predicate(foo, :"alive4")
               end
             end
           RB
@@ -76,6 +80,8 @@ module Spoom
           index = index_with_plugins
           assert_alive(index, "alive1")
           assert_alive(index, "alive2")
+          assert_alive(index, "alive3")
+          assert_alive(index, "alive4")
           assert_dead(index, "dead")
         end
 

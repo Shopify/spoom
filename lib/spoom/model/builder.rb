@@ -168,7 +168,7 @@ module Spoom
             next unless arg.is_a?(Prism::SymbolNode)
 
             AttrAccessor.new(
-              @model.register_symbol([*@names_nesting, arg.slice.delete_prefix(":")].join("::")),
+              @model.register_symbol([*@names_nesting, arg.unescaped].join("::")),
               owner: current_namespace,
               location: node_location(arg),
               visibility: current_visibility,
@@ -182,7 +182,7 @@ module Spoom
             next unless arg.is_a?(Prism::SymbolNode)
 
             AttrReader.new(
-              @model.register_symbol([*@names_nesting, arg.slice.delete_prefix(":")].join("::")),
+              @model.register_symbol([*@names_nesting, arg.unescaped].join("::")),
               owner: current_namespace,
               location: node_location(arg),
               visibility: current_visibility,
@@ -196,7 +196,7 @@ module Spoom
             next unless arg.is_a?(Prism::SymbolNode)
 
             AttrWriter.new(
-              @model.register_symbol([*@names_nesting, arg.slice.delete_prefix(":")].join("::")),
+              @model.register_symbol([*@names_nesting, arg.unescaped].join("::")),
               owner: current_namespace,
               location: node_location(arg),
               visibility: current_visibility,

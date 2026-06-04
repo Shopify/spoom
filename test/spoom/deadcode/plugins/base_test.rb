@@ -101,25 +101,29 @@ module Spoom
           plugin = Class.new(Base) do
             def on_send(send)
               return unless send.name == "dsl_method"
-              return if send.args.empty?
 
-              method_name = send.args.first.slice.delete_prefix(":")
-              @index.reference_method(method_name, send.location)
+              arg = send.args.first
+              return unless arg.is_a?(Prism::SymbolNode)
+
+              @index.reference_method(arg.unescaped, send.location)
             end
           end
 
           @project.write!("foo.rb", <<~RB)
             dsl_method :method1
             dsl_method :method2
+            dsl_method %s[method4]
 
             def method1; end
             def method2; end
             def method3; end
+            def method4; end
           RB
 
           index = deadcode_index(plugin_classes: [plugin])
           assert_alive(index, "method1")
           assert_alive(index, "method2")
+          assert_alive(index, "method4")
           assert_dead(index, "method3")
         end
 

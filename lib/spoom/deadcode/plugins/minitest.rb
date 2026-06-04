@@ -28,10 +28,10 @@ module Spoom
         def on_send(send)
           case send.name
           when "assert_predicate", "refute_predicate"
-            name = send.args[1]&.slice
-            return unless name
+            arg = send.args[1]
+            return unless arg.is_a?(Prism::SymbolNode)
 
-            @index.reference_method(name.delete_prefix(":"), send.location)
+            @index.reference_method(arg.unescaped, send.location)
           end
         end
       end

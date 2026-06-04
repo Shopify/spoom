@@ -48,12 +48,16 @@ module Spoom
               validates :attr6, :"validators/my_validator7" => true
               validates :attr7, if: :method4
               validates :attr7, unless: :method5
+              validates :attr8, if: %s[method6]
+              validates :attr9, unless: :"method7"
 
               def method1; end
               def method2; end
               def method3; end
               def method4; end
               def method5; end
+              def method6; end
+              def method7; end
             end
 
             class MyValidator1; end
@@ -81,6 +85,8 @@ module Spoom
           assert_alive(index, "method3")
           assert_alive(index, "method4")
           assert_alive(index, "method5")
+          assert_alive(index, "method6")
+          assert_alive(index, "method7")
         end
 
         def test_alive_nested_validation_option_symbols
@@ -92,6 +98,8 @@ module Spoom
               validates :attr4, exclusion: { in: :excluded_values }
               validates :attr5, numericality: { equal_to: :target_value, other_than: :avoid_value }
               validates :attr6, numericality: { less_than_or_equal_to: :upper_bound, greater_than_or_equal_to: :lower_bound }
+              validates :attr7, inclusion: { in: %s[percent_values] }
+              validates :attr8, format: { with: :"quoted_method" }
 
               def allowed_values; end
               def max_value; end
@@ -102,6 +110,8 @@ module Spoom
               def avoid_value; end
               def upper_bound; end
               def lower_bound; end
+              def percent_values; end
+              def quoted_method; end
               def dead_method; end
             end
           RB
@@ -116,6 +126,8 @@ module Spoom
           assert_alive(index, "avoid_value")
           assert_alive(index, "upper_bound")
           assert_alive(index, "lower_bound")
+          assert_alive(index, "percent_values")
+          assert_alive(index, "quoted_method")
           assert_dead(index, "dead_method")
         end
 

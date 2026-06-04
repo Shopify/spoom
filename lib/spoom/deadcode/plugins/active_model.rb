@@ -23,11 +23,13 @@ module Spoom
               @index.reference_method(arg.unescaped, send.location)
             end
             send.each_arg_assoc do |key, value|
-              key = key.slice.delete_suffix(":")
+              next unless key.is_a?(Prism::SymbolNode)
+
+              key = key.unescaped
 
               case key
               when "if", "unless"
-                @index.reference_method(value.slice.delete_prefix(":"), send.location) if value
+                @index.reference_method(value.unescaped, send.location) if value.is_a?(Prism::SymbolNode)
               else
                 @index.reference_constant(camelize(key), send.location)
 
@@ -67,7 +69,10 @@ module Spoom
           hash_node.elements.each do |assoc|
             next unless assoc.is_a?(Prism::AssocNode)
 
-            nested_key = assoc.key.slice.delete_suffix(":")
+            key = assoc.key
+            next unless key.is_a?(Prism::SymbolNode)
+
+            nested_key = key.unescaped
             next unless NESTED_METHOD_REFERENCE_KEYS.include?(nested_key)
 
             value = assoc.value

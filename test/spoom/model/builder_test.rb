@@ -199,6 +199,8 @@ module Spoom
           attr_reader :a1
           attr_writer :a2
           attr_accessor :a3, :a4
+          attr_reader :"a10"
+          attr_accessor %s[a11]
 
           class C1
             attr_reader :a5
@@ -226,6 +228,8 @@ module Spoom
             "AttrWriter(a2)",
             "AttrAccessor(a3)",
             "AttrAccessor(a4)",
+            "AttrReader(a10)",
+            "AttrAccessor(a11)",
             "AttrReader(C1::a5)",
             "AttrWriter(C1::a6)",
             "AttrReader(C1::a7)",

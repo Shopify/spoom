@@ -108,17 +108,20 @@ module Spoom
                 def method1=; end
                 def method2=; end
                 def method3=; end
+                def method4=; end
               end
 
               MyModel.#{method}(
                 method1: "foo",
                 method2: "bar",
+                "method4": "baz",
               )
             RB
 
             index = index_with_plugins
             assert_alive(index, "method1=")
             assert_alive(index, "method2=")
+            assert_alive(index, "method4=")
             assert_dead(index, "method3=")
           end
         end
@@ -149,16 +152,18 @@ module Spoom
                 def method1=; end
                 def method2=; end
                 def method3=; end
+                def method4=; end
               end
 
               MyModel.#{method}([
-                { method1: "foo", method2: "bar" }
+                { method1: "foo", method2: "bar", "method4": "baz" }
               ])
             RB
 
             index = index_with_plugins
             assert_alive(index, "method1=")
             assert_alive(index, "method2=")
+            assert_alive(index, "method4=")
             assert_dead(index, "method3=")
           end
         end
