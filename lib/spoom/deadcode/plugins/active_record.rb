@@ -75,11 +75,11 @@ module Spoom
 
             # Process hash arguments for conditions like if: :method_name
             send.each_arg_assoc do |key, value|
-              key = key.slice.delete_suffix(":")
+              next unless key.is_a?(Prism::SymbolNode)
 
-              case key
+              case key.unescaped
               when *CALLBACK_CONDITIONS
-                if value&.is_a?(Prism::SymbolNode)
+                if value.is_a?(Prism::SymbolNode)
                   @index.reference_method(value.unescaped, send.location)
                 end
               end
@@ -93,8 +93,9 @@ module Spoom
           case send.name
           when *CRUD_METHODS
             send.each_arg_assoc do |key, _value|
-              key = key.slice.delete_suffix(":")
-              @index.reference_method("#{key}=", send.location)
+              next unless key.is_a?(Prism::SymbolNode)
+
+              @index.reference_method("#{key.unescaped}=", send.location)
             end
           when *ARRAY_METHODS
             send.each_arg(Prism::ArrayNode) do |arg|
@@ -104,8 +105,10 @@ module Spoom
                 part.elements.each do |assoc|
                   next unless assoc.is_a?(Prism::AssocNode)
 
-                  key = assoc.key.slice.delete_suffix(":")
-                  @index.reference_method("#{key}=", send.location)
+                  key = assoc.key
+                  next unless key.is_a?(Prism::SymbolNode)
+
+                  @index.reference_method("#{key.unescaped}=", send.location)
                 end
               end
             end

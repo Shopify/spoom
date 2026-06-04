@@ -39,6 +39,8 @@ module Spoom
               after_action do MyFilter3; method5 end
               prepend_before_action :method6
               before_action :method7, if: :method8
+              before_action :method9, if: %s[method10]
+              after_action :method11, unless: :"method12"
 
               def method1; end
               def method2; end
@@ -48,6 +50,10 @@ module Spoom
               def method6; end
               def method7; end
               def method8; end
+              def method9; end
+              def method10; end
+              def method11; end
+              def method12; end
             end
 
             class MyFilter1; end
@@ -67,6 +73,10 @@ module Spoom
           assert_alive(index, "method6")
           assert_alive(index, "method7")
           assert_alive(index, "method8")
+          assert_alive(index, "method9")
+          assert_alive(index, "method10")
+          assert_alive(index, "method11")
+          assert_alive(index, "method12")
         end
 
         private

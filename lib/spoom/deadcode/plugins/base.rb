@@ -267,10 +267,11 @@ module Spoom
         # class MyPlugin < Spoom::Deadcode::Plugins::Base
         #   def on_send(send)
         #     return unless send.name == "dsl_method"
-        #     return if send.args.empty?
         #
-        #     method_name = send.args.first.slice.delete_prefix(":")
-        #     @index.reference_method(method_name, send.node, send.loc)
+        #     arg = send.args.first
+        #     return unless arg.is_a?(Prism::SymbolNode)
+        #
+        #     @index.reference_method(arg.unescaped, send.node, send.loc)
         #   end
         # end
         # ~~~
