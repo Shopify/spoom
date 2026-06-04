@@ -288,10 +288,15 @@ module Spoom
               def foo(a, b); end
             RBS
             to: <<~RBI,
-              sig { returns(::T::Array[Integer]) }
+              sig do returns(::T::Array[
+                Integer
+              ]) end
               attr_accessor :foo
 
-              sig { params(a: Integer, b: Integer).returns(Integer) }
+              sig do params(
+                a: Integer,
+                b: Integer
+              ).returns(Integer) end
               def foo(a, b); end
             RBI
           )
@@ -313,24 +318,14 @@ module Spoom
               end
             RBS
             to: <<~RBI,
-              class A
-                extend T::Helpers
-
-                abstract!
-
-                requires_ancestor { ::T.class_of(Foo::Bar) }
-
-                module B
-                  extend T::Helpers
-
-                  interface!
-
-                  sealed!
-
-                  class << self
-                    extend T::Helpers
-
-                    final!
+              # RBS_REWRITTEN_ANNOTATION: @abstract
+              # RBS_REWRITTEN_ANNOTATION: @requires_ancestor: singleton(Foo::Bar)
+              class A; extend T::Helpers; abstract!; requires_ancestor { ::T.class_of(Foo::Bar) }
+                # RBS_REWRITTEN_ANNOTATION: @interface
+                # RBS_REWRITTEN_ANNOTATION: @sealed
+                module B; extend T::Helpers; interface!; sealed!
+                  # RBS_REWRITTEN_ANNOTATION: @final
+                  class << self; extend T::Helpers; final!
                   end
                 end
               end
@@ -358,13 +353,10 @@ module Spoom
               end
             RBS
             to: <<~RBI,
-              # @foo
-              # @bar
-              module Baz
-                extend T::Helpers
-
-                requires_ancestor { Kernel }
-
+              # RBS_IGNORED_UNKNOWN_ANNOTATION: @foo
+              # RBS_IGNORED_UNKNOWN_ANNOTATION: @bar
+              # RBS_REWRITTEN_ANNOTATION: @requires_ancestor: Kernel
+              module Baz; extend T::Helpers; requires_ancestor { Kernel }
                 sig { void }
                 def foo; end
               end
@@ -386,20 +378,8 @@ module Spoom
               end
             RBS
             to: <<~RBI,
-              class A
-                extend T::Generic
-
-                A = type_member(:in)
-
-                B = type_member(:out)
-
-                module B
-                  extend T::Generic
-
-                  A = type_member
-
-                  B = type_member {{ upper: C }}
-
+              class A; extend T::Generic; A = type_member(:in); B = type_member(:out)
+                module B; extend T::Generic; A = type_member; B = type_member {{ upper: C }}
                   class << self
                     extend T::Generic
 
@@ -442,12 +422,10 @@ module Spoom
               def foo(param1:, param2:); end
             RBS
             to: <<~RBI,
-              sig do
-                params(
-                  param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
-                  param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
-                ).void
-              end
+              sig do params(
+                param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
+                param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
+              ).void end
               def foo(param1:, param2:); end
             RBI
             max_line_length: 120,
@@ -521,7 +499,9 @@ module Spoom
             to: <<~RBI,
               module Aliases
                 Foo = T.type_alias { ::T.any(Integer, String) }
-                MultiLine = T.type_alias { ::T.any(Integer, String) }
+                MultiLine = T.type_alias do ::T.any(
+                  Integer,
+                  String) end
               end
 
               sig { params(a: Aliases::Foo).returns(Aliases::MultiLine) }
@@ -652,7 +632,9 @@ module Spoom
               end
             RBS
             to: <<~RBI,
-              MultiLine = T.type_alias { ::T.any(String, Integer) }
+              MultiLine = T.type_alias do ::T.any(
+                String,
+                Integer) end
               # foo bar baz
               #| | Symbol
 
@@ -721,6 +703,7 @@ module Spoom
             RBS
             to: <<~RBI,
               class Foo
+                # RBS deleted overload: () { (Integer) -> void } -> void
                 sig { returns(::T::Enumerator[Integer, void]) }
                 def each(&block); end
               end
@@ -779,12 +762,18 @@ module Spoom
           source_with_rbs = from
           expected_output = to
 
+          assert_equal(source_with_rbs.lines.count, expected_output.lines.count, <<~MSG)
+            Precondition: the expected rewritten code should have the same line count as the RBS-containing input.
+            This is a mistake in the test case, not the rewriter.
+          MSG
+
           rewritten_output = rbs_comments_to_sorbet_sigs(
             source_with_rbs,
             max_line_length:,
             overloads_strategy:,
           )
 
+          # TODO: run the validator to compare the two results
           assert_equal(expected_output, rewritten_output)
         end
 
