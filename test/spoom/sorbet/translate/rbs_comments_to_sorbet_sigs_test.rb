@@ -9,7 +9,10 @@ module Spoom
       class RBSCommentsToSorbetSigsTest < Minitest::Test
         def test_translate_to_rbi_empty
           contents = ""
-          assert_equal(contents, rbs_comments_to_sorbet_sigs(contents))
+          assert_rewrites_rbs(
+            from: contents,
+            to_pretty_format_for_humans: contents,
+          )
         end
 
         def test_translate_to_rbi_no_sigs
@@ -19,187 +22,206 @@ module Spoom
             end
           RB
 
-          assert_equal(contents, rbs_comments_to_sorbet_sigs(contents))
+          assert_rewrites_rbs(
+            from: contents,
+            to_pretty_format_for_humans: contents,
+          )
         end
 
         def test_translate_to_rbi_top_level_sig
-          contents = <<~RB
-            # typed: true
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # typed: true
 
-            #: (Integer a, Integer b) -> Integer
-            def foo(a, b)
-              a + b
-            end
-          RB
+              #: (Integer a, Integer b) -> Integer
+              def foo(a, b)
+                a + b
+              end
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            # typed: true
+            to_pretty_format_for_humans: <<~RUBY,
+              # typed: true
 
-            sig { params(a: Integer, b: Integer).returns(Integer) }
-            def foo(a, b)
-              a + b
-            end
-          RB
+              sig { params(a: Integer, b: Integer).returns(Integer) }
+              def foo(a, b)
+                a + b
+              end
+            RUBY
+          )
         end
 
         def test_translate_to_rbi_method_sigs
-          contents = <<~RB
-            class A
-              #: (Integer a) -> void
-              def initialize(a)
-                @a = a
-              end
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class A
+                #: (Integer a) -> void
+                def initialize(a)
+                  @a = a
+                end
 
-              #: -> Integer
-              def a
-                @a
+                #: -> Integer
+                def a
+                  @a
+                end
               end
-            end
-          RB
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            class A
-              sig { params(a: Integer).void }
-              def initialize(a)
-                @a = a
-              end
+            to_pretty_format_for_humans: <<~RUBY,
+              class A
+                sig { params(a: Integer).void }
+                def initialize(a)
+                  @a = a
+                end
 
-              sig { returns(Integer) }
-              def a
-                @a
+                sig { returns(Integer) }
+                def a
+                  @a
+                end
               end
-            end
-          RB
+            RUBY
+          )
         end
 
         def test_translate_to_rbi_method_sigs_with_annotations
-          contents = <<~RB
-            # @final
-            # @overridable
-            #: -> void
-            def foo; end
-          RB
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # @final
+              # @overridable
+              #: -> void
+              def foo; end
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            # @final
-            # @overridable
-            sig(:final) { overridable.void }
-            def foo; end
-          RB
+            to_pretty_format_for_humans: <<~RUBY,
+              # @final
+              # @overridable
+              sig(:final) { overridable.void }
+              def foo; end
+            RUBY
+          )
         end
 
         def test_translate_to_rbi_method_sigs_with_override_annotations
-          contents = <<~RB
-            # @override(allow_incompatible: true)
-            #: -> void
-            def foo; end
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # @override(allow_incompatible: true)
+              #: -> void
+              def foo; end
 
-            # @override(allow_incompatible: :visibility)
-            #: -> void
-            def bar; end
-          RB
+              # @override(allow_incompatible: :visibility)
+              #: -> void
+              def bar; end
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            # @override(allow_incompatible: true)
-            sig { override(allow_incompatible: true).void }
-            def foo; end
+            to_pretty_format_for_humans: <<~RUBY,
+              # @override(allow_incompatible: true)
+              sig { override(allow_incompatible: true).void }
+              def foo; end
 
-            # @override(allow_incompatible: :visibility)
-            sig { override(allow_incompatible: :visibility).void }
-            def bar; end
-          RB
+              # @override(allow_incompatible: :visibility)
+              sig { override(allow_incompatible: :visibility).void }
+              def bar; end
+            RUBY
+          )
         end
 
         def test_translate_to_rbi_method_sigs_without_runtime
-          contents = <<~RB
-            # @without_runtime
-            #: -> void
-            def foo; end
-          RB
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # @without_runtime
+              #: -> void
+              def foo; end
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            # @without_runtime
-            T::Sig::WithoutRuntime.sig { void }
-            def foo; end
-          RB
+            to_pretty_format_for_humans: <<~RUBY,
+              # @without_runtime
+              T::Sig::WithoutRuntime.sig { void }
+              def foo; end
+            RUBY
+          )
         end
 
         def test_translate_to_rbi_method_added_is_always_without_runtime
-          contents = <<~RB
-            class A
-              class << self
-                # @override
-                #: (Symbol) -> void
-                def method_added(m); end
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class A
+                class << self
+                  # @override
+                  #: (Symbol) -> void
+                  def method_added(m); end
 
-                # @override
-                #: (Symbol) -> void
-                def singleton_method_added(m); end
+                  # @override
+                  #: (Symbol) -> void
+                  def singleton_method_added(m); end
+                end
               end
-            end
-          RB
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            class A
-              class << self
-                # @override
-                T::Sig::WithoutRuntime.sig { override.params(m: Symbol).void }
-                def method_added(m); end
+            to_pretty_format_for_humans: <<~RUBY,
+              class A
+                class << self
+                  # @override
+                  T::Sig::WithoutRuntime.sig { override.params(m: Symbol).void }
+                  def method_added(m); end
 
-                # @override
-                T::Sig::WithoutRuntime.sig { override.params(m: Symbol).void }
-                def singleton_method_added(m); end
+                  # @override
+                  T::Sig::WithoutRuntime.sig { override.params(m: Symbol).void }
+                  def singleton_method_added(m); end
+                end
               end
-            end
-          RB
+            RUBY
+          )
         end
 
         def test_translate_to_rbi_singleton_method_sigs
-          contents = <<~RB
-            class A
-              #: -> Integer
-              def self.foo
-                42
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class A
+                #: -> Integer
+                def self.foo
+                  42
+                end
               end
-            end
-          RB
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            class A
-              sig { returns(Integer) }
-              def self.foo
-                42
+            to_pretty_format_for_humans: <<~RUBY,
+              class A
+                sig { returns(Integer) }
+                def self.foo
+                  42
+                end
               end
-            end
-          RB
+            RUBY
+          )
         end
 
         def test_translate_to_rbi_attr_sigs
-          contents = <<~RB
-            class A
-              #: Integer
-              attr_accessor :a, :b
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class A
+                #: Integer
+                attr_accessor :a, :b
 
-              #: Integer
-              attr_reader :c, :d
+                #: Integer
+                attr_reader :c, :d
 
-              #: Integer
-              attr_writer :e
-            end
-          RB
+                #: Integer
+                attr_writer :e
+              end
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            class A
-              sig { returns(Integer) }
-              attr_accessor :a, :b
+            to_pretty_format_for_humans: <<~RUBY,
+              class A
+                sig { returns(Integer) }
+                attr_accessor :a, :b
 
-              sig { returns(Integer) }
-              attr_reader :c, :d
+                sig { returns(Integer) }
+                attr_reader :c, :d
 
-              sig { params(e: Integer).returns(Integer) }
-              attr_writer :e
-            end
-          RB
+                sig { params(e: Integer).returns(Integer) }
+                attr_writer :e
+              end
+            RUBY
+          )
         end
 
         def test_translate_to_rbi_attr_sigs_raises_on_writer_with_multiple_names
@@ -214,35 +236,39 @@ module Spoom
         end
 
         def test_translate_to_rbi_attr_sigs_with_annotations
-          contents = <<~RB
-            # @final
-            # @override(allow_incompatible: true)
-            # @overridable
-            #: Integer
-            attr_accessor :foo
-          RB
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # @final
+              # @override(allow_incompatible: true)
+              # @overridable
+              #: Integer
+              attr_accessor :foo
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            # @final
-            # @override(allow_incompatible: true)
-            # @overridable
-            sig(:final) { override(allow_incompatible: true).overridable.returns(Integer) }
-            attr_accessor :foo
-          RB
+            to_pretty_format_for_humans: <<~RUBY,
+              # @final
+              # @override(allow_incompatible: true)
+              # @overridable
+              sig(:final) { override(allow_incompatible: true).overridable.returns(Integer) }
+              attr_accessor :foo
+            RUBY
+          )
         end
 
         def test_translate_to_rbi_attr_sigs_without_runtime
-          contents = <<~RB
-            # @without_runtime
-            #: Integer
-            attr_accessor :foo
-          RB
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # @without_runtime
+              #: Integer
+              attr_accessor :foo
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            # @without_runtime
-            T::Sig::WithoutRuntime.sig { returns(Integer) }
-            attr_accessor :foo
-          RB
+            to_pretty_format_for_humans: <<~RUBY,
+              # @without_runtime
+              T::Sig::WithoutRuntime.sig { returns(Integer) }
+              attr_accessor :foo
+            RUBY
+          )
         end
 
         def test_translate_to_rbi_skips_sigs_with_errors
@@ -253,7 +279,10 @@ module Spoom
             end
           RB
 
-          assert_equal(contents, rbs_comments_to_sorbet_sigs(contents))
+          assert_rewrites_rbs(
+            from: contents,
+            to_pretty_format_for_humans: contents,
+          )
         end
 
         def test_translate_to_rbi_ignores_yard_comments
@@ -267,70 +296,77 @@ module Spoom
             end
           RB
 
-          assert_equal(contents, rbs_comments_to_sorbet_sigs(contents))
+          assert_rewrites_rbs(
+            from: contents,
+            to_pretty_format_for_humans: contents,
+          )
         end
 
         def test_translate_to_rbi_multiline_sigs
-          contents = <<~RB
-            #: Array[
-            #|   Integer
-            #| ]
-            attr_accessor :foo
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              #: Array[
+              #|   Integer
+              #| ]
+              attr_accessor :foo
 
-            #: (
-            #|   Integer,
-            #|   Integer
-            #| ) -> Integer
-            def foo(a, b); end
-          RB
+              #: (
+              #|   Integer,
+              #|   Integer
+              #| ) -> Integer
+              def foo(a, b); end
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            sig { returns(::T::Array[Integer]) }
-            attr_accessor :foo
+            to_pretty_format_for_humans: <<~RUBY,
+              sig { returns(::T::Array[Integer]) }
+              attr_accessor :foo
 
-            sig { params(a: Integer, b: Integer).returns(Integer) }
-            def foo(a, b); end
-          RB
+              sig { params(a: Integer, b: Integer).returns(Integer) }
+              def foo(a, b); end
+            RUBY
+          )
         end
 
         def test_translate_to_rbi_helpers
-          contents = <<~RB
-            # @abstract
-            # @requires_ancestor: singleton(Foo::Bar)
-            class A
-              # @interface
-              # @sealed
-              module B
-                # @final
-                class << self
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # @abstract
+              # @requires_ancestor: singleton(Foo::Bar)
+              class A
+                # @interface
+                # @sealed
+                module B
+                  # @final
+                  class << self
+                  end
                 end
               end
-            end
-          RB
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            class A
-              extend T::Helpers
-
-              abstract!
-
-              requires_ancestor { ::T.class_of(Foo::Bar) }
-
-              module B
+            to_pretty_format_for_humans: <<~RUBY,
+              class A
                 extend T::Helpers
 
-                interface!
+                abstract!
 
-                sealed!
+                requires_ancestor { ::T.class_of(Foo::Bar) }
 
-                class << self
+                module B
                   extend T::Helpers
 
-                  final!
+                  interface!
+
+                  sealed!
+
+                  class << self
+                    extend T::Helpers
+
+                    final!
+                  end
                 end
               end
-            end
-          RB
+            RUBY
+          )
         end
 
         def test_translate_to_rbi_does_not_insert_t_helpers_for_random_annotations
@@ -340,140 +376,154 @@ module Spoom
             end
           RB
 
-          assert_equal(contents, rbs_comments_to_sorbet_sigs(contents))
+          assert_rewrites_rbs(
+            from: contents,
+            to_pretty_format_for_humans: contents,
+          )
         end
 
         def test_translate_to_rbi_helpers_with_right_order
-          contents = <<~RB
-            # @foo
-            # @bar
-            # @requires_ancestor: Kernel
-            module Baz
-              #: -> void
-              def foo; end
-            end
-          RB
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # @foo
+              # @bar
+              # @requires_ancestor: Kernel
+              module Baz
+                #: -> void
+                def foo; end
+              end
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            # @foo
-            # @bar
-            module Baz
-              extend T::Helpers
+            to_pretty_format_for_humans: <<~RUBY,
+              # @foo
+              # @bar
+              module Baz
+                extend T::Helpers
 
-              requires_ancestor { Kernel }
+                requires_ancestor { Kernel }
 
-              sig { void }
-              def foo; end
-            end
-          RB
+                sig { void }
+                def foo; end
+              end
+            RUBY
+          )
         end
 
         def test_translate_to_rbi_generics
-          contents = <<~RB
-            #: [in A, out B]
-            class A
-              #: [A, B < C]
-              module B
-                #: [A = singleton(Numeric)]
-                class << self
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              #: [in A, out B]
+              class A
+                #: [A, B < C]
+                module B
+                  #: [A = singleton(Numeric)]
+                  class << self
+                  end
                 end
               end
-            end
-          RB
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            class A
-              extend T::Generic
-
-              A = type_member(:in)
-
-              B = type_member(:out)
-
-              module B
+            to_pretty_format_for_humans: <<~RUBY,
+              class A
                 extend T::Generic
 
-                A = type_member
+                A = type_member(:in)
 
-                B = type_member {{ upper: C }}
+                B = type_member(:out)
 
-                class << self
+                module B
                   extend T::Generic
 
-                  A = type_member {{ fixed: ::T.class_of(Numeric) }}
+                  A = type_member
+
+                  B = type_member {{ upper: C }}
+
+                  class << self
+                    extend T::Generic
+
+                    A = type_member {{ fixed: ::T.class_of(Numeric) }}
+                  end
                 end
               end
-            end
-          RB
+            RUBY
+          )
         end
 
         def test_translate_to_rbi_in_block
-          contents = <<~RB
-            Class.new do
-              #: -> Integer
-              def foo
-                42
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              Class.new do
+                #: -> Integer
+                def foo
+                  42
+                end
               end
-            end
-          RB
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            Class.new do
-              sig { returns(Integer) }
-              def foo
-                42
+            to_pretty_format_for_humans: <<~RUBY,
+              Class.new do
+                sig { returns(Integer) }
+                def foo
+                  42
+                end
               end
-            end
-          RB
+            RUBY
+          )
         end
 
         def test_translate_to_rbi_max_line_length
-          contents = <<~RB
-            #: (
-            #|   param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
-            #|   param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
-            #| ) -> void
-            def foo(param1:, param2:); end
-          RB
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              #: (
+              #|   param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
+              #|   param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
+              #| ) -> void
+              def foo(param1:, param2:); end
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents, max_line_length: 120))
-            sig do
-              params(
-                param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
-                param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
-              ).void
-            end
-            def foo(param1:, param2:); end
-          RB
+            to_pretty_format_for_humans: <<~RUBY,
+              sig do
+                params(
+                  param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType,
+                  param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType
+                ).void
+              end
+              def foo(param1:, param2:); end
+            RUBY
+            max_line_length: 120,
+          )
         end
 
         def test_translate_to_rbi_defs_within_send
-          contents = <<~RB
-            #: -> void
-            public def foo; end
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              #: -> void
+              public def foo; end
 
-            #: -> void
-            private def bar; end
+              #: -> void
+              private def bar; end
 
-            #: -> void
-            memoize def baz; end
+              #: -> void
+              memoize def baz; end
 
-            #: -> void
-            abstract def qux; end
-          RB
+              #: -> void
+              abstract def qux; end
+            RUBY
 
-          assert_equal(<<~RBS, rbs_comments_to_sorbet_sigs(contents))
-            sig { void }
-            public def foo; end
+            to_pretty_format_for_humans: <<~RUBY,
+              sig { void }
+              public def foo; end
 
-            sig { void }
-            private def bar; end
+              sig { void }
+              private def bar; end
 
-            sig { void }
-            memoize def baz; end
+              sig { void }
+              memoize def baz; end
 
-            sig { void }
-            abstract def qux; end
-          RBS
+              sig { void }
+              abstract def qux; end
+            RUBY
+          )
         end
 
         def test_translate_to_rbi_selects_right_comments
@@ -493,161 +543,178 @@ module Spoom
             end
           RB
 
-          assert_equal(contents, rbs_comments_to_sorbet_sigs(contents))
+          assert_rewrites_rbs(
+            from: contents,
+            to_pretty_format_for_humans: contents,
+          )
         end
 
         def test_translate_type_alias
-          contents = <<~RB
-            module Aliases
-              #: type foo = Integer | String
-              #: type multiLine =
-              #|   Integer |
-              #|   String
-            end
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              module Aliases
+                #: type foo = Integer | String
+                #: type multiLine =
+                #|   Integer |
+                #|   String
+              end
 
-            #: (Aliases::foo a) -> Aliases::multiLine
-            def bar(a)
-              42
-            end
-          RB
+              #: (Aliases::foo a) -> Aliases::multiLine
+              def bar(a)
+                42
+              end
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            module Aliases
-              Foo = T.type_alias { ::T.any(Integer, String) }
-              MultiLine = T.type_alias { ::T.any(Integer, String) }
-            end
+            to_pretty_format_for_humans: <<~RUBY,
+              module Aliases
+                Foo = T.type_alias { ::T.any(Integer, String) }
+                MultiLine = T.type_alias { ::T.any(Integer, String) }
+              end
 
-            sig { params(a: Aliases::Foo).returns(Aliases::MultiLine) }
-            def bar(a)
-              42
-            end
-          RB
+              sig { params(a: Aliases::Foo).returns(Aliases::MultiLine) }
+              def bar(a)
+                42
+              end
+            RUBY
+          )
         end
 
         def test_translate_type_alias_with_complex_type
-          contents = <<~RB
-            #: type Foo::user_id = Integer
-            #: type ::Bar::user_data = { id: Foo::user_id, name: String }
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              #: type Foo::user_id = Integer
+              #: type ::Bar::user_data = { id: Foo::user_id, name: String }
 
-            #: (::Bar::user_data data) -> Foo::user_id
-            def process_user(data)
-              data[:id]
-            end
-          RB
+              #: (::Bar::user_data data) -> Foo::user_id
+              def process_user(data)
+                data[:id]
+              end
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            Foo::UserId = T.type_alias { Integer }
-            ::Bar::UserData = T.type_alias { { id: Foo::UserId, name: String } }
+            to_pretty_format_for_humans: <<~RUBY,
+              Foo::UserId = T.type_alias { Integer }
+              ::Bar::UserData = T.type_alias { { id: Foo::UserId, name: String } }
 
-            sig { params(data: ::Bar::UserData).returns(Foo::UserId) }
-            def process_user(data)
-              data[:id]
-            end
-          RB
+              sig { params(data: ::Bar::UserData).returns(Foo::UserId) }
+              def process_user(data)
+                data[:id]
+              end
+            RUBY
+          )
         end
 
         def test_translate_type_alias_in_class
-          contents = <<~RB
-            class Example
-              #: type status = :pending | :completed | :failed
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class Example
+                #: type status = :pending | :completed | :failed
 
-              #: () -> status
-              def get_status
-                :pending
+                #: () -> status
+                def get_status
+                  :pending
+                end
               end
-            end
-          RB
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            class Example
-              Status = T.type_alias { Symbol }
+            to_pretty_format_for_humans: <<~RUBY,
+              class Example
+                Status = T.type_alias { Symbol }
 
-              sig { returns(Status) }
-              def get_status
-                :pending
+                sig { returns(Status) }
+                def get_status
+                  :pending
+                end
               end
-            end
-          RB
+            RUBY
+          )
         end
 
         def test_translate_type_alias_with_generics
-          contents = <<~RB
-            #: type list = Array[Integer]
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              #: type list = Array[Integer]
 
-            #: (list items) -> list
-            def double_items(items)
-              items.map { |x| x * 2 }
-            end
-          RB
+              #: (list items) -> list
+              def double_items(items)
+                items.map { |x| x * 2 }
+              end
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            List = T.type_alias { ::T::Array[Integer] }
+            to_pretty_format_for_humans: <<~RUBY,
+              List = T.type_alias { ::T::Array[Integer] }
 
-            sig { params(items: List).returns(List) }
-            def double_items(items)
-              items.map { |x| x * 2 }
-            end
-          RB
+              sig { params(items: List).returns(List) }
+              def double_items(items)
+                items.map { |x| x * 2 }
+              end
+            RUBY
+          )
         end
 
         def test_translate_type_alias_with_union
-          contents = <<~RB
-            #: type nullable_string = String?
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              #: type nullable_string = String?
 
-            #: (nullable_string text) -> String
-            def ensure_string(text)
-              text || ""
-            end
-          RB
+              #: (nullable_string text) -> String
+              def ensure_string(text)
+                text || ""
+              end
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            NullableString = T.type_alias { ::T.nilable(String) }
+            to_pretty_format_for_humans: <<~RUBY,
+              NullableString = T.type_alias { ::T.nilable(String) }
 
-            sig { params(text: NullableString).returns(String) }
-            def ensure_string(text)
-              text || ""
-            end
-          RB
+              sig { params(text: NullableString).returns(String) }
+              def ensure_string(text)
+                text || ""
+              end
+            RUBY
+          )
         end
 
         def test_translate_type_alias_that_does_not_exist
-          contents = <<~RB
-            #: () -> notFound
-            def foo
-            end
-          RB
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              #: () -> notFound
+              def foo
+              end
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            sig { returns(NotFound) }
-            def foo
-            end
-          RB
+            to_pretty_format_for_humans: <<~RUBY,
+              sig { returns(NotFound) }
+              def foo
+              end
+            RUBY
+          )
         end
 
         def test_translate_broken_type_alias_continuation
-          contents = <<~RB
-            #: type multiLine =
-            #| String
-            #| | Integer
-            # foo bar baz
-            #| | Symbol
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              #: type multiLine =
+              #| String
+              #| | Integer
+              # foo bar baz
+              #| | Symbol
 
-            #: () -> multiLine
-            def foo
-              ""
-            end
-          RB
+              #: () -> multiLine
+              def foo
+                ""
+              end
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            MultiLine = T.type_alias { ::T.any(String, Integer) }
-            # foo bar baz
-            #| | Symbol
+            to_pretty_format_for_humans: <<~RUBY,
+              MultiLine = T.type_alias { ::T.any(String, Integer) }
+              # foo bar baz
+              #| | Symbol
 
-            sig { returns(MultiLine) }
-            def foo
-              ""
-            end
-          RB
+              sig { returns(MultiLine) }
+              def foo
+                ""
+              end
+            RUBY
+          )
         end
 
         def test_translate_non_rbs_comment_as_leading_comment_on_class
@@ -657,60 +724,70 @@ module Spoom
             end
           RB
 
-          assert_equal(contents, rbs_comments_to_sorbet_sigs(contents))
+          assert_rewrites_rbs(
+            from: contents,
+            to_pretty_format_for_humans: contents,
+          )
         end
 
         def test_translate_type_alias_as_leading_comment_on_class
-          contents = <<~RB
-            module Foo
-              #: type serialized_range = [Integer, Integer]
-              class Range
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              module Foo
+                #: type serialized_range = [Integer, Integer]
+                class Range
+                end
               end
-            end
-          RB
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            module Foo
-              SerializedRange = T.type_alias { [Integer, Integer] }
-              class Range
+            to_pretty_format_for_humans: <<~RUBY,
+              module Foo
+                SerializedRange = T.type_alias { [Integer, Integer] }
+                class Range
+                end
               end
-            end
-          RB
+            RUBY
+          )
         end
 
         def test_translate_overloads_translate_all_is_default
-          contents = <<~RB
-            class Foo
-              #: () { (Integer) -> void } -> void
-              #: () -> Enumerator[Integer, void]
-              def each(&block); end
-            end
-          RB
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class Foo
+                #: () { (Integer) -> void } -> void
+                #: () -> Enumerator[Integer, void]
+                def each(&block); end
+              end
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents))
-            class Foo
-              sig { params(block: ::T.proc.params(arg0: Integer).void).void }
-              sig { returns(::T::Enumerator[Integer, void]) }
-              def each(&block); end
-            end
-          RB
+            to_pretty_format_for_humans: <<~RUBY,
+              class Foo
+                sig { params(block: ::T.proc.params(arg0: Integer).void).void }
+                sig { returns(::T::Enumerator[Integer, void]) }
+                def each(&block); end
+              end
+            RUBY
+          )
         end
 
         def test_translate_overloads_translate_last
-          contents = <<~RB
-            class Foo
-              #: () { (Integer) -> void } -> void
-              #: () -> Enumerator[Integer, void]
-              def each(&block); end
-            end
-          RB
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class Foo
+                #: () { (Integer) -> void } -> void
+                #: () -> Enumerator[Integer, void]
+                def each(&block); end
+              end
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents, overloads_strategy: :translate_last))
-            class Foo
-              sig { returns(::T::Enumerator[Integer, void]) }
-              def each(&block); end
-            end
-          RB
+            to_pretty_format_for_humans: <<~RUBY,
+              class Foo
+                sig { returns(::T::Enumerator[Integer, void]) }
+                def each(&block); end
+              end
+            RUBY
+            overloads_strategy: :translate_last,
+          )
         end
 
         def test_translate_overloads_raise
@@ -729,19 +806,22 @@ module Spoom
         end
 
         def test_translate_overloads_single_signature_unaffected
-          contents = <<~RB
-            class Foo
-              #: () -> void
-              def foo; end
-            end
-          RB
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class Foo
+                #: () -> void
+                def foo; end
+              end
+            RUBY
 
-          assert_equal(<<~RB, rbs_comments_to_sorbet_sigs(contents, overloads_strategy: :translate_last))
-            class Foo
-              sig { void }
-              def foo; end
-            end
-          RB
+            to_pretty_format_for_humans: <<~RUBY,
+              class Foo
+                sig { void }
+                def foo; end
+              end
+            RUBY
+            overloads_strategy: :translate_last,
+          )
         end
 
         def test_contains_rbs_syntax_returns_true_for_supported_rbs_annotations
@@ -889,6 +969,32 @@ module Spoom
             max_line_length: max_line_length,
             overloads_strategy: overloads_strategy,
           ).rewrite
+        end
+
+        #: (
+        #|   from: String,
+        #|   to_pretty_format_for_humans: String,
+        #|   ?max_line_length: Integer?,
+        #|   ?overloads_strategy: Symbol
+        #|  ) -> void
+        def assert_rewrites_rbs(
+          from:,
+          to_pretty_format_for_humans:,
+          max_line_length: nil,
+          overloads_strategy: :translate_all
+        )
+          source_with_rbs = from
+          expected_pretty_format = to_pretty_format_for_humans
+
+          begin # Validate the human-readable rewrite
+            rewritten_output = rbs_comments_to_sorbet_sigs(
+              source_with_rbs,
+              max_line_length:,
+              overloads_strategy:,
+            )
+
+            assert_equal(expected_pretty_format, rewritten_output)
+          end
         end
       end
     end
