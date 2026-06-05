@@ -5,6 +5,7 @@ require "rbi"
 
 require "spoom/source/rewriter"
 require "spoom/sorbet/translate/translator"
+require "spoom/sorbet/translate/validator"
 require "spoom/sorbet/translate/rbs_comments_to_sorbet_sigs"
 require "spoom/sorbet/translate/sorbet_assertions_to_rbs_comments"
 require "spoom/sorbet/translate/sorbet_sigs_to_rbs_comments"
