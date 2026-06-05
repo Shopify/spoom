@@ -1,3 +1,12 @@
+GIT
+  remote: https://github.com/Shopify/rbi.git
+  revision: f065ff970d20540c7ce865901b01db24308f7f3a
+  ref: f065ff970d20540c7ce865901b01db24308f7f3a
+  specs:
+    rbi (0.3.12)
+      prism (~> 1.0)
+      rbs (>= 4.0.1)
+
 PATH
   remote: .
   specs:
@@ -57,9 +66,6 @@ GEM
     racc (1.8.1)
     rainbow (3.1.1)
     rake (13.4.2)
-    rbi (0.3.10)
-      prism (~> 1.0)
-      rbs (>= 4.0.1)
     rbs (4.0.2)
       logger
       prism (>= 1.6.0)
@@ -141,6 +147,7 @@ DEPENDENCIES
   minitest-mock
   minitest-reporters
   rake (~> 13.4.2)
+  rbi!
   rubocop-minitest
   rubocop-shopify
   rubocop-sorbet
