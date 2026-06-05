@@ -54,6 +54,7 @@ module Spoom
               { landmark_id: "module M", expected: [2], actual: [3] },
               { landmark_id: "def m", expected: [3], actual: [4] },
               { landmark_id: "__LINE__", expected: [4], actual: [5] },
+              { landmark_id: "EOF", expected: [4], actual: [5] },
             ],
           )
         end
@@ -75,6 +76,7 @@ module Spoom
               { landmark_id: "def m", line: 3 },
               { landmark_id: "__LINE__", line: 4 },
             ],
+            on_wrong_line: [{ landmark_id: "EOF", expected: [4], actual: [1] }],
           )
         end
 
@@ -95,6 +97,7 @@ module Spoom
               { landmark_id: "def new_method", line: 3 },
               { landmark_id: "__LINE__", line: 4 },
             ],
+            on_wrong_line: [{ landmark_id: "EOF", expected: [1], actual: [4] }],
           )
         end
 

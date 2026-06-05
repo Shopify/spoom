@@ -1214,11 +1214,6 @@ module Spoom
               raise ArgumentError, "Invalid symbol for expected_line_matched_format: #{expected_line_matched_format}"
             end
 
-            assert_equal(source_with_rbs.lines.count, expected_line_matched_format.lines.count, <<~MSG)
-              Precondition: the expected rewritten code should have the same line count as the RBS-containing input.
-              This is a mistake in the test case, not the rewriter.
-            MSG
-
             unless (validation_result = Validator.validate(source_with_rbs, expected_line_matched_format)).valid?
               flunk(<<~MSG)
                 The rewritten code does not match the expected line-matched format.
