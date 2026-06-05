@@ -1190,6 +1190,21 @@ module Spoom
               This is a mistake in the test case, not the rewriter.
             MSG
 
+            unless (validation_result = Validator.validate(source_with_rbs, expected_line_matched_format)).valid?
+              flunk(<<~MSG)
+                The rewritten code does not match the expected line-matched format.
+
+                Validation errors:
+                #{validation_result.errors.map { |e| "- #{e}" }.join("\n")}
+
+                Expected line-matched format:
+                #{expected_line_matched_format}
+
+                Actual rewritten output:
+                #{rewritten_output}
+              MSG
+            end
+
             rewritten_output = rbs_comments_to_sorbet_sigs(
               source_with_rbs,
               max_line_length:,
