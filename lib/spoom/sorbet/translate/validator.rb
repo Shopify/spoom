@@ -46,6 +46,10 @@ module Spoom
               end
             end
 
+            if original.lines.count != rewritten.lines.count
+              on_wrong_line << { landmark_id: "EOF", expected: [original.lines.count], actual: [rewritten.lines.count] }
+            end
+
             ValidationResult.new(
               missing_from_rewritten_output: missing,
               excess_in_rewritten_output: excess,
