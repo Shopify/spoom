@@ -12,6 +12,7 @@ module Spoom
           assert_rewrites_rbs(
             from: contents,
             to_pretty_format_for_humans: contents,
+            to_line_matched_format_for_machines: contents,
           )
         end
 
@@ -25,6 +26,7 @@ module Spoom
           assert_rewrites_rbs(
             from: contents,
             to_pretty_format_for_humans: contents,
+            to_line_matched_format_for_machines: contents,
           )
         end
 
@@ -47,6 +49,8 @@ module Spoom
                 a + b
               end
             RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
           )
         end
 
@@ -79,6 +83,8 @@ module Spoom
                 end
               end
             RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
           )
         end
 
@@ -94,6 +100,13 @@ module Spoom
             to_pretty_format_for_humans: <<~RUBY,
               # @final
               # @overridable
+              sig(:final) { overridable.void }
+              def foo; end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_REWRITTEN_ANNOTATION: @final
+              # RBS_REWRITTEN_ANNOTATION: @overridable
               sig(:final) { overridable.void }
               def foo; end
             RUBY
@@ -121,6 +134,16 @@ module Spoom
               sig { override(allow_incompatible: :visibility).void }
               def bar; end
             RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_REWRITTEN_ANNOTATION: @override(allow_incompatible: true)
+              sig { override(allow_incompatible: true).void }
+              def foo; end
+
+              # RBS_REWRITTEN_ANNOTATION: @override(allow_incompatible: :visibility)
+              sig { override(allow_incompatible: :visibility).void }
+              def bar; end
+            RUBY
           )
         end
 
@@ -134,6 +157,12 @@ module Spoom
 
             to_pretty_format_for_humans: <<~RUBY,
               # @without_runtime
+              ::T::Sig::WithoutRuntime.sig { void }
+              def foo; end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_REWRITTEN_ANNOTATION: @without_runtime
               ::T::Sig::WithoutRuntime.sig { void }
               def foo; end
             RUBY
@@ -169,6 +198,20 @@ module Spoom
                 end
               end
             RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              class A
+                class << self
+                  # RBS_REWRITTEN_ANNOTATION: @override
+                  ::T::Sig::WithoutRuntime.sig { override.params(m: Symbol).void }
+                  def method_added(m); end
+
+                  # RBS_REWRITTEN_ANNOTATION: @override
+                  ::T::Sig::WithoutRuntime.sig { override.params(m: Symbol).void }
+                  def singleton_method_added(m); end
+                end
+              end
+            RUBY
           )
         end
 
@@ -191,6 +234,8 @@ module Spoom
                 end
               end
             RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
           )
         end
 
@@ -221,6 +266,8 @@ module Spoom
                 attr_writer :e
               end
             RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
           )
         end
 
@@ -252,6 +299,14 @@ module Spoom
               sig(:final) { override(allow_incompatible: true).overridable.returns(Integer) }
               attr_accessor :foo
             RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_REWRITTEN_ANNOTATION: @final
+              # RBS_REWRITTEN_ANNOTATION: @override(allow_incompatible: true)
+              # RBS_REWRITTEN_ANNOTATION: @overridable
+              sig(:final) { override(allow_incompatible: true).overridable.returns(Integer) }
+              attr_accessor :foo
+            RUBY
           )
         end
 
@@ -265,6 +320,12 @@ module Spoom
 
             to_pretty_format_for_humans: <<~RUBY,
               # @without_runtime
+              ::T::Sig::WithoutRuntime.sig { returns(Integer) }
+              attr_accessor :foo
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_REWRITTEN_ANNOTATION: @without_runtime
               ::T::Sig::WithoutRuntime.sig { returns(Integer) }
               attr_accessor :foo
             RUBY
@@ -282,6 +343,7 @@ module Spoom
           assert_rewrites_rbs(
             from: contents,
             to_pretty_format_for_humans: contents,
+            to_line_matched_format_for_machines: contents,
           )
         end
 
@@ -299,6 +361,7 @@ module Spoom
           assert_rewrites_rbs(
             from: contents,
             to_pretty_format_for_humans: contents,
+            to_line_matched_format_for_machines: contents,
           )
         end
 
@@ -322,6 +385,19 @@ module Spoom
               attr_accessor :foo
 
               sig { params(a: Integer, b: Integer).returns(Integer) }
+              def foo(a, b); end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              sig { returns(::T::Array[Integer]) }
+
+
+              attr_accessor :foo
+
+              sig { params(a: Integer, b: Integer).returns(Integer) }
+
+
+
               def foo(a, b); end
             RUBY
           )
@@ -366,6 +442,20 @@ module Spoom
                 end
               end
             RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_REWRITTEN_ANNOTATION: @abstract
+              # RBS_REWRITTEN_ANNOTATION: @requires_ancestor: singleton(Foo::Bar)
+              class A; extend T::Helpers; abstract!; requires_ancestor { ::T.class_of(Foo::Bar) }
+                # RBS_REWRITTEN_ANNOTATION: @interface
+                # RBS_REWRITTEN_ANNOTATION: @sealed
+                module B; extend T::Helpers; interface!; sealed!
+                  # RBS_REWRITTEN_ANNOTATION: @final
+                  class << self; extend T::Helpers; final!
+                  end
+                end
+              end
+            RUBY
           )
         end
 
@@ -379,6 +469,7 @@ module Spoom
           assert_rewrites_rbs(
             from: contents,
             to_pretty_format_for_humans: contents,
+            to_line_matched_format_for_machines: contents,
           )
         end
 
@@ -402,6 +493,16 @@ module Spoom
 
                 requires_ancestor { Kernel }
 
+                sig { void }
+                def foo; end
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_IGNORED_UNKNOWN_ANNOTATION: @foo
+              # RBS_IGNORED_UNKNOWN_ANNOTATION: @bar
+              # RBS_REWRITTEN_ANNOTATION: @requires_ancestor: Kernel
+              module Baz; extend T::Helpers; requires_ancestor { Kernel }
                 sig { void }
                 def foo; end
               end
@@ -446,6 +547,18 @@ module Spoom
                 end
               end
             RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_WRITTEN_ANNOTATION: [in A, out B]
+              class A; extend T::Generic; A = type_member(:in); B = type_member(:out)
+                # RBS_WRITTEN_ANNOTATION: [A, B < C]
+                module B; extend T::Generic; A = type_member; B = type_member {{ upper: C }}
+                  # RBS_WRITTEN_ANNOTATION: [A = singleton(Numeric)]
+                  class << self; extend T::Generic; A = type_member {{ fixed: ::T.class_of(Numeric) }}
+                  end
+                end
+              end
+            RUBY
           )
         end
 
@@ -468,6 +581,8 @@ module Spoom
                 end
               end
             RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
           )
         end
 
@@ -490,6 +605,15 @@ module Spoom
               end
               def foo(param1:, param2:); end
             RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              sig { params(param1: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType, param2: AVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongType).void }
+
+
+
+              def foo(param1:, param2:); end
+            RUBY
+
             max_line_length: 120,
           )
         end
@@ -523,6 +647,8 @@ module Spoom
               sig { void }
               abstract def qux; end
             RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
           )
         end
 
@@ -546,6 +672,7 @@ module Spoom
           assert_rewrites_rbs(
             from: contents,
             to_pretty_format_for_humans: contents,
+            to_line_matched_format_for_machines: contents,
           )
         end
 
@@ -569,6 +696,20 @@ module Spoom
               module Aliases
                 Foo = T.type_alias { ::T.any(Integer, String) }
                 MultiLine = T.type_alias { ::T.any(Integer, String) }
+              end
+
+              sig { params(a: Aliases::Foo).returns(Aliases::MultiLine) }
+              def bar(a)
+                42
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              module Aliases
+                Foo = T.type_alias { ::T.any(Integer, String) }
+                MultiLine = T.type_alias { ::T.any(Integer, String) }
+
+
               end
 
               sig { params(a: Aliases::Foo).returns(Aliases::MultiLine) }
@@ -600,6 +741,8 @@ module Spoom
                 data[:id]
               end
             RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
           )
         end
 
@@ -626,6 +769,8 @@ module Spoom
                 end
               end
             RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
           )
         end
 
@@ -646,6 +791,8 @@ module Spoom
                 def status; end
               end
             RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
 
             overloads_strategy: :translate_last,
           )
@@ -670,6 +817,8 @@ module Spoom
                 items.map { |x| x * 2 }
               end
             RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
           )
         end
 
@@ -692,6 +841,8 @@ module Spoom
                 text || ""
               end
             RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
           )
         end
 
@@ -708,6 +859,8 @@ module Spoom
               def foo
               end
             RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
           )
         end
 
@@ -736,6 +889,19 @@ module Spoom
                 ""
               end
             RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              MultiLine = T.type_alias { ::T.any(String, Integer) }
+
+
+              # foo bar baz
+              #| | Symbol
+
+              sig { returns(MultiLine) }
+              def foo
+                ""
+              end
+            RUBY
           )
         end
 
@@ -749,6 +915,7 @@ module Spoom
           assert_rewrites_rbs(
             from: contents,
             to_pretty_format_for_humans: contents,
+            to_line_matched_format_for_machines: contents,
           )
         end
 
@@ -769,6 +936,8 @@ module Spoom
                 end
               end
             RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
           )
         end
 
@@ -789,6 +958,8 @@ module Spoom
                 def each(&block); end
               end
             RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
           )
         end
 
@@ -804,6 +975,14 @@ module Spoom
 
             to_pretty_format_for_humans: <<~RUBY,
               class Foo
+                sig { returns(::T::Enumerator[Integer, void]) }
+                def each(&block); end
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              class Foo
+                # RBS_DISCARDED_OVERLOAD: () { (Integer) -> void } -> void
                 sig { returns(::T::Enumerator[Integer, void]) }
                 def each(&block); end
               end
@@ -842,6 +1021,8 @@ module Spoom
                 def foo; end
               end
             RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
             overloads_strategy: :translate_last,
           )
         end
@@ -1000,17 +1181,20 @@ module Spoom
         #: (
         #|   from: String,
         #|   to_pretty_format_for_humans: String,
+        #|   to_line_matched_format_for_machines: String | Symbol,
         #|   ?max_line_length: Integer?,
         #|   ?overloads_strategy: Symbol
         #|  ) -> void
         def assert_rewrites_rbs(
           from:,
           to_pretty_format_for_humans:,
+          to_line_matched_format_for_machines:,
           max_line_length: nil,
           overloads_strategy: :translate_all
         )
           source_with_rbs = from
           expected_pretty_format = to_pretty_format_for_humans
+          expected_line_matched_format = to_line_matched_format_for_machines
 
           begin # Validate the human-readable rewrite
             rewritten_output = rbs_comments_to_sorbet_sigs(
@@ -1020,6 +1204,23 @@ module Spoom
             )
 
             assert_equal(expected_pretty_format, rewritten_output)
+          end
+
+          begin # Validate the line-matched format
+            case expected_line_matched_format
+            when :same_as_pretty_output
+              expected_line_matched_format = expected_pretty_format
+            when Symbol
+              raise ArgumentError, "Invalid symbol for expected_line_matched_format: #{expected_line_matched_format}"
+            end
+
+            assert_equal(source_with_rbs.lines.count, expected_line_matched_format.lines.count, <<~MSG)
+              Precondition: the expected rewritten code should have the same line count as the RBS-containing input.
+              This is a mistake in the test case, not the rewriter.
+            MSG
+
+            # rewritten_output = # TODO: insert rewrite here
+            # assert_equal(expected_line_matched_format, rewritten_output)
           end
         end
       end
