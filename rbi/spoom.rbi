@@ -2920,6 +2920,39 @@ end
 
 class Spoom::Sorbet::Translate::Error < ::Spoom::Error; end
 
+class Spoom::Sorbet::Translate::LandmarkFinder < ::Prism::Visitor
+  sig { void }
+  def initialize; end
+
+  sig { returns(T::Hash[::String, T::Array[::Integer]]) }
+  def landmarks; end
+
+  sig { override.params(node: ::Prism::ClassNode).void }
+  def visit_class_node(node); end
+
+  sig { override.params(node: ::Prism::DefNode).void }
+  def visit_def_node(node); end
+
+  sig { override.params(node: ::Prism::ModuleNode).void }
+  def visit_module_node(node); end
+
+  sig { override.params(node: ::Prism::SingletonClassNode).void }
+  def visit_singleton_class_node(node); end
+
+  sig { override.params(node: ::Prism::SourceLineNode).void }
+  def visit_source_line_node(node); end
+
+  private
+
+  sig { params(landmark_id: ::String, node: ::Prism::Node).void }
+  def record(landmark_id, node); end
+
+  class << self
+    sig { params(source: ::String).returns(T::Hash[::String, T::Array[::Integer]]) }
+    def find_landmarks_in(source); end
+  end
+end
+
 module Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs
   class << self
     sig { params(source: ::String).returns(T::Boolean) }
@@ -3205,6 +3238,52 @@ class Spoom::Sorbet::Translate::Translator < ::Spoom::Visitor
   def sorbet_sig?(node); end
 end
 
+class Spoom::Sorbet::Translate::ValidationResult
+  sig do
+    params(
+      missing_from_rewritten_output: T::Array[{landmark_id: ::String, line: ::Integer}],
+      excess_in_rewritten_output: T::Array[{landmark_id: ::String, line: ::Integer}],
+      on_wrong_line: T::Array[{landmark_id: ::String, expected: T::Array[::Integer], actual: T::Array[::Integer]}]
+    ).void
+  end
+  def initialize(missing_from_rewritten_output:, excess_in_rewritten_output:, on_wrong_line:); end
+
+  sig { returns(T::Array[::String]) }
+  def errors; end
+
+  sig { returns(T::Array[{landmark_id: ::String, line: ::Integer}]) }
+  def excess_in_rewritten_output; end
+
+  sig { returns(T::Array[{landmark_id: ::String, line: ::Integer}]) }
+  def missing_from_rewritten_output; end
+
+  sig { returns(T::Array[{landmark_id: ::String, expected: T::Array[::Integer], actual: T::Array[::Integer]}]) }
+  def on_wrong_line; end
+
+  sig { params(printer: T.untyped).void }
+  def pretty_print(printer); end
+
+  sig { returns(T::Boolean) }
+  def valid?; end
+
+  private
+
+  sig { params(lines: T::Array[::Integer]).returns(::String) }
+  def format_lines(lines); end
+end
+
+Spoom::Sorbet::Translate::ValidationResult::LandmarkLocation = T.type_alias { {landmark_id: ::String, line: ::Integer} }
+Spoom::Sorbet::Translate::ValidationResult::MovedLandmark = T.type_alias { {landmark_id: ::String, expected: T::Array[::Integer], actual: T::Array[::Integer]} }
+
+module Spoom::Sorbet::Translate::Validator
+  class << self
+    sig { params(original: ::String, rewritten: ::String).returns(::Spoom::Sorbet::Translate::ValidationResult) }
+    def validate(original, rewritten); end
+  end
+end
+
+Spoom::Sorbet::Translate::Validator::LandmarkID = T.type_alias { ::String }
+Spoom::Sorbet::Translate::Validator::Landmarks = T.type_alias { T::Hash[::String, T::Array[::Integer]] }
 module Spoom::Source; end
 
 class Spoom::Source::Delete < ::Spoom::Source::Edit
