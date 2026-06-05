@@ -1,7 +1,5 @@
-GIT
-  remote: https://github.com/Shopify/rbi.git
-  revision: f065ff970d20540c7ce865901b01db24308f7f3a
-  ref: f065ff970d20540c7ce865901b01db24308f7f3a
+PATH
+  remote: ../rbi
   specs:
     rbi (0.3.12)
       prism (~> 1.0)
