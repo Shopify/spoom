@@ -134,7 +134,7 @@ module Spoom
 
             to_pretty_format_for_humans: <<~RUBY,
               # @without_runtime
-              T::Sig::WithoutRuntime.sig { void }
+              ::T::Sig::WithoutRuntime.sig { void }
               def foo; end
             RUBY
           )
@@ -160,11 +160,11 @@ module Spoom
               class A
                 class << self
                   # @override
-                  T::Sig::WithoutRuntime.sig { override.params(m: Symbol).void }
+                  ::T::Sig::WithoutRuntime.sig { override.params(m: Symbol).void }
                   def method_added(m); end
 
                   # @override
-                  T::Sig::WithoutRuntime.sig { override.params(m: Symbol).void }
+                  ::T::Sig::WithoutRuntime.sig { override.params(m: Symbol).void }
                   def singleton_method_added(m); end
                 end
               end
@@ -265,7 +265,7 @@ module Spoom
 
             to_pretty_format_for_humans: <<~RUBY,
               # @without_runtime
-              T::Sig::WithoutRuntime.sig { returns(Integer) }
+              ::T::Sig::WithoutRuntime.sig { returns(Integer) }
               attr_accessor :foo
             RUBY
           )
