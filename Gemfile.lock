@@ -1,4 +1,11 @@
 PATH
+  remote: ../rbi
+  specs:
+    rbi (0.3.13)
+      prism (~> 1.0)
+      rbs (>= 4.0.1)
+
+PATH
   remote: .
   specs:
     spoom (1.7.16)
@@ -57,9 +64,6 @@ GEM
     racc (1.8.1)
     rainbow (3.1.1)
     rake (13.4.2)
-    rbi (0.3.13)
-      prism (~> 1.0)
-      rbs (>= 4.0.1)
     rbs (4.0.2)
       logger
       prism (>= 1.6.0)
@@ -141,6 +145,7 @@ DEPENDENCIES
   minitest-mock
   minitest-reporters
   rake (~> 13.4.2)
+  rbi!
   rubocop-minitest
   rubocop-shopify
   rubocop-sorbet
