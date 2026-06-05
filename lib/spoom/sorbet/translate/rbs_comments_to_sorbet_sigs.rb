@@ -184,6 +184,16 @@ module Spoom
 
             sig = translator.result
 
+            # When the method uses Ruby 3.1+ anonymous block forwarding (`&` with no name),
+            # the RBI translator names the block param `&block`, producing `&block:` inside
+            # `params()` which is a syntax error. Detect that case and rename it to `block`
+            # (without the `&`) so the generated sig is valid Ruby.
+            if anonymous_block_param?(def_node)
+              sig.params.each do |param|
+                param.name = param.name.delete_prefix("&") if param.name.start_with?("&")
+              end
+            end
+
             apply_member_annotations(comments.method_annotations, sig)
 
             # Sorbet runtime doesn't support `sig` on `method_added` or
@@ -346,6 +356,14 @@ module Spoom
               sig.without_runtime = true
             end
           end
+        end
+
+        # Returns true if the def node uses an anonymous block parameter (`&` with no name),
+        # i.e. Ruby 3.1+ anonymous block forwarding like `def foo(&); end`.
+        #: (Prism::DefNode) -> bool
+        def anonymous_block_param?(def_node)
+          block_param = def_node.parameters&.block
+          block_param.is_a?(Prism::BlockParameterNode) && block_param.name.nil?
         end
 
         #: (Prism::ClassNode | Prism::ModuleNode | Prism::SingletonClassNode, Regexp) -> bool
