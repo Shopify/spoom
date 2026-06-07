@@ -49,7 +49,7 @@ module Spoom
           node = @node_context.node
           case node
           when Prism::ClassNode, Prism::ModuleNode, Prism::DefNode
-            delete_node_and_comments_and_sigs(@node_context)
+            delete_node_and_comments_and_sigs(modifier_call_context || @node_context)
           when Prism::ConstantWriteNode, Prism::ConstantOperatorWriteNode,
                 Prism::ConstantAndWriteNode, Prism::ConstantOrWriteNode,
                 Prism::ConstantPathWriteNode, Prism::ConstantPathOperatorWriteNode,
@@ -64,6 +64,54 @@ module Spoom
         end
 
         private
+
+        # When a method is defined as the argument of a modifier call (e.g. `private def foo; end`,
+        # `private_class_method def self.foo; end`, or `abstract def foo; end`), the `def` node's
+        # parent is the modifier call rather than the enclosing class or module body. The sigs and
+        # comments attached to the method are siblings of the outermost such call, so return a
+        # context targeting that call to remove them together with the method.
+        #
+        # Any modifier is matched structurally (rather than from a fixed list) so user-defined and
+        # future modifiers are handled too. To stay safe, a call only counts as a modifier when the
+        # wrapped node is its *sole* argument: such a call exists only to wrap that one method, so
+        # removing it whole is correct regardless of the modifier's name. A call that takes other
+        # arguments (e.g. `register(:thing, def foo; end)`) has its own purpose, so we leave it in
+        # place and remove only the `def`. The remaining ambiguous case — a single-argument
+        # user-defined macro with a side effect — is structurally indistinguishable from a real
+        # modifier and vanishingly rare, so we treat it like one.
+        #: -> NodeContext?
+        def modifier_call_context
+          wrapped = @node_context.node #: Prism::Node
+          return unless wrapped.is_a?(Prism::DefNode)
+
+          nesting = @node_context.nesting
+          call_index = nil #: Integer?
+
+          index = nesting.size - 1
+          while index >= 0
+            ancestor = nesting.fetch(index)
+            case ancestor
+            when Prism::ArgumentsNode
+              # An arguments node sits between a call and its arguments, keep climbing.
+            when Prism::CallNode
+              # Stop unless this call wraps the node as its sole argument (and takes no block), so we
+              # never delete sibling arguments or a call doing more than wrapping the method.
+              args = ancestor.arguments&.arguments
+              break if ancestor.block
+              break unless args && args.size == 1 && args.first.equal?(wrapped)
+
+              wrapped = ancestor
+              call_index = index
+            else
+              break
+            end
+            index -= 1
+          end
+          return unless call_index
+
+          call = nesting.fetch(call_index)
+          NodeContext.new(@old_source, @node_context.comments, call, nesting[0...call_index] || [])
+        end
 
         #: (NodeContext context) -> void
         def delete_constant_assignment(context)
