@@ -8,10 +8,30 @@ module Spoom
     module Errors
       DEFAULT_ERROR_URL_BASE = "https://srb.help/"
 
+      DEFAULT_IGNORED_ERRORS_PATH = "sorbet/ignored_errors.cfg"
+
       class << self
         #: (Array[Error] errors) -> Array[Error]
         def sort_errors_by_code(errors)
           errors.sort_by { |e| [e.code, e.file, e.line, e.message] }
+        end
+
+        #: (String path) -> Set[[Integer, String, Integer]]
+        def parse_ignored_errors(path)
+          ignored = Set.new #: Set[[Integer, String, Integer]]
+          File.foreach(path) do |line|
+            line = line.strip
+            next if line.empty? || line.start_with?("#")
+
+            parts = line.split(":")
+            next if parts.size < 3
+
+            code = parts[0].to_i
+            file_line = parts[-1].to_i
+            file_path = parts[1..-2].join(":")
+            ignored << [code, file_path, file_line]
+          end
+          ignored
         end
 
         #: (Array[Error]) -> REXML::Document
