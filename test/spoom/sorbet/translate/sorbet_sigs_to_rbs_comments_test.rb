@@ -198,7 +198,7 @@ module Spoom
 
         def test_translate_to_rbs_method_sigs_without_runtime
           contents = <<~RB
-            T::Sig::WithoutRuntime.sig { void }
+            ::T::Sig::WithoutRuntime.sig { void }
             def foo; end
           RB
 
@@ -274,7 +274,7 @@ module Spoom
 
         def test_translate_to_rbs_attr_sigs_without_runtime
           contents = <<~RB
-            T::Sig::WithoutRuntime.sig { returns(Integer) }
+            ::T::Sig::WithoutRuntime.sig { returns(Integer) }
             attr_accessor :foo
           RB
 
