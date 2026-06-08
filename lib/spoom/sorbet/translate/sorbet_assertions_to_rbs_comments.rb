@@ -103,10 +103,12 @@ module Spoom
           # Otherwise, replace up to the end of the node
           end_offset = comment_end_offset || node.location.end_offset
 
+          heredoc_body = heredoc_body_within_range(value, end_offset)
+
           replacement = if node.name == :bind
             "#{rbs_annotation}#{trailing_comment}"
           else
-            "#{dedent_value(node, value)} #{rbs_annotation}#{trailing_comment}"
+            "#{dedent_value(node, value)} #{rbs_annotation}#{trailing_comment}#{heredoc_body}"
           end
 
           @rewriter << Source::Replace.new(start_offset, end_offset - 1, replacement)
@@ -210,6 +212,47 @@ module Spoom
           # Extract the comment including the leading space and return the end offset
           range = @ruby_bytes[comment_start...end_offset] #: as !nil
           [" #{range.pack("C*")}", end_offset]
+        end
+
+        #: (Prism::Node, Integer) -> String?
+        def heredoc_body_within_range(node, replace_end_offset)
+          heredoc_end = find_heredoc_end_offset(node)
+          return unless heredoc_end
+          return if heredoc_end > replace_end_offset
+
+          value_end = node.location.end_offset
+          opener_line_end = value_end
+          opener_line_end += 1 while opener_line_end < @ruby_bytes.size && @ruby_bytes[opener_line_end] != LINE_BREAK
+          return if opener_line_end >= @ruby_bytes.size
+
+          body_bytes = @ruby_bytes[(opener_line_end + 1)...heredoc_end] #: as !nil
+          body = body_bytes.pack("C*")
+          body.chomp! if @ruby_bytes[replace_end_offset] == LINE_BREAK
+          "\n#{body}"
+        end
+
+        #: (Prism::Node) -> Integer?
+        def find_heredoc_end_offset(node)
+          case node
+          when Prism::StringNode, Prism::InterpolatedStringNode
+            closing = node.closing_loc
+            opening = node.opening_loc
+            if closing && opening && opening.start_line != closing.start_line
+              return closing.end_offset
+            end
+          when Prism::CallNode
+            receiver = node.receiver
+            if receiver
+              result = find_heredoc_end_offset(receiver)
+              return result if result
+            end
+            node.arguments&.arguments&.each do |arg|
+              found = find_heredoc_end_offset(arg)
+              return found if found
+            end
+          end
+
+          nil
         end
 
         #: (Prism::Node, Prism::Node) -> String
