@@ -629,6 +629,28 @@ module Spoom
           )
         end
 
+        def test_translate_type_alias_before_method_sig_with_translate_last_overloads_strategy
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class Example
+                #: type status = Symbol
+                #: () -> status
+                def status; end
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class Example
+                Status = T.type_alias { Symbol }
+                sig { returns(Status) }
+                def status; end
+              end
+            RUBY
+
+            overloads_strategy: :translate_last,
+          )
+        end
+
         def test_translate_type_alias_with_generics
           assert_rewrites_rbs(
             from: <<~RUBY,
