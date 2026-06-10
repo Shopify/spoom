@@ -48,8 +48,10 @@ module Spoom
 
           node = @node_context.node
           case node
-          when Prism::ClassNode, Prism::ModuleNode, Prism::DefNode
-            delete_node_and_comments_and_sigs(modifier_call_context || @node_context)
+          when Prism::ClassNode, Prism::ModuleNode
+            delete_node_and_comments_and_sigs(@node_context)
+          when Prism::DefNode
+            delete_node_and_comments_and_sigs(modifier_call_context(node) || @node_context)
           when Prism::ConstantWriteNode, Prism::ConstantOperatorWriteNode,
                 Prism::ConstantAndWriteNode, Prism::ConstantOrWriteNode,
                 Prism::ConstantPathWriteNode, Prism::ConstantPathOperatorWriteNode,
@@ -79,20 +81,18 @@ module Spoom
         # place and remove only the `def`. The remaining ambiguous case — a single-argument
         # user-defined macro with a side effect — is structurally indistinguishable from a real
         # modifier and vanishingly rare, so we treat it like one.
-        #: -> NodeContext?
-        def modifier_call_context
-          wrapped = @node_context.node #: Prism::Node
-          return unless wrapped.is_a?(Prism::DefNode)
+        #: (Prism::DefNode def_node) -> NodeContext?
+        def modifier_call_context(def_node)
+          wrapped = def_node #: Prism::Node
+          nesting = @node_context.nesting.dup
+          outer_call = nil #: Prism::CallNode?
+          outer_nesting = nil #: Array[Prism::Node]?
 
-          nesting = @node_context.nesting
-          call_index = nil #: Integer?
-
-          index = nesting.size - 1
-          while index >= 0
-            ancestor = nesting.fetch(index)
+          while (ancestor = nesting.pop)
             case ancestor
             when Prism::ArgumentsNode
               # An arguments node sits between a call and its arguments, keep climbing.
+              next
             when Prism::CallNode
               # Stop unless this call wraps the node as its sole argument (and takes no block), so we
               # never delete sibling arguments or a call doing more than wrapping the method.
@@ -101,16 +101,15 @@ module Spoom
               break unless args && args.size == 1 && args.first.equal?(wrapped)
 
               wrapped = ancestor
-              call_index = index
+              outer_call = ancestor
+              outer_nesting = nesting.dup
             else
               break
             end
-            index -= 1
           end
-          return unless call_index
+          return unless outer_call && outer_nesting
 
-          call = nesting.fetch(call_index)
-          NodeContext.new(@old_source, @node_context.comments, call, nesting[0...call_index] || [])
+          NodeContext.new(@old_source, @node_context.comments, outer_call, outer_nesting)
         end
 
         #: (NodeContext context) -> void
