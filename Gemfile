@@ -5,6 +5,8 @@ source "https://rubygems.org"
 
 gemspec
 
+gem "rbi", path: "../rbi"
+
 gem "minitest"
 gem "minitest-mock"
 

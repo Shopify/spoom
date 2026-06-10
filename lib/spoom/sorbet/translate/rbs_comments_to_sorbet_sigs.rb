@@ -47,6 +47,8 @@ module Spoom
 
           @max_line_length = max_line_length
           @overloads_strategy = overloads_strategy
+
+          @rbs_translator = RBI::RBS::TypeTranslator.new #: RBI::RBS::TypeTranslator
         end
 
         # @override
@@ -133,11 +135,11 @@ module Spoom
               name = node.arguments&.arguments&.first #: as Prism::SymbolNode
               sig.params << RBI::SigParam.new(
                 name.slice[1..-1], #: as String
-                RBI::RBS::TypeTranslator.translate(attr_type),
+                @rbs_translator.translate(attr_type),
               )
             end
 
-            sig.return_type = RBI::RBS::TypeTranslator.translate(attr_type)
+            sig.return_type = @rbs_translator.translate(attr_type)
 
             apply_member_annotations(comments.method_annotations, sig)
 
@@ -259,7 +261,7 @@ module Spoom
                 "final!"
               when /^@requires_ancestor: /
                 srb_type = ::RBS::Parser.parse_type(annotation.string.delete_prefix("@requires_ancestor: "))
-                rbs_type = RBI::RBS::TypeTranslator.translate(srb_type)
+                rbs_type = @rbs_translator.translate(srb_type)
                 "requires_ancestor { #{rbs_type} }"
               else
                 next
@@ -304,12 +306,12 @@ module Spoom
 
                 if type_param.upper_bound || type_param.default_type
                   if type_param.upper_bound
-                    rbs_type = RBI::RBS::TypeTranslator.translate(type_param.upper_bound)
+                    rbs_type = @rbs_translator.translate(type_param.upper_bound)
                     type_member = "#{type_member} {{ upper: #{rbs_type} }}"
                   end
 
                   if type_param.default_type
-                    rbs_type = RBI::RBS::TypeTranslator.translate(type_param.default_type)
+                    rbs_type = @rbs_translator.translate(type_param.default_type)
                     type_member = "#{type_member} {{ fixed: #{rbs_type} }}"
                   end
                 end
