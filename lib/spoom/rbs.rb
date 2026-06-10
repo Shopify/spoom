@@ -105,6 +105,9 @@ module Spoom
               location = location.join(continuation_comment.location)
             end
             continuation_comments.clear
+
+            next if string.start_with?("type ")
+
             res.signatures.prepend(Signature.new(string, location))
           elsif string.start_with?("#|")
             continuation_comments << comment
