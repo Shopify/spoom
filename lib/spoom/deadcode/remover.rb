@@ -67,20 +67,15 @@ module Spoom
 
         private
 
-        # When a method is defined as the argument of a modifier call (e.g. `private def foo; end`,
-        # `private_class_method def self.foo; end`, or `abstract def foo; end`), the `def` node's
-        # parent is the modifier call rather than the enclosing class or module body. The sigs and
-        # comments attached to the method are siblings of the outermost such call, so return a
-        # context targeting that call to remove them together with the method.
+        # When a method is defined as the argument of a modifier call (e.g. `private def foo; end` or
+        # `private_class_method def self.foo; end`), the `def` node's parent is the call rather than the
+        # enclosing class or module body, so its sigs and comments are siblings of the call. Return a
+        # context targeting the outermost such call so they are removed together with the method.
         #
-        # Any modifier is matched structurally (rather than from a fixed list) so user-defined and
-        # future modifiers are handled too. To stay safe, a call only counts as a modifier when the
-        # wrapped node is its *sole* argument: such a call exists only to wrap that one method, so
-        # removing it whole is correct regardless of the modifier's name. A call that takes other
-        # arguments (e.g. `register(:thing, def foo; end)`) has its own purpose, so we leave it in
-        # place and remove only the `def`. The remaining ambiguous case — a single-argument
-        # user-defined macro with a side effect — is structurally indistinguishable from a real
-        # modifier and vanishingly rare, so we treat it like one.
+        # Modifiers are matched structurally rather than from a fixed list, so user-defined ones are
+        # handled too. A call only counts as a modifier when the `def` is its sole argument and it takes
+        # no block, so we never remove a call that does more than wrap the method (e.g.
+        # `register(:thing, def foo; end)`).
         #: (Prism::DefNode def_node) -> NodeContext?
         def modifier_call_context(def_node)
           wrapped = def_node #: Prism::Node
@@ -91,11 +86,11 @@ module Spoom
           while (ancestor = nesting.pop)
             case ancestor
             when Prism::ArgumentsNode
-              # An arguments node sits between a call and its arguments, keep climbing.
+              # An arguments node sits between a call and its arguments, keep climbing
               next
             when Prism::CallNode
-              # Stop unless this call wraps the node as its sole argument (and takes no block), so we
-              # never delete sibling arguments or a call doing more than wrapping the method.
+              # Stop unless the call wraps the node as its sole argument and takes no block, otherwise
+              # it does more than wrap the method and we must not remove it
               args = ancestor.arguments&.arguments
               break if ancestor.block
               break unless args && args.size == 1 && args.first.equal?(wrapped)
