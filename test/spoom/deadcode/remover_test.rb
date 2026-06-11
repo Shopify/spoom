@@ -940,6 +940,186 @@ module Spoom
         RB
       end
 
+      def test_removes_node_sig_with_visibility_modifier
+        res = remove(<<~RB, "bar")
+          class Foo
+            def foo; end
+
+            sig { void }
+            private_class_method def self.bar
+              something
+            end
+
+            def baz; end
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            def foo; end
+
+            def baz; end
+          end
+        RB
+      end
+
+      def test_removes_node_sig_with_custom_modifier
+        res = remove(<<~RB, "bar")
+          class Foo
+            def foo; end
+
+            # A comment
+            sig { void }
+            some_custom_modifier def bar
+              something
+            end
+
+            def baz; end
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            def foo; end
+
+            def baz; end
+          end
+        RB
+      end
+
+      def test_removes_node_sig_with_nested_modifiers
+        res = remove(<<~RB, "bar")
+          class Foo
+            def foo; end
+
+            sig { void }
+            private abstract def bar
+              something
+            end
+
+            def baz; end
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            def foo; end
+
+            def baz; end
+          end
+        RB
+      end
+
+      def test_removes_node_sig_with_modifier_as_last_statement
+        res = remove(<<~RB, "bar")
+          class Foo
+            def foo; end
+
+            sig { void }
+            private def bar
+              something
+            end
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            def foo; end
+          end
+        RB
+      end
+
+      def test_removes_single_line_def_with_modifier
+        res = remove(<<~RB, "bar")
+          class Foo
+            def foo; end
+            private def bar; end
+            def baz; end
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            def foo; end
+            def baz; end
+          end
+        RB
+      end
+
+      def test_removes_def_with_modifier_without_sig
+        res = remove(<<~RB, "bar")
+          class Foo
+            def foo; end
+
+            private_class_method def self.bar
+              something
+            end
+
+            def baz; end
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            def foo; end
+
+            def baz; end
+          end
+        RB
+      end
+
+      def test_keeps_call_when_def_is_not_the_sole_argument
+        # `bar` is a positional argument to `register`, not wrapped by a modifier, so only the `def`
+        # is removed and the call (along with its other arguments) is preserved.
+        res = remove(<<~RB, "bar")
+          class Foo
+            register(
+              :thing,
+              def bar
+                x
+              end,
+            )
+
+            def keep; end
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            register(
+              :thing,
+            )
+
+            def keep; end
+          end
+        RB
+      end
+
+      def test_keeps_sibling_arguments_when_def_is_not_the_sole_argument
+        res = remove(<<~RB, "bar")
+          class Foo
+            memoize(
+              def bar
+                x
+              end,
+              ttl: 60,
+            )
+
+            def keep; end
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            memoize(
+              ttl: 60,
+            )
+
+            def keep; end
+          end
+        RB
+      end
+
       def test_removes_node_sig_and_comments
         res = remove(<<~RB, "bar")
           class Foo

@@ -48,8 +48,10 @@ module Spoom
 
           node = @node_context.node
           case node
-          when Prism::ClassNode, Prism::ModuleNode, Prism::DefNode
+          when Prism::ClassNode, Prism::ModuleNode
             delete_node_and_comments_and_sigs(@node_context)
+          when Prism::DefNode
+            delete_node_and_comments_and_sigs(modifier_call_context(node) || @node_context)
           when Prism::ConstantWriteNode, Prism::ConstantOperatorWriteNode,
                 Prism::ConstantAndWriteNode, Prism::ConstantOrWriteNode,
                 Prism::ConstantPathWriteNode, Prism::ConstantPathOperatorWriteNode,
@@ -64,6 +66,46 @@ module Spoom
         end
 
         private
+
+        # When a method is defined as the argument of a modifier call (e.g. `private def foo; end` or
+        # `private_class_method def self.foo; end`), the `def` node's parent is the call rather than the
+        # enclosing class or module body, so its sigs and comments are siblings of the call. Return a
+        # context targeting the outermost such call so they are removed together with the method.
+        #
+        # Modifiers are matched structurally rather than from a fixed list, so user-defined ones are
+        # handled too. A call only counts as a modifier when the `def` is its sole argument and it takes
+        # no block, so we never remove a call that does more than wrap the method (e.g.
+        # `register(:thing, def foo; end)`).
+        #: (Prism::DefNode def_node) -> NodeContext?
+        def modifier_call_context(def_node)
+          wrapped = def_node #: Prism::Node
+          nesting = @node_context.nesting.dup
+          outer_call = nil #: Prism::CallNode?
+          outer_nesting = nil #: Array[Prism::Node]?
+
+          while (ancestor = nesting.pop)
+            case ancestor
+            when Prism::ArgumentsNode
+              # An arguments node sits between a call and its arguments, keep climbing
+              next
+            when Prism::CallNode
+              # Stop unless the call wraps the node as its sole argument and takes no block, otherwise
+              # it does more than wrap the method and we must not remove it
+              args = ancestor.arguments&.arguments
+              break if ancestor.block
+              break unless args && args.size == 1 && args.first.equal?(wrapped)
+
+              wrapped = ancestor
+              outer_call = ancestor
+              outer_nesting = nesting.dup
+            else
+              break
+            end
+          end
+          return unless outer_call && outer_nesting
+
+          NodeContext.new(@old_source, @node_context.comments, outer_call, outer_nesting)
+        end
 
         #: (NodeContext context) -> void
         def delete_constant_assignment(context)

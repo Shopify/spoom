@@ -1519,6 +1519,9 @@ class Spoom::Deadcode::Remover::NodeRemover
   end
   def insert_accessor(node, send_context, was_removed:); end
 
+  sig { returns(T.nilable(::Spoom::Deadcode::Remover::NodeContext)) }
+  def modifier_call_context; end
+
   sig { params(start_char: ::Integer, end_char: ::Integer, replacement: ::String).void }
   def replace_chars(start_char, end_char, replacement); end
 
