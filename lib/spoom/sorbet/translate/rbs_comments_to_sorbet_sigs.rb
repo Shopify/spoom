@@ -28,16 +28,18 @@ module Spoom
             Sigils.contains_valid_sigil?(source) && source.match?(RBS_REWRITE_PATTERN)
           end
 
-          #: (String ruby_contents, file: String, ?max_line_length: Integer?, ?overloads_strategy: Symbol) -> String
-          def rewrite_if_needed(ruby_contents, file:, max_line_length: nil, overloads_strategy: :translate_all)
+          #: (String ruby_contents, file: String, ?max_line_length: Integer?, ?overloads_strategy: Symbol, ?erase_generic_types: bool) -> String
+          def rewrite_if_needed(ruby_contents, file:, max_line_length: nil, overloads_strategy: :translate_all,
+            erase_generic_types: false)
             return ruby_contents unless contains_rbs_syntax?(ruby_contents)
 
-            new(ruby_contents, file:, max_line_length:, overloads_strategy:).rewrite
+            new(ruby_contents, file:, max_line_length:, overloads_strategy:, erase_generic_types:).rewrite
           end
         end
 
-        #: (String, file: String, ?max_line_length: Integer?, ?overloads_strategy: Symbol) -> void
-        def initialize(ruby_contents, file:, max_line_length: nil, overloads_strategy: :translate_all)
+        #: (String, file: String, ?max_line_length: Integer?, ?overloads_strategy: Symbol, ?erase_generic_types: bool) -> void
+        def initialize(ruby_contents, file:, max_line_length: nil, overloads_strategy: :translate_all,
+          erase_generic_types: false)
           super(ruby_contents, file: file)
 
           unless ALLOWED_OVERLOAD_STRATEGIES.include?(overloads_strategy)
@@ -47,6 +49,8 @@ module Spoom
 
           @max_line_length = max_line_length
           @overloads_strategy = overloads_strategy
+          @erase_generic_types = erase_generic_types
+          @type_translator = RBI::RBS::TypeTranslator.new(erase_generic_types:) #: RBI::RBS::TypeTranslator
         end
 
         # @override
@@ -133,11 +137,11 @@ module Spoom
               name = node.arguments&.arguments&.first #: as Prism::SymbolNode
               sig.params << RBI::SigParam.new(
                 name.slice[1..-1], #: as String
-                RBI::RBS::TypeTranslator.translate(attr_type),
+                @type_translator.translate(attr_type),
               )
             end
 
-            sig.return_type = RBI::RBS::TypeTranslator.translate(attr_type)
+            sig.return_type = @type_translator.translate(attr_type)
 
             apply_member_annotations(comments.method_annotations, sig)
 
@@ -174,7 +178,7 @@ module Spoom
               next
             end
 
-            translator = RBI::RBS::MethodTypeTranslator.new(rbi_node)
+            translator = RBI::RBS::MethodTypeTranslator.new(rbi_node, erase_generic_types: @erase_generic_types)
 
             begin
               translator.visit(method_type)
@@ -259,7 +263,7 @@ module Spoom
                 "final!"
               when /^@requires_ancestor: /
                 srb_type = ::RBS::Parser.parse_type(annotation.string.delete_prefix("@requires_ancestor: "))
-                rbs_type = RBI::RBS::TypeTranslator.translate(srb_type)
+                rbs_type = @type_translator.translate(srb_type)
                 "requires_ancestor { #{rbs_type} }"
               else
                 next
@@ -288,6 +292,17 @@ module Spoom
               to = adjust_to_line_end(signature.location.end_offset)
               @rewriter << Source::Delete.new(from, to)
 
+              if @erase_generic_types
+                type_params.each do |type_param|
+                  @rewriter << Source::Insert.new(
+                    insert_pos,
+                    "\n#{indent}#{type_param.name} = T.type_alias { T.anything }\n",
+                  )
+                end
+
+                next
+              end
+
               unless already_extends?(node, /^(::)?T::Generic$/)
                 @rewriter << Source::Insert.new(insert_pos, "\n#{indent}extend T::Generic\n")
               end
@@ -304,12 +319,12 @@ module Spoom
 
                 if type_param.upper_bound || type_param.default_type
                   if type_param.upper_bound
-                    rbs_type = RBI::RBS::TypeTranslator.translate(type_param.upper_bound)
+                    rbs_type = @type_translator.translate(type_param.upper_bound)
                     type_member = "#{type_member} {{ upper: #{rbs_type} }}"
                   end
 
                   if type_param.default_type
-                    rbs_type = RBI::RBS::TypeTranslator.translate(type_param.default_type)
+                    rbs_type = @type_translator.translate(type_param.default_type)
                     type_member = "#{type_member} {{ fixed: #{rbs_type} }}"
                   end
                 end
@@ -417,7 +432,7 @@ module Spoom
             next unless decls.size == 1 && decls.first.is_a?(::RBS::AST::Declarations::TypeAlias)
 
             rbs_type = decls.first
-            sorbet_type = RBI::RBS::TypeTranslator.translate(rbs_type.type)
+            sorbet_type = @type_translator.translate(rbs_type.type)
 
             alias_name = ::RBS::TypeName.new(
               namespace: rbs_type.name.namespace,

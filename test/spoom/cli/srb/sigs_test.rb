@@ -197,6 +197,46 @@ module Spoom
           RB
         end
 
+        def test_translate_rbs_to_rbi_with_erase_generic_types
+          @project.write!("file.rb", <<~RB)
+            # typed: true
+
+            #: [E]
+            class Box
+              #: -> Array[E]
+              def values
+                []
+              end
+
+              #: (E) -> void
+              def push(value)
+              end
+            end
+          RB
+
+          result = @project.spoom("srb sigs translate --from rbs --to rbi --no-color --erase-generic-types")
+
+          assert_empty(result.err)
+          assert(result.status)
+
+          assert_equal(<<~RB, @project.read("file.rb"))
+            # typed: true
+
+            class Box
+              E = T.type_alias { T.anything }
+
+              sig { returns(Array) }
+              def values
+                []
+              end
+
+              sig { params(value: E).void }
+              def push(value)
+              end
+            end
+          RB
+        end
+
         def test_translate_includes_rbi_files
           @project.write!("file.rb", <<~RB)
             sig { void }
