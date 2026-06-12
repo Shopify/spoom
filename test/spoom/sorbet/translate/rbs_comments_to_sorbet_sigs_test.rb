@@ -1226,8 +1226,16 @@ module Spoom
               MSG
             end
 
-            # rewritten_output = # TODO: insert rewrite here
-            # assert_equal(expected_line_matched_format, rewritten_output)
+            rewritten_output = RBSCommentsToSorbetSigs::LineMatchingTranslator.new(
+              source_with_rbs,
+              file: "test.rb",
+              options: RBSCommentsToSorbetSigs::Options.new(
+                overloads_strategy:,
+                output_format: RBSCommentsToSorbetSigs::LineMatchedRBIFormat.default,
+              ),
+            ).rewrite
+
+            assert_equal(expected_line_matched_format, rewritten_output)
           end
         end
       end

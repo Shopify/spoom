@@ -3016,6 +3016,17 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator < ::Spoo
   end
   def already_extends?(node, constant_regex); end
 
+  sig do
+    abstract
+      .params(
+        annotation: ::Spoom::RBS::Annotation,
+        parent_node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode),
+        insert_pos: ::Integer,
+        sorbet_replacement: T.nilable(::String)
+      ).void
+  end
+  def apply_class_annotation(annotation, parent_node:, insert_pos:, sorbet_replacement:); end
+
   sig { params(node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode)).void }
   def apply_class_annotations(node); end
 
@@ -3037,8 +3048,40 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator < ::Spoo
   sig { params(comments: T::Array[::Prism::Comment]).returns(T::Array[::Spoom::RBS::TypeAlias]) }
   def collect_type_aliases(comments); end
 
+  sig do
+    abstract
+      .params(
+        mixin_name: ::String,
+        into: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode),
+        at: ::Integer
+      ).void
+  end
+  def extend_with(mixin_name, into:, at:); end
+
+  sig do
+    abstract
+      .params(
+        type_member: ::String,
+        parent_node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode),
+        insert_pos: ::Integer
+      ).void
+  end
+  def insert_type_member(type_member, parent_node:, insert_pos:); end
+
+  sig { overridable.params(of: ::String, to_height_of: ::Spoom::RBS::Comment).returns(::String) }
+  def pad_out_line_count(of:, to_height_of:); end
+
+  sig { overridable.params(annotation: ::Spoom::RBS::Annotation, is_known: T::Boolean).void }
+  def rewrite_annotation(annotation, is_known:); end
+
   sig { params(def_node: ::Prism::DefNode, comments: ::Spoom::RBS::Comments).void }
   def rewrite_def(def_node, comments); end
+
+  sig { abstract.params(signature: ::Spoom::RBS::Signature).void }
+  def rewrite_discarded_overload(signature); end
+
+  sig { abstract.params(signature: ::Spoom::RBS::Signature, type_params: T::Array[::RBS::AST::TypeParam]).void }
+  def rewrite_type_params_signature(signature, type_params:); end
 
   sig { params(node: ::Prism::CallNode).void }
   def visit_attr(node); end
@@ -3057,7 +3100,86 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::HumanReadableRBIFormat 
   end
 end
 
-class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::HumanReadableTranslator < ::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator; end
+class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::HumanReadableTranslator < ::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator
+  private
+
+  sig do
+    override
+      .params(
+        annotation: ::Spoom::RBS::Annotation,
+        parent_node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode),
+        insert_pos: ::Integer,
+        sorbet_replacement: T.nilable(::String)
+      ).void
+  end
+  def apply_class_annotation(annotation, parent_node:, insert_pos:, sorbet_replacement:); end
+
+  sig { override.params(mixin_name: ::String, into: ::Prism::Node, at: ::Integer).void }
+  def extend_with(mixin_name, into:, at:); end
+
+  sig do
+    override
+      .params(
+        type_member: ::String,
+        parent_node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode),
+        insert_pos: ::Integer
+      ).void
+  end
+  def insert_type_member(type_member, parent_node:, insert_pos:); end
+
+  sig { override.params(signature: ::Spoom::RBS::Signature).void }
+  def rewrite_discarded_overload(signature); end
+
+  sig { override.params(signature: ::Spoom::RBS::Signature, type_params: T::Array[::RBS::AST::TypeParam]).void }
+  def rewrite_type_params_signature(signature, type_params:); end
+end
+
+class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::LineMatchedRBIFormat < ::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseRBIFormat
+  class << self
+    sig { returns(::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::LineMatchedRBIFormat) }
+    def default; end
+  end
+end
+
+class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::LineMatchingTranslator < ::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator
+  private
+
+  sig do
+    override
+      .params(
+        annotation: ::Spoom::RBS::Annotation,
+        parent_node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode),
+        insert_pos: ::Integer,
+        sorbet_replacement: T.nilable(::String)
+      ).void
+  end
+  def apply_class_annotation(annotation, parent_node:, insert_pos:, sorbet_replacement:); end
+
+  sig { override.params(mixin_name: ::String, into: ::Prism::Node, at: ::Integer).void }
+  def extend_with(mixin_name, into:, at:); end
+
+  sig do
+    override
+      .params(
+        type_member: ::String,
+        parent_node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode),
+        insert_pos: ::Integer
+      ).void
+  end
+  def insert_type_member(type_member, parent_node:, insert_pos:); end
+
+  sig { override.params(of: ::String, to_height_of: ::Spoom::RBS::Comment).returns(::String) }
+  def pad_out_line_count(of:, to_height_of:); end
+
+  sig { override.params(annotation: ::Spoom::RBS::Annotation, is_known: T::Boolean).void }
+  def rewrite_annotation(annotation, is_known:); end
+
+  sig { override.params(signature: ::Spoom::RBS::Signature).void }
+  def rewrite_discarded_overload(signature); end
+
+  sig { override.params(signature: ::Spoom::RBS::Signature, type_params: T::Array[::RBS::AST::TypeParam]).void }
+  def rewrite_type_params_signature(signature, type_params:); end
+end
 
 class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::Options
   sig do

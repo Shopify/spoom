@@ -54,3 +54,4 @@ end
 
 require "spoom/sorbet/translate/rbs_comments_to_sorbet_sigs/options"
 require "spoom/sorbet/translate/rbs_comments_to_sorbet_sigs/human_readable_translator"
+require "spoom/sorbet/translate/rbs_comments_to_sorbet_sigs/line_matching_translator"
