@@ -4,9 +4,7 @@
 module Spoom
   module Sorbet
     module Translate
-      class RBSCommentsToSorbetSigs < Translator
-        include Spoom::RBS::ExtractRBSComments
-
+      module RBSCommentsToSorbetSigs
         RBS_ANNOTATION_MARKERS = [
           "# @abstract",
           "# @interface",
@@ -20,8 +18,6 @@ module Spoom
         RBS_REWRITE_PATTERN = Regexp.union(["#:", "#|", *RBS_ANNOTATION_MARKERS]).freeze #: Regexp
         private_constant :RBS_ANNOTATION_MARKERS, :RBS_REWRITE_PATTERN
 
-        ALLOWED_OVERLOAD_STRATEGIES = [:translate_all, :translate_last, :raise].freeze #: Array[Symbol]
-
         class << self
           #: (String source) -> bool
           def contains_rbs_syntax?(source)
@@ -32,9 +28,15 @@ module Spoom
           def rewrite_if_needed(ruby_contents, file:, max_line_length: nil, overloads_strategy: :translate_all)
             return ruby_contents unless contains_rbs_syntax?(ruby_contents)
 
-            new(ruby_contents, file:, max_line_length:, overloads_strategy:).rewrite
+            BaseTranslator.new(ruby_contents, file:, max_line_length:, overloads_strategy:).rewrite
           end
         end
+      end
+
+      class RBSCommentsToSorbetSigs::BaseTranslator < Translator # rubocop:disable Style/ClassAndModuleChildren
+        include Spoom::RBS::ExtractRBSComments
+
+        ALLOWED_OVERLOAD_STRATEGIES = [:translate_all, :translate_last, :raise].freeze #: Array[Symbol]
 
         #: (String, file: String, ?max_line_length: Integer?, ?overloads_strategy: Symbol) -> void
         def initialize(ruby_contents, file:, max_line_length: nil, overloads_strategy: :translate_all)
