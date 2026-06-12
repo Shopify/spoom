@@ -2938,6 +2938,8 @@ end
 class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator < ::Spoom::Sorbet::Translate::Translator
   include ::Spoom::RBS::ExtractRBSComments
 
+  abstract!
+
   sig do
     params(
       ruby_contents: ::String,
@@ -3006,8 +3008,6 @@ end
 
 Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator::ALLOWED_OVERLOAD_STRATEGIES = T.let(T.unsafe(nil), Array)
 class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::HumanReadableTranslator < ::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator; end
-Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBS_ANNOTATION_MARKERS = T.let(T.unsafe(nil), Array)
-Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBS_REWRITE_PATTERN = T.let(T.unsafe(nil), Regexp)
 
 class Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments < ::Spoom::Sorbet::Translate::Translator
   sig do
