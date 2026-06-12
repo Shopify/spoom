@@ -216,43 +216,38 @@ module Spoom
 
         #: (Prism::Node, Integer) -> String?
         def heredoc_body_within_range(node, replace_end_offset)
-          heredoc_end = find_heredoc_end_offset(node)
+          heredoc_end = heredoc_end_offsets(node)
+            .select { |offset| offset <= replace_end_offset }
+            .max
           return unless heredoc_end
-          return if heredoc_end > replace_end_offset
 
-          value_end = node.location.end_offset
-          opener_line_end = value_end
-          opener_line_end += 1 while opener_line_end < @ruby_bytes.size && @ruby_bytes[opener_line_end] != LINE_BREAK
-          return if opener_line_end >= @ruby_bytes.size
-
+          opener_line_end = adjust_to_line_end(node.location.end_offset)
           body_bytes = @ruby_bytes[(opener_line_end + 1)...heredoc_end] #: as !nil
           body = body_bytes.pack("C*")
           body.chomp! if @ruby_bytes[replace_end_offset] == LINE_BREAK
           "\n#{body}"
         end
 
-        #: (Prism::Node) -> Integer?
-        def find_heredoc_end_offset(node)
+        #: (Prism::Node) -> Array[Integer]
+        def heredoc_end_offsets(node)
+          offsets = [] #: Array[Integer]
+
           case node
           when Prism::StringNode, Prism::InterpolatedStringNode
-            closing = node.closing_loc
             opening = node.opening_loc
-            if closing && opening && opening.start_line != closing.start_line
-              return closing.end_offset
-            end
-          when Prism::CallNode
-            receiver = node.receiver
-            if receiver
-              result = find_heredoc_end_offset(receiver)
-              return result if result
-            end
-            node.arguments&.arguments&.each do |arg|
-              found = find_heredoc_end_offset(arg)
-              return found if found
+            closing = node.closing_loc
+            if opening && closing && opening.start_line != closing.start_line
+              offsets << closing.end_offset
             end
           end
 
-          nil
+          node.child_nodes.each do |child|
+            next unless child
+
+            offsets.concat(heredoc_end_offsets(child))
+          end
+
+          offsets
         end
 
         #: (Prism::Node, Prism::Node) -> String
