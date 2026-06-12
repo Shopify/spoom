@@ -2918,7 +2918,24 @@ end
 
 class Spoom::Sorbet::Translate::Error < ::Spoom::Error; end
 
-class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs < ::Spoom::Sorbet::Translate::Translator
+module Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs
+  class << self
+    sig { params(source: ::String).returns(T::Boolean) }
+    def contains_rbs_syntax?(source); end
+
+    sig do
+      params(
+        ruby_contents: ::String,
+        file: ::String,
+        max_line_length: T.nilable(::Integer),
+        overloads_strategy: ::Symbol
+      ).returns(::String)
+    end
+    def rewrite_if_needed(ruby_contents, file:, max_line_length: T.unsafe(nil), overloads_strategy: T.unsafe(nil)); end
+  end
+end
+
+class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator < ::Spoom::Sorbet::Translate::Translator
   include ::Spoom::RBS::ExtractRBSComments
 
   sig do
@@ -2985,26 +3002,10 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs < ::Spoom::Sorbet::Trans
 
   sig { params(node: ::Prism::CallNode).void }
   def visit_attr(node); end
-
-  class << self
-    sig { params(source: ::String).returns(T::Boolean) }
-    def contains_rbs_syntax?(source); end
-
-    sig do
-      params(
-        ruby_contents: ::String,
-        file: ::String,
-        max_line_length: T.nilable(::Integer),
-        overloads_strategy: ::Symbol
-      ).returns(::String)
-    end
-    def rewrite_if_needed(ruby_contents, file:, max_line_length: T.unsafe(nil), overloads_strategy: T.unsafe(nil)); end
-  end
 end
 
-Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::ALLOWED_OVERLOAD_STRATEGIES = T.let(T.unsafe(nil), Array)
-Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBS_ANNOTATION_MARKERS = T.let(T.unsafe(nil), Array)
-Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBS_REWRITE_PATTERN = T.let(T.unsafe(nil), Regexp)
+Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator::ALLOWED_OVERLOAD_STRATEGIES = T.let(T.unsafe(nil), Array)
+class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::HumanReadableTranslator < ::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator; end
 
 class Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments < ::Spoom::Sorbet::Translate::Translator
   sig do
