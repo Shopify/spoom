@@ -976,7 +976,7 @@ module Spoom
             end
           RB
 
-          RBSCommentsToSorbetSigs.stub(:new, ->(*) { flunk("should not be called") }) do
+          RBSCommentsToSorbetSigs::HumanReadableTranslator.stub(:new, ->(*) { flunk("should not be called") }) do
             assert_equal(source, RBSCommentsToSorbetSigs.rewrite_if_needed(source, file: "test.rb"))
           end
         end
@@ -985,7 +985,7 @@ module Spoom
 
         #: (String, ?max_line_length: Integer?, ?overloads_strategy: Symbol) -> String
         def rbs_comments_to_sorbet_sigs(ruby_contents, max_line_length: nil, overloads_strategy: :translate_all)
-          RBSCommentsToSorbetSigs.new(
+          RBSCommentsToSorbetSigs::HumanReadableTranslator.new(
             ruby_contents,
             file: "test.rb",
             max_line_length: max_line_length,
