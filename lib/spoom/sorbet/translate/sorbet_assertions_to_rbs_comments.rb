@@ -103,10 +103,12 @@ module Spoom
           # Otherwise, replace up to the end of the node
           end_offset = comment_end_offset || node.location.end_offset
 
+          heredoc_body = heredoc_body_within_range(value, end_offset)
+
           replacement = if node.name == :bind
             "#{rbs_annotation}#{trailing_comment}"
           else
-            "#{dedent_value(node, value)} #{rbs_annotation}#{trailing_comment}"
+            "#{dedent_value(node, value)} #{rbs_annotation}#{trailing_comment}#{heredoc_body}"
           end
 
           @rewriter << Source::Replace.new(start_offset, end_offset - 1, replacement)
@@ -210,6 +212,42 @@ module Spoom
           # Extract the comment including the leading space and return the end offset
           range = @ruby_bytes[comment_start...end_offset] #: as !nil
           [" #{range.pack("C*")}", end_offset]
+        end
+
+        #: (Prism::Node, Integer) -> String?
+        def heredoc_body_within_range(node, replace_end_offset)
+          heredoc_end = heredoc_end_offsets(node)
+            .select { |offset| offset <= replace_end_offset }
+            .max
+          return unless heredoc_end
+
+          opener_line_end = adjust_to_line_end(node.location.end_offset)
+          body_bytes = @ruby_bytes[(opener_line_end + 1)...heredoc_end] #: as !nil
+          body = body_bytes.pack("C*")
+          body.chomp! if @ruby_bytes[replace_end_offset] == LINE_BREAK
+          "\n#{body}"
+        end
+
+        #: (Prism::Node) -> Array[Integer]
+        def heredoc_end_offsets(node)
+          offsets = [] #: Array[Integer]
+
+          case node
+          when Prism::StringNode, Prism::InterpolatedStringNode
+            opening = node.opening_loc
+            closing = node.closing_loc
+            if opening && closing && opening.start_line != closing.start_line
+              offsets << closing.end_offset
+            end
+          end
+
+          node.child_nodes.each do |child|
+            next unless child
+
+            offsets.concat(heredoc_end_offsets(child))
+          end
+
+          offsets
         end
 
         #: (Prism::Node, Prism::Node) -> String
