@@ -27,17 +27,17 @@ module Spoom
       DEFAULT_ALLOWED_EXTENSIONS = [".rb", ".rbi"].freeze #: Array[String]
 
       #: Array[String]
-      attr_accessor :paths, :ignore, :allowed_extensions
+      attr_reader :paths, :ignore, :allowed_extensions
 
       #: bool
-      attr_accessor :no_stdlib
+      attr_reader :no_stdlib
 
-      #: -> void
-      def initialize
-        @paths = [] #: Array[String]
-        @ignore = [] #: Array[String]
-        @allowed_extensions = [] #: Array[String]
-        @no_stdlib = false #: bool
+      #: (?paths: Array[String], ?ignore: Array[String], ?allowed_extensions: Array[String], ?no_stdlib: bool) -> void
+      def initialize(paths: [], ignore: [], allowed_extensions: [], no_stdlib: false)
+        @paths = paths
+        @ignore = ignore
+        @allowed_extensions = allowed_extensions
+        @no_stdlib = no_stdlib
       end
 
       #: (Config source) -> void
@@ -78,8 +78,13 @@ module Spoom
 
         #: (String sorbet_config) -> Spoom::Sorbet::Config
         def parse_string(sorbet_config)
-          config = Config.new
+          paths = [] #: Array[String]
+          ignore = [] #: Array[String]
+          allowed_extensions = [] #: Array[String]
+          no_stdlib = false #: bool
+
           state = nil #: Symbol?
+
           sorbet_config.each_line do |line|
             line = line.strip
             case line
@@ -87,26 +92,26 @@ module Spoom
               state = :extension
               next
             when /^--allowed-extension=/
-              config.allowed_extensions << parse_option(line)
+              allowed_extensions << parse_option(line)
               next
             when /^--ignore$/
               state = :ignore
               next
             when /^--ignore=/
-              config.ignore << parse_option(line)
+              ignore << parse_option(line)
               next
             when /^--file$/
               next
             when /^--file=/
-              config.paths << parse_option(line)
+              paths << parse_option(line)
               next
             when /^--dir$/
               next
             when /^--dir=/
-              config.paths << parse_option(line)
+              paths << parse_option(line)
               next
             when /^--no-stdlib(=|$)/
-              config.no_stdlib = parse_bool_option(line)
+              no_stdlib = parse_bool_option(line)
               next
             when /^--.*=/
               next
@@ -121,18 +126,24 @@ module Spoom
             else
               case state
               when :ignore
-                config.ignore << line
+                ignore << line
               when :extension
-                config.allowed_extensions << line
+                allowed_extensions << line
               when :skip
                 # nothing
               else
-                config.paths << line
+                paths << line
               end
               state = nil
             end
           end
-          config
+
+          Config.new(
+            paths:,
+            ignore:,
+            allowed_extensions:,
+            no_stdlib:,
+          )
         end
 
         private
