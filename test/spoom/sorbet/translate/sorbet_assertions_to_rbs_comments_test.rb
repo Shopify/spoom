@@ -319,6 +319,21 @@ module Spoom
           RB
         end
 
+        def test_translate_assigns_multiline_string_literal
+          rb = <<~RB
+            s = T.let(
+              "first
+              second",
+              String,
+            )
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            s = "first
+            second" #: String
+          RB
+        end
+
         def test_translate_assigns_does_not_match_bare_strings_has_heredoc
           rb = <<~RB
             a = T.let("<<~STR", String)

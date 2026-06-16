@@ -236,7 +236,7 @@ module Spoom
           when Prism::StringNode, Prism::InterpolatedStringNode
             opening = node.opening_loc
             closing = node.closing_loc
-            if opening && closing && opening.start_line != closing.start_line
+            if opening && closing && opening.start_line != closing.start_line && opening.slice.start_with?("<<")
               offsets << closing.end_offset
             end
           end
