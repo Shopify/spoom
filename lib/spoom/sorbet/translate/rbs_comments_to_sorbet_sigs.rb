@@ -24,11 +24,28 @@ module Spoom
             Sigils.contains_valid_sigil?(source) && source.match?(RBS_REWRITE_PATTERN)
           end
 
-          #: (String ruby_contents, file: String, ?max_line_length: Integer?, ?overloads_strategy: Symbol) -> String
-          def rewrite_if_needed(ruby_contents, file:, max_line_length: nil, overloads_strategy: :translate_all)
+          #: (
+          #|   String ruby_contents,
+          #|   file: String,
+          #|   ?max_line_length: Integer?,
+          # :translate_all | :translate_last | :raise
+          #|   ?overloads_strategy: Symbol) -> String
+          def rewrite_if_needed(
+            ruby_contents,
+            file:,
+            max_line_length: nil,
+            overloads_strategy: :translate_all
+          )
             return ruby_contents unless contains_rbs_syntax?(ruby_contents)
 
-            HumanReadableTranslator.new(ruby_contents, file:, max_line_length:, overloads_strategy:).rewrite
+            options = Options.new(
+              overloads_strategy:,
+              output_format: DefaultRBIFormat.new(
+                max_line_length:,
+              ),
+            )
+
+            HumanReadableTranslator.new(ruby_contents, file:, options:).rewrite
           end
         end
       end
@@ -36,4 +53,5 @@ module Spoom
   end
 end
 
+require "spoom/sorbet/translate/rbs_comments_to_sorbet_sigs/options"
 require "spoom/sorbet/translate/rbs_comments_to_sorbet_sigs/human_readable_translator"

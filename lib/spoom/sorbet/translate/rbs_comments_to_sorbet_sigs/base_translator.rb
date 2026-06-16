@@ -9,20 +9,30 @@ module Spoom
         class BaseTranslator < Translator
           include Spoom::RBS::ExtractRBSComments
 
-          ALLOWED_OVERLOAD_STRATEGIES = [:translate_all, :translate_last, :raise].freeze #: Array[Symbol]
+          #: (String, file: String, ?options: Options) -> void
+          def initialize(
+            ruby_contents,
+            file:,
+            options: Options.default
+          )
+            super(ruby_contents, file:)
 
-          #: (String, file: String, ?max_line_length: Integer?, ?overloads_strategy: Symbol) -> void
-          def initialize(ruby_contents, file:, max_line_length: nil, overloads_strategy: :translate_all)
-            super(ruby_contents, file: file)
-
-            unless ALLOWED_OVERLOAD_STRATEGIES.include?(overloads_strategy)
-              raise ArgumentError, "Unknown overloads_strategy: #{overloads_strategy.inspect}. " \
-                "Must be one of: #{ALLOWED_OVERLOAD_STRATEGIES.map(&:inspect).join(", ")}"
+            case (format = options.output_format)
+            when DefaultRBIFormat
+              @max_line_length = format.max_line_length #: Integer?
+              # type_translator_should_associate_origin_rbs_nodes = true
+            else
+              @max_line_length = nil
             end
 
-            @max_line_length = max_line_length
-            @overloads_strategy = overloads_strategy
+            @overloads_strategy = options.overloads_strategy #: Symbol
             @type_translator = RBI::RBS::TypeTranslator.new #: RBI::RBS::TypeTranslator
+
+            # @rbs_translator = RBI::RBS::TypeTranslator.new(
+            #   options: RBI::RBS::TypeTranslator::Options.new(
+            #     associate_origin_rbs_nodes: type_translator_should_associate_origin_rbs_nodes
+            #   )
+            # ) #: RBI::RBS::TypeTranslator
           end
 
           # @override
