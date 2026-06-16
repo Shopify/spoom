@@ -3238,11 +3238,15 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::Options
   sig do
     params(
       overloads_strategy: ::Symbol,
+      erase_generic_types: T::Boolean,
       output_format: ::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseRBIFormat,
       translate_abstract_methods: T::Boolean
     ).void
   end
-  def initialize(overloads_strategy: T.unsafe(nil), output_format: T.unsafe(nil), translate_abstract_methods: T.unsafe(nil)); end
+  def initialize(overloads_strategy: T.unsafe(nil), erase_generic_types: T.unsafe(nil), output_format: T.unsafe(nil), translate_abstract_methods: T.unsafe(nil)); end
+
+  sig { returns(T::Boolean) }
+  def erase_generic_types; end
 
   sig { returns(::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseRBIFormat) }
   def output_format; end

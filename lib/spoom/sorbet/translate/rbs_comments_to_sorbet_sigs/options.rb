@@ -44,6 +44,9 @@ module Spoom
 
           ALLOWED_OVERLOAD_STRATEGIES = [:translate_all, :translate_last, :raise].freeze
 
+          #: bool
+          attr_reader :erase_generic_types
+
           #: BaseRBIFormat
           attr_reader :output_format
 
@@ -52,11 +55,13 @@ module Spoom
 
           #: (
           #|   ?overloads_strategy: Symbol,
+          #|   ?erase_generic_types: bool,
           #|   ?output_format: BaseRBIFormat,
           #|   ?translate_abstract_methods: bool,
           #| ) -> void
           def initialize(
             overloads_strategy: :translate_all,
+            erase_generic_types: false,
             output_format: HumanReadableRBIFormat.default,
             translate_abstract_methods: true
           )
@@ -66,6 +71,7 @@ module Spoom
             end
 
             @overloads_strategy = overloads_strategy
+            @erase_generic_types = erase_generic_types
             @output_format = output_format
             @translate_abstract_methods = translate_abstract_methods
 
