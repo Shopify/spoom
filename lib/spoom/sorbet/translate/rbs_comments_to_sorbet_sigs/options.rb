@@ -37,16 +37,21 @@ module Spoom
 
           ALLOWED_OVERLOAD_STRATEGIES = [:translate_all, :translate_last, :raise].freeze #: Array[Symbol]
 
+          #: bool
+          attr_reader :erase_generic_types
+
           #: BaseRBIFormat
           attr_reader :output_format
 
           #: (
           # :translate_all | :translate_last | :raise
           #|   ?overloads_strategy: Symbol,
+          #|   ?erase_generic_types: bool,
           #|   ?output_format: BaseRBIFormat,
           #| ) -> void
           def initialize(
             overloads_strategy: :translate_all,
+            erase_generic_types: false,
             output_format: DefaultRBIFormat.default
           )
             unless ALLOWED_OVERLOAD_STRATEGIES.include?(overloads_strategy)
@@ -55,6 +60,7 @@ module Spoom
             end
 
             @overloads_strategy = overloads_strategy
+            @erase_generic_types = erase_generic_types
             @output_format = output_format
 
             freeze
