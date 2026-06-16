@@ -68,6 +68,7 @@ module Spoom
             file: file,
             max_line_length: max_line_length,
             overloads_strategy: overloads_strategy,
+            erase_generic_types: erase_generic_types,
           )
         end
 
