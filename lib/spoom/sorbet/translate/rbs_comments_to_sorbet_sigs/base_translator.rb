@@ -270,7 +270,7 @@ module Spoom
                   type_params.each do |type_param|
                     @rewriter << Source::Insert.new(
                       insert_pos,
-                      "\n#{indent}#{type_param.name} = T.type_alias { ::T.anything }\n",
+                      "\n#{indent}#{type_param.name} = ::T.type_alias { ::T.anything }\n",
                     )
                   end
 
@@ -417,7 +417,7 @@ module Spoom
               )
 
               @rewriter << Source::Delete.new(from, to)
-              content = "#{indent}#{alias_name} = T.type_alias { #{sorbet_type.to_rbi} }\n"
+              content = "#{indent}#{alias_name} = ::T.type_alias { #{sorbet_type.to_rbi} }\n"
               @rewriter << Source::Insert.new(insert_pos, content)
             rescue ::RBS::ParsingError, ::RBI::Error
               # Ignore type aliases with errors
