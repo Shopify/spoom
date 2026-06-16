@@ -924,8 +924,8 @@ module Spoom
 
             to_pretty_format_for_humans: <<~RUBY,
               module Aliases
-                Foo = T.type_alias { ::T.any(Integer, String) }
-                MultiLine = T.type_alias { ::T.any(Integer, String) }
+                Foo = ::T.type_alias { ::T.any(Integer, String) }
+                MultiLine = ::T.type_alias { ::T.any(Integer, String) }
               end
 
               sig { params(a: Aliases::Foo).returns(Aliases::MultiLine) }
@@ -936,8 +936,8 @@ module Spoom
 
             to_line_matched_format_for_machines: <<~RUBY,
               module Aliases
-                Foo = T.type_alias { ::T.any(Integer, String) }
-                MultiLine = T.type_alias { ::T.any(Integer, String) }
+                Foo = ::T.type_alias { ::T.any(Integer, String) }
+                MultiLine = ::T.type_alias { ::T.any(Integer, String) }
 
 
               end
@@ -963,8 +963,8 @@ module Spoom
             RUBY
 
             to_pretty_format_for_humans: <<~RUBY,
-              Foo::UserId = T.type_alias { Integer }
-              ::Bar::UserData = T.type_alias { { id: Foo::UserId, name: String } }
+              Foo::UserId = ::T.type_alias { Integer }
+              ::Bar::UserData = ::T.type_alias { { id: Foo::UserId, name: String } }
 
               sig { params(data: ::Bar::UserData).returns(Foo::UserId) }
               def process_user(data)
@@ -991,7 +991,7 @@ module Spoom
 
             to_pretty_format_for_humans: <<~RUBY,
               class Example
-                Status = T.type_alias { Symbol }
+                Status = ::T.type_alias { Symbol }
 
                 sig { returns(Status) }
                 def get_status
@@ -1016,7 +1016,7 @@ module Spoom
 
             to_pretty_format_for_humans: <<~RUBY,
               class Example
-                Status = T.type_alias { Symbol }
+                Status = ::T.type_alias { Symbol }
                 sig { returns(Status) }
                 def status; end
               end
@@ -1040,7 +1040,7 @@ module Spoom
             RUBY
 
             to_pretty_format_for_humans: <<~RUBY,
-              List = T.type_alias { ::T::Array[Integer] }
+              List = ::T.type_alias { ::T::Array[Integer] }
 
               sig { params(items: List).returns(List) }
               def double_items(items)
@@ -1093,7 +1093,7 @@ module Spoom
             RUBY
 
             to_pretty_format_for_humans: <<~RUBY,
-              NullableString = T.type_alias { ::T.nilable(String) }
+              NullableString = ::T.type_alias { ::T.nilable(String) }
 
               sig { params(text: NullableString).returns(String) }
               def ensure_string(text)
@@ -1139,7 +1139,7 @@ module Spoom
             RUBY
 
             to_pretty_format_for_humans: <<~RUBY,
-              MultiLine = T.type_alias { ::T.any(String, Integer) }
+              MultiLine = ::T.type_alias { ::T.any(String, Integer) }
               # foo bar baz
               #| | Symbol
 
@@ -1150,7 +1150,7 @@ module Spoom
             RUBY
 
             to_line_matched_format_for_machines: <<~RUBY,
-              MultiLine = T.type_alias { ::T.any(String, Integer) }
+              MultiLine = ::T.type_alias { ::T.any(String, Integer) }
 
 
               # foo bar baz
@@ -1190,7 +1190,7 @@ module Spoom
 
             to_pretty_format_for_humans: <<~RUBY,
               module Foo
-                SerializedRange = T.type_alias { [Integer, Integer] }
+                SerializedRange = ::T.type_alias { [Integer, Integer] }
                 class Range
                 end
               end

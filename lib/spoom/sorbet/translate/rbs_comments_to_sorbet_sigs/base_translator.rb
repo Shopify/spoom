@@ -475,7 +475,7 @@ module Spoom
               )
 
               @rewriter << Source::Delete.new(from, to)
-              content = "#{indent}#{alias_name} = T.type_alias { #{sorbet_type.to_rbi} }\n"
+              content = "#{indent}#{alias_name} = ::T.type_alias { #{sorbet_type.to_rbi} }\n"
               content = pad_out_line_count(of: content, to_height_of: type_alias)
               @rewriter << Source::Insert.new(insert_pos, content)
             rescue ::RBS::ParsingError, ::RBI::Error
