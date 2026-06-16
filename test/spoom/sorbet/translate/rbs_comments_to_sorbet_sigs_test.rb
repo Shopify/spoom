@@ -988,8 +988,12 @@ module Spoom
           RBSCommentsToSorbetSigs::HumanReadableTranslator.new(
             ruby_contents,
             file: "test.rb",
-            max_line_length: max_line_length,
-            overloads_strategy: overloads_strategy,
+            options: RBSCommentsToSorbetSigs::Options.new(
+              overloads_strategy:,
+              output_format: RBSCommentsToSorbetSigs::HumanReadableRBIFormat.new(
+                max_line_length:,
+              ),
+            ),
           ).rewrite
         end
 

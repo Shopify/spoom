@@ -2937,6 +2937,10 @@ module Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs
   end
 end
 
+class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseRBIFormat
+  abstract!
+end
+
 class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator < ::Spoom::Sorbet::Translate::Translator
   include ::Spoom::RBS::ExtractRBSComments
 
@@ -2946,11 +2950,10 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator < ::Spoo
     params(
       ruby_contents: ::String,
       file: ::String,
-      max_line_length: T.nilable(::Integer),
-      overloads_strategy: ::Symbol
+      options: ::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::Options
     ).void
   end
-  def initialize(ruby_contents, file:, max_line_length: T.unsafe(nil), overloads_strategy: T.unsafe(nil)); end
+  def initialize(ruby_contents, file:, options: T.unsafe(nil)); end
 
   sig { override.params(node: ::Prism::CallNode).void }
   def visit_call_node(node); end
@@ -3008,8 +3011,43 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator < ::Spoo
   def visit_attr(node); end
 end
 
-Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator::ALLOWED_OVERLOAD_STRATEGIES = T.let(T.unsafe(nil), Array)
+class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::HumanReadableRBIFormat < ::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseRBIFormat
+  sig { params(max_line_length: T.nilable(::Integer)).void }
+  def initialize(max_line_length: T.unsafe(nil)); end
+
+  sig { returns(T.nilable(::Integer)) }
+  def max_line_length; end
+
+  class << self
+    sig { returns(::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::HumanReadableRBIFormat) }
+    def default; end
+  end
+end
+
 class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::HumanReadableTranslator < ::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator; end
+
+class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::Options
+  sig do
+    params(
+      overloads_strategy: ::Symbol,
+      output_format: ::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseRBIFormat
+    ).void
+  end
+  def initialize(overloads_strategy: T.unsafe(nil), output_format: T.unsafe(nil)); end
+
+  sig { returns(::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseRBIFormat) }
+  def output_format; end
+
+  sig { returns(::Symbol) }
+  def overloads_strategy; end
+
+  class << self
+    sig { returns(::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::Options) }
+    def default; end
+  end
+end
+
+Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::Options::ALLOWED_OVERLOAD_STRATEGIES = T.let(T.unsafe(nil), Array)
 
 class Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments < ::Spoom::Sorbet::Translate::Translator
   sig do

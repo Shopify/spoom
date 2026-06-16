@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require "spoom/sorbet/translate/rbs_comments_to_sorbet_sigs/base_translator"
+require "spoom/sorbet/translate/rbs_comments_to_sorbet_sigs/options"
 
 module Spoom
   module Sorbet
