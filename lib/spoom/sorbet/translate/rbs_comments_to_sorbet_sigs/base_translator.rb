@@ -199,7 +199,7 @@ module Spoom
             end
           end
 
-          #: (Prism::ClassNode | Prism::ModuleNode | Prism::SingletonClassNode) -> void
+          #: (PrismTypes::anyScopeNode) -> void
           def apply_class_annotations(node)
             comments = node_rbs_comments(node)
             return if comments.empty?
@@ -324,7 +324,7 @@ module Spoom
             end
           end
 
-          #: (Prism::ClassNode | Prism::ModuleNode | Prism::SingletonClassNode, Regexp) -> bool
+          #: (PrismTypes::anyScopeNode, Regexp) -> bool
           def already_extends?(node, constant_regex)
             node.child_nodes.any? do |c|
               next false unless c.is_a?(Prism::CallNode)

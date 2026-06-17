@@ -22,3 +22,5 @@ require "spoom/counters"
 require "spoom/sorbet"
 require "spoom/cli"
 require "spoom/version"
+
+require "spoom/ext/prism_types"

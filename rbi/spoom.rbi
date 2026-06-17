@@ -2572,6 +2572,8 @@ class Spoom::Printer
   def printt; end
 end
 
+module Spoom::PrismTypes; end
+Spoom::PrismTypes::AnyScopeNode = T.type_alias { T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode) }
 module Spoom::RBS; end
 class Spoom::RBS::Annotation < ::Spoom::RBS::Comment; end
 
