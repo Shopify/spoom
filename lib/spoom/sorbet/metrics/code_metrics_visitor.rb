@@ -32,7 +32,7 @@ module Spoom
       # On the other hand, the metrics file is a snapshot of the metrics at type checking time and knows about
       # is calls are typed, how many assertions are done, etc.
       class CodeMetricsVisitor < Spoom::Visitor
-        include RBS::ExtractRBSComments
+        include Spoom::RBS::ExtractRBSComments
 
         #: (Spoom::Counters) -> void
         def initialize(counters)

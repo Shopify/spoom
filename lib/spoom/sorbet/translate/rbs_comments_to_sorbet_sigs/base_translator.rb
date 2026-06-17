@@ -128,7 +128,7 @@ module Spoom
             end
           end
 
-          #: (Prism::DefNode, RBS::Comments) -> void
+          #: (Prism::DefNode, Spoom::RBS::Comments) -> void
           def rewrite_def(def_node, comments)
             return if comments.empty?
             return if comments.signatures.empty?
@@ -176,7 +176,7 @@ module Spoom
             end
           end
 
-          #: (Array[RBS::Signature], method_name: String, location: String) -> Array[RBS::Signature]
+          #: (Array[Spoom::RBS::Signature], method_name: String, location: String) -> Array[Spoom::RBS::Signature]
           def apply_overloads_strategy(signatures, method_name:, location:)
             return signatures if signatures.size <= 1
 
@@ -184,7 +184,7 @@ module Spoom
             when :translate_all
               signatures
             when :translate_last
-              kept = signatures.last #: as RBS::Signature
+              kept = signatures.last #: as Spoom::RBS::Signature
               others = signatures[0...-1] #: as !nil
 
               # Delete all the signatures we didn't keep
@@ -300,7 +300,7 @@ module Spoom
             end
           end
 
-          #: (Array[RBS::Annotation], RBI::Sig) -> void
+          #: (Array[Spoom::RBS::Annotation], RBI::Sig) -> void
           def apply_member_annotations(annotations, sig)
             annotations.each do |annotation|
               case annotation.string
@@ -340,9 +340,9 @@ module Spoom
             end
           end
 
-          #: (Array[Prism::Comment]) -> Array[RBS::TypeAlias]
+          #: (Array[Prism::Comment]) -> Array[Spoom::RBS::TypeAlias]
           def collect_type_aliases(comments)
-            type_aliases = [] #: Array[RBS::TypeAlias]
+            type_aliases = [] #: Array[Spoom::RBS::TypeAlias]
 
             return type_aliases if comments.empty?
 
