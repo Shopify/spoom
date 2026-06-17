@@ -147,7 +147,7 @@ module Spoom
 
         private
 
-        #: (Prism::ClassNode | Prism::ModuleNode | Prism::SingletonClassNode) { -> void } -> void
+        #: (PrismTypes::anyScopeNode) { -> void } -> void
         def visit_scope(node, &block)
           key = node_key(node)
           @counters.increment(key)
@@ -216,7 +216,7 @@ module Spoom
           sigs
         end
 
-        #: (Prism::ClassNode | Prism::ModuleNode | Prism::SingletonClassNode) -> String
+        #: (PrismTypes::anyScopeNode) -> String
         def node_key(node)
           case node
           when Prism::ClassNode

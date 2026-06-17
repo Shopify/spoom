@@ -134,7 +134,7 @@ module Spoom
 
         private
 
-        #: (Prism::ClassNode | Prism::ModuleNode | Prism::SingletonClassNode) { -> void } -> void
+        #: (PrismTypes::anyScopeNode) { -> void } -> void
         def visit_scope(node, &block)
           old_class_annotations = @class_annotations
           @class_annotations = []
@@ -229,7 +229,7 @@ module Spoom
           end
         end
 
-        #: (Prism::ClassNode | Prism::ModuleNode | Prism::SingletonClassNode, Prism::CallNode) -> void
+        #: (PrismTypes::anyScopeNode, Prism::CallNode) -> void
         def apply_class_annotation(parent, node)
           unless node.message == "abstract!" || node.message == "interface!" || node.message == "sealed!" ||
               node.message == "final!" || node.message == "requires_ancestor"
