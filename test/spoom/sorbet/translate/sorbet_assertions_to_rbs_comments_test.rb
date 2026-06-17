@@ -334,6 +334,23 @@ module Spoom
           RB
         end
 
+        def test_translate_assigns_multiline_tlet_with_backtick_heredoc
+          rb = <<~RB
+            x = T.let(
+              <<~`CMD`,
+                echo hello
+              CMD
+              String,
+            )
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            x = <<~`CMD` #: String
+                echo hello
+              CMD
+          RB
+        end
+
         def test_translate_assigns_does_not_match_bare_strings_has_heredoc
           rb = <<~RB
             a = T.let("<<~STR", String)

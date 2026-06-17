@@ -233,7 +233,7 @@ module Spoom
           offsets = [] #: Array[Integer]
 
           case node
-          when Prism::StringNode, Prism::InterpolatedStringNode
+          when Prism::StringNode, Prism::InterpolatedStringNode, Prism::XStringNode, Prism::InterpolatedXStringNode
             opening = node.opening_loc
             closing = node.closing_loc
             if opening && closing && opening.start_line != closing.start_line && opening.slice.start_with?("<<")
