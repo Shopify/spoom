@@ -1184,7 +1184,7 @@ module Spoom
         #|   to_line_matched_format_for_machines: String | Symbol,
         #|   ?max_line_length: Integer?,
         #|   ?overloads_strategy: Symbol
-        #|  ) -> void
+        #| ) -> void
         def assert_rewrites_rbs(
           from:,
           to_pretty_format_for_humans:,
