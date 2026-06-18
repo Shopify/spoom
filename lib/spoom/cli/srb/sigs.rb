@@ -22,6 +22,10 @@ module Spoom
         option :translate_generics, type: :boolean, desc: "Translate generics", default: false
         option :translate_helpers, type: :boolean, desc: "Translate helpers", default: false
         option :translate_abstract_methods, type: :boolean, desc: "Translate abstract methods", default: false
+        option :erase_generic_types,
+          type: :boolean,
+          desc: "Drop generic types when translating from RBS to RBI",
+          default: false
         def translate(*paths)
           from = options[:from]
           to = options[:to]
@@ -65,6 +69,7 @@ module Spoom
                 contents,
                 file: file,
                 max_line_length: max_line_length,
+                erase_generic_types: options[:erase_generic_types],
               )
             end
           end
