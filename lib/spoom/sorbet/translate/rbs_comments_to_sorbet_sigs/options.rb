@@ -30,6 +30,14 @@ module Spoom
           end
         end
 
+        class LineMatchedRBIFormat < BaseRBIFormat
+          @default = new #: LineMatchedRBIFormat
+          class << self
+            #: LineMatchedRBIFormat
+            attr_reader :default
+          end
+        end
+
         class Options
           #: Symbol
           attr_reader :overloads_strategy

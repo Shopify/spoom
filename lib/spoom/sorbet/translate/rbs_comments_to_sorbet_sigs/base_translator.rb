@@ -100,6 +100,8 @@ module Spoom
               location: "#{@file}:#{node.location.start_line}",
             )
 
+            known_annotations = nil #: Array[Spoom::RBS::Annotation]?
+
             signatures.each do |signature|
               attr_type = ::RBS::Parser.parse_type(signature.string)
               sig = RBI::Sig.new
@@ -118,16 +120,20 @@ module Spoom
 
               sig.return_type = @type_translator.translate(attr_type)
 
-              apply_member_annotations(comments.method_annotations, sig)
+              known_annotations = apply_member_annotations(comments.method_annotations, sig)
 
               @rewriter << Source::Replace.new(
                 signature.location.start_offset,
                 signature.location.end_offset,
-                sig.string(max_line_length: @max_line_length),
+                pad_out_line_count(of: sig.string(max_line_length: @max_line_length), to_height_of: signature),
               )
             rescue ::RBS::ParsingError, ::RBI::Error
               # Ignore signatures with errors
               next
+            end
+
+            if known_annotations
+              rewrite_member_annotations(comments.method_annotations, known: known_annotations)
             end
           end
 
@@ -146,6 +152,8 @@ module Spoom
             builder.visit(def_node)
             rbi_node = builder.tree.nodes.first #: as RBI::Method
 
+            known_annotations = nil #: Array[Spoom::RBS::Annotation]?
+
             signatures.each do |signature|
               begin
                 method_type = ::RBS::Parser.parse_method_type(signature.string)
@@ -163,7 +171,7 @@ module Spoom
 
               sig = translator.result
 
-              apply_member_annotations(comments.method_annotations, sig)
+              known_annotations = apply_member_annotations(comments.method_annotations, sig)
 
               # Sorbet runtime doesn't support `sig` on `method_added` or
               # `singleton_method_added`, so we always use `without_runtime` for them.
@@ -174,8 +182,12 @@ module Spoom
               @rewriter << Source::Replace.new(
                 signature.location.start_offset,
                 signature.location.end_offset,
-                sig.string(max_line_length: @max_line_length),
+                pad_out_line_count(of: sig.string(max_line_length: @max_line_length), to_height_of: signature),
               )
+            end
+
+            if known_annotations
+              rewrite_member_annotations(comments.method_annotations, known: known_annotations)
             end
           end
 
@@ -187,27 +199,26 @@ module Spoom
             when :translate_all
               signatures
             when :translate_last
-              kept = signatures.last #: as Spoom::RBS::Signature
               others = signatures[0...-1] #: as !nil
+              others.each { |signature| rewrite_discarded_overload(signature) }
 
-              # Delete all the signatures we didn't keep
-              others.each do |signature|
-                from = adjust_to_line_start(signature.location.start_offset)
-                to = adjust_to_line_end(signature.location.end_offset)
-                @rewriter << Source::Delete.new(from, to)
-              end
+              kept = signatures.last #: as Spoom::RBS::Signature
               [kept]
             else # :raise
               raise Error, "Method `#{method_name}` at #{location} has multiple overloaded signatures"
             end
           end
 
+          # Called for every overloaded method sig that we discard because it wasn't the last one.
+          # @abstract
+          #: (Spoom::RBS::Signature) -> void
+          def rewrite_discarded_overload(signature) = raise
+
           #: (PrismTypes::anyScopeNode) -> void
           def apply_class_annotations(node)
             comments = node_rbs_comments(node)
             return if comments.empty?
 
-            indent = " " * (node.location.start_column + 2)
             insert_pos = case node
             when Prism::ClassNode
               (node.superclass || node.constant_path).location.end_offset
@@ -217,16 +228,14 @@ module Spoom
               node.expression.location.end_offset
             end
 
-            class_annotations = comments.class_annotations
-            if class_annotations.any?
+            # Only translate (and `extend T::Helpers`) when there's at least one *known* class
+            # annotation. A node with only unknown annotations (e.g. `@private`) is left untouched.
+            if comments.class_annotations.any?
               unless already_extends?(node, /^(::)?T::Helpers$/)
-                @rewriter << Source::Insert.new(insert_pos, "\n#{indent}extend T::Helpers\n")
+                extend_with("T::Helpers", into: node, at: insert_pos)
               end
 
-              class_annotations.reverse_each do |annotation|
-                from = adjust_to_line_start(annotation.location.start_offset)
-                to = adjust_to_line_end(annotation.location.end_offset)
-
+              comments.annotations.reverse_each do |annotation|
                 content = case annotation.string
                 when "@abstract"
                   "abstract!"
@@ -241,15 +250,13 @@ module Spoom
                   rbs_type = @type_translator.translate(srb_type)
                   "requires_ancestor { #{rbs_type} }"
                 else
+                  apply_class_annotation(annotation, parent_node: node, insert_pos:, sorbet_replacement: nil)
                   next
                 end
 
-                @rewriter << Source::Delete.new(from, to)
-
-                newline = node.body.nil? ? "" : "\n"
-                @rewriter << Source::Insert.new(insert_pos, "\n#{indent}#{content}#{newline}")
+                apply_class_annotation(annotation, parent_node: node, insert_pos:, sorbet_replacement: content)
               rescue ::RBS::ParsingError, ::RBI::Error
-                # Ignore annotations with errors
+                apply_class_annotation(annotation, parent_node: node, insert_pos:, sorbet_replacement: nil)
                 next
               end
             end
@@ -261,14 +268,11 @@ module Spoom
                 next unless signature.string.start_with?("[")
 
                 type_params = ::RBS::Parser.parse_type_params(signature.string)
+                rewrite_type_params_signature(signature, type_params:)
                 next if type_params.empty?
 
-                from = adjust_to_line_start(signature.location.start_offset)
-                to = adjust_to_line_end(signature.location.end_offset)
-                @rewriter << Source::Delete.new(from, to)
-
                 unless already_extends?(node, /^(::)?T::Generic$/)
-                  @rewriter << Source::Insert.new(insert_pos, "\n#{indent}extend T::Generic\n")
+                  extend_with("T::Generic", into: node, at: insert_pos)
                 end
 
                 type_params.each do |type_param|
@@ -293,8 +297,7 @@ module Spoom
                     end
                   end
 
-                  newline = node.body.nil? ? "" : "\n"
-                  @rewriter << Source::Insert.new(insert_pos, "\n#{indent}#{type_member}#{newline}")
+                  insert_type_member(type_member, parent_node: node, insert_pos:)
                 rescue ::RBS::ParsingError, ::RBI::Error
                   # Ignore signatures with errors
                   next
@@ -303,8 +306,31 @@ module Spoom
             end
           end
 
-          #: (Array[Spoom::RBS::Annotation], RBI::Sig) -> void
+          # @param is_known: true if this is an RBS annotation that we recognize
+          #                  false for some other `@`-prefixed thing, like a documentation `@param` tag.
+          # @abstract
+          #: (
+          #|   Spoom::RBS::Annotation,
+          #|   parent_node: PrismTypes::anyScopeNode,
+          #|   insert_pos: Integer,
+          #|   sorbet_replacement: String?
+          #| ) -> void
+          def apply_class_annotation(annotation, parent_node:, insert_pos:, sorbet_replacement:) = raise
+
+          # Rewrites the `#: [...]` type params comment (e.g. delete it, or mark it as translated).
+          # @abstract
+          #: (Spoom::RBS::Signature, type_params: Array[::RBS::AST::TypeParam]) -> void
+          def rewrite_type_params_signature(signature, type_params:) = raise
+
+          # Inserts a single `type_member` declaration into the class/module body.
+          # @abstract
+          #: (String type_member, parent_node: PrismTypes::anyScopeNode, insert_pos: Integer) -> void
+          def insert_type_member(type_member, parent_node:, insert_pos:) = raise
+
+          #: (Array[Spoom::RBS::Annotation], RBI::Sig) -> Array[Spoom::RBS::Annotation]
           def apply_member_annotations(annotations, sig)
+            known = [] #: Array[Spoom::RBS::Annotation]
+
             annotations.each do |annotation|
               case annotation.string
               when "@abstract"
@@ -323,9 +349,36 @@ module Spoom
                 sig.is_overridable = true
               when "@without_runtime"
                 sig.without_runtime = true
+              else
+                next
               end
+
+              known << annotation
+            end
+
+            known
+          end
+
+          # Rewrites the member annotation comments in the source. Called once per method,
+          # regardless of how many overloaded signatures share the annotations, to avoid
+          # emitting duplicate markers.
+          #
+          #: (Array[Spoom::RBS::Annotation], known: Array[Spoom::RBS::Annotation]) -> void
+          def rewrite_member_annotations(annotations, known:)
+            annotations.each do |annotation|
+              rewrite_annotation(annotation, is_known: known.include?(annotation))
             end
           end
+
+          # @param is_known: true if this is an RBS annotation that we recognize
+          #                  false for some other `@`-prefixed thing, like a documentation `@param` tag.
+          # @overridable
+          #: (Spoom::RBS::Annotation, is_known: bool) -> void
+          def rewrite_annotation(annotation, is_known:) = nil # no-op
+
+          # @abstract
+          #: (String mixin_name, into: PrismTypes::anyScopeNode, at: Integer) -> void
+          def extend_with(mixin_name, into:, at:) = raise
 
           #: (PrismTypes::anyScopeNode, Regexp) -> bool
           def already_extends?(node, constant_regex)
@@ -408,11 +461,21 @@ module Spoom
 
               @rewriter << Source::Delete.new(from, to)
               content = "#{indent}#{alias_name} = T.type_alias { #{sorbet_type.to_rbi} }\n"
+              content = pad_out_line_count(of: content, to_height_of: type_alias)
               @rewriter << Source::Insert.new(insert_pos, content)
             rescue ::RBS::ParsingError, ::RBI::Error
               # Ignore type aliases with errors
               next
             end
+          end
+
+          # @overridable
+          #: (of: String, to_height_of: Spoom::RBS::Comment) -> String
+          def pad_out_line_count(of:, to_height_of:)
+            replacement = of
+
+            # no-op implementation
+            replacement
           end
         end
       end

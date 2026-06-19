@@ -69,7 +69,20 @@ module Spoom
     end
 
     class Annotation < Comment; end
-    class Signature < Comment; end
+
+    class Signature < Comment
+      # Locations of the `#|` continuation comment lines that make up a multiline signature,
+      # in addition to the `#:` line tracked by `location`.
+      #: Array[Prism::Location]
+      attr_reader :continuation_locations
+
+      #: (String, Prism::Location, ?continuation_locations: Array[Prism::Location]) -> void
+      def initialize(string, location, continuation_locations: [])
+        super(string, location)
+        @continuation_locations = continuation_locations
+      end
+    end
+
     class TypeAlias < Comment; end
 
     module ExtractRBSComments
@@ -99,16 +112,18 @@ module Spoom
           elsif string.start_with?("#: ")
             string = string.delete_prefix("#:").strip
             location = comment.location
+            continuation_locations = [] #: Array[Prism::Location]
 
             continuation_comments.reverse_each do |continuation_comment|
               string = "#{string}#{continuation_comment.slice.delete_prefix("#|")}"
               location = location.join(continuation_comment.location)
+              continuation_locations << continuation_comment.location
             end
             continuation_comments.clear
 
             next if string.start_with?("type ")
 
-            res.signatures.prepend(Signature.new(string, location))
+            res.signatures.prepend(Signature.new(string, location, continuation_locations:))
           elsif string.start_with?("#|")
             continuation_comments << comment
           end
