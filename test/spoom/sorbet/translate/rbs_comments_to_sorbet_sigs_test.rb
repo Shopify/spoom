@@ -991,6 +991,65 @@ module Spoom
           )
         end
 
+        def test_translate_overloads_with_annotation
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class Foo
+                # @override
+                #: () { (Integer) -> void } -> void
+                #: () -> Enumerator[Integer, void]
+                def each(&block); end
+              end
+            RUBY
+            to_pretty_format_for_humans: <<~RUBY,
+              class Foo
+                # @override
+                sig { override.params(block: ::T.proc.params(arg0: Integer).void).void }
+                sig { override.returns(::T::Enumerator[Integer, void]) }
+                def each(&block); end
+              end
+            RUBY
+            to_line_matched_format_for_machines: <<~RUBY,
+              class Foo
+                # RBS_REWRITTEN_ANNOTATION: @override
+                sig { override.params(block: ::T.proc.params(arg0: Integer).void).void }
+                sig { override.returns(::T::Enumerator[Integer, void]) }
+                def each(&block); end
+              end
+            RUBY
+          )
+        end
+
+        def test_translate_multiline_overloads
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class Foo
+                #: (
+                #|   Integer,
+                #|   Integer) -> void
+                #: (String, String) -> Integer
+                def bar(a, b); end
+              end
+            RUBY
+            to_pretty_format_for_humans: <<~RUBY,
+              class Foo
+                sig { params(a: Integer, b: Integer).void }
+                sig { params(a: String, b: String).returns(Integer) }
+                def bar(a, b); end
+              end
+            RUBY
+            to_line_matched_format_for_machines: <<~RUBY,
+              class Foo
+                sig { params(a: Integer, b: Integer).void }
+
+
+                sig { params(a: String, b: String).returns(Integer) }
+                def bar(a, b); end
+              end
+            RUBY
+          )
+        end
+
         def test_translate_overloads_raise
           contents = <<~RB
             class Foo

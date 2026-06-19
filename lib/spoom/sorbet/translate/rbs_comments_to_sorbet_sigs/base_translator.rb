@@ -100,6 +100,8 @@ module Spoom
               location: "#{@file}:#{node.location.start_line}",
             )
 
+            known_annotations = nil #: Array[Spoom::RBS::Annotation]?
+
             signatures.each do |signature|
               attr_type = ::RBS::Parser.parse_type(signature.string)
               sig = RBI::Sig.new
@@ -118,7 +120,7 @@ module Spoom
 
               sig.return_type = @type_translator.translate(attr_type)
 
-              apply_member_annotations(comments.method_annotations, sig)
+              known_annotations = apply_member_annotations(comments.method_annotations, sig)
 
               @rewriter << Source::Replace.new(
                 signature.location.start_offset,
@@ -128,6 +130,10 @@ module Spoom
             rescue ::RBS::ParsingError, ::RBI::Error
               # Ignore signatures with errors
               next
+            end
+
+            if known_annotations
+              rewrite_member_annotations(comments.method_annotations, known: known_annotations)
             end
           end
 
@@ -146,6 +152,8 @@ module Spoom
             builder.visit(def_node)
             rbi_node = builder.tree.nodes.first #: as RBI::Method
 
+            known_annotations = nil #: Array[Spoom::RBS::Annotation]?
+
             signatures.each do |signature|
               begin
                 method_type = ::RBS::Parser.parse_method_type(signature.string)
@@ -163,7 +171,7 @@ module Spoom
 
               sig = translator.result
 
-              apply_member_annotations(comments.method_annotations, sig)
+              known_annotations = apply_member_annotations(comments.method_annotations, sig)
 
               # Sorbet runtime doesn't support `sig` on `method_added` or
               # `singleton_method_added`, so we always use `without_runtime` for them.
@@ -176,6 +184,10 @@ module Spoom
                 signature.location.end_offset,
                 pad_out_line_count(of: sig.string(max_line_length: @max_line_length), to_height_of: signature),
               )
+            end
+
+            if known_annotations
+              rewrite_member_annotations(comments.method_annotations, known: known_annotations)
             end
           end
 
@@ -315,8 +327,10 @@ module Spoom
           #: (String type_member, parent_node: PrismTypes::anyScopeNode, insert_pos: Integer) -> void
           def insert_type_member(type_member, parent_node:, insert_pos:) = raise
 
-          #: (Array[Spoom::RBS::Annotation], RBI::Sig) -> void
+          #: (Array[Spoom::RBS::Annotation], RBI::Sig) -> Array[Spoom::RBS::Annotation]
           def apply_member_annotations(annotations, sig)
+            known = [] #: Array[Spoom::RBS::Annotation]
+
             annotations.each do |annotation|
               case annotation.string
               when "@abstract"
@@ -336,11 +350,23 @@ module Spoom
               when "@without_runtime"
                 sig.without_runtime = true
               else
-                rewrite_annotation(annotation, is_known: false)
                 next
               end
 
-              rewrite_annotation(annotation, is_known: true)
+              known << annotation
+            end
+
+            known
+          end
+
+          # Rewrites the member annotation comments in the source. Called once per method,
+          # regardless of how many overloaded signatures share the annotations, to avoid
+          # emitting duplicate markers.
+          #
+          #: (Array[Spoom::RBS::Annotation], known: Array[Spoom::RBS::Annotation]) -> void
+          def rewrite_member_annotations(annotations, known:)
+            annotations.each do |annotation|
+              rewrite_annotation(annotation, is_known: known.include?(annotation))
             end
           end
 
