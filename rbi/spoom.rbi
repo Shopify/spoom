@@ -3030,7 +3030,12 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator < ::Spoo
   sig { params(node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode)).void }
   def apply_class_annotations(node); end
 
-  sig { params(annotations: T::Array[::Spoom::RBS::Annotation], sig: ::RBI::Sig).void }
+  sig do
+    params(
+      annotations: T::Array[::Spoom::RBS::Annotation],
+      sig: ::RBI::Sig
+    ).returns(T::Array[::Spoom::RBS::Annotation])
+  end
   def apply_member_annotations(annotations, sig); end
 
   sig do
@@ -3079,6 +3084,9 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator < ::Spoo
 
   sig { abstract.params(signature: ::Spoom::RBS::Signature).void }
   def rewrite_discarded_overload(signature); end
+
+  sig { params(annotations: T::Array[::Spoom::RBS::Annotation], known: T::Array[::Spoom::RBS::Annotation]).void }
+  def rewrite_member_annotations(annotations, known:); end
 
   sig { abstract.params(signature: ::Spoom::RBS::Signature, type_params: T::Array[::RBS::AST::TypeParam]).void }
   def rewrite_type_params_signature(signature, type_params:); end
