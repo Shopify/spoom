@@ -2613,7 +2613,20 @@ module Spoom::RBS::ExtractRBSComments
   def node_rbs_comments(node); end
 end
 
-class Spoom::RBS::Signature < ::Spoom::RBS::Comment; end
+class Spoom::RBS::Signature < ::Spoom::RBS::Comment
+  sig do
+    params(
+      string: ::String,
+      location: ::Prism::Location,
+      continuation_locations: T::Array[::Prism::Location]
+    ).void
+  end
+  def initialize(string, location, continuation_locations: T.unsafe(nil)); end
+
+  sig { returns(T::Array[::Prism::Location]) }
+  def continuation_locations; end
+end
+
 class Spoom::RBS::TypeAlias < ::Spoom::RBS::Comment; end
 Spoom::SPOOM_PATH = T.let(T.unsafe(nil), String)
 module Spoom::Sorbet; end

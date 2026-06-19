@@ -1050,6 +1050,63 @@ module Spoom
           )
         end
 
+        def test_translate_multiline_type_parameters
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              #: [A,
+              #| B]
+              class Foo
+              end
+            RUBY
+            to_pretty_format_for_humans: <<~RUBY,
+              class Foo
+                extend T::Generic
+
+                A = type_member
+                B = type_member
+              end
+            RUBY
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_WRITTEN_ANNOTATION: [A,
+              # RBS_WRITTEN_ANNOTATION: B]
+              class Foo; extend T::Generic; A = type_member; B = type_member
+              end
+            RUBY
+          )
+        end
+
+        def test_translate_last_multiline_overloads_marks_entire_discarded_signature
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class Foo
+                #: (
+                #|   Integer,
+                #|   String
+                #| ) -> void
+                #: (String) -> void
+                def foo(x); end
+              end
+            RUBY
+            to_pretty_format_for_humans: <<~RUBY,
+              class Foo
+                sig { params(x: String).void }
+                def foo(x); end
+              end
+            RUBY
+            to_line_matched_format_for_machines: <<~RUBY,
+              class Foo
+                # RBS_DISCARDED_OVERLOAD: (
+                # RBS_DISCARDED_OVERLOAD:|   Integer,
+                # RBS_DISCARDED_OVERLOAD:|   String
+                # RBS_DISCARDED_OVERLOAD:| ) -> void
+                sig { params(x: String).void }
+                def foo(x); end
+              end
+            RUBY
+            overloads_strategy: :translate_last,
+          )
+        end
+
         def test_translate_overloads_raise
           contents = <<~RB
             class Foo

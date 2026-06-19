@@ -16,6 +16,10 @@ module Spoom
           #: (Spoom::RBS::Signature) -> void
           def rewrite_discarded_overload(signature)
             @rewriter << Source::Insert.new(signature.location.start_offset + 1, " RBS_DISCARDED_OVERLOAD")
+
+            signature.continuation_locations.each do |location|
+              @rewriter << Source::Insert.new(location.start_offset + 1, " RBS_DISCARDED_OVERLOAD:")
+            end
           end
 
           # @override
@@ -51,6 +55,15 @@ module Spoom
               signature.location.start_offset + 1, # the `#:` prefix
               "# RBS_WRITTEN_ANNOTATION:",
             )
+
+            # Rewrite each continuation line `#| B]` into `# RBS_WRITTEN_ANNOTATION: B]`
+            signature.continuation_locations.each do |location|
+              @rewriter << Source::Replace.new(
+                location.start_offset,
+                location.start_offset + 1, # the `#|` continuation prefix
+                "# RBS_WRITTEN_ANNOTATION:",
+              )
+            end
           end
 
           # @override
