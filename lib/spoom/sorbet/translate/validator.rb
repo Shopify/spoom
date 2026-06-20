@@ -115,22 +115,6 @@ module Spoom
           errors
         end
 
-        #: (untyped) -> void
-        def pretty_print(printer)
-          if valid?
-            printer.text("#<#{self.class.name} valid>")
-            return
-          end
-
-          printer.text("#<#{self.class.name} invalid")
-          errors.each do |error|
-            printer.breakable
-            printer.text("  #{error}")
-          end
-          printer.breakable
-          printer.text(">")
-        end
-
         private
 
         #: (Array[Integer]) -> String
