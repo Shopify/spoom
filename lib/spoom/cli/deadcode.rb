@@ -106,7 +106,7 @@ module Spoom
           index.definitions.each do |name, definitions|
             $stderr.puts "  #{blue(name)}"
             definitions.each do |definition|
-              $stderr.puts "    #{yellow(definition.kind.serialize)} #{gray(definition.location.to_s)}"
+              $stderr.puts "    #{yellow(definition.kind.to_s)} #{gray(definition.location.to_s)}"
             end
           end
           $stderr.puts
@@ -116,7 +116,7 @@ module Spoom
           $stderr.puts "\nReferences:"
           index.references.values.flatten.sort_by(&:name).each do |references|
             name = references.name
-            kind = references.kind.serialize
+            kind = references.kind.to_s
             loc = references.location.to_s
             $stderr.puts "  #{blue(name)} #{yellow(kind)} #{gray(loc)}"
           end
