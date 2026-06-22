@@ -264,6 +264,93 @@ module Spoom
           RB
         end
 
+        def test_translate_assigns_multiline_tlet_with_heredoc_values
+          rb = <<~RB
+            MSG = T.let(
+              <<~MSG.gsub(/[[:space:]]+/, " ").strip,
+                Do not use foo directly. Use bar instead.
+                See this guide: https://example.com/docs
+              MSG
+              String,
+            )
+
+            QUERY = T.let(
+              <<~SQL.squish.freeze,
+                SELECT id, name
+                FROM users
+                WHERE active = true
+              SQL
+              String,
+            )
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            MSG = <<~MSG.gsub(/[[:space:]]+/, " ").strip #: String
+                Do not use foo directly. Use bar instead.
+                See this guide: https://example.com/docs
+              MSG
+
+            QUERY = <<~SQL.squish.freeze #: String
+                SELECT id, name
+                FROM users
+                WHERE active = true
+              SQL
+          RB
+        end
+
+        def test_translate_assigns_multiline_tlet_with_multiple_heredocs
+          rb = <<~RB
+            both = T.let(
+              foo(<<~A, <<~B),
+                first
+              A
+                second
+              B
+              String,
+            )
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            both = foo(<<~A, <<~B) #: String
+                first
+              A
+                second
+              B
+          RB
+        end
+
+        def test_translate_assigns_multiline_string_literal
+          rb = <<~RB
+            s = T.let(
+              "first
+              second",
+              String,
+            )
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            s = "first
+              second" #: String
+          RB
+        end
+
+        def test_translate_assigns_multiline_tlet_with_backtick_heredoc
+          rb = <<~RB
+            x = T.let(
+              <<~`CMD`,
+                echo hello
+              CMD
+              String,
+            )
+          RB
+
+          assert_equal(<<~RB, rbi_to_rbs(rb))
+            x = <<~`CMD` #: String
+                echo hello
+              CMD
+          RB
+        end
+
         def test_translate_assigns_does_not_match_bare_strings_has_heredoc
           rb = <<~RB
             a = T.let("<<~STR", String)

@@ -3265,8 +3265,17 @@ class Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments < ::Spoom::Sorbet:
   sig { params(node: ::Prism::Node).returns(T::Boolean) }
   def has_rbs_annotation?(node); end
 
+  sig { params(node: ::Prism::Node, replace_end_offset: ::Integer).returns(T.nilable(::String)) }
+  def heredoc_body_within_range(node, replace_end_offset); end
+
+  sig { params(node: ::Prism::Node).returns(T::Array[::Integer]) }
+  def heredoc_end_offsets(node); end
+
   sig { params(node: ::Prism::Node).returns(T::Boolean) }
   def maybe_translate_assertion(node); end
+
+  sig { params(node: ::Prism::Node).returns(T::Boolean) }
+  def string_literal?(node); end
 
   sig { params(node: T.nilable(::Prism::Node)).returns(T::Boolean) }
   def t?(node); end
