@@ -330,7 +330,7 @@ module Spoom
 
           assert_equal(<<~RB, rbi_to_rbs(rb))
             s = "first
-            second" #: String
+              second" #: String
           RB
         end
 

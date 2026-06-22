@@ -250,6 +250,17 @@ module Spoom
           offsets
         end
 
+        #: (Prism::Node) -> bool
+        def string_literal?(node)
+          case node
+          when Prism::StringNode, Prism::InterpolatedStringNode,
+               Prism::XStringNode, Prism::InterpolatedXStringNode
+            true
+          else
+            false
+          end
+        end
+
         #: (Prism::Node, Prism::Node) -> String
         def dedent_value(assign, value)
           if value.location.start_line == assign.location.start_line
@@ -281,7 +292,7 @@ module Spoom
           # ```
           indent = value.location.start_line - assign.location.start_line
           lines = value.slice.lines
-          if lines.size > 1
+          if lines.size > 1 && !string_literal?(value)
             lines[1..]&.each_with_index do |line, i|
               lines[i + 1] = line.delete_prefix("  " * indent)
             end
