@@ -367,8 +367,7 @@ module Spoom
         context.write!("h.js", "")
         context.write!("i", "")
 
-        config = Spoom::Sorbet::Config.new
-        config.paths = ["b", "d"]
+        config = Spoom::Sorbet::Config.new(paths: ["b", "d"])
 
         assert_equal(["b/c.rb", "d/e/f.rbi"], context.srb_files(with_config: config))
 
