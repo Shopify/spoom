@@ -74,8 +74,8 @@ module Spoom
         #
         # Modifiers are matched structurally rather than from a fixed list, so user-defined ones are
         # handled too. A call only counts as a modifier when the `def` is its sole argument and it takes
-        # no block, so we never remove a call that does more than wrap the method (e.g.
-        # `register(:thing, def foo; end)`).
+        # no block and is a standalone statement, so we never remove a call that does more than wrap
+        # the method (e.g. `register(:thing, def foo; end)` or `FOO = register(def foo; end)`).
         #: (Prism::DefNode def_node) -> NodeContext?
         def modifier_call_context(def_node)
           wrapped = def_node #: Prism::Node
@@ -103,6 +103,7 @@ module Spoom
             end
           end
           return unless outer_call && outer_nesting
+          return unless outer_nesting.last.is_a?(Prism::StatementsNode)
 
           NodeContext.new(@old_source, @node_context.comments, outer_call, outer_nesting)
         end

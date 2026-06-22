@@ -1120,6 +1120,29 @@ module Spoom
         RB
       end
 
+      def test_keeps_parent_expression_when_sole_argument_call_is_not_a_statement
+        res = remove(<<~RB, "bar")
+          class Foo
+            FOO = register(
+              def bar
+                x
+              end
+            )
+
+            def keep; end
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            FOO = register(
+            )
+
+            def keep; end
+          end
+        RB
+      end
+
       def test_removes_node_sig_and_comments
         res = remove(<<~RB, "bar")
           class Foo
