@@ -2578,7 +2578,11 @@ end
 module Spoom::PrismTypes; end
 Spoom::PrismTypes::AnyScopeNode = T.type_alias { T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode) }
 module Spoom::RBS; end
-class Spoom::RBS::Annotation < ::Spoom::RBS::Comment; end
+
+class Spoom::RBS::Annotation < ::Spoom::RBS::Comment
+  sig { returns(T::Boolean) }
+  def abstract?; end
+end
 
 class Spoom::RBS::Comment
   sig { params(string: ::String, location: ::Prism::Location).void }
@@ -3209,16 +3213,20 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::Options
   sig do
     params(
       overloads_strategy: ::Symbol,
-      output_format: ::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseRBIFormat
+      output_format: ::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseRBIFormat,
+      translate_abstract_methods: T::Boolean
     ).void
   end
-  def initialize(overloads_strategy: T.unsafe(nil), output_format: T.unsafe(nil)); end
+  def initialize(overloads_strategy: T.unsafe(nil), output_format: T.unsafe(nil), translate_abstract_methods: T.unsafe(nil)); end
 
   sig { returns(::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseRBIFormat) }
   def output_format; end
 
   sig { returns(::Symbol) }
   def overloads_strategy; end
+
+  sig { returns(T::Boolean) }
+  def translate_abstract_methods; end
 
   class << self
     sig { returns(::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::Options) }

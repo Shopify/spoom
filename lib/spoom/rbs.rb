@@ -68,7 +68,12 @@ module Spoom
       end
     end
 
-    class Annotation < Comment; end
+    class Annotation < Comment
+      #: () -> bool
+      def abstract?
+        @string == "@abstract"
+      end
+    end
 
     class Signature < Comment
       # Locations of the `#|` continuation comment lines that make up a multiline signature,

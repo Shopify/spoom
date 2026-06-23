@@ -25,6 +25,7 @@ module Spoom
             end #: Integer?
 
             @overloads_strategy = options.overloads_strategy #: Symbol
+            @translate_abstract_methods = options.translate_abstract_methods #: bool
             @type_translator = RBI::RBS::TypeTranslator.new #: RBI::RBS::TypeTranslator
           end
 
@@ -141,6 +142,7 @@ module Spoom
           def rewrite_def(def_node, comments)
             return if comments.empty?
             return if comments.signatures.empty?
+            return if !@translate_abstract_methods && comments.method_annotations.any?(&:abstract?)
 
             signatures = apply_overloads_strategy(
               comments.signatures,
