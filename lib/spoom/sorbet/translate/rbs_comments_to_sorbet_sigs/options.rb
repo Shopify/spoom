@@ -47,13 +47,18 @@ module Spoom
           #: BaseRBIFormat
           attr_reader :output_format
 
+          #: bool
+          attr_reader :translate_abstract_methods
+
           #: (
           #|   ?overloads_strategy: Symbol,
           #|   ?output_format: BaseRBIFormat,
+          #|   ?translate_abstract_methods: bool,
           #| ) -> void
           def initialize(
             overloads_strategy: :translate_all,
-            output_format: HumanReadableRBIFormat.default
+            output_format: HumanReadableRBIFormat.default,
+            translate_abstract_methods: true
           )
             unless ALLOWED_OVERLOAD_STRATEGIES.include?(overloads_strategy)
               raise ArgumentError, "Unknown overloads_strategy: #{overloads_strategy.inspect}. " \
@@ -62,6 +67,7 @@ module Spoom
 
             @overloads_strategy = overloads_strategy
             @output_format = output_format
+            @translate_abstract_methods = translate_abstract_methods
 
             freeze
           end

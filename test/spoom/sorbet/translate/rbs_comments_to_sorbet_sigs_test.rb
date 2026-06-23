@@ -147,6 +147,66 @@ module Spoom
           )
         end
 
+        def test_translate_to_rbi_skipping_abstract_methods
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # @abstract
+              class Foo
+                # @abstract
+                #: -> String
+                def bar; end
+              end
+
+              # @abstract
+              module Baz
+                # @abstract
+                #: -> String
+                def qux; end
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class Foo
+                extend T::Helpers
+
+                abstract!
+
+                # @abstract
+                #: -> String
+                def bar; end
+              end
+
+              module Baz
+                extend T::Helpers
+
+                abstract!
+
+                # @abstract
+                #: -> String
+                def qux; end
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_REWRITTEN_ANNOTATION: @abstract
+              class Foo; extend T::Helpers; abstract!
+                # @abstract
+                #: -> String
+                def bar; end
+              end
+
+              # RBS_REWRITTEN_ANNOTATION: @abstract
+              module Baz; extend T::Helpers; abstract!
+                # @abstract
+                #: -> String
+                def qux; end
+              end
+            RUBY
+
+            translate_abstract_methods: false,
+          )
+        end
+
         def test_translate_to_rbi_method_sigs_without_runtime
           assert_rewrites_rbs(
             from: <<~RUBY,
@@ -1280,13 +1340,23 @@ module Spoom
 
         private
 
-        #: (String, ?max_line_length: Integer?, ?overloads_strategy: Symbol) -> String
-        def rbs_comments_to_sorbet_sigs(ruby_contents, max_line_length: nil, overloads_strategy: :translate_all)
+        #: (String,
+        #|   ?max_line_length: Integer?,
+        #|   ?overloads_strategy: Symbol,
+        #|   ?translate_abstract_methods: bool
+        #| ) -> String
+        def rbs_comments_to_sorbet_sigs(
+          ruby_contents,
+          max_line_length: nil,
+          overloads_strategy: :translate_all,
+          translate_abstract_methods: true
+        )
           RBSCommentsToSorbetSigs::HumanReadableTranslator.new(
             ruby_contents,
             file: "test.rb",
             options: RBSCommentsToSorbetSigs::Options.new(
               overloads_strategy:,
+              translate_abstract_methods:,
               output_format: RBSCommentsToSorbetSigs::HumanReadableRBIFormat.new(
                 max_line_length:,
               ),
@@ -1299,14 +1369,16 @@ module Spoom
         #|   to_pretty_format_for_humans: String,
         #|   to_line_matched_format_for_machines: String | Symbol,
         #|   ?max_line_length: Integer?,
-        #|   ?overloads_strategy: Symbol
+        #|   ?overloads_strategy: Symbol,
+        #|   ?translate_abstract_methods: bool
         #| ) -> void
         def assert_rewrites_rbs(
           from:,
           to_pretty_format_for_humans:,
           to_line_matched_format_for_machines:,
           max_line_length: nil,
-          overloads_strategy: :translate_all
+          overloads_strategy: :translate_all,
+          translate_abstract_methods: true
         )
           source_with_rbs = from
           expected_pretty_format = to_pretty_format_for_humans
@@ -1317,6 +1389,7 @@ module Spoom
               source_with_rbs,
               max_line_length:,
               overloads_strategy:,
+              translate_abstract_methods:,
             )
 
             assert_equal(expected_pretty_format, rewritten_output)
@@ -1347,6 +1420,7 @@ module Spoom
               file: "test.rb",
               options: RBSCommentsToSorbetSigs::Options.new(
                 overloads_strategy:,
+                translate_abstract_methods:,
                 output_format: RBSCommentsToSorbetSigs::LineMatchedRBIFormat.default,
               ),
             ).rewrite
