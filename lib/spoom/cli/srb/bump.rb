@@ -3,6 +3,8 @@
 
 require "find"
 require "open3"
+require "securerandom"
+require "yaml"
 
 module Spoom
   module Cli
@@ -72,6 +74,11 @@ module Spoom
             exit(1)
           end
 
+          unless context.sorbet_config.typed_overrides.empty?
+            say_error("Cannot run `spoom bump` on a project that already uses Sorbet's `--typed-override` option")
+            exit(1)
+          end
+
           say("Checking files...")
 
           files_to_bump = context.srb_files_with_strictness(from, include_rbis: false)
@@ -90,18 +97,18 @@ module Spoom
             exit(0)
           end
 
-          Sorbet::Sigils.change_sigil_in_files(files_to_bump, to)
-
           if force
+            Sorbet::Sigils.change_sigil_in_files(files_to_bump, to) unless dry
             print_changes(files_to_bump, command: cmd, from: from, to: to, dry: dry, path: exec_path)
-            undo_changes(files_to_bump, from) if dry
             exit(files_to_bump.empty?)
           end
 
           error_url_base = Spoom::Sorbet::Errors::DEFAULT_ERROR_URL_BASE
+          typed_override_file = write_typed_override_file(context, files_to_bump, to)
           result = begin
             T.unsafe(context).srb_tc(
               *options[:sorbet_options].split(" "),
+              "--typed-override=#{typed_override_file}",
               "--error-url-base=#{error_url_base}",
               capture_err: true,
               sorbet_bin: options[:sorbet],
@@ -114,7 +121,6 @@ module Spoom
               It means one of the file bumped to `typed: #{to}` made Sorbet crash.
               Run `spoom bump -f` locally followed by `bundle exec srb tc` to investigate the problem.
             ERR
-            undo_changes(files_to_bump, from)
             exit(error.result.exit_code)
           rescue Spoom::Sorbet::Error::Killed => error
             say_error(<<~ERR, status: nil)
@@ -123,13 +129,14 @@ module Spoom
               It means Sorbet was killed while executing. Changes to files have not been applied.
               Re-run `spoom bump` to try again.
             ERR
-            undo_changes(files_to_bump, from)
             exit(error.result.exit_code)
+          ensure
+            context.remove!(typed_override_file)
           end
 
           if result.status
+            Sorbet::Sigils.change_sigil_in_files(files_to_bump, to) unless dry
             print_changes(files_to_bump, command: cmd, from: from, to: to, dry: dry, path: exec_path)
-            undo_changes(files_to_bump, from) if dry
             exit(files_to_bump.empty?)
           end
 
@@ -137,7 +144,6 @@ module Spoom
             # Sorbet will return exit code 100 if there are type checking errors.
             # If Sorbet returned something else, it means it didn't terminate normally.
             say_error(result.err, status: nil, nl: false)
-            undo_changes(files_to_bump, from)
             exit(1)
           end
 
@@ -156,13 +162,11 @@ module Spoom
             path
           end.compact.uniq
 
-          undo_changes(files_with_errors, from)
-
           say("Found #{errors.length} type checking error#{"s" if errors.length > 1}") if options[:count_errors]
 
           files_changed = files_to_bump - files_with_errors
+          Sorbet::Sigils.change_sigil_in_files(files_changed, to) unless dry
           print_changes(files_changed, command: cmd, from: from, to: to, dry: dry, path: exec_path)
-          undo_changes(files_to_bump, from) if dry
           exit(files_changed.empty?)
         end
 
@@ -189,8 +193,15 @@ module Spoom
             end
           end
 
-          def undo_changes(files, from_strictness)
-            Sorbet::Sigils.change_sigil_in_files(files, from_strictness)
+          #: (Spoom::Context context, Array[String] files, String strictness) -> String
+          def write_typed_override_file(context, files, strictness)
+            path = ".spoom-typed-override-#{Process.pid}-#{SecureRandom.hex(8)}.yaml"
+            relative_paths = files.map do |file|
+              relative_path = file.delete_prefix("#{context.absolute_path}/")
+              "./#{relative_path}"
+            end
+            context.write!(path, YAML.dump({ strictness => relative_paths }))
+            path
           end
         end
       end
