@@ -27,7 +27,7 @@ module Spoom
       DEFAULT_ALLOWED_EXTENSIONS = [".rb", ".rbi"].freeze #: Array[String]
 
       #: Array[String]
-      attr_accessor :paths, :ignore, :allowed_extensions
+      attr_accessor :paths, :ignore, :allowed_extensions, :typed_overrides
 
       #: bool
       attr_accessor :no_stdlib
@@ -37,6 +37,7 @@ module Spoom
         @paths = [] #: Array[String]
         @ignore = [] #: Array[String]
         @allowed_extensions = [] #: Array[String]
+        @typed_overrides = [] #: Array[String]
         @no_stdlib = false #: bool
       end
 
@@ -46,6 +47,7 @@ module Spoom
         @paths = @paths.dup
         @ignore = @ignore.dup
         @allowed_extensions = @allowed_extensions.dup
+        @typed_overrides = @typed_overrides.dup
       end
 
       # Returns self as a string of options that can be passed to Sorbet
@@ -66,6 +68,7 @@ module Spoom
         opts.concat(paths.map { |p| "'#{p}'" })
         opts.concat(ignore.map { |p| "--ignore '#{p}'" })
         opts.concat(allowed_extensions.map { |ext| "--allowed-extension '#{ext}'" })
+        opts.concat(typed_overrides.map { |path| "--typed-override '#{path}'" })
         opts << "--no-stdlib" if @no_stdlib
         opts.join(" ")
       end
@@ -94,6 +97,12 @@ module Spoom
               next
             when /^--ignore=/
               config.ignore << parse_option(line)
+              next
+            when /^--typed-override$/
+              state = :typed_override
+              next
+            when /^--typed-override=/
+              config.typed_overrides << parse_option(line)
               next
             when /^--file$/
               next
@@ -124,6 +133,8 @@ module Spoom
                 config.ignore << line
               when :extension
                 config.allowed_extensions << line
+              when :typed_override
+                config.typed_overrides << line
               when :skip
                 # nothing
               else

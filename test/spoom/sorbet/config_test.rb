@@ -71,6 +71,19 @@ module Spoom
         assert_empty(config.allowed_extensions)
       end
 
+      def test_parses_a_config_string_with_typed_override_options
+        config = Spoom::Sorbet::Config.parse_string(<<~CONFIG)
+          a
+          --typed-override=b.yaml
+          c
+          --typed-override
+          d.yaml
+          e
+        CONFIG
+        assert_equal(["a", "c", "e"], config.paths)
+        assert_equal(["b.yaml", "d.yaml"], config.typed_overrides)
+      end
+
       def test_parses_a_config_string_with_other_options
         config = Spoom::Sorbet::Config.parse_string(<<~CONFIG)
           a
@@ -241,12 +254,14 @@ module Spoom
           --ignore=.git/
           --ignore=vendor/
           --allowed-extension=.rb
+          --typed-override=typed-override.yaml
           --no-stdlib
         CONFIG
         expected = "'.' " \
           "--ignore '.git/' " \
           "--ignore 'vendor/' " \
           "--allowed-extension '.rb' " \
+          "--typed-override 'typed-override.yaml' " \
           "--no-stdlib"
         assert_equal(expected, config.options_string)
       end

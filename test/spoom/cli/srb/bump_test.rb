@@ -11,6 +11,12 @@ module Spoom
           @project.bundle_install!
         end
 
+        def teardown
+          assert_empty(Dir.glob("#{@project.absolute_path}/.spoom-typed-override-*"))
+        ensure
+          super
+        end
+
         def test_bump_outside_sorbet_dir
           @project.remove!("sorbet/config")
           result = @project.spoom("srb bump --no-color")
@@ -52,6 +58,30 @@ module Spoom
 
           assert_equal("true", @project.read_file_strictness("file1.rb"))
           assert_equal("false", @project.read_file_strictness("file2.rb"))
+        end
+
+        def test_bump_errors_if_sorbet_config_has_typed_override
+          @project.write_sorbet_config!(<<~CONFIG)
+            .
+            --typed-override=typed-override.yaml
+          CONFIG
+          @project.write!("typed-override.yaml", <<~YAML)
+            true:
+              - ./file.rb
+          YAML
+          @project.write!("file.rb", <<~RB)
+            # typed: false
+            class A; end
+          RB
+
+          result = @project.spoom("srb bump --no-color")
+          assert_empty(result.out)
+          assert_equal(<<~ERR, result.err)
+            Error: Cannot run `spoom bump` on a project that already uses Sorbet's `--typed-override` option
+          ERR
+          refute(result.status)
+
+          assert_equal("false", @project.read_file_strictness("file.rb"))
         end
 
         def test_bump_doesnt_change_sigils_outside_directory
