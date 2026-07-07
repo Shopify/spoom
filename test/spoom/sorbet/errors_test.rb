@@ -214,6 +214,33 @@ module Spoom
         assert_equal([[], []], errors.map(&:files_from_error_sections).map(&:to_a))
       end
 
+      def test_parse_result_preserves_warnings
+        result = Spoom::Sorbet::Errors::Parser.parse_result(<<~ERR)
+          Option `--enable-experimental-rbs-signatures` has been combined into another option.
+          Please add `--parser=prism` to your Sorbet config.
+
+          a.rb:80: unexpected token "end" https://srb.help/2001
+              80 |end
+                  ^^^
+          Errors: 1
+        ERR
+
+        assert_equal(
+          [
+            "Option `--enable-experimental-rbs-signatures` has been combined into another option.\n",
+            "Please add `--parser=prism` to your Sorbet config.\n",
+          ],
+          result.warnings,
+        )
+        assert_equal(1, result.errors.size)
+
+        error = T.must(result.errors.first)
+        assert_equal("a.rb", error.file)
+        assert_equal(80, error.line)
+        assert_equal("unexpected token \"end\"", error.message)
+        assert_equal(2001, error.code)
+      end
+
       def test_parses_errors_with_multiple_blank_lines
         errors = Spoom::Sorbet::Errors::Parser.parse_string(<<~ERR)
           lib/a.rb:54: Method `foo` does not exist on `String` https://srb.help/7003

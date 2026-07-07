@@ -135,6 +135,10 @@ module Spoom
           end
 
           if result.status
+            parse_result = Sorbet::Errors::Parser.parse_result(result.err, error_url_base: error_url_base)
+            parse_result.warnings.each do |warning|
+              say_error(warning, status: nil, nl: false)
+            end
             Sorbet::Sigils.change_sigil_in_files(files_to_bump, to) unless dry
             print_changes(files_to_bump, command: cmd, from: from, to: to, dry: dry, path: exec_path)
             exit(files_to_bump.empty?)
@@ -147,7 +151,11 @@ module Spoom
             exit(1)
           end
 
-          errors = Sorbet::Errors::Parser.parse_string(result.err, error_url_base: error_url_base)
+          parse_result = Sorbet::Errors::Parser.parse_result(result.err, error_url_base: error_url_base)
+          parse_result.warnings.each do |warning|
+            say_error(warning, status: nil, nl: false)
+          end
+          errors = parse_result.errors
 
           all_files = errors.flat_map do |err|
             [err.file, *err.files_from_error_sections]

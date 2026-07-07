@@ -73,7 +73,11 @@ module Spoom
             exit(1)
           end
 
-          errors = Spoom::Sorbet::Errors::Parser.parse_string(result.err, error_url_base: error_url_base)
+          parse_result = Spoom::Sorbet::Errors::Parser.parse_result(result.err, error_url_base: error_url_base)
+          parse_result.warnings.each do |warning|
+            say_error(warning, status: nil, nl: false)
+          end
+          errors = parse_result.errors
           errors_count = errors.size
 
           errors = errors.select { |e| e.code == code } if code
