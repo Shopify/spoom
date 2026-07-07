@@ -126,9 +126,11 @@ class Spoom::Cli::Srb::Bump < ::Thor
   sig { params(directory: ::String).void }
   def bump(directory = T.unsafe(nil)); end
 
+  sig { params(context: ::Spoom::Context, files: T::Array[::String], strictness: ::String).returns(::Tempfile) }
+  def create_typed_override_file(context, files, strictness); end
+
   def help(command = T.unsafe(nil), subcommand = T.unsafe(nil)); end
   def print_changes(files, command:, from: T.unsafe(nil), to: T.unsafe(nil), dry: T.unsafe(nil), path: T.unsafe(nil)); end
-  def undo_changes(files, from_strictness); end
 end
 
 class Spoom::Cli::Srb::Coverage < ::Thor
@@ -2661,6 +2663,8 @@ class Spoom::Sorbet::Config
   def paths; end
 
   def paths=(_arg0); end
+  def typed_overrides; end
+  def typed_overrides=(_arg0); end
 
   private
 
