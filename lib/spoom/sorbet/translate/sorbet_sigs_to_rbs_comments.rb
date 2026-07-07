@@ -180,7 +180,7 @@ module Spoom
           return unless sorbet_sig?(node)
 
           builder = RBI::Parser::SigBuilder.new(@ruby_contents, file: @file)
-          builder.current.loc = node.location
+          builder.current.loc = RBI::Loc.from_prism(@file, node.location)
           builder.visit_call_node(node)
           builder.current.comments = []
 
