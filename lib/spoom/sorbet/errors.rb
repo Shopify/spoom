@@ -56,22 +56,35 @@ module Spoom
         ] #: Array[String]
 
         class << self
+          # Used when only Sorbet errors are needed and leading stderr warnings can be ignored.
           #: (String output, ?error_url_base: String) -> Array[Error]
           def parse_string(output, error_url_base: DEFAULT_ERROR_URL_BASE)
+            parse_result(output, error_url_base: error_url_base).errors
+          end
+
+          # Used when callers need both parsed Sorbet errors and leading stderr warnings.
+          #: (String output, ?error_url_base: String) -> ParseResult
+          def parse_result(output, error_url_base: DEFAULT_ERROR_URL_BASE)
             parser = Spoom::Sorbet::Errors::Parser.new(error_url_base: error_url_base)
-            parser.parse(output)
+            parser.parse_result(output)
           end
         end
 
         #: (?error_url_base: String) -> void
         def initialize(error_url_base: DEFAULT_ERROR_URL_BASE)
           @errors = [] #: Array[Error]
+          @warnings = [] #: Array[String]
           @error_line_match_regex = error_line_match_regexp(error_url_base) #: Regexp
           @current_error = nil #: Error?
         end
 
         #: (String output) -> Array[Error]
         def parse(output)
+          parse_result(output).errors
+        end
+
+        #: (String output) -> ParseResult
+        def parse_result(output)
           output.each_line do |line|
             break if /^No errors! Great job\./.match?(line)
             break if /^Errors: /.match?(line)
@@ -85,10 +98,14 @@ module Spoom
               next
             end
 
-            append_error(line) if @current_error
+            if @current_error
+              append_error(line)
+            else
+              append_warning(line)
+            end
           end
           close_error if @current_error
-          @errors
+          ParseResult.new(@errors, @warnings)
         end
 
         private
@@ -143,6 +160,11 @@ module Spoom
             @current_error.files_from_error_sections << T.must(filepath_match[1])
           end
           @current_error.more << line
+        end
+
+        #: (String warning) -> void
+        def append_warning(warning)
+          @warnings << warning
         end
       end
 
@@ -212,6 +234,20 @@ module Spoom
           failure_element.add(REXML::CData.new(explanation_text))
 
           testcase_element
+        end
+      end
+
+      class ParseResult
+        #: Array[Error]
+        attr_reader :errors
+
+        #: Array[String]
+        attr_reader :warnings
+
+        #: (Array[Error] errors, Array[String] warnings) -> void
+        def initialize(errors, warnings)
+          @errors = errors
+          @warnings = warnings
         end
       end
     end

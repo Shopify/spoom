@@ -461,6 +461,24 @@ module Spoom
           refute(result.status)
         end
 
+        def test_display_sorbet_warnings_with_formatted_errors
+          @project.write!("mock_sorbet", <<~RB)
+            #!/usr/bin/env ruby
+            $stderr.puts "Option `--enable-experimental-rbs-signatures` has been combined into another option."
+            $stderr.puts "foo.rb:1: Method `foo` does not exist on `T.class_of(<root>)` https://srb.help/7003"
+            exit(100)
+          RB
+          @project.exec("chmod +x mock_sorbet")
+
+          result = @project.spoom("srb tc --no-color --sorbet #{@project.absolute_path}/mock_sorbet")
+          assert_equal(<<~MSG, result.err)
+            Option `--enable-experimental-rbs-signatures` has been combined into another option.
+            7003 - foo.rb:1: Method `foo` does not exist on `T.class_of(<root>)`
+            Errors: 1
+          MSG
+          refute(result.status)
+        end
+
         def test_deprecated_command_spoom_tc
           @project.remove!("errors")
           result = @project.spoom("tc --no-color")

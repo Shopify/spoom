@@ -2753,6 +2753,17 @@ class Spoom::Sorbet::Errors::Error
   def to_s; end
 end
 
+class Spoom::Sorbet::Errors::ParseResult
+  sig { params(errors: T::Array[::Spoom::Sorbet::Errors::Error], warnings: T::Array[::String]).void }
+  def initialize(errors, warnings); end
+
+  sig { returns(T::Array[::Spoom::Sorbet::Errors::Error]) }
+  def errors; end
+
+  sig { returns(T::Array[::String]) }
+  def warnings; end
+end
+
 class Spoom::Sorbet::Errors::Parser
   sig { params(error_url_base: ::String).void }
   def initialize(error_url_base: T.unsafe(nil)); end
@@ -2760,10 +2771,16 @@ class Spoom::Sorbet::Errors::Parser
   sig { params(output: ::String).returns(T::Array[::Spoom::Sorbet::Errors::Error]) }
   def parse(output); end
 
+  sig { params(output: ::String).returns(::Spoom::Sorbet::Errors::ParseResult) }
+  def parse_result(output); end
+
   private
 
   sig { params(line: ::String).void }
   def append_error(line); end
+
+  sig { params(warning: ::String).void }
+  def append_warning(warning); end
 
   sig { void }
   def close_error; end
@@ -2778,6 +2795,9 @@ class Spoom::Sorbet::Errors::Parser
   def open_error(error); end
 
   class << self
+    sig { params(output: ::String, error_url_base: ::String).returns(::Spoom::Sorbet::Errors::ParseResult) }
+    def parse_result(output, error_url_base: T.unsafe(nil)); end
+
     sig { params(output: ::String, error_url_base: ::String).returns(T::Array[::Spoom::Sorbet::Errors::Error]) }
     def parse_string(output, error_url_base: T.unsafe(nil)); end
   end

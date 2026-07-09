@@ -533,6 +533,59 @@ module Spoom
           assert_equal("false", @project.read_file_strictness("file1.rb"))
         end
 
+        def test_bump_displays_sorbet_warnings
+          @project.write!("mock_sorbet", <<~RB)
+            #!/usr/bin/env ruby
+            $stderr.puts "Option `--enable-experimental-rbs-signatures` has been combined into another option."
+            $stderr.puts "file.rb:1: Method `foo` does not exist on `T.class_of(<root>)` https://srb.help/7003"
+            exit(100)
+          RB
+          @project.exec("chmod +x mock_sorbet")
+          @project.write!("file.rb", <<~RB)
+            # typed: false
+            foo
+          RB
+
+          result = @project.spoom("srb bump --no-color --sorbet #{@project.absolute_path}/mock_sorbet")
+          assert_equal(<<~ERR, result.err)
+            Option `--enable-experimental-rbs-signatures` has been combined into another option.
+          ERR
+          assert_equal(<<~OUT, result.out)
+            Checking files...
+
+            No files to bump from `false` to `true`
+          OUT
+          assert(result.status)
+          assert_equal("false", @project.read_file_strictness("file.rb"))
+        end
+
+        def test_bump_displays_sorbet_warnings_without_errors
+          @project.write!("mock_sorbet", <<~RB)
+            #!/usr/bin/env ruby
+            $stderr.puts "Option `--enable-experimental-rbs-signatures` has been combined into another option."
+            $stderr.puts "No errors! Great job."
+            exit(0)
+          RB
+          @project.exec("chmod +x mock_sorbet")
+          @project.write!("file.rb", <<~RB)
+            # typed: false
+            class Foo; end
+          RB
+
+          result = @project.spoom("srb bump --no-color --sorbet #{@project.absolute_path}/mock_sorbet")
+          assert_equal(<<~ERR, result.err)
+            Option `--enable-experimental-rbs-signatures` has been combined into another option.
+          ERR
+          assert_equal(<<~OUT, result.out)
+            Checking files...
+
+            Bumped `1` file from `false` to `true`:
+             + file.rb
+          OUT
+          refute(result.status)
+          assert_equal("true", @project.read_file_strictness("file.rb"))
+        end
+
         def test_bump_with_sorbet_segfault
           # Create a fake Sorbet that will segfault
           @project.write!("mock_sorbet", <<~RB)
