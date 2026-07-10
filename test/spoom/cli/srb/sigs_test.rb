@@ -258,6 +258,53 @@ module Spoom
           RB
         end
 
+        def test_translate_to_rbs_preserves_multiline_signatures_by_default
+          @project.write!("file.rb", <<~RB)
+            sig do
+              params(
+                a: A,
+                b: B
+              ).void
+            end
+            def foo(a, b); end
+          RB
+
+          result = @project.spoom("srb sigs translate --no-color")
+
+          assert_empty(result.err)
+          assert(result.status)
+
+          assert_equal(<<~RB, @project.read("file.rb"))
+            #: (
+            #|   A a,
+            #|   B b
+            #| ) -> void
+            def foo(a, b); end
+          RB
+        end
+
+        def test_translate_to_rbs_can_disable_preserving_multiline_signatures
+          @project.write!("file.rb", <<~RB)
+            sig do
+              params(
+                a: A,
+                b: B
+              ).void
+            end
+            def foo(a, b); end
+          RB
+
+          result = @project.spoom("srb sigs translate --no-color --no-preserve-multiline-signatures")
+
+          assert_empty(result.err)
+          assert(result.status)
+
+          assert_equal(<<~RB, @project.read("file.rb"))
+            #: (A a, B b) -> void
+            def foo(a, b); end
+          RB
+        end
+
         def test_translate_to_rbs_without_max_line_length
           @project.write!("file.rb", <<~RB)
             sig do
@@ -269,7 +316,9 @@ module Spoom
             def foo(param1:, param2:); end
           RB
 
-          result = @project.spoom("srb sigs translate --no-color --max-line-length 0")
+          result = @project.spoom(
+            "srb sigs translate --no-color --max-line-length 0 --no-preserve-multiline-signatures",
+          )
 
           assert_empty(result.err)
           assert(result.status)

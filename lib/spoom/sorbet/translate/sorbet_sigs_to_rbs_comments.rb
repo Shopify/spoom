@@ -11,6 +11,7 @@ module Spoom
         #|   String,
         #|   file: String,
         #|   positional_names: bool,
+        #|   ?preserve_multiline_signatures: bool,
         #|   ?max_line_length: Integer?,
         #|   ?translate_generics: bool,
         #|   ?translate_helpers: bool,
@@ -20,6 +21,7 @@ module Spoom
           ruby_contents,
           file:,
           positional_names:,
+          preserve_multiline_signatures: true,
           max_line_length: nil,
           translate_generics: true,
           translate_helpers: true,
@@ -34,6 +36,8 @@ module Spoom
           @extend_t_helpers = [] #: Array[Prism::CallNode]
           @extend_t_generics = [] #: Array[Prism::CallNode]
           @seen_mixes_in_class_methods = false #: bool
+
+          @preserve_multiline_signatures = preserve_multiline_signatures
           @max_line_length = max_line_length #: Integer?
 
           @translate_generics = translate_generics #: bool
@@ -75,7 +79,12 @@ module Spoom
           last_sigs.each do |node, sig|
             next if sig.is_abstract && !@translate_abstract_methods
 
-            out = rbs_print(node.location.start_column) do |printer|
+            preserve_multiline_signatures = !!(@preserve_multiline_signatures && sig.loc&.multiline?)
+
+            out = rbs_print(
+              node.location.start_column,
+              preserve_multiline_signatures: preserve_multiline_signatures,
+            ) do |printer|
               printer.print_method_sig(rbi_node, sig)
             end
             @rewriter << Source::Replace.new(node.location.start_offset, node.location.end_offset, out)
@@ -204,7 +213,7 @@ module Spoom
           rbi_node = builder.tree.nodes.first #: as RBI::Attr
 
           last_sigs.each do |node, sig|
-            out = rbs_print(node.location.start_column) do |printer|
+            out = rbs_print(node.location.start_column, preserve_multiline_signatures: false) do |printer|
               printer.print_attr_sig(rbi_node, sig)
             end
             @rewriter << Source::Replace.new(node.location.start_offset, node.location.end_offset, out)
@@ -387,10 +396,16 @@ module Spoom
           last_sigs
         end
 
-        #: (Integer) { (RBI::RBSPrinter) -> void } -> String
-        def rbs_print(indent, &block)
+        #: (Integer, preserve_multiline_signatures: bool) { (RBI::RBSPrinter) -> void } -> String
+        def rbs_print(indent, preserve_multiline_signatures:, &block)
           out = StringIO.new
-          p = RBI::RBSPrinter.new(out: out, positional_names: @positional_names, max_line_length: @max_line_length)
+
+          p = RBI::RBSPrinter.new(
+            out: out,
+            positional_names: @positional_names,
+            max_line_length: @max_line_length,
+            force_multiline_signatures: preserve_multiline_signatures,
+          )
           block.call(p)
           string = out.string
 

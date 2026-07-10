@@ -17,6 +17,10 @@ module Spoom
           aliases: :p,
           desc: "Use positional names when translating from RBI to RBS",
           default: true
+        option :preserve_multiline_signatures,
+          type: :boolean,
+          desc: "Preserve multiline sig formatting when translating from RBI to RBS",
+          default: true
         option :include_rbi_files, type: :boolean, desc: "Include RBI files", default: false
         option :max_line_length, type: :numeric, desc: "Max line length (pass 0 to disable)", default: 120
         option :translate_generics, type: :boolean, desc: "Translate generics", default: false
@@ -53,6 +57,7 @@ module Spoom
                 contents,
                 file: file,
                 positional_names: options[:positional_names],
+                preserve_multiline_signatures: options[:preserve_multiline_signatures],
                 max_line_length: max_line_length,
                 translate_generics: options[:translate_generics],
                 translate_helpers: options[:translate_helpers],
