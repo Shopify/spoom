@@ -513,11 +513,72 @@ module Spoom
           RBS
         end
 
+        def test_translate_to_rbs_keeps_multiline_sigs
+          contents = <<~RB
+            sig do
+              params(
+                a: A,
+                b: B
+              ).void
+            end
+            def foo(a, b); end
+
+            sig { params(a: A, b: B).void }
+            def bar(a, b); end
+
+            sig { params(a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q, r: R, s: S, t: T, u: U, v: V, w: W, x: X, y: Y, z: Z).void }
+            def baz(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z); end
+          RB
+
+          output = sorbet_sigs_to_rbs_comments(contents, max_line_length: 50)
+          assert_equal(<<~RBS, output)
+            #: (
+            #|   A a,
+            #|   B b
+            #| ) -> void
+            def foo(a, b); end
+
+            #: (A a, B b) -> void
+            def bar(a, b); end
+
+            #: (
+            #|   A a,
+            #|   B b,
+            #|   C c,
+            #|   D d,
+            #|   E e,
+            #|   F f,
+            #|   G g,
+            #|   H h,
+            #|   I i,
+            #|   J j,
+            #|   K k,
+            #|   L l,
+            #|   M m,
+            #|   N n,
+            #|   O o,
+            #|   P p,
+            #|   Q q,
+            #|   R r,
+            #|   S s,
+            #|   T t,
+            #|   U u,
+            #|   V v,
+            #|   W w,
+            #|   X x,
+            #|   Y y,
+            #|   Z z
+            #| ) -> void
+            def baz(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z); end
+          RBS
+        end
+
         private
 
         #: (
         #|   String,
         #|   ?positional_names: bool,
+        #|   ?preserve_multiline_signatures: bool,
         #|   ?max_line_length: Integer?,
         #|   ?translate_generics: bool,
         #|   ?translate_helpers: bool,
@@ -526,6 +587,7 @@ module Spoom
         def sorbet_sigs_to_rbs_comments(
           ruby_contents,
           positional_names: true,
+          preserve_multiline_signatures: true,
           max_line_length: nil,
           translate_generics: true,
           translate_helpers: true,
@@ -535,6 +597,7 @@ module Spoom
             ruby_contents,
             file: "test.rb",
             positional_names: positional_names,
+            preserve_multiline_signatures: preserve_multiline_signatures,
             max_line_length: max_line_length,
             translate_generics: translate_generics,
             translate_helpers: translate_helpers,

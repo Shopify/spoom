@@ -30,13 +30,17 @@ module Spoom
         #|   String,
         #|   file: String,
         #|   ?positional_names: bool,
+        #|   ?preserve_multiline_signatures: bool,
         #|   ?max_line_length: Integer?,
         #|   ?translate_generics: bool,
         #|   ?translate_helpers: bool,
         #|   ?translate_abstract_methods: bool
         #| ) -> String
         def sorbet_sigs_to_rbs_comments(
-          ruby_contents, file:, positional_names: true, max_line_length: nil,
+          ruby_contents, file:,
+          positional_names: true,
+          preserve_multiline_signatures: true,
+          max_line_length: nil,
           translate_generics: true,
           translate_helpers: true,
           translate_abstract_methods: true
@@ -45,6 +49,7 @@ module Spoom
             ruby_contents,
             file: file,
             positional_names: positional_names,
+            preserve_multiline_signatures: preserve_multiline_signatures,
             max_line_length: max_line_length,
             translate_generics: translate_generics,
             translate_helpers: translate_helpers,
