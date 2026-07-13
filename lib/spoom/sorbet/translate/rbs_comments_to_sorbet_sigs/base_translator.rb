@@ -95,6 +95,11 @@ module Spoom
 
             return if comments.signatures.empty?
 
+            attr_name_nodes = node.arguments&.arguments || []
+            return if attr_name_nodes.empty?
+
+            sig_strings_by_attr_name = attr_name_nodes.map { [] } #: Array[Array[String]]
+
             signatures = apply_overloads_strategy(
               comments.signatures,
               method_name: node.message.to_s,
@@ -105,37 +110,101 @@ module Spoom
 
             signatures.each do |signature|
               attr_type = ::RBS::Parser.parse_type(signature.string)
-              sig = RBI::Sig.new
+              first_sig_string = nil #: String?
 
-              if node.message == "attr_writer"
-                if node.arguments&.arguments&.size != 1
-                  raise Error, "AttrWriter must have exactly one name"
-                end
+              attr_name_nodes.each_with_index do |attr_name_node, index|
+                sig = build_attr_sig(node, attr_name_node, attr_type)
 
-                name = node.arguments&.arguments&.first #: as Prism::SymbolNode
-                sig.params << RBI::SigParam.new(
-                  name.slice[1..-1], #: as String
-                  @type_translator.translate(attr_type),
-                )
+                known_annotations = apply_member_annotations(comments.method_annotations, sig)
+
+                sig_string = sig.string(max_line_length: @max_line_length)
+                first_sig_string = sig_string if index == 0
+                sig_strings_by_attr_name.fetch(index) << sig_string.chomp
               end
-
-              sig.return_type = @type_translator.translate(attr_type)
-
-              known_annotations = apply_member_annotations(comments.method_annotations, sig)
 
               @rewriter << Source::Replace.new(
                 signature.location.start_offset,
                 signature.location.end_offset,
-                pad_out_line_count(of: sig.string(max_line_length: @max_line_length), to_height_of: signature),
+                pad_out_line_count(of: first_sig_string.to_s, to_height_of: signature),
               )
             rescue ::RBS::ParsingError, ::RBI::Error
               # Ignore signatures with errors
               next
             end
 
+            if attr_name_nodes.size > 1 && sig_strings_by_attr_name.first&.any?
+              rewrite_multi_name_attr(node, attr_name_nodes:, sig_strings_by_attr_name:)
+            end
+
             if known_annotations
               rewrite_member_annotations(comments.method_annotations, known: known_annotations)
             end
+          end
+
+          #: (Prism::CallNode, Prism::Node, untyped) -> RBI::Sig
+          def build_attr_sig(node, attr_name_node, attr_type)
+            sig = RBI::Sig.new
+            sig.return_type = @type_translator.translate(attr_type)
+
+            if node.message == "attr_writer"
+              sig.params << RBI::SigParam.new(
+                attr_param_name(attr_name_node),
+                @type_translator.translate(attr_type),
+              )
+            end
+
+            sig
+          end
+
+          #: (Prism::Node) -> String
+          def attr_param_name(node)
+            case node
+            when Prism::SymbolNode, Prism::StringNode
+              node.unescaped
+            else
+              raise Error, "AttrWriter names must be symbol or string literals"
+            end
+          end
+
+          #: (Prism::CallNode, Prism::Node) -> String
+          def attr_call_source(node, attr_name_node)
+            receiver = node.receiver
+            call = if receiver
+              "#{receiver.slice}#{node.call_operator}#{node.message}"
+            else
+              node.message.to_s
+            end
+
+            if node.opening_loc
+              "#{call}(#{attr_name_node.slice})"
+            else
+              "#{call} #{attr_name_node.slice}"
+            end
+          end
+
+          # @overridable
+          #: (
+          #|   Prism::CallNode,
+          #|   attr_name_nodes: Array[Prism::Node],
+          #|   sig_strings_by_attr_name: Array[Array[String]]
+          #| ) -> void
+          def rewrite_multi_name_attr(node, attr_name_nodes:, sig_strings_by_attr_name:)
+            indent = " " * node.location.start_column
+
+            lines = [attr_call_source(node, attr_name_nodes.fetch(0))]
+
+            attr_name_nodes.drop(1).each_with_index do |attr_name_node, index|
+              sig_strings_by_attr_name.fetch(index + 1).each do |sig_string|
+                lines << "#{indent}#{sig_string}"
+              end
+              lines << "#{indent}#{attr_call_source(node, attr_name_node)}"
+            end
+
+            @rewriter << Source::Replace.new(
+              node.location.start_offset,
+              node.location.end_offset - 1,
+              lines.join("\n"),
+            )
           end
 
           #: (Prism::DefNode, Spoom::RBS::Comments) -> void
