@@ -2926,10 +2926,11 @@ module Spoom::Sorbet::Translate
         ruby_contents: ::String,
         file: ::String,
         max_line_length: T.nilable(::Integer),
-        overloads_strategy: ::Symbol
+        overloads_strategy: ::Symbol,
+        erase_generic_types: T::Boolean
       ).returns(::String)
     end
-    def rbs_comments_to_sorbet_sigs(ruby_contents, file:, max_line_length: T.unsafe(nil), overloads_strategy: T.unsafe(nil)); end
+    def rbs_comments_to_sorbet_sigs(ruby_contents, file:, max_line_length: T.unsafe(nil), overloads_strategy: T.unsafe(nil), erase_generic_types: T.unsafe(nil)); end
 
     sig do
       params(
@@ -3008,10 +3009,11 @@ module Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs
         ruby_contents: ::String,
         file: ::String,
         max_line_length: T.nilable(::Integer),
-        overloads_strategy: ::Symbol
+        overloads_strategy: ::Symbol,
+        erase_generic_types: T::Boolean
       ).returns(::String)
     end
-    def rewrite_if_needed(ruby_contents, file:, max_line_length: T.unsafe(nil), overloads_strategy: T.unsafe(nil)); end
+    def rewrite_if_needed(ruby_contents, file:, max_line_length: T.unsafe(nil), overloads_strategy: T.unsafe(nil), erase_generic_types: T.unsafe(nil)); end
   end
 end
 
@@ -3253,6 +3255,9 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::Options
 
   sig { returns(::Symbol) }
   def overloads_strategy; end
+
+  sig { returns(::RBI::RBS::MethodTypeTranslator::Options) }
+  def rbi_options; end
 
   sig { returns(T::Boolean) }
   def translate_abstract_methods; end
