@@ -12,7 +12,7 @@ module Spoom
       #: (Array[String]? bt) -> Array[String]
       def filter(bt)
         super.select do |line|
-          SORBET_PATHS.none? { |path| line.include?(path) }
+          !SORBET_PATHS.intersect?(line)
         end
       end
     end
