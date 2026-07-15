@@ -144,15 +144,22 @@ module Spoom
             return if comments.signatures.empty?
             return if !@translate_abstract_methods && comments.method_annotations.any?(&:abstract?)
 
+            builder = RBI::Parser::TreeBuilder.new(@ruby_contents, comments: [], file: @file)
+            builder.visit(def_node)
+            rbi_node = builder.tree.nodes.first #: as RBI::Method
+
+            # When the method def has anonymous rest/keyword-rest params
+            # (e.g. `def foo(**)` or `def foo(*)`), sorbet-runtime cannot
+            # bind a named sig param to them.  Instead of rewriting the
+            # method def, we emit the sig with quoted star names (`"*"` /
+            # `"**"`) which sorbet-runtime accepts for anonymous rest params.
+            anonymous_overrides = find_anonymous_rest_overrides(def_node, rbi_node)
+
             signatures = apply_overloads_strategy(
               comments.signatures,
               method_name: def_node.name.to_s,
               location: "#{@file}:#{def_node.location.start_line}",
             )
-
-            builder = RBI::Parser::TreeBuilder.new(@ruby_contents, comments: [], file: @file)
-            builder.visit(def_node)
-            rbi_node = builder.tree.nodes.first #: as RBI::Method
 
             known_annotations = nil #: Array[Spoom::RBS::Annotation]?
 
@@ -173,6 +180,16 @@ module Spoom
 
               sig = translator.result
 
+              # Normalize SigParam names for anonymous rest params to quoted
+              # star names so the sig binds to the anonymous method param.
+              # RBS param names are non-semantic and may differ.
+              anonymous_overrides.each do |index, quoted_name|
+                old = sig.params[index]
+                next unless old
+
+                sig.params[index] = RBI::SigParam.new(quoted_name, old.type)
+              end
+
               known_annotations = apply_member_annotations(comments.method_annotations, sig)
 
               # Sorbet runtime doesn't support `sig` on `method_added` or
@@ -191,6 +208,34 @@ module Spoom
             if known_annotations
               rewrite_member_annotations(comments.method_annotations, known: known_annotations)
             end
+          end
+
+          # Returns a hash mapping SigParam index → quoted star name (`'"*"'`
+          # or `'"**"'`) for each anonymous rest/keyword-rest param in the
+          # method def.  The RBI printer emits these as `params("*": ...)`
+          # / `params("**": ...)`, which sorbet-runtime accepts for
+          # anonymous rest params without rewriting the method def.
+          #: (Prism::DefNode, RBI::Method) -> Hash[Integer, String]
+          def find_anonymous_rest_overrides(def_node, rbi_node)
+            prism_params = def_node.parameters
+            return {} unless prism_params
+
+            keyword_rest = prism_params.keyword_rest
+            rest = prism_params.rest
+            anonymous_keyword_rest = keyword_rest.is_a?(Prism::KeywordRestParameterNode) && keyword_rest.name.nil?
+            anonymous_rest = rest.is_a?(Prism::RestParameterNode) && rest.name.nil?
+            return {} unless anonymous_keyword_rest || anonymous_rest
+
+            overrides = {} #: Hash[Integer, String]
+            rbi_node.params.each_with_index do |param, index|
+              if anonymous_keyword_rest && param.is_a?(RBI::KwRestParam)
+                overrides[index] = '"**"'
+              elsif anonymous_rest && param.is_a?(RBI::RestParam)
+                overrides[index] = '"*"'
+              end
+            end
+
+            overrides
           end
 
           #: (Array[Spoom::RBS::Signature], method_name: String, location: String) -> Array[Spoom::RBS::Signature]

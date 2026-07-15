@@ -1338,6 +1338,284 @@ module Spoom
           end
         end
 
+        def test_rewrite_named_keyword_rest_param
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # typed: true
+              class Foo
+                #: (**untyped kwargs) -> untyped
+                def resolve(**kwargs)
+                end
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              # typed: true
+              class Foo
+                sig { params(kwargs: ::T.untyped).returns(::T.untyped) }
+                def resolve(**kwargs)
+                end
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
+          )
+        end
+
+        def test_rewrite_anonymous_keyword_rest_param
+          # When both the RBS type and the method definition use anonymous `**`,
+          # the sig uses the quoted star name `"**"` which sorbet-runtime
+          # accepts for anonymous keyword-rest params.  The method def is
+          # left untouched.
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # typed: true
+              class Foo
+                #: (**untyped) -> untyped
+                def resolve(**)
+                end
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              # typed: true
+              class Foo
+                sig { params("**": ::T.untyped).returns(::T.untyped) }
+                def resolve(**)
+                end
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
+          )
+        end
+
+        def test_rewrite_anonymous_rest_positional_param
+          # Same as anonymous keyword-rest: the sig uses `"*"` which
+          # sorbet-runtime accepts for anonymous rest params.
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # typed: true
+              class Foo
+                #: (*untyped) -> untyped
+                def resolve(*)
+                end
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              # typed: true
+              class Foo
+                sig { params("*": ::T.untyped).returns(::T.untyped) }
+                def resolve(*)
+                end
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
+          )
+        end
+
+        def test_rewrite_named_keyword_rest_with_anonymous_def
+          # Even when the RBS type names the keyword-rest param, the sig uses
+          # the quoted star name `"**"` so it binds to the anonymous method
+          # param.  RBS param names are non-semantic.
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # typed: true
+              class Foo
+                #: (**untyped kwargs) -> untyped
+                def resolve(**)
+                end
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              # typed: true
+              class Foo
+                sig { params("**": ::T.untyped).returns(::T.untyped) }
+                def resolve(**)
+                end
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
+          )
+        end
+
+        def test_rewrite_anonymous_keyword_rest_with_named_def
+          # When the RBS type is anonymous but the method definition names the
+          # param, the translator picks up the name from the method and the
+          # sig is emitted normally.
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # typed: true
+              class Foo
+                #: (**untyped) -> untyped
+                def resolve(**kwargs)
+                end
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              # typed: true
+              class Foo
+                sig { params(kwargs: ::T.untyped).returns(::T.untyped) }
+                def resolve(**kwargs)
+                end
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
+          )
+        end
+
+        def test_rewrite_anonymous_keyword_rest_with_overloads_translate_last
+          # With :translate_last, earlier overloads are discarded.  The last
+          # overload's sig uses the quoted star name `"**"`.
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # typed: true
+              class Foo
+                #: (Integer) -> String
+                #: (**untyped kwargs) -> untyped
+                def resolve(**)
+                end
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              # typed: true
+              class Foo
+                sig { params("**": ::T.untyped).returns(::T.untyped) }
+                def resolve(**)
+                end
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # typed: true
+              class Foo
+                # RBS_DISCARDED_OVERLOAD: (Integer) -> String
+                sig { params("**": ::T.untyped).returns(::T.untyped) }
+                def resolve(**)
+                end
+              end
+            RUBY
+
+            overloads_strategy: :translate_last,
+          )
+        end
+
+        def test_rewrite_anonymous_keyword_rest_with_invalid_rbs_leaves_source_unchanged
+          # When the RBS type is malformed, no sig can be translated, so the
+          # source is left completely unchanged.
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # typed: true
+              class Foo
+                #: foo
+                def resolve(**)
+                end
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              # typed: true
+              class Foo
+                #: foo
+                def resolve(**)
+                end
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
+          )
+        end
+
+        def test_rewrite_anonymous_keyword_rest_with_forwarding
+          # Anonymous `**` forwarding in the body (e.g. `g(**)`) is left
+          # untouched — the method def is not rewritten, so forwarding
+          # remains valid Ruby.
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # typed: true
+              class Foo
+                #: (**untyped) -> untyped
+                def resolve(**)
+                  g(**)
+                end
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              # typed: true
+              class Foo
+                sig { params("**": ::T.untyped).returns(::T.untyped) }
+                def resolve(**)
+                  g(**)
+                end
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
+          )
+        end
+
+        def test_rewrite_anonymous_rest_positional_with_forwarding
+          # Anonymous `*` forwarding in the body (e.g. `g(*)`) is left
+          # untouched — the method def is not rewritten, so forwarding
+          # remains valid Ruby.
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # typed: true
+              class Foo
+                #: (*untyped) -> untyped
+                def resolve(*)
+                  g(*)
+                end
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              # typed: true
+              class Foo
+                sig { params("*": ::T.untyped).returns(::T.untyped) }
+                def resolve(*)
+                  g(*)
+                end
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
+          )
+        end
+
+        def test_rewrite_anonymous_rest_and_keyword_rest_combined
+          # Both anonymous `*` and `**` in the same method def.
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # typed: true
+              class Foo
+                #: (*untyped, **untyped) -> untyped
+                def resolve(*, **)
+                end
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              # typed: true
+              class Foo
+                sig { params("*": ::T.untyped, "**": ::T.untyped).returns(::T.untyped) }
+                def resolve(*, **)
+                end
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
+          )
+        end
+
         private
 
         #: (String,
