@@ -40,6 +40,15 @@ module Spoom
         super
       end
 
+      #: -> String
+      def wrapped_src
+        <<~RUBY
+          def __spoom_deadcode_erb_template__
+            #{src}
+          end
+        RUBY
+      end
+
       private
 
       # @override
