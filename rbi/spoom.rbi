@@ -1024,6 +1024,9 @@ class Spoom::Deadcode::ERB < ::Erubi::Engine
   sig { params(input: T.untyped, properties: T.untyped).void }
   def initialize(input, properties = T.unsafe(nil)); end
 
+  sig { returns(::String) }
+  def wrapped_src; end
+
   private
 
   sig { override.params(code: T.untyped).void }
