@@ -102,28 +102,28 @@ module Spoom
             class Foo
               # @abstract
               #: -> void
-              def foo = raise NotImplementedError, "Abstract method called"
+              def foo = defined?(super) ? super : raise(NotImplementedError, "Abstract method called")
 
               class Bar
                 # @abstract
                 #: -> void
-                def bar = raise NotImplementedError, "Abstract method called"
+                def bar = defined?(super) ? super : raise(NotImplementedError, "Abstract method called")
               end
 
               # @abstract
               #: (Integer x) -> void
-              def baz(x) = raise NotImplementedError, "Abstract method called"
+              def baz(x) = defined?(super) ? super : raise(NotImplementedError, "Abstract method called")
 
               # @abstract
               #: (Integer x) -> void
               def foo=(x)
-                raise NotImplementedError, "Abstract method called"
+                defined?(super) ? super : raise(NotImplementedError, "Abstract method called")
               end
 
               # @abstract
               #: (Integer x) -> void
               def bar=(x)
-                raise NotImplementedError, "Abstract method called"
+                defined?(super) ? super : raise(NotImplementedError, "Abstract method called")
               end
             end
           RBS
