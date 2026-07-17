@@ -1200,6 +1200,26 @@ module Spoom
           )
         end
 
+        def test_translate_to_rbi_method_sig_with_anonymous_params
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class Foo
+                #: (*Integer, **Integer) { -> void } -> void
+                def foo(*, **, &); end
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class Foo
+                sig { params("*": Integer, "**": Integer, "&": ::T.proc.void).void }
+                def foo(*, **, &); end
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
+          )
+        end
+
         def test_translate_overloads_translate_all_is_default
           assert_rewrites_rbs(
             from: <<~RUBY,

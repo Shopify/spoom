@@ -72,6 +72,22 @@ module Spoom
           RBS
         end
 
+        def test_translate_to_rbs_method_with_anonymous_params
+          contents = <<~RB
+            class A
+              sig { params("*": Integer, "**": Integer, "&": ::T.proc.void).returns(Integer) }
+              def foo(*, **, &); end
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            class A
+              #: (*Integer, **Integer) { -> void } -> Integer
+              def foo(*, **, &); end
+            end
+          RBS
+        end
+
         def test_translate_to_rbs_abstract_methods
           contents = <<~RB
             class Foo
