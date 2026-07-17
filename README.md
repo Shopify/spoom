@@ -1,174 +1,190 @@
 # Spoom
 
-Useful tools for Sorbet enthusiasts.
+Useful tools for Sorbet projects.
+
+Spoom provides a CLI and a Ruby API to inspect Sorbet projects, improve typing coverage, translate signatures, query Sorbet LSP, and find dead code.
 
 ## Installation
 
-Add this line to your application's Gemfile:
+Add Spoom to your application's Gemfile:
 
 ```ruby
-gem 'spoom'
+gem "spoom"
 ```
 
-And then execute:
+Then install it:
 
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install spoom
-
-## Usage
-
-`spoom` provides both a CLI and an API to interact with Sorbet.
-
-### Generate a typing coverage report
-
-Spoom can create a typing coverage report from Sorbet and Git data:
-
-![Coverage Report](docs/report.png)
-
-After installing the `spoom` gem, run the `timeline` command to collect the history data:
-
-```
-$ spoom srb coverage timeline --save
+```sh
+bundle install
 ```
 
-Then create the HTML page with `report`:
+Or install it directly:
 
-```
-$ spoom srb coverage report
-```
-
-Your report will be generated under `spoom_report.html`.
-
-See all the [Typing Coverage](#typing-coverage) CLI commands for more details.
-
-### Command Line Interface
-
-#### Errors sorting and filtering
-
-List all typechecking errors sorted by location:
-
-```
-$ spoom srb tc -s loc
+```sh
+gem install spoom
 ```
 
-List all typechecking errors sorted by error code first:
+Spoom requires Ruby 3.3 or newer.
 
-```
-$ spoom srb tc -s code
-```
+## Command line interface
 
-List only typechecking errors from a specific error code:
+Run `spoom help` or `spoom help COMMAND` to list all available commands.
 
-```
-$ spoom srb tc -c 7004
-```
+### Typechecking errors
 
-List only the first 10 typechecking errors
+`spoom srb tc` runs `srb tc` and can sort, filter, format, and export errors.
 
-```
-$ spoom srb tc -l 10
+List errors sorted by location:
+
+```sh
+spoom srb tc --sort loc
 ```
 
-These options can be combined:
+List errors sorted by error code:
 
+```sh
+spoom srb tc --sort code
 ```
-$ spoom srb tc -s -c 7004 -l 10
+
+List only errors with a specific code:
+
+```sh
+spoom srb tc --code 7004
+```
+
+Limit the number of displayed errors:
+
+```sh
+spoom srb tc --limit 10
+```
+
+Options can be combined:
+
+```sh
+spoom srb tc --sort code --code 7004 --limit 10
 ```
 
 Remove duplicated error lines:
 
-```
-$ spoom srb tc -u
+```sh
+spoom srb tc --uniq
 ```
 
 Format each error line:
 
-```
-$ spoom srb tc -f '%C - %F:%L: %M'
-```
-
-Where:
-
-* `%C` is the error code
-* `%F` is the file the error is from
-* `%L` is the line the error is from
-* `%M` is the error message
-
-Hide the `Errors: X` at the end of the list:
-
-```
-$ spoom srb tc --no-count
+```sh
+spoom srb tc --format "%C - %F:%L: %M"
 ```
 
-List only the errors coming from specific directories or files:
+Format tokens:
 
-```
-$ spoom srb tc file1.rb path1/ path2/
-```
+* `%C`: error code
+* `%F`: file path
+* `%L`: line number
+* `%M`: error message
 
-#### Typing coverage
+Hide the final `Errors: X` count:
 
-Show metrics about the project contents and the typing coverage:
-
-```
-$ spoom srb coverage
-```
-
-Save coverage data under `spoom_data/`:
-
-```
-$ spoom srb coverage --save
+```sh
+spoom srb tc --no-count
 ```
 
-Save coverage data under a specific directory:
+List only errors from specific files or directories:
 
-```
-$ spoom srb coverage --save my_data/
-```
-
-Show typing coverage evolution based on the commits history:
-
-```
-$ spoom srb coverage timeline
+```sh
+spoom srb tc file1.rb path1/ path2/
 ```
 
-Show typing coverage evolution based on the commits history between specific dates:
+Write errors to a JUnit XML file:
 
-```
-$ spoom srb coverage timeline --from YYYY-MM-DD --to YYYY-MM-DD
-```
-
-Save the typing coverage evolution as JSON under `spoom_data/`:
-
-```
-$ spoom srb coverage timeline --save
+```sh
+spoom srb tc --junit-output-path junit.xml
 ```
 
-Save the typing coverage evolution as JSON in a specific directory:
+Pass extra options to Sorbet:
 
-```
-$ spoom srb coverage timeline --save my_data/
-```
-
-Run `bundle install` for each commit of the timeline (may solve errors due to different Sorbet versions):
-
-```
-$ spoom srb coverage timeline --bundle-install
+```sh
+spoom srb tc --sorbet-options="--typed=true"
 ```
 
-Generate an HTML typing coverage report:
+### Typing coverage
 
-```
-$ spoom srb coverage report
+`spoom srb coverage` collects Sorbet coverage metrics and can generate an HTML report from Sorbet and Git data.
+
+![Coverage Report](docs/report.png)
+
+Show a coverage snapshot:
+
+```sh
+spoom srb coverage
 ```
 
-Change the colors used for strictnesses (useful for colorblind folks):
+Save a snapshot under `spoom_data/`:
 
+```sh
+spoom srb coverage --save
 ```
-$ spoom srb coverage report \
+
+Save a snapshot under a specific directory:
+
+```sh
+spoom srb coverage --save my_data/
+```
+
+Show typing coverage evolution based on Git history:
+
+```sh
+spoom srb coverage timeline
+```
+
+Replay a specific date range:
+
+```sh
+spoom srb coverage timeline --from YYYY-MM-DD --to YYYY-MM-DD
+```
+
+Save timeline snapshots under `spoom_data/`:
+
+```sh
+spoom srb coverage timeline --save
+```
+
+Save timeline snapshots under a specific directory:
+
+```sh
+spoom srb coverage timeline --save my_data/
+```
+
+Run `bundle install` before collecting each timeline snapshot:
+
+```sh
+spoom srb coverage timeline --bundle-install
+```
+
+Generate an HTML coverage report from saved snapshots:
+
+```sh
+spoom srb coverage report
+```
+
+The report is generated at `spoom_report.html` by default.
+
+Generate a report from a custom data directory:
+
+```sh
+spoom srb coverage report --data my_data/
+```
+
+Change the generated report path:
+
+```sh
+spoom srb coverage report --file coverage.html
+```
+
+Change report colors:
+
+```sh
+spoom srb coverage report \
   --color-true "#648ffe" \
   --color-false "#fe6002" \
   --color-ignore "#feb000" \
@@ -176,123 +192,213 @@ $ spoom srb coverage report \
   --color-strong "#6444f1"
 ```
 
-Open the HTML typing coverage report:
+Open the HTML coverage report:
 
-```
-$ spoom srb coverage open
-```
-
-#### Change the sigil used in files
-
-Bump the strictness from all files currently at `typed: false` to `typed: true` where it does not create typechecking errors:
-
-```
-$ spoom srb bump --from false --to true
+```sh
+spoom srb coverage open
 ```
 
-Bump the strictness from all files currently at `typed: false` to `typed: true` even if it creates typechecking errors:
+Open a report at a custom path:
 
-```
-$ spoom srb bump --from false --to true -f
-```
-
-Bump the strictness from a list of files (one file by line):
-
-```
-$ spoom srb bump --from false --to true -o list.txt
+```sh
+spoom srb coverage open coverage.html
 ```
 
-Check if files can be bumped without applying any change and show the list of files that can be bumped without errors.
-Will exit with a non-zero status if some files can be bumped without errors (useful to check for bumpable files on CI for example):
+### Sorbet sigils
 
-```
-$ spoom srb bump --from false --to true --dry
-```
+`spoom srb bump` changes `# typed:` sigils when the change does not introduce typechecking errors.
 
-Bump files using a custom instance of Sorbet:
+Bump files from `typed: false` to `typed: true`:
 
-```
-$ spoom srb bump --from false --to true --sorbet /path/to/sorbet/bin
+```sh
+spoom srb bump --from false --to true
 ```
 
-Count the number of type-checking errors if all files were bumped to true:
+Force the change without typechecking:
 
-```
-$ spoom srb bump --count-errors --dry
-```
-
-#### Translate sigs between RBI and RBS
-
-Translate all file sigs from RBI to RBS:
-
-```
-$ spoom srb sigs translate
+```sh
+spoom srb bump --from false --to true --force
 ```
 
-Translate one file's sigs from RBS to RBI:
+Bump only files listed in a file, one path per line:
 
-```
-$ spoom srb sigs translate --from rbs --to rbi /path/to/file.rb
-```
-
-#### Interact with Sorbet LSP mode
-
-**Experimental**
-
-Find all definitions for `Foo`:
-
-```
-$ spoom srb lsp find Foo
+```sh
+spoom srb bump --from false --to true --only list.txt
 ```
 
-List all symbols in a file:
+Check which files can be bumped without applying changes:
 
-```
-$ spoom srb lsp symbols <file.rb>
-```
-
-List all definitions for a specific code location:
-
-```
-$ spoom srb lsp defs <file.rb> <line> <column>
+```sh
+spoom srb bump --from false --to true --dry
 ```
 
-List all references for a specific code location:
+This command exits with a non-zero status when files can be bumped, which is useful in CI.
 
-```
-$ spoom srb lsp refs <file.rb> <line> <column>
-```
+Use a custom Sorbet executable:
 
-Show hover information for a specific code location:
-
-```
-$ spoom srb lsp hover <file.rb> <line> <column>
+```sh
+spoom srb bump --from false --to true --sorbet /path/to/sorbet/bin
 ```
 
-Show signature information for a specific code location:
+Count typechecking errors if all files were bumped:
 
-```
-$ spoom srb lsp sig <file.rb> <line> <column>
-```
-
-Show type information for a specific code location:
-
-```
-$ spoom srb lsp sig <file.rb> <line> <column>
+```sh
+spoom srb bump --from false --to true --count-errors --dry
 ```
 
-### API
+### Signatures and type assertions
 
-#### Parsing Sorbet config
+`spoom srb sigs` translates signatures between Sorbet RBI syntax and RBS comments.
 
-Parses a Sorbet config file:
+Translate signatures from RBI to RBS comments:
+
+```sh
+spoom srb sigs translate
+```
+
+Translate signatures from RBS comments to RBI:
+
+```sh
+spoom srb sigs translate --from rbs --to rbi path/to/file.rb
+```
+
+Strip Sorbet signatures from files:
+
+```sh
+spoom srb sigs strip path/to/file.rb
+```
+
+Export gem signatures to an RBI file:
+
+```sh
+spoom srb sigs export
+```
+
+Check that the exported RBI file is up to date:
+
+```sh
+spoom srb sigs export --check-sync
+```
+
+`spoom srb assertions` translates Sorbet type assertions to RBS comments:
+
+```sh
+spoom srb assertions translate path/to/file.rb
+```
+
+### Sorbet LSP
+
+`spoom srb lsp` sends requests to Sorbet LSP.
+
+This command group is experimental.
+
+Find symbols matching `Foo`:
+
+```sh
+spoom srb lsp find Foo
+```
+
+List symbols in a file:
+
+```sh
+spoom srb lsp symbols file.rb
+```
+
+List definitions for a code location:
+
+```sh
+spoom srb lsp defs file.rb 10 4
+```
+
+List references for a code location:
+
+```sh
+spoom srb lsp refs file.rb 10 4
+```
+
+Show hover information for a code location:
+
+```sh
+spoom srb lsp hover file.rb 10 4
+```
+
+Show signature information for a code location:
+
+```sh
+spoom srb lsp sigs file.rb 10 4
+```
+
+Show type information for a code location:
+
+```sh
+spoom srb lsp types file.rb 10 4
+```
+
+### Sorbet code metrics
+
+`spoom srb metrics` collects metrics about Sorbet usage in Ruby files.
+
+Show metrics for the current project:
+
+```sh
+spoom srb metrics
+```
+
+Show metrics for specific files or directories:
+
+```sh
+spoom srb metrics lib/ test/foo_test.rb
+```
+
+Dump raw metric keys and values:
+
+```sh
+spoom srb metrics --dump
+```
+
+### Dead code
+
+`spoom deadcode` indexes a project and reports definitions that do not appear to be referenced.
+
+Analyze the current project:
+
+```sh
+spoom deadcode
+```
+
+Analyze specific paths:
+
+```sh
+spoom deadcode lib/ app/models/
+```
+
+Show files, loaded plugins, definitions, or references used during analysis:
+
+```sh
+spoom deadcode --show-files
+spoom deadcode --show-plugins
+spoom deadcode --show-defs
+spoom deadcode --show-refs
+```
+
+Remove a reported dead code candidate:
+
+```sh
+spoom deadcode remove path/to/file.rb:42:18-47:23
+```
+
+## Ruby API
+
+### Parsing Sorbet config
+
+Parse a Sorbet config file:
 
 ```ruby
 config = Spoom::Sorbet::Config.parse_file("sorbet/config")
-puts config.paths   # "."
+puts config.paths
 ```
 
-Parses a Sorbet config string:
+Parse a Sorbet config string:
 
 ```ruby
 config = Spoom::Sorbet::Config.parse_string(<<~CONFIG)
@@ -300,18 +406,19 @@ config = Spoom::Sorbet::Config.parse_string(<<~CONFIG)
   --file=b
   --ignore=c
 CONFIG
-puts config.paths   # "a", "b"
-puts config.ignore  # "c"
+
+puts config.paths
+puts config.ignore
 ```
 
-List all files typchecked by Sorbet:
+List all files typechecked by Sorbet:
 
 ```ruby
 config = Spoom::Sorbet::Config.parse_file("sorbet/config")
 puts Spoom::Sorbet.srb_files(config)
 ```
 
-#### Parsing Sorbet metrics
+### Parsing Sorbet metrics
 
 Display metrics collected during typechecking:
 
@@ -319,11 +426,11 @@ Display metrics collected during typechecking:
 puts Spoom::Sorbet.srb_metrics(capture_err: false)
 ```
 
-#### Interacting with LSP
+### Interacting with LSP
 
 Create an LSP client:
 
-```rb
+```ruby
 client = Spoom::LSP::Client.new(
   Spoom::Sorbet::BIN_PATH,
   "--lsp",
@@ -333,71 +440,88 @@ client = Spoom::LSP::Client.new(
 client.open(".")
 ```
 
-Find all the symbols matching a string:
+Find symbols matching a string:
 
-```rb
+```ruby
 puts client.symbols("Foo")
 ```
 
-Find all the symbols for a file:
+Find symbols in a file:
 
-```rb
+```ruby
 puts client.document_symbols("file://path/to/my/file.rb")
 ```
 
-### Backtrace Filtering
+## Backtrace filtering
 
-Spoom provides a backtrace filter for Minitest to remove the Sorbet frames from test failures, giving a more readable output. To enable it:
+Spoom provides a Minitest backtrace filter that removes Sorbet frames from test failures.
+
+Enable it in your test helper:
 
 ```ruby
 # test/test_helper.rb
 require "spoom/backtrace_filter/minitest"
+
 Minitest.backtrace_filter = Spoom::BacktraceFilter::Minitest.new
-```
-
-### Dead code removal
-
-Run dead code detection in your project with:
-
-```
-$ spoom deadcode
-```
-
-This will list all the methods and constants that do not appear to be used in your project.
-
-You can remove them with Spoom:
-
-```
-$ spoom deadcode remove path/to/file.rb:42:18-47:23
 ```
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `bin/test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment. Don't forget to run `bin/sanity` before pushing your changes.
+After checking out the repo, install dependencies:
 
-To install this gem onto your local machine, run `bundle exec rake install`.
+```sh
+bin/setup
+```
+
+Run the tests:
+
+```sh
+bin/test
+```
+
+Run an interactive console:
+
+```sh
+bin/console
+```
+
+Run the full local sanity check before pushing:
+
+```sh
+bin/sanity
+```
+
+Install this gem locally:
+
+```sh
+bundle exec rake install
+```
 
 ## Releasing
 
 ### Bump the gem version
 
-- [ ] Locally, update the version number in [`version.rb`](https://github.com/Shopify/spoom/blob/main/lib/spoom/version.rb)
-- [ ] Run `bundle install` to update the version number in `Gemfile.lock`
-- [ ] Commit this change with the message `Bump version to vx.y.z`
-- [ ] Push this change directly to main or open a PR
+* [ ] Update the version number in [`lib/spoom/version.rb`](https://github.com/Shopify/spoom/blob/main/lib/spoom/version.rb)
+* [ ] Run `bundle install` to update the version number in `Gemfile.lock`
+* [ ] Commit the change with `Bump version to vx.y.z`
+* [ ] Push the change directly to `main` or open a pull request
 
 ### Create a new tag
 
-- [ ] Locally, create a new tag with the new version number: `git tag vx.y.z`
-- [ ] Push this tag up to the remote `git push origin vx.y.z`
+* [ ] Create a tag with the new version number: `git tag vx.y.z`
+* [ ] Push the tag: `git push origin vx.y.z`
 
-### Release workflow will run automatically
+### Publish the release
 
-We have a [release workflow](https://github.com/Shopify/spoom/actions/workflows/release.yml) that will publish your new gem version to rubygems.org via [Trusted Publishing](https://guides.rubygems.org/trusted-publishing/). This workflow must be approved by a member of the Ruby and Rails Infrastructure team at Shopify before it will run. Once it is approved, it will automatically publish a new gem version to rubygems.org and create a new GitHub release.
+The [release workflow](https://github.com/Shopify/spoom/actions/workflows/release.yml) publishes new gem versions to RubyGems through [Trusted Publishing](https://guides.rubygems.org/trusted-publishing/).
+
+A member of the Ruby and Rails Infrastructure team at Shopify must approve the workflow before it runs. Once approved, it publishes the gem and creates a GitHub release.
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/Shopify/spoom. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+Bug reports and pull requests are welcome on GitHub at https://github.com/Shopify/spoom.
+
+This project is intended to be a safe, welcoming space for collaboration. Contributors are expected to follow the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
 
 ## License
 
@@ -405,4 +529,4 @@ The gem is available as open source under the terms of the [MIT License](https:/
 
 ## Code of Conduct
 
-Everyone interacting in the Spoom project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/Shopify/spoom/blob/main/CODE_OF_CONDUCT.md).
+Everyone interacting in Spoom's codebases, issue trackers, chat rooms, and mailing lists is expected to follow the [code of conduct](https://github.com/Shopify/spoom/blob/main/CODE_OF_CONDUCT.md).
