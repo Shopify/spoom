@@ -940,6 +940,60 @@ module Spoom
         RB
       end
 
+      def test_removes_method_defined_after_a_heredoc_argument
+        res = remove(<<~RB, "on_send")
+          class Foo
+            def_node_matcher :definition_name, <<~PATTERN
+              (send nil? :foo)
+            PATTERN
+
+            sig { void }
+            def on_send(node)
+              something
+            end
+
+            def baz; end
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            def_node_matcher :definition_name, <<~PATTERN
+              (send nil? :foo)
+            PATTERN
+
+            def baz; end
+          end
+        RB
+      end
+
+      def test_removes_method_defined_after_an_interpolated_heredoc_argument
+        res = remove(<<~'RB', "on_send")
+          class Foo
+            def_node_matcher :definition_name, <<~PATTERN
+              (send nil? {#{NAMES.map { |n| ":#{n}" }.join(" ")}} (sym $_))
+            PATTERN
+
+            sig { void }
+            def on_send(node)
+              something
+            end
+
+            def baz; end
+          end
+        RB
+
+        assert_equal(<<~'RB', res)
+          class Foo
+            def_node_matcher :definition_name, <<~PATTERN
+              (send nil? {#{NAMES.map { |n| ":#{n}" }.join(" ")}} (sym $_))
+            PATTERN
+
+            def baz; end
+          end
+        RB
+      end
+
       def test_removes_node_sig_with_visibility_modifier
         res = remove(<<~RB, "bar")
           class Foo

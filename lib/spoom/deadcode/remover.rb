@@ -328,13 +328,13 @@ module Spoom
           # if there is, we only want to delete lines up to the last comment found
           if before
             to_node = first_comment || node
-            comment = @node_context.comments_between_lines(before.location.end_line, to_node.location.start_line).last
+            comment = @node_context.comments_between_lines(node_end_line(before), to_node.location.start_line).last
             before = comment if comment
           end
 
-          if before && before.location.end_line < start_line - 1
+          if before && node_end_line(before) < start_line - 1
             # There is a node before and a blank line
-            start_line = before.location.end_line + 1
+            start_line = node_end_line(before) + 1
           elsif before.nil?
             # There is no node before, check if there is a blank line
             parent_context = context.parent_context
@@ -355,6 +355,44 @@ module Spoom
           end
 
           delete_lines(start_line, end_line)
+        end
+
+        # Prism reports a node ending in a heredoc as ending on the heredoc's opening line rather than
+        # its closing terminator (e.g. `def_node_matcher :foo, <<~PATTERN` spanning several lines).
+        # Return the last line the node actually occupies so blank-line accounting for the node that
+        # follows it doesn't treat the heredoc body as blank filler and delete it.
+        #: ((Prism::Node | Prism::Comment) node) -> Integer
+        def node_end_line(node)
+          end_line = node.location.end_line
+          return end_line unless node.is_a?(Prism::Node)
+
+          stack = node.compact_child_nodes
+          until stack.empty?
+            child = stack.pop
+            next unless child
+
+            heredoc_end = heredoc_terminator_line(child)
+            end_line = heredoc_end if heredoc_end && heredoc_end > end_line
+            stack.concat(child.compact_child_nodes)
+          end
+          end_line
+        end
+
+        # The last line occupied by `node` if it is a heredoc string (its closing terminator), or `nil`
+        # otherwise.
+        #: (Prism::Node node) -> Integer?
+        def heredoc_terminator_line(node)
+          case node
+          when Prism::StringNode, Prism::InterpolatedStringNode,
+               Prism::XStringNode, Prism::InterpolatedXStringNode
+            opening = node.opening_loc
+            return unless opening&.slice&.start_with?("<<")
+
+            # The terminator's location runs to the newline (column 0 of the next line), so use its
+            # start line rather than its end line.
+            closing = node.closing_loc
+            closing ? closing.start_line : node.location.end_line
+          end
         end
 
         #: (Integer start_line, Integer end_line) -> void
