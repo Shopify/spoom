@@ -1497,6 +1497,9 @@ class Spoom::Deadcode::Remover::NodeRemover
 
   private
 
+  sig { params(node: ::Prism::Node, name: ::Symbol).returns(T::Boolean) }
+  def constant_visibility_call?(node, name); end
+
   sig { params(context: ::Spoom::Deadcode::Remover::NodeContext).void }
   def delete_attr_accessor(context); end
 
@@ -1512,6 +1515,9 @@ class Spoom::Deadcode::Remover::NodeRemover
   sig { params(context: ::Spoom::Deadcode::Remover::NodeContext).void }
   def delete_node_and_comments_and_sigs(context); end
 
+  sig { params(context: ::Spoom::Deadcode::Remover::NodeContext, name: ::Symbol).void }
+  def delete_symbol_argument(context, name); end
+
   sig do
     params(
       node: ::Prism::Node,
@@ -1523,6 +1529,9 @@ class Spoom::Deadcode::Remover::NodeRemover
 
   sig { params(def_node: ::Prism::DefNode).returns(T.nilable(::Spoom::Deadcode::Remover::NodeContext)) }
   def modifier_call_context(def_node); end
+
+  sig { params(context: ::Spoom::Deadcode::Remover::NodeContext).void }
+  def remove_constant_visibility_call(context); end
 
   sig { params(start_char: ::Integer, end_char: ::Integer, replacement: ::String).void }
   def replace_chars(start_char, end_char, replacement); end

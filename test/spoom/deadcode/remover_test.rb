@@ -170,6 +170,62 @@ module Spoom
         RB
       end
 
+      def test_removes_constant_and_its_private_constant
+        res = remove(<<~RB, "BAR")
+          class Foo
+            FOO = 1
+
+            BAR = 2
+            private_constant :BAR
+
+            BAZ = 3
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            FOO = 1
+
+            BAZ = 3
+          end
+        RB
+      end
+
+      def test_removes_constant_and_its_public_constant
+        res = remove(<<~RB, "BAR")
+          class Foo
+            BAR = 2
+            public_constant :BAR
+            BAZ = 3
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            BAZ = 3
+          end
+        RB
+      end
+
+      def test_removes_constant_referenced_by_a_multi_private_constant
+        res = remove(<<~RB, "BAR")
+          class Foo
+            FOO = 1
+            BAR = 2
+            BAZ = 3
+            private_constant :FOO, :BAR, :BAZ
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            FOO = 1
+            BAZ = 3
+            private_constant :FOO, :BAZ
+          end
+        RB
+      end
+
       def test_removes_multiline_const
         res = remove(<<~RB, "BAR")
           class Foo
