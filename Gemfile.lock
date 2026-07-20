@@ -91,8 +91,9 @@ GEM
       lint_roller (~> 1.1)
       rubocop (>= 1.75.0, < 2.0)
       rubocop-ast (>= 1.38.0, < 2.0)
-    rubocop-shopify (2.18.0)
-      rubocop (~> 1.62)
+    rubocop-shopify (3.0.1)
+      lint_roller
+      rubocop (~> 1.72, >= 1.72.1)
     rubocop-sorbet (0.13.2)
       lint_roller
       rubocop (>= 1.75.2)
