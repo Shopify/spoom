@@ -1512,6 +1512,9 @@ class Spoom::Deadcode::Remover::NodeRemover
   sig { params(context: ::Spoom::Deadcode::Remover::NodeContext).void }
   def delete_node_and_comments_and_sigs(context); end
 
+  sig { params(node: ::Prism::Node).returns(T.nilable(::Integer)) }
+  def heredoc_terminator_line(node); end
+
   sig do
     params(
       node: ::Prism::Node,
@@ -1523,6 +1526,9 @@ class Spoom::Deadcode::Remover::NodeRemover
 
   sig { params(def_node: ::Prism::DefNode).returns(T.nilable(::Spoom::Deadcode::Remover::NodeContext)) }
   def modifier_call_context(def_node); end
+
+  sig { params(node: T.any(::Prism::Comment, ::Prism::Node)).returns(::Integer) }
+  def node_end_line(node); end
 
   sig { params(start_char: ::Integer, end_char: ::Integer, replacement: ::String).void }
   def replace_chars(start_char, end_char, replacement); end
