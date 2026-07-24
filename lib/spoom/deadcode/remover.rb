@@ -117,6 +117,7 @@ module Spoom
                Prism::ConstantPathAndWriteNode, Prism::ConstantPathOrWriteNode
             # Nesting node is an assign, it means only one constant is assigned on the line
             # so we can remove the whole assign
+            remove_constant_visibility_call(context)
             delete_node_and_comments_and_sigs(context)
             return
           end
@@ -127,6 +128,7 @@ module Spoom
           if parent_node.is_a?(Prism::ConstantWriteNode)
             # Nesting node is an assign, it means only one constant is assigned on the line
             # so we can remove the whole assign
+            remove_constant_visibility_call(parent_context)
             delete_node_and_comments_and_sigs(parent_context)
             return
           elsif parent_node.is_a?(Prism::MultiWriteNode) && parent_node.lefts.size == 1
@@ -187,6 +189,64 @@ module Spoom
           else
             # Should have been removed as a single MLHS node
             raise Error, "Unexpected case while removing constant assignment"
+          end
+        end
+
+        # A dead constant is often followed by a `private_constant`/`public_constant` call naming it.
+        # That call references the now-removed constant (a load-time `NameError` if left behind), so
+        # remove the reference too: delete the whole call when the constant is its only argument, or
+        # drop just that symbol when the call lists several constants.
+        #: (NodeContext context) -> void
+        def remove_constant_visibility_call(context)
+          node = context.node
+          return unless node.is_a?(Prism::ConstantWriteNode)
+
+          name = node.name
+          call = context.next_nodes.find { |sibling| constant_visibility_call?(sibling, name) }
+          return unless call.is_a?(Prism::CallNode)
+
+          call_context = NodeContext.new(@old_source, @node_context.comments, call, context.nesting)
+          arguments = call.arguments&.arguments #: Array[Prism::Node]?
+          if arguments && arguments.size > 1
+            delete_symbol_argument(call_context, name)
+          else
+            delete_node_and_comments_and_sigs(call_context)
+          end
+        end
+
+        # Whether `node` is a bare `private_constant`/`public_constant` call listing `name`.
+        #: (Prism::Node node, Symbol name) -> bool
+        def constant_visibility_call?(node, name)
+          return false unless node.is_a?(Prism::CallNode)
+          return false unless node.receiver.nil?
+          return false unless node.name == :private_constant || node.name == :public_constant
+
+          arguments = node.arguments&.arguments
+          return false unless arguments
+
+          arguments.any? { |argument| argument.is_a?(Prism::SymbolNode) && argument.value == name.to_s }
+        end
+
+        # Drop the `:name` symbol from a `private_constant`/`public_constant` call that lists several
+        # constants, keeping the call and the other names intact.
+        #: (NodeContext context, Symbol name) -> void
+        def delete_symbol_argument(context, name)
+          arguments = T.cast(context.node, Prism::CallNode).arguments&.arguments
+          return unless arguments
+
+          index = arguments.index { |argument| argument.is_a?(Prism::SymbolNode) && argument.value == name.to_s }
+          return unless index
+
+          argument = arguments.fetch(index)
+          prev_argument = arguments[index - 1] if index.positive?
+          next_argument = arguments[index + 1]
+
+          if prev_argument && next_argument
+            replace_chars(prev_argument.location.end_offset, next_argument.location.start_offset, ", ")
+          elsif prev_argument
+            delete_chars(prev_argument.location.end_offset, argument.location.end_offset)
+          elsif next_argument
+            delete_chars(argument.location.start_offset, next_argument.location.start_offset)
           end
         end
 
