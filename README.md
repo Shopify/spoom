@@ -415,7 +415,7 @@ List all files typechecked by Sorbet:
 
 ```ruby
 config = Spoom::Sorbet::Config.parse_file("sorbet/config")
-puts Spoom::Sorbet.srb_files(config)
+puts Spoom::Context.new(".").srb_files(with_config: config)
 ```
 
 ### Parsing Sorbet metrics
@@ -423,7 +423,7 @@ puts Spoom::Sorbet.srb_files(config)
 Display metrics collected during typechecking:
 
 ```ruby
-puts Spoom::Sorbet.srb_metrics(capture_err: false)
+puts Spoom::Context.new(".").srb_metrics(capture_err: false)
 ```
 
 ### Interacting with LSP
