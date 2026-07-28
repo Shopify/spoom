@@ -75,9 +75,9 @@ module Spoom
         def visit_class_node(node)
           case node.superclass&.slice
           when /^(::)?T::Struct$/
-            @counters.increment("structs")
+            @counters.increment("t_structs")
           when /^(::)?T::Enum$/
-            @counters.increment("enums")
+            @counters.increment("t_enums")
           end
 
           visit_scope(node) do

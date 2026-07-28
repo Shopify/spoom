@@ -46,8 +46,8 @@ module Spoom
           end
 
           assert_equal(5, metrics["classes"])
-          assert_equal(2, metrics["structs"])
-          assert_equal(2, metrics["enums"])
+          assert_equal(2, metrics["t_structs"])
+          assert_equal(2, metrics["t_enums"])
         end
 
         def test_collects_metrics_about_sigs
