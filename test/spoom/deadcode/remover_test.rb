@@ -1050,6 +1050,52 @@ module Spoom
         RB
       end
 
+      def test_removes_method_defined_after_an_adjacent_string_concatenation
+        res = remove(<<~RB, "on_send")
+          class Foo
+            MSG = "foo" "bar"
+
+            sig { void }
+            def on_send(node)
+              something
+            end
+
+            def baz; end
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            MSG = "foo" "bar"
+
+            def baz; end
+          end
+        RB
+      end
+
+      def test_removes_method_defined_after_a_plain_string_argument
+        res = remove(<<~RB, "on_send")
+          class Foo
+            MSG = "foo"
+
+            sig { void }
+            def on_send(node)
+              something
+            end
+
+            def baz; end
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            MSG = "foo"
+
+            def baz; end
+          end
+        RB
+      end
+
       def test_removes_node_sig_with_visibility_modifier
         res = remove(<<~RB, "bar")
           class Foo
