@@ -145,6 +145,54 @@ module Spoom
           RBS
         end
 
+        def test_translate_to_rbs_method_sig_with_anonymous_block_param
+          contents = <<~RB
+            class Foo
+              sig { params("&": ::T.proc.void).void }
+              def foo(&); end
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            class Foo
+              #: { -> void } -> void
+              def foo(&); end
+            end
+          RBS
+        end
+
+        def test_translate_to_rbs_method_sig_with_named_param_and_anonymous_block_param
+          contents = <<~RB
+            class Foo
+              sig { params(request: String, "&": ::T.proc.void).returns(String) }
+              def foo(request, &); end
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            class Foo
+              #: (String request) { -> void } -> String
+              def foo(request, &); end
+            end
+          RBS
+        end
+
+        def test_translate_to_rbs_method_sig_with_anonymous_rest_keyword_rest_and_block_params
+          contents = <<~RB
+            class Foo
+              sig { params("*": Integer, "**": String, "&": ::T.proc.void).returns(Integer) }
+              def foo(*, **, &); end
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            class Foo
+              #: (*Integer, **String) { -> void } -> Integer
+              def foo(*, **, &); end
+            end
+          RBS
+        end
+
         def test_translate_to_rbs_method_sigs_with_annotations
           contents = <<~RB
             sig(:final) { overridable.void }

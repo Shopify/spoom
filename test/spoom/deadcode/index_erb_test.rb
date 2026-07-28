@@ -34,6 +34,25 @@ module Spoom
         assert_dead(index, "DEAD1")
         assert_dead(index, "dead1")
       end
+
+      def test_index_erb_content_with_rails_layout_yield
+        @project.write!("layout.erb", <<~ERB)
+          <%= LayoutHelper.title %>
+          <%= yield %>
+        ERB
+
+        @project.write!("layout_helper.rb", <<~RB)
+          module LayoutHelper
+            def title; end
+          end
+        RB
+
+        index = deadcode_index
+        assert_alive(index, "LayoutHelper")
+        assert_alive(index, "title")
+
+        assert_ignored(index, "__spoom_deadcode_erb_template__")
+      end
     end
   end
 end

@@ -1024,6 +1024,9 @@ class Spoom::Deadcode::ERB < ::Erubi::Engine
   sig { params(input: T.untyped, properties: T.untyped).void }
   def initialize(input, properties = T.unsafe(nil)); end
 
+  sig { returns(::String) }
+  def wrapped_src; end
+
   private
 
   sig { override.params(code: T.untyped).void }
@@ -1497,6 +1500,9 @@ class Spoom::Deadcode::Remover::NodeRemover
 
   private
 
+  sig { params(node: ::Prism::Node, name: ::Symbol).returns(T::Boolean) }
+  def constant_visibility_call?(node, name); end
+
   sig { params(context: ::Spoom::Deadcode::Remover::NodeContext).void }
   def delete_attr_accessor(context); end
 
@@ -1511,6 +1517,9 @@ class Spoom::Deadcode::Remover::NodeRemover
 
   sig { params(context: ::Spoom::Deadcode::Remover::NodeContext).void }
   def delete_node_and_comments_and_sigs(context); end
+
+  sig { params(context: ::Spoom::Deadcode::Remover::NodeContext, name: ::Symbol).void }
+  def delete_symbol_argument(context, name); end
 
   sig { params(node: ::Prism::Node).returns(T.nilable(::Integer)) }
   def heredoc_terminator_line(node); end
@@ -1529,6 +1538,9 @@ class Spoom::Deadcode::Remover::NodeRemover
 
   sig { params(node: T.any(::Prism::Comment, ::Prism::Node)).returns(::Integer) }
   def node_end_line(node); end
+
+  sig { params(context: ::Spoom::Deadcode::Remover::NodeContext).void }
+  def remove_constant_visibility_call(context); end
 
   sig { params(start_char: ::Integer, end_char: ::Integer, replacement: ::String).void }
   def replace_chars(start_char, end_char, replacement); end
