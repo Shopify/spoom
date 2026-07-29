@@ -73,6 +73,13 @@ module Spoom
         # @override
         #: (Prism::ClassNode) -> void
         def visit_class_node(node)
+          case node.superclass&.slice
+          when /^(::)?T::Struct$/
+            @counters.increment("t_structs")
+          when /^(::)?T::Enum$/
+            @counters.increment("t_enums")
+          end
+
           visit_scope(node) do
             super
           end
