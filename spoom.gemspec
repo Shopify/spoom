@@ -27,10 +27,6 @@ Gem::Specification.new do |spec|
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
 
-  spec.add_development_dependency("bundler", ">= 2.2.10")
-  spec.add_development_dependency("minitest-reporters")
-  spec.add_development_dependency("rake", "~> 13.4.2")
-
   spec.add_dependency("erubi", ">= 1.10.0")
   spec.add_dependency("prism", ">= 0.28.0")
   spec.add_dependency("rbi", ">= 0.3.16")

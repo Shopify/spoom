@@ -11,7 +11,7 @@ module Spoom
 
         SORT_CODE = "code"
         SORT_LOC = "loc"
-        SORT_ENUM = [SORT_CODE, SORT_LOC]
+        SORT_ENUM = [SORT_CODE, SORT_LOC].freeze
 
         DEFAULT_FORMAT = "%C - %F:%L: %M"
 

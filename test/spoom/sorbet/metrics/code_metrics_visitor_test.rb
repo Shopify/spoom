@@ -107,7 +107,7 @@ module Spoom
           assert_equal(1, metrics["T.nilable"])
         end
 
-        def test_collects_metrics_about_RBS_assertions
+        def test_collects_metrics_about_rbs_assertions
           metrics = collect_metrics do |context|
             context.write!("foo.rb", <<~RUBY)
               x = 1 #: Integer
