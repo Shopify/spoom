@@ -283,7 +283,7 @@ module Spoom
         24 => "event",
         25 => "operator",
         26 => "type_parameter",
-      } #: Hash[Integer, String]
+      }.freeze #: Hash[Integer, String]
     end
 
     class SymbolPrinter < Printer

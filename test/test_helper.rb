@@ -41,6 +41,8 @@ module Spoom
 
           #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("tapioca")}
           #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("sorbet-static-and-runtime")}
+          #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("minitest")}
+          #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("rake")}
           #{Spoom::BundlerHelper.gem_requirement_from_real_bundle("json")}
         GEMFILE
       end

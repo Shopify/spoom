@@ -79,7 +79,7 @@ module Spoom
 
       SORT_CODE = "code"
       SORT_LOC = "loc"
-      SORT_ENUM = [SORT_CODE, SORT_LOC]
+      SORT_ENUM = [SORT_CODE, SORT_LOC].freeze
 
       desc "tc", "Run Sorbet and parses its output"
       option :limit, type: :numeric, aliases: :l, desc: "Limit displayed errors"

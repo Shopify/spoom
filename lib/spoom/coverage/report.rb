@@ -26,14 +26,14 @@ module Spoom
       end
 
       #: -> Binding
-      def get_binding # rubocop:disable Naming/AccessorMethodName
+      def get_binding
         binding
       end
     end
 
     # @abstract
     class Page < Template
-      TEMPLATE = "#{Spoom::SPOOM_PATH}/templates/page.erb" #: String
+      TEMPLATE = "#{Spoom::SPOOM_PATH}/templates/page.erb".freeze #: String
 
       #: String
       attr_reader :title
@@ -80,7 +80,7 @@ module Spoom
 
     module Cards
       class Card < Template
-        TEMPLATE = "#{Spoom::SPOOM_PATH}/templates/card.erb" #: String
+        TEMPLATE = "#{Spoom::SPOOM_PATH}/templates/card.erb".freeze #: String
 
         #: String?
         attr_reader :title, :body
@@ -96,7 +96,7 @@ module Spoom
       # @abstract
       class Erb < Card
         #: -> void
-        def initialize; end # rubocop:disable Lint/MissingSuper
+        def initialize; end
 
         # @override
         #: -> String
@@ -110,7 +110,7 @@ module Spoom
       end
 
       class Snapshot < Card
-        TEMPLATE = "#{Spoom::SPOOM_PATH}/templates/card_snapshot.erb" #: String
+        TEMPLATE = "#{Spoom::SPOOM_PATH}/templates/card_snapshot.erb".freeze #: String
 
         #: Coverage::Snapshot
         attr_reader :snapshot
@@ -208,7 +208,7 @@ module Spoom
 
       class SorbetIntro < Erb
         #: (?sorbet_intro_commit: String?, ?sorbet_intro_date: Time?) -> void
-        def initialize(sorbet_intro_commit: nil, sorbet_intro_date: nil) # rubocop:disable Lint/MissingSuper
+        def initialize(sorbet_intro_commit: nil, sorbet_intro_date: nil)
           @sorbet_intro_commit = sorbet_intro_commit
           @sorbet_intro_date = sorbet_intro_date
         end
