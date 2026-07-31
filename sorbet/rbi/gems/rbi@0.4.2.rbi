@@ -2264,7 +2264,7 @@ class RBI::RBS::TypeTranslator
 
   private
 
-  # pkg:gem/rbi#lib/rbi/rbs/type_translator.rb:220
+  # pkg:gem/rbi#lib/rbi/rbs/type_translator.rb:222
   sig { params(type_name: ::String).returns(::String) }
   def erase_t_generic_type(type_name); end
 
@@ -2272,11 +2272,11 @@ class RBI::RBS::TypeTranslator
   sig { params(type: ::RBS::Types::ClassInstance).returns(::RBI::Type) }
   def translate_class_instance(type); end
 
-  # pkg:gem/rbi#lib/rbi/rbs/type_translator.rb:147
+  # pkg:gem/rbi#lib/rbi/rbs/type_translator.rb:149
   sig { params(type: ::RBS::Types::Function).returns(::RBI::Type) }
   def translate_function(type); end
 
-  # pkg:gem/rbi#lib/rbi/rbs/type_translator.rb:215
+  # pkg:gem/rbi#lib/rbi/rbs/type_translator.rb:217
   sig { params(type_name: ::String).returns(::String) }
   def translate_t_generic_type(type_name); end
 
@@ -2295,18 +2295,18 @@ class RBI::RBS::TypeTranslator
   end
 end
 
-# pkg:gem/rbi#lib/rbi/rbs/type_translator.rb:206
+# pkg:gem/rbi#lib/rbi/rbs/type_translator.rb:208
 RBI::RBS::TypeTranslator::GENERIC_TYPE_TO_SORBET_GENERIC_TYPE = T.let(T.unsafe(nil), Hash)
 
 # pkg:gem/rbi#lib/rbi/rbs/type_translator.rb:38
 RBI::RBS::TypeTranslator::Options = RBI::RBS::MethodTypeTranslator::Options
 
-# pkg:gem/rbi#lib/rbi/rbs/type_translator.rb:193
+# pkg:gem/rbi#lib/rbi/rbs/type_translator.rb:195
 RBI::RBS::TypeTranslator::RUNTIME_GENERIC_TYPES = T.let(T.unsafe(nil), Array)
 
 RBI::RBS::TypeTranslator::RbsType = T.type_alias { T.any(::RBS::Types::Alias, ::RBS::Types::Bases::Any, ::RBS::Types::Bases::Bool, ::RBS::Types::Bases::Bottom, ::RBS::Types::Bases::Class, ::RBS::Types::Bases::Instance, ::RBS::Types::Bases::Nil, ::RBS::Types::Bases::Self, ::RBS::Types::Bases::Top, ::RBS::Types::Bases::Void, ::RBS::Types::ClassInstance, ::RBS::Types::ClassSingleton, ::RBS::Types::Function, ::RBS::Types::Interface, ::RBS::Types::Intersection, ::RBS::Types::Literal, ::RBS::Types::Optional, ::RBS::Types::Proc, ::RBS::Types::Record, ::RBS::Types::Tuple, ::RBS::Types::Union, ::RBS::Types::UntypedFunction, ::RBS::Types::Variable) }
 
-# pkg:gem/rbi#lib/rbi/rbs/type_translator.rb:210
+# pkg:gem/rbi#lib/rbi/rbs/type_translator.rb:212
 RBI::RBS::TypeTranslator::SORBET_GENERIC_TYPE_TO_GENERIC_TYPE = T.let(T.unsafe(nil), Hash)
 
 # A comment representing a RBS type prefixed with `#:`

@@ -225,7 +225,7 @@ module Spoom
             class Box
               E = ::T.type_alias { ::T.anything }
 
-              sig { returns(Array) }
+              sig { returns(::Array) }
               def values
                 []
               end
