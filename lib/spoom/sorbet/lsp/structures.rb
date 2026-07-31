@@ -314,10 +314,7 @@ module Spoom
       # @override
       #: (SymbolPrinter printer) -> void
       def accept_printer(printer)
-        h = hash
-        return if printer.seen.include?(h)
-
-        printer.seen.add(h)
+        return unless printer.seen.add?(deduplication_key)
 
         printer.printt
         printer.print(kind_string)
@@ -347,6 +344,28 @@ module Spoom
       #: -> String
       def kind_string
         SYMBOL_KINDS[kind] || "<unknown:#{kind}>"
+      end
+
+      protected
+
+      #: -> Array[untyped]
+      def deduplication_key
+        symbol_location = location
+        [
+          name,
+          detail,
+          kind,
+          symbol_location && [symbol_location.uri, range_key(symbol_location.range)],
+          range_key(range),
+          children.map { |child| child.deduplication_key },
+        ]
+      end
+
+      #: (LSP::Range?) -> Array[Integer]?
+      def range_key(range)
+        return unless range
+
+        [range.start_pos.line, range.start_pos.char, range.end_pos.line, range.end_pos.char]
       end
 
       SYMBOL_KINDS = {
@@ -380,7 +399,7 @@ module Spoom
     end
 
     class SymbolPrinter < Printer
-      #: Set[Integer]
+      #: Set[Array[untyped]]
       attr_reader :seen
 
       #: String?
@@ -389,7 +408,7 @@ module Spoom
       #: (?out: (IO | StringIO), ?colors: bool, ?indent_level: Integer, ?prefix: String?) -> void
       def initialize(out: $stdout, colors: true, indent_level: 0, prefix: nil)
         super(out: out, colors: colors, indent_level: indent_level)
-        @seen = Set.new #: Set[Integer]
+        @seen = Set.new #: Set[Array[untyped]]
         @out = out
         @colors = colors
         @indent_level = indent_level

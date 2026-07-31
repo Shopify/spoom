@@ -2082,6 +2082,14 @@ class Spoom::LSP::DocumentSymbol
   sig { returns(::String) }
   def to_s; end
 
+  protected
+
+  sig { returns(T::Array[T.untyped]) }
+  def deduplication_key; end
+
+  sig { params(range: T.nilable(::Spoom::LSP::Range)).returns(T.nilable(T::Array[::Integer])) }
+  def range_key(range); end
+
   class << self
     sig { params(json: T::Hash[T.untyped, T.untyped]).returns(::Spoom::LSP::DocumentSymbol) }
     def from_json(json); end
@@ -2316,7 +2324,7 @@ class Spoom::LSP::SymbolPrinter < ::Spoom::Printer
   sig { params(objects: T::Array[::Spoom::LSP::PrintableSymbol]).void }
   def print_objects(objects); end
 
-  sig { returns(T::Set[::Integer]) }
+  sig { returns(T::Set[T::Array[T.untyped]]) }
   def seen; end
 end
 
