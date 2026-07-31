@@ -133,10 +133,10 @@ module Spoom
       #: String
       attr_reader :uri
 
-      #: Range
+      #: LSP::Range
       attr_reader :range
 
-      #: (uri: String, range: Range) -> void
+      #: (uri: String, range: LSP::Range) -> void
       def initialize(uri:, range:)
         @uri = uri
         @range = range
@@ -215,7 +215,7 @@ module Spoom
     class Diagnostic
       include PrintableSymbol
 
-      #: Range
+      #: LSP::Range
       attr_reader :range
 
       #: Integer
@@ -227,7 +227,7 @@ module Spoom
       #: Object
       attr_reader :information
 
-      #: (range: Range, code: Integer, message: String, information: Object) -> void
+      #: (range: LSP::Range, code: Integer, message: String, information: Object) -> void
       def initialize(range:, code:, message:, information:)
         @range = range
         @code = code
@@ -274,7 +274,7 @@ module Spoom
       #: Location?
       attr_reader :location
 
-      #: Range?
+      #: LSP::Range?
       attr_reader :range
 
       #: Array[DocumentSymbol]
@@ -286,7 +286,7 @@ module Spoom
       #|   children: Array[DocumentSymbol],
       #|   ?detail: String?,
       #|   ?location: Location?,
-      #|   ?range: Range?
+      #|   ?range: LSP::Range?
       #| ) -> void
       def initialize(name:, kind:, children:, detail: nil, location: nil, range: nil)
         @name = name
