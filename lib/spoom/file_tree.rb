@@ -73,15 +73,27 @@ module Spoom
     end
 
     # A node representing either a file or a directory inside a FileTree
-    class Node < T::Struct
+    class Node
       # Node parent or `nil` if the node is a root one
-      const :parent, T.nilable(Node)
+      #: Node?
+      attr_reader :parent
 
       # File or dir name
-      const :name, String
+
+      #: String
+      attr_reader :name
 
       # Children of this node (if not empty, it means it's a dir)
-      const :children, T::Hash[String, Node], default: {}
+
+      #: Hash[String, Node]
+      attr_reader :children
+
+      #: (name: String, ?parent: Node?, ?children: Hash[String, Node]) -> void
+      def initialize(name:, parent: nil, children: {})
+        @parent = parent
+        @name = name
+        @children = children
+      end
 
       # Full path to this node from root
       #: -> String
