@@ -651,6 +651,41 @@ module Spoom
           )
         end
 
+        def test_translate_to_rbi_extends_in_correct_order
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # @final
+              #: [A]
+              class Box
+                extend T::Generic
+                extend T::Helpers
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class Box
+                extend ::T::Helpers
+
+                final!
+
+                extend ::T::Generic
+
+                A = type_member
+
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_REWRITTEN_ANNOTATION: @final
+              # RBS_WRITTEN_ANNOTATION: [A]
+              class Box; extend ::T::Helpers; final!; extend ::T::Generic; A = type_member
+
+
+              end
+            RUBY
+          )
+        end
+
         def test_translate_to_rbi_preserves_generic_types
           contents = <<~RB
             #: -> Array[Integer]
