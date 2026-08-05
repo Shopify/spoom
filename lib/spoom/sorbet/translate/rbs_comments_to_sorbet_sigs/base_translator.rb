@@ -397,7 +397,7 @@ module Spoom
 
           #: (PrismTypes::anyScopeNode, Regexp) -> bool
           def already_extends?(node, constant_regex)
-            node.child_nodes.any? do |c|
+            scope_statements(node).any? do |c|
               next false unless c.is_a?(Prism::CallNode)
               next false unless c.message == "extend"
               next false unless c.receiver.nil? || c.receiver.is_a?(Prism::SelfNode)
@@ -409,6 +409,13 @@ module Spoom
 
               true
             end
+          end
+
+          #: (PrismTypes::anyScopeNode) -> Array[Prism::Node]
+          def scope_statements(node)
+            body = node.body
+            statements = body.is_a?(Prism::BeginNode) ? body.statements : body
+            statements&.body || []
           end
 
           #: (Array[Prism::Comment]) -> Array[Spoom::RBS::TypeAlias]
