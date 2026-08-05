@@ -172,10 +172,6 @@ module Spoom
       attr_reader :label
 
       # TODO
-      #: Object
-      attr_reader :doc
-
-      # TODO
       #: Array[untyped]
       attr_reader :params
 
