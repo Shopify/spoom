@@ -224,9 +224,6 @@ module Spoom
       #: String
       attr_reader :message
 
-      #: Object
-      attr_reader :information
-
       #: (range: LSP::Range, code: Integer, message: String, information: Object) -> void
       def initialize(range:, code:, message:, information:)
         @range = range
