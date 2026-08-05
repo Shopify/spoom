@@ -73,6 +73,27 @@ module Spoom
           end
 
           # @override
+          #: (
+          #|   Prism::CallNode,
+          #|   attr_name_nodes: Array[Prism::Node],
+          #|   sig_strings_by_attr_name: Array[Array[String]]
+          #| ) -> void
+          def rewrite_multi_name_attr(node, attr_name_nodes:, sig_strings_by_attr_name:)
+            pieces = [attr_call_source(node, attr_name_nodes.fetch(0))]
+
+            attr_name_nodes.drop(1).each_with_index do |attr_name_node, index|
+              pieces.concat(sig_strings_by_attr_name.fetch(index + 1))
+              pieces << attr_call_source(node, attr_name_node)
+            end
+
+            @rewriter << Source::Replace.new(
+              node.location.start_offset,
+              node.location.end_offset - 1,
+              pieces.join("; "),
+            )
+          end
+
+          # @override
           #: (Spoom::RBS::Annotation, is_known: bool) -> void
           def rewrite_annotation(annotation, is_known:)
             annotation_start = annotation.location.start_offset + 1 # skip past the `#`
