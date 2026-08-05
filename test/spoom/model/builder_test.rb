@@ -357,7 +357,7 @@ module Spoom
           model.symbols.values
             .flat_map(&:definitions)
             .grep(Method)
-            .map { |d| "#{d.full_name}: #{T.cast(d, Method).visibility.serialize}" },
+            .map { |d| "#{d.full_name}: #{d.visibility}" },
         )
       end
 
@@ -394,7 +394,7 @@ module Spoom
           model.symbols.values
             .flat_map(&:definitions)
             .grep(Method)
-            .map { |d| "#{d.full_name}: #{T.cast(d, Method).visibility.serialize}" },
+            .map { |d| "#{d.full_name}: #{d.visibility}" },
         )
       end
 
