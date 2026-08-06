@@ -1144,7 +1144,7 @@ module Spoom
         RB
       end
 
-      def test_removes_method_defined_after_a_plain_string_argument
+      def test_removes_method_defined_after_a_plain_string_assignment
         res = remove(<<~RB, "on_send")
           class Foo
             MSG = "foo"

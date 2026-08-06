@@ -380,9 +380,12 @@ module Spoom
             before = comment if comment
           end
 
-          if before && node_end_line(before) < start_line - 1
+          # `before` may have been swapped for a comment just above, so resolve its end line after that
+          before_end_line = node_end_line(before) if before
+
+          if before_end_line && before_end_line < start_line - 1
             # There is a node before and a blank line
-            start_line = node_end_line(before) + 1
+            start_line = before_end_line + 1
           elsif before.nil?
             # There is no node before, check if there is a blank line
             parent_context = context.parent_context
