@@ -34,6 +34,22 @@ module Spoom
           assert_equal(1, metrics["accessors"])
         end
 
+        def test_collects_metrics_about_sorbet_structs_and_enums
+          metrics = collect_metrics do |context|
+            context.write!("foo.rb", <<~RUBY)
+              class Struct < T::Struct; end
+              class RootStruct < ::T::Struct; end
+              class Enum < T::Enum; end
+              class RootEnum < ::T::Enum; end
+              class Other; end
+            RUBY
+          end
+
+          assert_equal(5, metrics["classes"])
+          assert_equal(2, metrics["t_structs"])
+          assert_equal(2, metrics["t_enums"])
+        end
+
         def test_collects_metrics_about_sigs
           metrics = collect_metrics do |context|
             context.write!("foo.rb", <<~RUBY)
@@ -107,7 +123,7 @@ module Spoom
           assert_equal(1, metrics["T.nilable"])
         end
 
-        def test_collects_metrics_about_RBS_assertions
+        def test_collects_metrics_about_rbs_assertions
           metrics = collect_metrics do |context|
             context.write!("foo.rb", <<~RUBY)
               x = 1 #: Integer

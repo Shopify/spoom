@@ -9,7 +9,10 @@ gem "minitest"
 gem "minitest-mock"
 
 group :development do
+  gem "bundler", ">= 2.2.10"
   gem "debug"
+  gem "minitest-reporters"
+  gem "rake", "~> 13.4.2"
   gem "rubocop-shopify", require: false
   gem "rubocop-sorbet", require: false
   gem "rubocop-minitest", require: false

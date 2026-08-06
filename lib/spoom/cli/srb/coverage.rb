@@ -156,11 +156,11 @@ module Spoom
           end.filter(&:commit_timestamp).sort_by!(&:commit_timestamp)
 
           palette = Spoom::Coverage::D3::ColorPalette.new(
-            ignore: options[:color_ignore],
-            false: options[:color_false],
-            true: options[:color_true],
-            strict: options[:color_strict],
-            strong: options[:color_strong],
+            ignore_color: options[:color_ignore],
+            false_color: options[:color_false],
+            true_color: options[:color_true],
+            strict_color: options[:color_strict],
+            strong_color: options[:color_strong],
           )
 
           report = Spoom::Coverage.report(context, snapshots, palette: palette)

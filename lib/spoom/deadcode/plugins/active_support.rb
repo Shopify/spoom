@@ -16,7 +16,7 @@ module Spoom
           "before_teardown",
         )
 
-        SETUP_AND_TEARDOWN_METHODS = ["setup", "teardown"] #: Array[String]
+        SETUP_AND_TEARDOWN_METHODS = ["setup", "teardown"].freeze #: Array[String]
 
         # @override
         #: (Send send) -> void

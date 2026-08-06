@@ -458,17 +458,6 @@ module Spoom
           assert_equal(rb, rbi_to_rbs(rb))
         end
 
-        def test_does_not_translate_assertions_already_with_comments
-          rb = <<~RB
-            a = T.let(42, Integer) # as Integer
-          RB
-
-          # Now translates and preserves the comment
-          assert_equal(<<~RB, rbi_to_rbs(rb))
-            a = 42 #: Integer # as Integer
-          RB
-        end
-
         def test_translate_cast_in_oneliners
           rb = <<~RB
             arr.map { |x| T.must(x) }

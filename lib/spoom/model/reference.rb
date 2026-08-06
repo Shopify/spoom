@@ -7,12 +7,20 @@ module Spoom
     #
     # Constants could be classes, modules, or actual constants.
     # Methods could be accessors, instance or class methods, aliases, etc.
-    class Reference < T::Struct
-      class Kind < T::Enum
-        enums do
-          Constant = new("constant")
-          Method = new("method")
+    class Reference
+      class Kind
+        #: (String) -> void
+        def initialize(name)
+          @name = name
         end
+
+        #: -> String
+        def to_s
+          @name
+        end
+
+        Constant = new("constant") #: Kind
+        Method = new("method") #: Kind
       end
 
       class << self
@@ -27,9 +35,21 @@ module Spoom
         end
       end
 
-      const :kind, Kind
-      const :name, String
-      const :location, Spoom::Location
+      #: Kind
+      attr_reader :kind
+
+      #: String
+      attr_reader :name
+
+      #: Spoom::Location
+      attr_reader :location
+
+      #: (kind: Kind, name: String, location: Spoom::Location) -> void
+      def initialize(kind:, name:, location:)
+        @kind = kind
+        @name = name
+        @location = location
+      end
 
       #: -> bool
       def constant?

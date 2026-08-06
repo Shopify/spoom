@@ -53,7 +53,7 @@ module Spoom
           "Check out the README to learn how to build Sorbet in release mode.",
           "To forcibly silence this error, either pass --silence-dev-message,",
           "or set SORBET_SILENCE_DEV_MESSAGE=1 in your shell environment.",
-        ] #: Array[String]
+        ].freeze #: Array[String]
 
         class << self
           # Used when only Sorbet errors are needed and leading stderr warnings can be ignored.

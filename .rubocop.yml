@@ -37,3 +37,9 @@ Sorbet/TrueSigil:
 
 Sorbet/EnforceSigilOrder:
   Enabled: true
+
+Sorbet/ForbidTStruct:
+  Enabled: true
+
+Sorbet/ForbidTEnum:
+  Enabled: true

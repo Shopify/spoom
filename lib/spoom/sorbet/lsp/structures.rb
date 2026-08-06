@@ -13,11 +13,20 @@ module Spoom
       def accept_printer(printer) = raise NotImplementedError, "Abstract method called"
     end
 
-    class Position < T::Struct
+    class Position
       include PrintableSymbol
 
-      const :line, Integer
-      const :char, Integer
+      #: Integer
+      attr_reader :line
+
+      #: Integer
+      attr_reader :char
+
+      #: (line: Integer, char: Integer) -> void
+      def initialize(line:, char:)
+        @line = line
+        @char = char
+      end
 
       class << self
         #: (Hash[untyped, untyped] json) -> Position
@@ -41,18 +50,27 @@ module Spoom
       end
     end
 
-    class Range < T::Struct
+    class Range
       include PrintableSymbol
 
-      const :start, Position
-      const :end, Position
+      #: Position
+      attr_reader :start_pos
+
+      #: Position
+      attr_reader :end_pos
+
+      #: (start_pos: Position, end_pos: Position) -> void
+      def initialize(start_pos:, end_pos:)
+        @start_pos = start_pos
+        @end_pos = end_pos
+      end
 
       class << self
         #: (Hash[untyped, untyped] json) -> Range
         def from_json(json)
           Range.new(
-            start: Position.from_json(json["start"]),
-            end: Position.from_json(json["end"]),
+            start_pos: Position.from_json(json["start"]),
+            end_pos: Position.from_json(json["end"]),
           )
         end
       end
@@ -60,22 +78,31 @@ module Spoom
       # @override
       #: (SymbolPrinter printer) -> void
       def accept_printer(printer)
-        printer.print_object(start)
+        printer.print_object(start_pos)
         printer.print_colored("-", Color::LIGHT_BLACK)
-        printer.print_object(self.end)
+        printer.print_object(end_pos)
       end
 
       #: -> String
       def to_s
-        "#{start}-#{self.end}"
+        "#{start_pos}-#{end_pos}"
       end
     end
 
-    class Hover < T::Struct
+    class Hover
       include PrintableSymbol
 
-      const :contents, String
-      const :range, T.nilable(Range)
+      #: String
+      attr_reader :contents
+
+      #: Range?
+      attr_reader :range
+
+      #: (contents: String, ?range: Range?) -> void
+      def initialize(contents:, range: nil)
+        @contents = contents
+        @range = range
+      end
 
       class << self
         #: (Hash[untyped, untyped] json) -> Hover
@@ -100,11 +127,20 @@ module Spoom
       end
     end
 
-    class Location < T::Struct
+    class Location
       include PrintableSymbol
 
-      const :uri, String
-      const :range, LSP::Range
+      #: String
+      attr_reader :uri
+
+      #: LSP::Range
+      attr_reader :range
+
+      #: (uri: String, range: LSP::Range) -> void
+      def initialize(uri:, range:)
+        @uri = uri
+        @range = range
+      end
 
       class << self
         #: (Hash[untyped, untyped] json) -> Location
@@ -129,12 +165,26 @@ module Spoom
       end
     end
 
-    class SignatureHelp < T::Struct
+    class SignatureHelp
       include PrintableSymbol
 
-      const :label, T.nilable(String)
-      const :doc, Object # TODO
-      const :params, T::Array[T.untyped] # TODO
+      #: String?
+      attr_reader :label
+
+      # TODO
+      #: Object
+      attr_reader :doc
+
+      # TODO
+      #: Array[untyped]
+      attr_reader :params
+
+      #: (doc: Object, params: Array[untyped], ?label: String?) -> void
+      def initialize(doc:, params:, label: nil)
+        @label = label
+        @doc = doc
+        @params = params
+      end
 
       class << self
         #: (Hash[untyped, untyped] json) -> SignatureHelp
@@ -162,13 +212,28 @@ module Spoom
       end
     end
 
-    class Diagnostic < T::Struct
+    class Diagnostic
       include PrintableSymbol
 
-      const :range, LSP::Range
-      const :code, Integer
-      const :message, String
-      const :information, Object
+      #: LSP::Range
+      attr_reader :range
+
+      #: Integer
+      attr_reader :code
+
+      #: String
+      attr_reader :message
+
+      #: Object
+      attr_reader :information
+
+      #: (range: LSP::Range, code: Integer, message: String, information: Object) -> void
+      def initialize(range:, code:, message:, information:)
+        @range = range
+        @code = code
+        @message = message
+        @information = information
+      end
 
       class << self
         #: (Hash[untyped, untyped] json) -> Diagnostic
@@ -194,15 +259,43 @@ module Spoom
       end
     end
 
-    class DocumentSymbol < T::Struct
+    class DocumentSymbol
       include PrintableSymbol
 
-      const :name, String
-      const :detail, T.nilable(String)
-      const :kind, Integer
-      const :location, T.nilable(Location)
-      const :range, T.nilable(Range)
-      const :children, T::Array[DocumentSymbol]
+      #: String
+      attr_reader :name
+
+      #: String?
+      attr_reader :detail
+
+      #: Integer
+      attr_reader :kind
+
+      #: Location?
+      attr_reader :location
+
+      #: LSP::Range?
+      attr_reader :range
+
+      #: Array[DocumentSymbol]
+      attr_reader :children
+
+      #: (
+      #|   name: String,
+      #|   kind: Integer,
+      #|   children: Array[DocumentSymbol],
+      #|   ?detail: String?,
+      #|   ?location: Location?,
+      #|   ?range: LSP::Range?
+      #| ) -> void
+      def initialize(name:, kind:, children:, detail: nil, location: nil, range: nil)
+        @name = name
+        @detail = detail
+        @kind = kind
+        @location = location
+        @range = range
+        @children = children
+      end
 
       class << self
         #: (Hash[untyped, untyped] json) -> DocumentSymbol
@@ -221,10 +314,7 @@ module Spoom
       # @override
       #: (SymbolPrinter printer) -> void
       def accept_printer(printer)
-        h = serialize.hash
-        return if printer.seen.include?(h)
-
-        printer.seen.add(h)
+        return unless printer.seen.add?(deduplication_key)
 
         printer.printt
         printer.print(kind_string)
@@ -256,6 +346,28 @@ module Spoom
         SYMBOL_KINDS[kind] || "<unknown:#{kind}>"
       end
 
+      protected
+
+      #: -> Array[untyped]
+      def deduplication_key
+        symbol_location = location
+        [
+          name,
+          detail,
+          kind,
+          symbol_location && [symbol_location.uri, range_key(symbol_location.range)],
+          range_key(range),
+          children.map { |child| child.deduplication_key },
+        ]
+      end
+
+      #: (LSP::Range?) -> Array[Integer]?
+      def range_key(range)
+        return unless range
+
+        [range.start_pos.line, range.start_pos.char, range.end_pos.line, range.end_pos.char]
+      end
+
       SYMBOL_KINDS = {
         1 => "file",
         2 => "module",
@@ -283,11 +395,11 @@ module Spoom
         24 => "event",
         25 => "operator",
         26 => "type_parameter",
-      } #: Hash[Integer, String]
+      }.freeze #: Hash[Integer, String]
     end
 
     class SymbolPrinter < Printer
-      #: Set[Integer]
+      #: Set[Array[untyped]]
       attr_reader :seen
 
       #: String?
@@ -296,7 +408,7 @@ module Spoom
       #: (?out: (IO | StringIO), ?colors: bool, ?indent_level: Integer, ?prefix: String?) -> void
       def initialize(out: $stdout, colors: true, indent_level: 0, prefix: nil)
         super(out: out, colors: colors, indent_level: indent_level)
-        @seen = Set.new #: Set[Integer]
+        @seen = Set.new #: Set[Array[untyped]]
         @out = out
         @colors = colors
         @indent_level = indent_level
