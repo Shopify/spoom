@@ -3241,10 +3241,11 @@ module Spoom::Sorbet::Translate
         file: ::String,
         max_line_length: T.nilable(::Integer),
         overloads_strategy: ::Symbol,
-        erase_generic_types: T::Boolean
+        erase_generic_types: T::Boolean,
+        force: T::Boolean
       ).returns(::String)
     end
-    def rbs_comments_to_sorbet_sigs(ruby_contents, file:, max_line_length: T.unsafe(nil), overloads_strategy: T.unsafe(nil), erase_generic_types: T.unsafe(nil)); end
+    def rbs_comments_to_sorbet_sigs(ruby_contents, file:, max_line_length: T.unsafe(nil), overloads_strategy: T.unsafe(nil), erase_generic_types: T.unsafe(nil), force: T.unsafe(nil)); end
 
     sig do
       params(
@@ -3324,10 +3325,11 @@ module Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs
         file: ::String,
         max_line_length: T.nilable(::Integer),
         overloads_strategy: ::Symbol,
-        erase_generic_types: T::Boolean
+        erase_generic_types: T::Boolean,
+        force: T::Boolean
       ).returns(::String)
     end
-    def rewrite_if_needed(ruby_contents, file:, max_line_length: T.unsafe(nil), overloads_strategy: T.unsafe(nil), erase_generic_types: T.unsafe(nil)); end
+    def rewrite_if_needed(ruby_contents, file:, max_line_length: T.unsafe(nil), overloads_strategy: T.unsafe(nil), erase_generic_types: T.unsafe(nil), force: T.unsafe(nil)); end
   end
 end
 
