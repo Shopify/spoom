@@ -1094,6 +1094,33 @@ module Spoom
         RB
       end
 
+      def test_removes_method_defined_after_a_bare_heredoc
+        res = remove(<<~RB, "on_send")
+          class Foo
+            <<~MSG
+              hello
+            MSG
+
+            sig { void }
+            def on_send(node)
+              something
+            end
+
+            def baz; end
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            <<~MSG
+              hello
+            MSG
+
+            def baz; end
+          end
+        RB
+      end
+
       def test_removes_method_defined_after_an_adjacent_string_concatenation
         res = remove(<<~RB, "on_send")
           class Foo

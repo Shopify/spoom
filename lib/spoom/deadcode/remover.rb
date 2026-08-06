@@ -407,14 +407,15 @@ module Spoom
 
         # Prism reports a node ending in a heredoc as ending on the heredoc's opening line rather than
         # its closing terminator (e.g. `def_node_matcher :foo, <<~PATTERN` spanning several lines).
-        # Return the last line the node actually occupies so blank-line accounting for the node that
-        # follows it doesn't treat the heredoc body as blank filler and delete it.
+        # Return the last line the node actually occupies so the heredoc body isn't mistaken for blank
+        # filler, either when deleting the node itself or when accounting for the node that follows it.
+        # TODO: remove once Prism locations are fixed
         #: ((Prism::Node | Prism::Comment) node) -> Integer
         def node_end_line(node)
           end_line = node.location.end_line
           return end_line unless node.is_a?(Prism::Node)
 
-          stack = node.compact_child_nodes
+          stack = [node] #: Array[Prism::Node]
           until stack.empty?
             child = stack.pop
             next unless child
