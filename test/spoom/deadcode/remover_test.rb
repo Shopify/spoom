@@ -248,6 +248,50 @@ module Spoom
         RB
       end
 
+      def test_removes_multiline_const_with_interpolation
+        res = remove(<<~'RB', "BAR")
+          class Foo
+            FOO = 42
+
+            BAR = <<~MSG
+              Some #{text}
+            MSG
+
+            BAZ = 42
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            FOO = 42
+
+            BAZ = 42
+          end
+        RB
+      end
+
+      def test_removes_multiline_const_with_heredoc_passed_to_a_call
+        res = remove(<<~RB, "BAR")
+          class Foo
+            FOO = 42
+
+            BAR = build(<<~MSG)
+              Some text
+            MSG
+
+            BAZ = 42
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            FOO = 42
+
+            BAZ = 42
+          end
+        RB
+      end
+
       def test_removes_first_const_from_massign
         res = remove(<<~RB, "FOO")
           FOO, BAR, BAZ = 42

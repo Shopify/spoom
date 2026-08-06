@@ -356,21 +356,9 @@ module Spoom
 
         #: (NodeContext context) -> void
         def delete_node_and_comments_and_sigs(context)
-          start_line = context.node.location.start_line
-          end_line = context.node.location.end_line
-
-          # TODO: remove once Prism location are fixed
           node = context.node
-          case node
-          when Prism::ConstantWriteNode, Prism::ConstantOperatorWriteNode,
-                Prism::ConstantAndWriteNode, Prism::ConstantOrWriteNode,
-                Prism::ConstantPathWriteNode, Prism::ConstantPathOperatorWriteNode,
-                Prism::ConstantPathAndWriteNode, Prism::ConstantPathOrWriteNode
-            value = node.value
-            if value.is_a?(Prism::StringNode)
-              end_line = value.closing_loc&.start_line || value.location.end_line
-            end
-          end
+          start_line = node.location.start_line
+          end_line = node_end_line(node)
 
           # Adjust the lines to remove to include sigs attached to the node
           first_node = context.attached_sigs.first || context.node
