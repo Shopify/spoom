@@ -65,6 +65,15 @@ module Spoom
             # trailing newline can't leave a blank line before `end` (unlike the lines that follow).
             @rewriter << Source::Insert.new(at, "\n#{indent}extend #{mixin_name}\n")
           end
+
+          # @override
+          #: (Prism::CallNode) -> void
+          def remove_extend(node)
+            @rewriter << Source::Delete.new(
+              adjust_to_line_start(node.location.start_offset),
+              adjust_to_line_end(node.location.end_offset),
+            )
+          end
         end
       end
     end

@@ -3370,14 +3370,6 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator < ::Spoo
   private
 
   sig do
-    params(
-      node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode),
-      constant_regex: ::Regexp
-    ).returns(T::Boolean)
-  end
-  def already_extends?(node, constant_regex); end
-
-  sig do
     abstract
       .params(
         annotation: ::Spoom::RBS::Annotation,
@@ -3425,6 +3417,14 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator < ::Spoo
   def extend_with(mixin_name, into:, at:); end
 
   sig do
+    params(
+      node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode),
+      constant_regex: ::Regexp
+    ).void
+  end
+  def find_and_remove_existing_extend(node, constant_regex); end
+
+  sig do
     abstract
       .params(
         type_member: ::String,
@@ -3436,6 +3436,9 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator < ::Spoo
 
   sig { overridable.params(of: ::String, to_height_of: ::Spoom::RBS::Comment).returns(::String) }
   def pad_out_line_count(of:, to_height_of:); end
+
+  sig { abstract.params(node: ::Prism::CallNode).void }
+  def remove_extend(node); end
 
   sig { overridable.params(annotation: ::Spoom::RBS::Annotation, is_known: T::Boolean).void }
   def rewrite_annotation(annotation, is_known:); end
@@ -3451,6 +3454,13 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator < ::Spoo
 
   sig { abstract.params(signature: ::Spoom::RBS::Signature, type_params: T::Array[::RBS::AST::TypeParam]).void }
   def rewrite_type_params_signature(signature, type_params:); end
+
+  sig do
+    params(
+      node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode)
+    ).returns(T::Array[::Prism::Node])
+  end
+  def scope_statements(node); end
 
   sig { params(node: ::Prism::CallNode).void }
   def visit_attr(node); end
@@ -3496,6 +3506,9 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::HumanReadableTranslator
   end
   def insert_type_member(type_member, parent_node:, insert_pos:); end
 
+  sig { override.params(node: ::Prism::CallNode).void }
+  def remove_extend(node); end
+
   sig { override.params(signature: ::Spoom::RBS::Signature).void }
   def rewrite_discarded_overload(signature); end
 
@@ -3539,6 +3552,9 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::LineMatchingTranslator 
 
   sig { override.params(of: ::String, to_height_of: ::Spoom::RBS::Comment).returns(::String) }
   def pad_out_line_count(of:, to_height_of:); end
+
+  sig { override.params(node: ::Prism::CallNode).void }
+  def remove_extend(node); end
 
   sig { override.params(annotation: ::Spoom::RBS::Annotation, is_known: T::Boolean).void }
   def rewrite_annotation(annotation, is_known:); end

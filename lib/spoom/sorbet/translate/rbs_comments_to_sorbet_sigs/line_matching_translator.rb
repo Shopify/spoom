@@ -89,6 +89,15 @@ module Spoom
           end
 
           # @override
+          #: (Prism::CallNode) -> void
+          def remove_extend(node)
+            @rewriter << Source::Delete.new(
+              adjust_to_line_start(node.location.start_offset),
+              node.location.end_offset - 1,
+            )
+          end
+
+          # @override
           #: (of: String, to_height_of: Spoom::RBS::Comment) -> String
           def pad_out_line_count(of:, to_height_of:)
             original_line_count = to_height_of.location.end_line - to_height_of.location.start_line + 1
