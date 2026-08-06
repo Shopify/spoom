@@ -248,6 +248,50 @@ module Spoom
         RB
       end
 
+      def test_removes_multiline_const_with_interpolation
+        res = remove(<<~'RB', "BAR")
+          class Foo
+            FOO = 42
+
+            BAR = <<~MSG
+              Some #{text}
+            MSG
+
+            BAZ = 42
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            FOO = 42
+
+            BAZ = 42
+          end
+        RB
+      end
+
+      def test_removes_multiline_const_with_heredoc_passed_to_a_call
+        res = remove(<<~RB, "BAR")
+          class Foo
+            FOO = 42
+
+            BAR = build(<<~MSG)
+              Some text
+            MSG
+
+            BAZ = 42
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            FOO = 42
+
+            BAZ = 42
+          end
+        RB
+      end
+
       def test_removes_first_const_from_massign
         res = remove(<<~RB, "FOO")
           FOO, BAR, BAZ = 42
@@ -990,6 +1034,133 @@ module Spoom
         assert_equal(<<~RB, res)
           class Foo
             def foo; end
+
+            def baz; end
+          end
+        RB
+      end
+
+      def test_removes_method_defined_after_a_heredoc_argument
+        res = remove(<<~RB, "on_send")
+          class Foo
+            def_node_matcher :definition_name, <<~PATTERN
+              (send nil? :foo)
+            PATTERN
+
+            sig { void }
+            def on_send(node)
+              something
+            end
+
+            def baz; end
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            def_node_matcher :definition_name, <<~PATTERN
+              (send nil? :foo)
+            PATTERN
+
+            def baz; end
+          end
+        RB
+      end
+
+      def test_removes_method_defined_after_an_interpolated_heredoc_argument
+        res = remove(<<~'RB', "on_send")
+          class Foo
+            def_node_matcher :definition_name, <<~PATTERN
+              (send nil? {#{NAMES.map { |n| ":#{n}" }.join(" ")}} (sym $_))
+            PATTERN
+
+            sig { void }
+            def on_send(node)
+              something
+            end
+
+            def baz; end
+          end
+        RB
+
+        assert_equal(<<~'RB', res)
+          class Foo
+            def_node_matcher :definition_name, <<~PATTERN
+              (send nil? {#{NAMES.map { |n| ":#{n}" }.join(" ")}} (sym $_))
+            PATTERN
+
+            def baz; end
+          end
+        RB
+      end
+
+      def test_removes_method_defined_after_a_bare_heredoc
+        res = remove(<<~RB, "on_send")
+          class Foo
+            <<~MSG
+              hello
+            MSG
+
+            sig { void }
+            def on_send(node)
+              something
+            end
+
+            def baz; end
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            <<~MSG
+              hello
+            MSG
+
+            def baz; end
+          end
+        RB
+      end
+
+      def test_removes_method_defined_after_an_adjacent_string_concatenation
+        res = remove(<<~RB, "on_send")
+          class Foo
+            MSG = "foo" "bar"
+
+            sig { void }
+            def on_send(node)
+              something
+            end
+
+            def baz; end
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            MSG = "foo" "bar"
+
+            def baz; end
+          end
+        RB
+      end
+
+      def test_removes_method_defined_after_a_plain_string_assignment
+        res = remove(<<~RB, "on_send")
+          class Foo
+            MSG = "foo"
+
+            sig { void }
+            def on_send(node)
+              something
+            end
+
+            def baz; end
+          end
+        RB
+
+        assert_equal(<<~RB, res)
+          class Foo
+            MSG = "foo"
 
             def baz; end
           end

@@ -1677,6 +1677,9 @@ class Spoom::Deadcode::Remover::NodeRemover
   sig { params(context: ::Spoom::Deadcode::Remover::NodeContext, name: ::Symbol).void }
   def delete_symbol_argument(context, name); end
 
+  sig { params(node: ::Prism::Node).returns(T.nilable(::Integer)) }
+  def heredoc_terminator_line(node); end
+
   sig do
     params(
       node: ::Prism::Node,
@@ -1688,6 +1691,9 @@ class Spoom::Deadcode::Remover::NodeRemover
 
   sig { params(def_node: ::Prism::DefNode).returns(T.nilable(::Spoom::Deadcode::Remover::NodeContext)) }
   def modifier_call_context(def_node); end
+
+  sig { params(node: T.any(::Prism::Comment, ::Prism::Node)).returns(::Integer) }
+  def node_end_line(node); end
 
   sig { params(context: ::Spoom::Deadcode::Remover::NodeContext).void }
   def remove_constant_visibility_call(context); end
