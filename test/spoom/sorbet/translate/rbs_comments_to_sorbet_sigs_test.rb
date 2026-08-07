@@ -1597,6 +1597,18 @@ module Spoom
           end
         end
 
+        def test_rewrite_force_translates_files_without_typed_sigil
+          source = <<~RB
+            #: -> void
+            def foo; end
+          RB
+
+          assert_equal(<<~RB, RBSCommentsToSorbetSigs.rewrite_if_needed(source, file: "test.rb", force: true))
+            sig { void }
+            def foo; end
+          RB
+        end
+
         private
 
         #: (String,
