@@ -23,12 +23,6 @@ module Spoom
     CYAN            = new("\e[36m") #: Color
     WHITE           = new("\e[37m") #: Color
 
-    LIGHT_BLACK     = new("\e[90m") #: Color
-    LIGHT_RED       = new("\e[91m") #: Color
-    LIGHT_GREEN     = new("\e[92m") #: Color
-    LIGHT_YELLOW    = new("\e[93m") #: Color
-    LIGHT_BLUE      = new("\e[94m") #: Color
-    LIGHT_MAGENTA   = new("\e[95m") #: Color
     LIGHT_CYAN      = new("\e[96m") #: Color
     LIGHT_WHITE     = new("\e[97m") #: Color
   end
