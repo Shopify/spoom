@@ -13,8 +13,6 @@ module Spoom
 
     CLEAR           = new("\e[0m") #: Color
     BOLD            = new("\e[1m") #: Color
-
-    BLACK           = new("\e[30m") #: Color
     RED             = new("\e[31m") #: Color
     GREEN           = new("\e[32m") #: Color
     YELLOW          = new("\e[33m") #: Color
