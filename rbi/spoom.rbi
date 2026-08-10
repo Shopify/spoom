@@ -3370,14 +3370,6 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator < ::Spoo
   private
 
   sig do
-    params(
-      node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode),
-      constant_regex: ::Regexp
-    ).returns(T::Boolean)
-  end
-  def already_extends?(node, constant_regex); end
-
-  sig do
     abstract
       .params(
         annotation: ::Spoom::RBS::Annotation,
