@@ -231,11 +231,11 @@ module Spoom
               node.expression.location.end_offset
             end
 
-            # Only translate (and `extend T::Helpers`) when there's at least one *known* class
+            # Only translate (and `extend ::T::Helpers`) when there's at least one *known* class
             # annotation. A node with only unknown annotations (e.g. `@private`) is left untouched.
             if comments.class_annotations.any?
               unless already_extends?(node, /^(::)?T::Helpers$/)
-                extend_with("T::Helpers", into: node, at: insert_pos)
+                extend_with("::T::Helpers", into: node, at: insert_pos)
               end
 
               comments.annotations.reverse_each do |annotation|
@@ -287,7 +287,7 @@ module Spoom
                 end
 
                 unless already_extends?(node, /^(::)?T::Generic$/)
-                  extend_with("T::Generic", into: node, at: insert_pos)
+                  extend_with("::T::Generic", into: node, at: insert_pos)
                 end
 
                 type_params.each do |type_param|
