@@ -167,7 +167,7 @@ module Spoom
 
             to_pretty_format_for_humans: <<~RUBY,
               class Foo
-                extend T::Helpers
+                extend ::T::Helpers
 
                 abstract!
 
@@ -177,7 +177,7 @@ module Spoom
               end
 
               module Baz
-                extend T::Helpers
+                extend ::T::Helpers
 
                 abstract!
 
@@ -189,14 +189,14 @@ module Spoom
 
             to_line_matched_format_for_machines: <<~RUBY,
               # RBS_REWRITTEN_ANNOTATION: @abstract
-              class Foo; extend T::Helpers; abstract!
+              class Foo; extend ::T::Helpers; abstract!
                 # @abstract
                 #: -> String
                 def bar; end
               end
 
               # RBS_REWRITTEN_ANNOTATION: @abstract
-              module Baz; extend T::Helpers; abstract!
+              module Baz; extend ::T::Helpers; abstract!
                 # @abstract
                 #: -> String
                 def qux; end
@@ -481,21 +481,21 @@ module Spoom
 
             to_pretty_format_for_humans: <<~RUBY,
               class A
-                extend T::Helpers
+                extend ::T::Helpers
 
                 abstract!
 
                 requires_ancestor { ::T.class_of(Foo::Bar) }
 
                 module B
-                  extend T::Helpers
+                  extend ::T::Helpers
 
                   interface!
 
                   sealed!
 
                   class << self
-                    extend T::Helpers
+                    extend ::T::Helpers
 
                     final!
                   end
@@ -506,12 +506,12 @@ module Spoom
             to_line_matched_format_for_machines: <<~RUBY,
               # RBS_REWRITTEN_ANNOTATION: @abstract
               # RBS_REWRITTEN_ANNOTATION: @requires_ancestor: singleton(Foo::Bar)
-              class A; extend T::Helpers; abstract!; requires_ancestor { ::T.class_of(Foo::Bar) }
+              class A; extend ::T::Helpers; abstract!; requires_ancestor { ::T.class_of(Foo::Bar) }
                 # RBS_REWRITTEN_ANNOTATION: @interface
                 # RBS_REWRITTEN_ANNOTATION: @sealed
-                module B; extend T::Helpers; interface!; sealed!
+                module B; extend ::T::Helpers; interface!; sealed!
                   # RBS_REWRITTEN_ANNOTATION: @final
-                  class << self; extend T::Helpers; final!
+                  class << self; extend ::T::Helpers; final!
                   end
                 end
               end
@@ -549,7 +549,7 @@ module Spoom
               # @foo
               # @bar
               module Baz
-                extend T::Helpers
+                extend ::T::Helpers
 
                 requires_ancestor { Kernel }
 
@@ -562,7 +562,7 @@ module Spoom
               # RBS_IGNORED_UNKNOWN_ANNOTATION: @foo
               # RBS_IGNORED_UNKNOWN_ANNOTATION: @bar
               # RBS_REWRITTEN_ANNOTATION: @requires_ancestor: Kernel
-              module Baz; extend T::Helpers; requires_ancestor { Kernel }
+              module Baz; extend ::T::Helpers; requires_ancestor { Kernel }
                 sig { void }
                 def foo; end
               end
@@ -586,21 +586,21 @@ module Spoom
 
             to_pretty_format_for_humans: <<~RUBY,
               class A
-                extend T::Generic
+                extend ::T::Generic
 
                 A = type_member(:in)
 
                 B = type_member(:out)
 
                 module B
-                  extend T::Generic
+                  extend ::T::Generic
 
                   A = type_member
 
                   B = type_member {{ upper: C }}
 
                   class << self
-                    extend T::Generic
+                    extend ::T::Generic
 
                     A = type_member {{ fixed: ::T.class_of(Numeric) }}
                   end
@@ -610,13 +610,70 @@ module Spoom
 
             to_line_matched_format_for_machines: <<~RUBY,
               # RBS_WRITTEN_ANNOTATION: [in A, out B]
-              class A; extend T::Generic; A = type_member(:in); B = type_member(:out)
+              class A; extend ::T::Generic; A = type_member(:in); B = type_member(:out)
                 # RBS_WRITTEN_ANNOTATION: [A, B < C]
-                module B; extend T::Generic; A = type_member; B = type_member {{ upper: C }}
+                module B; extend ::T::Generic; A = type_member; B = type_member {{ upper: C }}
                   # RBS_WRITTEN_ANNOTATION: [A = singleton(Numeric)]
-                  class << self; extend T::Generic; A = type_member {{ fixed: ::T.class_of(Numeric) }}
+                  class << self; extend ::T::Generic; A = type_member {{ fixed: ::T.class_of(Numeric) }}
                   end
                 end
+              end
+            RUBY
+          )
+        end
+
+        def test_translate_to_rbi_fully_qualifies_extend_t_generic_and_helpers
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # @final
+              #: [T]
+              class Box
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class Box
+                extend ::T::Helpers
+
+                final!
+                extend ::T::Generic
+
+                T = type_member
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_REWRITTEN_ANNOTATION: @final
+              # RBS_WRITTEN_ANNOTATION: [T]
+              class Box; extend ::T::Helpers; final!; extend ::T::Generic; T = type_member
+              end
+            RUBY
+          )
+        end
+
+        def test_translate_to_rbi_with_pre_existing_t_helpers
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # @final
+              class Box
+                extend T::Helpers
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class Box
+                extend ::T::Helpers
+
+                final!
+
+                extend T::Helpers
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_REWRITTEN_ANNOTATION: @final
+              class Box; extend ::T::Helpers; final!
+                extend T::Helpers
               end
             RUBY
           )
@@ -1379,7 +1436,7 @@ module Spoom
             RUBY
             to_pretty_format_for_humans: <<~RUBY,
               class Foo
-                extend T::Generic
+                extend ::T::Generic
 
                 A = type_member
                 B = type_member
@@ -1388,7 +1445,7 @@ module Spoom
             to_line_matched_format_for_machines: <<~RUBY,
               # RBS_WRITTEN_ANNOTATION: [A,
               # RBS_WRITTEN_ANNOTATION: B]
-              class Foo; extend T::Generic; A = type_member; B = type_member
+              class Foo; extend ::T::Generic; A = type_member; B = type_member
               end
             RUBY
           )

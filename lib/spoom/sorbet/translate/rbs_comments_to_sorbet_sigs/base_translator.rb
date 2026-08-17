@@ -231,12 +231,10 @@ module Spoom
               node.expression.location.end_offset
             end
 
-            # Only translate (and `extend T::Helpers`) when there's at least one *known* class
+            # Only translate (and `extend ::T::Helpers`) when there's at least one *known* class
             # annotation. A node with only unknown annotations (e.g. `@private`) is left untouched.
             if comments.class_annotations.any?
-              unless already_extends?(node, /^(::)?T::Helpers$/)
-                extend_with("T::Helpers", into: node, at: insert_pos)
-              end
+              extend_with("::T::Helpers", into: node, at: insert_pos)
 
               comments.annotations.reverse_each do |annotation|
                 content = case annotation.string
@@ -286,9 +284,7 @@ module Spoom
                   next
                 end
 
-                unless already_extends?(node, /^(::)?T::Generic$/)
-                  extend_with("T::Generic", into: node, at: insert_pos)
-                end
+                extend_with("::T::Generic", into: node, at: insert_pos)
 
                 type_params.each do |type_param|
                   type_member = "#{type_param.name} = type_member"
@@ -394,22 +390,6 @@ module Spoom
           # @abstract
           #: (String mixin_name, into: PrismTypes::anyScopeNode, at: Integer) -> void
           def extend_with(mixin_name, into:, at:) = raise
-
-          #: (PrismTypes::anyScopeNode, Regexp) -> bool
-          def already_extends?(node, constant_regex)
-            node.child_nodes.any? do |c|
-              next false unless c.is_a?(Prism::CallNode)
-              next false unless c.message == "extend"
-              next false unless c.receiver.nil? || c.receiver.is_a?(Prism::SelfNode)
-              next false unless c.arguments&.arguments&.size == 1
-
-              arg = c.arguments&.arguments&.first
-              next false unless arg.is_a?(Prism::ConstantPathNode)
-              next false unless arg.slice.match?(constant_regex)
-
-              true
-            end
-          end
 
           #: (Array[Prism::Comment]) -> Array[Spoom::RBS::TypeAlias]
           def collect_type_aliases(comments)
