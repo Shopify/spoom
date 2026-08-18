@@ -79,6 +79,10 @@ module Spoom
           last_sigs.each do |node, sig|
             next if sig.is_abstract && !@translate_abstract_methods
 
+            # RBS type variables shadow constants and class type members with the
+            # same name. Rename colliding method type parameters before printing.
+            rename_colliding_type_params!(sig)
+
             preserve_multiline_signatures = !!(@preserve_multiline_signatures && sig.loc&.multiline?)
 
             out = rbs_print(
@@ -388,6 +392,50 @@ module Spoom
           @extend_t_generics.clear
         end
 
+        #: (RBI::Sig) -> void
+        def rename_colliding_type_params!(sig)
+          return unless sig.type_params?
+
+          occupied = simple_type_names(sig) + class_type_member_names
+          mapping = {} #: Hash[String, String]
+
+          sig.type_params.each do |type_param|
+            next unless occupied.any? { |name| name == type_param || name.start_with?("#{type_param}::") }
+
+            mapping[type_param] = unique_type_param_name(type_param, occupied + mapping.values)
+          end
+
+          return if mapping.empty?
+
+          sig.type_params.map! { |type_param| mapping[type_param] || type_param }
+          TypeParameterRenamer.new(mapping).visit_sig(sig)
+        end
+
+        #: (RBI::Sig) -> Array[String]
+        def simple_type_names(sig)
+          collector = SimpleTypeNameCollector.new
+          collector.visit_sig(sig)
+          collector.names
+        end
+
+        #: -> Array[String]
+        def class_type_member_names
+          @type_members.map do |member|
+            member.sub(/^(in|out)\s+/, "").split(/[\s<=]/).first #: as String
+          end
+        end
+
+        #: (String, Array[String]) -> String
+        def unique_type_param_name(type_param, occupied)
+          candidate = "#{type_param}T"
+          suffix = 2
+          while occupied.include?(candidate) || occupied.any? { |name| name.start_with?("#{candidate}::") }
+            candidate = "#{type_param}T#{suffix}"
+            suffix += 1
+          end
+          candidate
+        end
+
         # Collects the last signatures visited and clears the current list
         #: -> Array[[Prism::CallNode, RBI::Sig]]
         def collect_last_sigs
@@ -416,6 +464,86 @@ module Spoom
               "#{" " * indent}#| #{line}"
             end
           end.join + "\n"
+        end
+
+        class SigTypeWalker
+          #: (RBI::Sig) -> void
+          def visit_sig(sig)
+            sig.params.each do |param|
+              type = coerce_type(param.type)
+              param.instance_variable_set(:@type, type)
+              visit_type(type)
+            end
+            return_type = coerce_type(sig.return_type)
+            sig.return_type = return_type
+            visit_type(return_type)
+          end
+
+          #: (RBI::Type | String) -> RBI::Type
+          def coerce_type(type)
+            type.is_a?(String) ? RBI::Type.parse_string(type) : type
+          end
+
+          #: (RBI::Type) -> void
+          def visit_type(type)
+            case type
+            when RBI::Type::Simple
+              visit_simple(type)
+            when RBI::Type::TypeParameter
+              visit_type_parameter(type)
+            when RBI::Type::Generic
+              type.params.each { |param| visit_type(param) }
+            when RBI::Type::All, RBI::Type::Any, RBI::Type::Tuple
+              type.types.each { |inner| visit_type(inner) }
+            when RBI::Type::Nilable, RBI::Type::Class, RBI::Type::Module
+              visit_type(type.type)
+            when RBI::Type::ClassOf
+              visit_type(type.type)
+              type.type_parameters.each { |param| visit_type(param) }
+            when RBI::Type::TypeAlias
+              visit_type(type.aliased_type)
+            when RBI::Type::Proc
+              type.proc_params.each_value { |param| visit_type(param) }
+              visit_type(type.proc_returns) if type.proc_returns
+              visit_type(type.proc_bind) if type.proc_bind
+            when RBI::Type::Shape
+              type.types.each_value { |inner| visit_type(inner) }
+            end
+          end
+
+          #: (RBI::Type::Simple) -> void
+          def visit_simple(type); end
+
+          #: (RBI::Type::TypeParameter) -> void
+          def visit_type_parameter(type); end
+        end
+
+        class SimpleTypeNameCollector < SigTypeWalker
+          #: Array[String]
+          attr_reader :names
+
+          #: -> void
+          def initialize
+            @names = [] #: Array[String]
+          end
+
+          #: (RBI::Type::Simple) -> void
+          def visit_simple(type)
+            @names << type.name
+          end
+        end
+
+        class TypeParameterRenamer < SigTypeWalker
+          #: (Hash[String, String]) -> void
+          def initialize(mapping)
+            @mapping = mapping #: Hash[String, String]
+          end
+
+          #: (RBI::Type::TypeParameter) -> void
+          def visit_type_parameter(type)
+            new_name = @mapping[type.name.to_s]
+            type.instance_variable_set(:@name, new_name.to_sym) if new_name
+          end
         end
       end
     end

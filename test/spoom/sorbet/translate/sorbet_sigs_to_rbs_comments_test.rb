@@ -621,6 +621,93 @@ module Spoom
           RBS
         end
 
+        def test_translate_type_parameter_that_collides_with_a_constant
+          contents = <<~RB
+            class Store
+              module Credential
+                module Multiple; end
+              end
+
+              sig do
+                type_parameters(:Credential)
+                  .params(type: T.all(T::Module[T.type_parameter(:Credential)], T::Module[Credential::Multiple]))
+                  .returns(T::Array[T.type_parameter(:Credential)])
+              end
+              def find(type)
+                []
+              end
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            class Store
+              module Credential
+                module Multiple; end
+              end
+
+              #: [CredentialT] (
+              #|   (Module[CredentialT] & Module[Credential::Multiple]) type
+              #| ) -> Array[CredentialT]
+              def find(type)
+                []
+              end
+            end
+          RBS
+        end
+
+        def test_translate_type_parameter_that_collides_with_a_class_type_member
+          contents = <<~RB
+            class Box
+              extend T::Generic
+
+              Elem = type_member
+
+              sig do
+                type_parameters(:Elem)
+                  .params(value: T.type_parameter(:Elem))
+                  .returns(Elem)
+              end
+              def wrap(value)
+                value
+              end
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            #: [Elem]
+            class Box
+              #: [ElemT] (
+              #|   ElemT value
+              #| ) -> Elem
+              def wrap(value)
+                value
+              end
+            end
+          RBS
+        end
+
+        def test_translate_type_parameter_without_name_collision
+          contents = <<~RB
+            sig do
+              type_parameters(:U)
+                .params(value: T.type_parameter(:U))
+                .returns(T.type_parameter(:U))
+            end
+            def identity(value)
+              value
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            #: [U] (
+            #|   U value
+            #| ) -> U
+            def identity(value)
+              value
+            end
+          RBS
+        end
+
         private
 
         #: (
