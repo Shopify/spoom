@@ -3316,9 +3316,6 @@ end
 
 module Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs
   class << self
-    sig { params(source: ::String).returns(T::Boolean) }
-    def contains_rbs_syntax?(source); end
-
     sig do
       params(
         ruby_contents: ::String,

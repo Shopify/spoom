@@ -19,11 +19,6 @@ module Spoom
           RBS_REWRITE_PATTERN = Regexp.union(["#:", "#|", *RBS_ANNOTATION_MARKERS]).freeze #: Regexp
           private_constant :RBS_ANNOTATION_MARKERS, :RBS_REWRITE_PATTERN
 
-          #: (String source) -> bool
-          def contains_rbs_syntax?(source)
-            Sigils.contains_valid_sigil?(source) && source.match?(RBS_REWRITE_PATTERN)
-          end
-
           #: (
           #|   String ruby_contents,
           #|   file: String,
