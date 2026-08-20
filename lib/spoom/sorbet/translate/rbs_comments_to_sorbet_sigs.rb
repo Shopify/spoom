@@ -19,25 +19,23 @@ module Spoom
           RBS_REWRITE_PATTERN = Regexp.union(["#:", "#|", *RBS_ANNOTATION_MARKERS]).freeze #: Regexp
           private_constant :RBS_ANNOTATION_MARKERS, :RBS_REWRITE_PATTERN
 
-          #: (String source) -> bool
-          def contains_rbs_syntax?(source)
-            Sigils.contains_valid_sigil?(source) && source.match?(RBS_REWRITE_PATTERN)
-          end
-
           #: (
           #|   String ruby_contents,
           #|   file: String,
           #|   ?max_line_length: Integer?,
           #|   ?overloads_strategy: Symbol,
-          #|   ?erase_generic_types: bool) -> String
+          #|   ?erase_generic_types: bool,
+          #|   ?force: bool) -> String
           def rewrite_if_needed(
             ruby_contents,
             file:,
             max_line_length: nil,
             overloads_strategy: :translate_all,
-            erase_generic_types: false
+            erase_generic_types: false,
+            force: false
           )
-            return ruby_contents unless contains_rbs_syntax?(ruby_contents)
+            return ruby_contents unless ruby_contents.match?(RBS_REWRITE_PATTERN) &&
+              (force || Sigils.contains_valid_sigil?(ruby_contents))
 
             options = Options.new(
               overloads_strategy:,
