@@ -80,8 +80,9 @@ module Spoom
             next if sig.is_abstract && !@translate_abstract_methods
 
             # RBS type variables shadow constants and class type members with the
-            # same name. Rename colliding method type parameters before printing.
-            rename_colliding_type_params!(sig)
+            # same name. Refuse colliding method type parameters so the user can
+            # rename them and keep names consistent.
+            raise_on_colliding_type_params!(sig)
 
             preserve_multiline_signatures = !!(@preserve_multiline_signatures && sig.loc&.multiline?)
 
@@ -393,22 +394,16 @@ module Spoom
         end
 
         #: (RBI::Sig) -> void
-        def rename_colliding_type_params!(sig)
+        def raise_on_colliding_type_params!(sig)
           return unless sig.type_params?
 
           occupied = simple_type_names(sig) + class_type_member_names
-          mapping = {} #: Hash[String, String]
 
           sig.type_params.each do |type_param|
             next unless occupied.any? { |name| name == type_param || name.start_with?("#{type_param}::") }
 
-            mapping[type_param] = unique_type_param_name(type_param, occupied + mapping.values)
+            raise Error, "Type parameter `#{type_param}` collides with a constant or class type member. Rename the type parameter to avoid the collision."
           end
-
-          return if mapping.empty?
-
-          sig.type_params.map! { |type_param| mapping[type_param] || type_param }
-          TypeParameterRenamer.new(mapping).visit_sig(sig)
         end
 
         #: (RBI::Sig) -> Array[String]
@@ -423,17 +418,6 @@ module Spoom
           @type_members.map do |member|
             member.sub(/^(in|out)\s+/, "").split(/[\s<=]/).first #: as String
           end
-        end
-
-        #: (String, Array[String]) -> String
-        def unique_type_param_name(type_param, occupied)
-          candidate = "#{type_param}T"
-          suffix = 2
-          while occupied.include?(candidate) || occupied.any? { |name| name.start_with?("#{candidate}::") }
-            candidate = "#{type_param}T#{suffix}"
-            suffix += 1
-          end
-          candidate
         end
 
         # Collects the last signatures visited and clears the current list
@@ -530,19 +514,6 @@ module Spoom
           #: (RBI::Type::Simple) -> void
           def visit_simple(type)
             @names << type.name
-          end
-        end
-
-        class TypeParameterRenamer < SigTypeWalker
-          #: (Hash[String, String]) -> void
-          def initialize(mapping)
-            @mapping = mapping #: Hash[String, String]
-          end
-
-          #: (RBI::Type::TypeParameter) -> void
-          def visit_type_parameter(type)
-            new_name = @mapping[type.name.to_s]
-            type.instance_variable_set(:@name, new_name.to_sym) if new_name
           end
         end
       end
