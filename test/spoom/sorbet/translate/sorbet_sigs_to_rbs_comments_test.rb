@@ -639,20 +639,13 @@ module Spoom
             end
           RB
 
-          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
-            class Store
-              module Credential
-                module Multiple; end
-              end
-
-              #: [CredentialT] (
-              #|   (Module[CredentialT] & Module[Credential::Multiple]) type
-              #| ) -> Array[CredentialT]
-              def find(type)
-                []
-              end
-            end
-          RBS
+          error = assert_raises(Translate::Error) do
+            sorbet_sigs_to_rbs_comments(contents)
+          end
+          assert_equal(
+            "Type parameter `Credential` collides with a constant or class type member. Rename the type parameter to avoid the collision.",
+            error.message,
+          )
         end
 
         def test_translate_type_parameter_that_collides_with_a_class_type_member
@@ -673,17 +666,13 @@ module Spoom
             end
           RB
 
-          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
-            #: [Elem]
-            class Box
-              #: [ElemT] (
-              #|   ElemT value
-              #| ) -> Elem
-              def wrap(value)
-                value
-              end
-            end
-          RBS
+          error = assert_raises(Translate::Error) do
+            sorbet_sigs_to_rbs_comments(contents)
+          end
+          assert_equal(
+            "Type parameter `Elem` collides with a constant or class type member. Rename the type parameter to avoid the collision.",
+            error.message,
+          )
         end
 
         def test_translate_type_parameter_without_name_collision
