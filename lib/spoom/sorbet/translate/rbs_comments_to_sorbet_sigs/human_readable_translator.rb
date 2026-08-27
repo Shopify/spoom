@@ -36,7 +36,7 @@ module Spoom
             @rewriter << Source::Delete.new(from, to)
 
             indent = " " * (parent_node.location.start_column + 2)
-            newline = parent_node.body.nil? ? "" : "\n"
+            newline = trailing_newline(parent_node:, insert_pos:)
             @rewriter << Source::Insert.new(insert_pos, "\n#{indent}#{sorbet_replacement}#{newline}")
           end
 
@@ -52,8 +52,16 @@ module Spoom
           #: (String type_member, parent_node: PrismTypes::anyScopeNode, insert_pos: Integer) -> void
           def insert_type_member(type_member, parent_node:, insert_pos:)
             indent = " " * (parent_node.location.start_column + 2)
-            newline = parent_node.body.nil? ? "" : "\n"
+            newline = trailing_newline(parent_node:, insert_pos:)
             @rewriter << Source::Insert.new(insert_pos, "\n#{indent}#{type_member}#{newline}")
+          end
+
+          #: (parent_node: PrismTypes::anyScopeNode, insert_pos: Integer) -> String
+          def trailing_newline(parent_node:, insert_pos:)
+            # We only want to add a newline if the scope node's body is not empty or if the insertion position is not at
+            # the end of the body. This is to avoid leaving a blank line immediately before the `end`.
+            body = parent_node.body
+            body.nil? || body.location.end_offset == insert_pos ? "" : "\n"
           end
 
           # @override

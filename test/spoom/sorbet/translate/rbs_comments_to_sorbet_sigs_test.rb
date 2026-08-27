@@ -622,6 +622,64 @@ module Spoom
           )
         end
 
+        def test_extend_generic_appears_last
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              #: [Elem]
+              class A
+                extend OtherThing
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class A
+                extend OtherThing
+                extend ::T::Generic
+
+                Elem = type_member
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_WRITTEN_ANNOTATION: [Elem]
+              class A
+                extend OtherThing; extend ::T::Generic; Elem = type_member
+              end
+            RUBY
+          )
+        end
+
+        def test_extend_generic_appears_last_with_statements_after_the_last_extend
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              #: [Elem]
+              class A
+                extend OtherThing
+                CONST = 1
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class A
+                extend OtherThing
+                extend ::T::Generic
+
+                Elem = type_member
+
+                CONST = 1
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_WRITTEN_ANNOTATION: [Elem]
+              class A
+                extend OtherThing; extend ::T::Generic; Elem = type_member
+                CONST = 1
+              end
+            RUBY
+          )
+        end
+
         def test_translate_to_rbi_fully_qualifies_extend_t_generic_and_helpers
           assert_rewrites_rbs(
             from: <<~RUBY,
@@ -662,18 +720,17 @@ module Spoom
 
             to_pretty_format_for_humans: <<~RUBY,
               class Box
+                extend T::Helpers
                 extend ::T::Helpers
 
                 final!
-
-                extend T::Helpers
               end
             RUBY
 
             to_line_matched_format_for_machines: <<~RUBY,
               # RBS_REWRITTEN_ANNOTATION: @final
-              class Box; extend ::T::Helpers; final!
-                extend T::Helpers
+              class Box
+                extend T::Helpers; extend ::T::Helpers; final!
               end
             RUBY
           )
