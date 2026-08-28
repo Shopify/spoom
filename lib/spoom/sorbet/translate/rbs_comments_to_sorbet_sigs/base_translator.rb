@@ -219,6 +219,17 @@ module Spoom
               located_statements << [single_attr_call_source(node, attr_name_node), attr_name_node.location.start_line]
             end
 
+            # Replacing the original call removes its comments, so include them in the replacement.
+            @comments.each do |comment|
+              next unless comment.location.start_offset > node.location.start_offset
+              next unless comment.location.start_offset < node.location.end_offset
+
+              comment_line = comment.location.start_line
+              # Keep inline comments after their attr call by inserting before the first statement on a later line.
+              insert_at = located_statements.index { |_, line| line > comment_line } || located_statements.length
+              located_statements.insert(insert_at, [comment.slice, comment_line])
+            end
+
             replace_multi_name_attr(node, located_statements:)
           end
 

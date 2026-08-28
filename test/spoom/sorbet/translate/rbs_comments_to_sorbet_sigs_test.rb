@@ -475,6 +475,50 @@ module Spoom
           )
         end
 
+        def test_translate_to_rbi_preserves_comments_in_multi_name_attrs
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class A
+                #: Integer
+                attr_reader(
+                  # first attribute
+                  :a, # explanation
+                  # second attribute
+                  :b, # last attribute
+                  # after attributes
+                )
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class A
+                sig { returns(Integer) }
+                # first attribute
+                attr_reader(:a)
+                # explanation
+                # second attribute
+                sig { returns(Integer) }
+                attr_reader(:b)
+                # last attribute
+                # after attributes
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              class A
+                sig { returns(Integer) }
+
+                # first attribute
+                attr_reader(:a); # explanation
+                # second attribute
+                sig { returns(Integer) }; attr_reader(:b); # last attribute
+                # after attributes
+
+              end
+            RUBY
+          )
+        end
+
         def test_translate_to_rbi_attr_writer_sigs_with_multiple_names
           assert_rewrites_rbs(
             from: <<~RUBY,
