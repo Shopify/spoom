@@ -317,24 +317,200 @@ module Spoom
             to_pretty_format_for_humans: <<~RUBY,
               class A
                 sig { returns(Integer) }
-                attr_accessor :a, :b
+                attr_accessor :a
+                sig { returns(Integer) }
+                attr_accessor :b
 
                 sig { returns(Integer) }
-                attr_reader :c, :d
+                attr_reader :c
+                sig { returns(Integer) }
+                attr_reader :d
 
                 sig { params(e: Integer).returns(Integer) }
                 attr_writer :e
               end
             RUBY
 
-            to_line_matched_format_for_machines: :same_as_pretty_output,
+            to_line_matched_format_for_machines: <<~RUBY,
+              class A
+                sig { returns(Integer) }
+                attr_accessor :a; sig { returns(Integer) }; attr_accessor :b
+
+                sig { returns(Integer) }
+                attr_reader :c; sig { returns(Integer) }; attr_reader :d
+
+                sig { params(e: Integer).returns(Integer) }
+                attr_writer :e
+              end
+            RUBY
           )
         end
 
-        def test_translate_to_rbi_attr_sigs_raises_on_writer_with_multiple_names
+        def test_translate_to_rbi_attr_sigs_with_annotations_and_multiple_names
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class A
+                # @without_runtime
+                #: Integer
+                attr_accessor :a, :b
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class A
+                # @without_runtime
+                ::T::Sig::WithoutRuntime.sig { returns(Integer) }
+                attr_accessor :a
+                ::T::Sig::WithoutRuntime.sig { returns(Integer) }
+                attr_accessor :b
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              class A
+                # RBS_REWRITTEN_ANNOTATION: @without_runtime
+                ::T::Sig::WithoutRuntime.sig { returns(Integer) }
+                attr_accessor :a; ::T::Sig::WithoutRuntime.sig { returns(Integer) }; attr_accessor :b
+              end
+            RUBY
+          )
+        end
+
+        def test_translate_to_rbi_attr_sigs_respects_translate_last_overloads_strategy
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              #: String
+              #: Integer
+              attr_reader :foo
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              sig { returns(Integer) }
+              attr_reader :foo
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_DISCARDED_OVERLOAD: String
+              sig { returns(Integer) }
+              attr_reader :foo
+            RUBY
+
+            overloads_strategy: :translate_last,
+          )
+        end
+
+        def test_translate_to_rbi_parenthesized_attr_sigs_with_multiple_names
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class A
+                #: Array[String]
+                attr_reader(:a, :b, :c)
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class A
+                sig do
+                  returns(::T::Array[String])
+                end
+                attr_reader(:a)
+                sig do
+                  returns(::T::Array[String])
+                end
+                attr_reader(:b)
+                sig do
+                  returns(::T::Array[String])
+                end
+                attr_reader(:c)
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              class A
+                sig { returns(::T::Array[String]) }
+                attr_reader(:a); sig { returns(::T::Array[String]) }; attr_reader(:b); sig { returns(::T::Array[String]) }; attr_reader(:c)
+              end
+            RUBY
+
+            max_line_length: 20,
+          )
+        end
+
+        def test_translate_to_rbi_multiline_attr_sigs_with_multiple_names
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class A
+                #: Integer
+                attr_reader(
+                  :a,
+                  b,
+                )
+
+                def after; end
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class A
+                sig { returns(Integer) }
+                attr_reader(:a)
+                sig { returns(Integer) }
+                attr_reader(b)
+
+                def after; end
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              class A
+                sig { returns(Integer) }
+
+                attr_reader(:a)
+                sig { returns(Integer) }; attr_reader(b)
+
+
+                def after; end
+              end
+            RUBY
+          )
+        end
+
+        def test_translate_to_rbi_attr_writer_sigs_with_multiple_names
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              #: Integer
+              attr_writer :a, :b
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              sig { params(a: Integer).returns(Integer) }
+              attr_writer :a
+              sig { params(b: Integer).returns(Integer) }
+              attr_writer :b
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              sig { params(a: Integer).returns(Integer) }
+              attr_writer :a; sig { params(b: Integer).returns(Integer) }; attr_writer :b
+            RUBY
+          )
+        end
+
+        def test_translate_to_rbi_attr_writer_sigs_raises_without_name
           contents = <<~RB
             #: Integer
-            attr_writer :a, b
+            attr_writer
+          RB
+
+          assert_raises(Translate::Error) do
+            rbs_comments_to_sorbet_sigs(contents)
+          end
+        end
+
+        def test_translate_to_rbi_attr_writer_sigs_raises_with_dynamic_name
+          contents = <<~RB
+            #: Integer
+            attr_writer name
           RB
 
           assert_raises(Translate::Error) do

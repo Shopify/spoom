@@ -491,6 +491,7 @@ class Spoom::Coverage::Cards::Card < ::Spoom::Coverage::Template
   sig { params(template: ::String, title: T.nilable(::String), body: T.nilable(::String)).void }
   def initialize(template: T.unsafe(nil), title: T.unsafe(nil), body: T.unsafe(nil)); end
 
+  sig { returns(T.nilable(::String)) }
   def body; end
 
   sig { returns(T.nilable(::String)) }
@@ -2354,7 +2355,10 @@ class Spoom::Location
   sig { override.params(other: ::BasicObject).returns(T.nilable(::Integer)) }
   def <=>(other); end
 
+  sig { returns(T.nilable(::Integer)) }
   def end_column; end
+
+  sig { returns(T.nilable(::Integer)) }
   def end_line; end
 
   sig { returns(::String) }
@@ -2363,6 +2367,7 @@ class Spoom::Location
   sig { params(other: ::Spoom::Location).returns(T::Boolean) }
   def include?(other); end
 
+  sig { returns(T.nilable(::Integer)) }
   def start_column; end
 
   sig { returns(T.nilable(::Integer)) }
@@ -2843,16 +2848,19 @@ class Spoom::Poset::Element
   sig { returns(T::Array[E]) }
   def descendants; end
 
+  sig { returns(T::Set[Spoom::Poset::Element[E]]) }
   def dfroms; end
 
   sig { returns(T::Set[Spoom::Poset::Element[E]]) }
   def dtos; end
 
+  sig { returns(T::Set[Spoom::Poset::Element[E]]) }
   def froms; end
 
   sig { returns(T::Array[E]) }
   def parents; end
 
+  sig { returns(T::Set[Spoom::Poset::Element[E]]) }
   def tos; end
 
   sig { returns(E) }
@@ -2966,9 +2974,14 @@ class Spoom::Sorbet::Config
   sig { void }
   def initialize; end
 
+  sig { returns(T::Array[::String]) }
   def allowed_extensions; end
+
   def allowed_extensions=(_arg0); end
+
+  sig { returns(T::Array[::String]) }
   def ignore; end
+
   def ignore=(_arg0); end
 
   sig { returns(T::Boolean) }
@@ -2983,7 +2996,10 @@ class Spoom::Sorbet::Config
   def paths; end
 
   def paths=(_arg0); end
+
+  sig { returns(T::Array[::String]) }
   def typed_overrides; end
+
   def typed_overrides=(_arg0); end
 
   private
@@ -3050,6 +3066,7 @@ class Spoom::Sorbet::Errors::Error
   sig { params(other: T.untyped).returns(::Integer) }
   def <=>(other); end
 
+  sig { returns(T.nilable(::Integer)) }
   def code; end
 
   sig { returns(T.nilable(::String)) }
@@ -3061,6 +3078,7 @@ class Spoom::Sorbet::Errors::Error
   sig { returns(T.nilable(::Integer)) }
   def line; end
 
+  sig { returns(T.nilable(::String)) }
   def message; end
 
   sig { returns(T::Array[::String]) }
@@ -3408,6 +3426,9 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator < ::Spoo
   sig { params(comments: T::Array[::Prism::Comment]).void }
   def apply_type_aliases(comments); end
 
+  sig { params(node: ::Prism::CallNode, attr_name_node: ::Prism::Node, attr_type: ::RBI::Type).returns(::RBI::Sig) }
+  def build_attr_sig(node, attr_name_node, attr_type); end
+
   sig { params(comments: T::Array[::Prism::Comment]).returns(T::Array[::Spoom::RBS::TypeAlias]) }
   def collect_type_aliases(comments); end
 
@@ -3420,6 +3441,9 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator < ::Spoo
       ).void
   end
   def extend_with(mixin_name, into:, at:); end
+
+  sig { params(sig: ::RBI::Sig, indent: ::Integer).returns(::String) }
+  def format_attr_sig(sig, indent:); end
 
   sig do
     abstract
@@ -3434,6 +3458,9 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator < ::Spoo
   sig { overridable.params(of: ::String, to_height_of: ::Spoom::RBS::Comment).returns(::String) }
   def pad_out_line_count(of:, to_height_of:); end
 
+  sig { overridable.params(node: ::Prism::CallNode, located_statements: T::Array[[::String, ::Integer]]).void }
+  def replace_multi_name_attr(node, located_statements:); end
+
   sig { overridable.params(annotation: ::Spoom::RBS::Annotation, is_known: T::Boolean).void }
   def rewrite_annotation(annotation, is_known:); end
 
@@ -3446,8 +3473,22 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator < ::Spoo
   sig { params(annotations: T::Array[::Spoom::RBS::Annotation], known: T::Array[::Spoom::RBS::Annotation]).void }
   def rewrite_member_annotations(annotations, known:); end
 
+  sig do
+    params(
+      node: ::Prism::CallNode,
+      first_attr_name_node: ::Prism::Node,
+      additional_attr_name_nodes: T::Array[::Prism::Node],
+      attr_type: ::RBI::Type,
+      annotations: T::Array[::Spoom::RBS::Annotation]
+    ).void
+  end
+  def rewrite_multi_name_attr(node, first_attr_name_node, additional_attr_name_nodes, attr_type, annotations:); end
+
   sig { abstract.params(signature: ::Spoom::RBS::Signature, type_params: T::Array[::RBS::AST::TypeParam]).void }
   def rewrite_type_params_signature(signature, type_params:); end
+
+  sig { params(node: ::Prism::CallNode, attr_name_node: ::Prism::Node).returns(::String) }
+  def single_attr_call_source(node, attr_name_node); end
 
   sig { params(node: ::Prism::CallNode).void }
   def visit_attr(node); end
@@ -3536,6 +3577,9 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::LineMatchingTranslator 
 
   sig { override.params(of: ::String, to_height_of: ::Spoom::RBS::Comment).returns(::String) }
   def pad_out_line_count(of:, to_height_of:); end
+
+  sig { override.params(node: ::Prism::CallNode, located_statements: T::Array[[::String, ::Integer]]).void }
+  def replace_multi_name_attr(node, located_statements:); end
 
   sig { override.params(annotation: ::Spoom::RBS::Annotation, is_known: T::Boolean).void }
   def rewrite_annotation(annotation, is_known:); end
@@ -3814,6 +3858,7 @@ class Spoom::Source::Delete < ::Spoom::Source::Edit
   sig { override.returns([::Integer, ::Integer]) }
   def range; end
 
+  sig { returns(::Integer) }
   def to; end
 
   sig { override.returns(::String) }
@@ -3868,6 +3913,7 @@ class Spoom::Source::Replace < ::Spoom::Source::Edit
   sig { returns(::String) }
   def text; end
 
+  sig { returns(::Integer) }
   def to; end
 
   sig { override.returns(::String) }

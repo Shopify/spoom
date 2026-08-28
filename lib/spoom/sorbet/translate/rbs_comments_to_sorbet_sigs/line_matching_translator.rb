@@ -72,6 +72,43 @@ module Spoom
             @rewriter << Source::Insert.new(insert_pos, "; #{type_member}")
           end
 
+          # Keep each attr on its original line so Sorbet errors point to the correct source.
+          # @override
+          #: (Prism::CallNode, located_statements: Array[[String, Integer]]) -> void
+          def replace_multi_name_attr(node, located_statements:)
+            replacement = String.new
+            current_line = node.location.start_line
+            indent = " " * node.location.start_column
+
+            located_statements.each do |source, source_line|
+              line_gap = source_line - current_line
+              if line_gap.positive?
+                replacement.concat("\n" * line_gap).concat(indent)
+              elsif !replacement.empty?
+                replacement.concat("; ")
+              end
+
+              replacement.concat(source)
+              current_line = source_line
+            end
+
+            remaining_lines = node.location.end_line - node.location.start_line - replacement.count("\n")
+            replacement.concat("\n" * remaining_lines)
+
+            # Remove the indentation when moving the first attr off the original call line.
+            start_offset = node.location.start_offset
+            if located_statements.first&.last != node.location.start_line
+              start_offset = adjust_to_line_start(start_offset)
+            end
+
+            @rewriter << Source::Replace.new(
+              start_offset,
+              # Prism ends are exclusive; Source::Replace ends are inclusive.
+              node.location.end_offset - 1,
+              replacement,
+            )
+          end
+
           # @override
           #: (Spoom::RBS::Annotation, is_known: bool) -> void
           def rewrite_annotation(annotation, is_known:)
