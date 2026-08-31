@@ -3421,6 +3421,9 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseTranslator < ::Spoo
   end
   def extend_with(mixin_name, into:, at:); end
 
+  sig { params(node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode)).returns(::Integer) }
+  def find_class_annotation_insert_pos(node); end
+
   sig do
     abstract
       .params(
@@ -3498,6 +3501,14 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::HumanReadableTranslator
 
   sig { override.params(signature: ::Spoom::RBS::Signature, type_params: T::Array[::RBS::AST::TypeParam]).void }
   def rewrite_type_params_signature(signature, type_params:); end
+
+  sig do
+    params(
+      parent_node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode),
+      insert_pos: ::Integer
+    ).returns(::String)
+  end
+  def trailing_newline(parent_node:, insert_pos:); end
 end
 
 class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::LineMatchedRBIFormat < ::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::BaseRBIFormat

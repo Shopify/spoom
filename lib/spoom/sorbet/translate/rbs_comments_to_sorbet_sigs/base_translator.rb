@@ -89,6 +89,31 @@ module Spoom
 
           private
 
+          #: (PrismTypes::anyScopeNode) -> Integer
+          def find_class_annotation_insert_pos(node)
+            # First try to find the last `extend` statement in the scope. This guarantees that we always place `extend
+            # T::Generic` after all the other extends, which makes it appear first in the ancestor chain
+            body = node.body
+
+            if body.is_a?(Prism::StatementsNode)
+              last_extend = body.body.reverse_each.find do |node|
+                node.is_a?(Prism::CallNode) && node.message == "extend" && !node.receiver
+              end
+
+              return last_extend.location.end_offset if last_extend
+            end
+
+            # If we don't find any extends, then place it immediately after the scope opening.
+            case node
+            when Prism::ClassNode
+              (node.superclass || node.constant_path).location.end_offset
+            when Prism::ModuleNode
+              node.constant_path.location.end_offset
+            when Prism::SingletonClassNode
+              node.expression.location.end_offset
+            end
+          end
+
           #: (Prism::CallNode) -> void
           def visit_attr(node)
             comments = node_rbs_comments(node)
@@ -222,14 +247,7 @@ module Spoom
             comments = node_rbs_comments(node)
             return if comments.empty?
 
-            insert_pos = case node
-            when Prism::ClassNode
-              (node.superclass || node.constant_path).location.end_offset
-            when Prism::ModuleNode
-              node.constant_path.location.end_offset
-            when Prism::SingletonClassNode
-              node.expression.location.end_offset
-            end
+            insert_pos = find_class_annotation_insert_pos(node)
 
             # Only translate (and `extend ::T::Helpers`) when there's at least one *known* class
             # annotation. A node with only unknown annotations (e.g. `@private`) is left untouched.
