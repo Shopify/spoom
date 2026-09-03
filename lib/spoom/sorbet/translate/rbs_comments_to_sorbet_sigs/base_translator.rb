@@ -92,51 +92,160 @@ module Spoom
           #: (Prism::CallNode) -> void
           def visit_attr(node)
             comments = node_rbs_comments(node)
-            return if comments.empty?
-
-            return if comments.signatures.empty?
+            signatures = comments.signatures
+            return if signatures.empty?
 
             signatures = apply_overloads_strategy(
-              comments.signatures,
+              signatures,
               method_name: node.message.to_s,
               location: "#{@file}:#{node.location.start_line}",
             )
 
+            attr_name_nodes = node.arguments&.arguments || []
+
+            if node.message == "attr_writer"
+              raise Error, "RBS signatures for attr_writer require at least one argument" if attr_name_nodes.empty?
+              unless attr_name_nodes.all?(Prism::SymbolNode)
+                raise Error, "RBS signatures for attr_writer require symbol arguments"
+              end
+            end
+
+            first_attr_name_node, *additional_attr_name_nodes = attr_name_nodes
+            return unless first_attr_name_node
+
             known_annotations = nil #: Array[Spoom::RBS::Annotation]?
+            translated_attr_type = nil #: RBI::Type?
 
             signatures.each do |signature|
-              attr_type = ::RBS::Parser.parse_type(signature.string)
-              sig = RBI::Sig.new
+              rbs_type = ::RBS::Parser.parse_type(signature.string)
+              attr_type = @type_translator.translate(rbs_type)
+              first_attr_sig = build_attr_sig(node, first_attr_name_node, attr_type)
+              known_annotations = apply_member_annotations(comments.method_annotations, first_attr_sig)
 
-              if node.message == "attr_writer"
-                if node.arguments&.arguments&.size != 1
-                  raise Error, "AttrWriter must have exactly one name"
-                end
+              # Format the signature with the correct indentation.
+              indent = node.location.start_column
+              first_attr_sig_source = format_attr_sig(first_attr_sig, indent:)
+              first_attr_sig_source.concat("\n")
 
-                name = node.arguments&.arguments&.first #: as Prism::SymbolNode
-                sig.params << RBI::SigParam.new(
-                  name.slice[1..-1], #: as String
-                  @type_translator.translate(attr_type),
-                )
-              end
-
-              sig.return_type = @type_translator.translate(attr_type)
-
-              known_annotations = apply_member_annotations(comments.method_annotations, sig)
-
+              # Replace the RBS comment in place to preserve the source layout.
               @rewriter << Source::Replace.new(
                 signature.location.start_offset,
                 signature.location.end_offset,
-                pad_out_line_count(of: sig.string(max_line_length: @max_line_length), to_height_of: signature),
+                pad_out_line_count(of: first_attr_sig_source, to_height_of: signature),
               )
+              translated_attr_type = attr_type
             rescue ::RBS::ParsingError, ::RBI::Error
               # Ignore signatures with errors
               next
             end
 
+            # Only split the call when overload handling left one translated signature.
+            if signatures.one? && additional_attr_name_nodes.any? && translated_attr_type
+              rewrite_multi_name_attr(
+                node,
+                first_attr_name_node,
+                additional_attr_name_nodes,
+                translated_attr_type,
+                annotations: comments.method_annotations,
+              )
+            end
+
+            # Handle member annotations like `# @without_runtime`.
             if known_annotations
               rewrite_member_annotations(comments.method_annotations, known: known_annotations)
             end
+          end
+
+          #: (Prism::CallNode, Prism::Node, RBI::Type) -> RBI::Sig
+          def build_attr_sig(node, attr_name_node, attr_type)
+            sig = RBI::Sig.new
+            sig.return_type = attr_type
+
+            if node.message == "attr_writer"
+              name = attr_name_node #: as Prism::SymbolNode
+              sig.params << RBI::SigParam.new(
+                name.slice[1..-1], #: as String
+                attr_type,
+              )
+            end
+
+            sig
+          end
+
+          #: (RBI::Sig, indent: Integer) -> String
+          def format_attr_sig(sig, indent:)
+            sig.string(indent:, max_line_length: @max_line_length)
+              .delete_prefix(" " * indent)
+              .chomp
+          end
+
+          # `attr_reader(:a, :b)` becomes a single attr call: `attr_reader(:a)`.
+          #: (Prism::CallNode, Prism::Node) -> String
+          def single_attr_call_source(node, attr_name_node)
+            receiver = node.receiver
+            call = if receiver
+              "#{receiver.slice}#{node.call_operator}#{node.message}"
+            else
+              node.message.to_s
+            end
+
+            if node.opening_loc
+              "#{call}(#{attr_name_node.slice})"
+            else
+              "#{call} #{attr_name_node.slice}"
+            end
+          end
+
+          # Split a multi-name attr into one call per name. The first signature is already written above the call,
+          # so only the remaining names need signatures here.
+          #: (
+          #|   Prism::CallNode,
+          #|   Prism::Node,
+          #|   Array[Prism::Node],
+          #|   RBI::Type,
+          #|   annotations: Array[Spoom::RBS::Annotation]
+          #| ) -> void
+          def rewrite_multi_name_attr(node, first_attr_name_node, additional_attr_name_nodes, attr_type, annotations:)
+            indent = node.location.start_column
+            # Replacing the original call removes every attr, so include the first attr in its replacement.
+            located_statements = [
+              [single_attr_call_source(node, first_attr_name_node), first_attr_name_node.location.start_line],
+            ]
+
+            additional_attr_name_nodes.each do |attr_name_node|
+              sig = build_attr_sig(node, attr_name_node, attr_type)
+              apply_member_annotations(annotations, sig)
+              located_statements << [format_attr_sig(sig, indent:), attr_name_node.location.start_line]
+              located_statements << [single_attr_call_source(node, attr_name_node), attr_name_node.location.start_line]
+            end
+
+            # Replacing the original call removes its comments, so include them in the replacement.
+            @comments.each do |comment|
+              next unless comment.location.start_offset > node.location.start_offset
+              next unless comment.location.start_offset < node.location.end_offset
+
+              comment_line = comment.location.start_line
+              # Keep inline comments after their attr call by inserting before the first statement on a later line.
+              insert_at = located_statements.index { |_, line| line > comment_line } || located_statements.length
+              located_statements.insert(insert_at, [comment.slice, comment_line])
+            end
+
+            replace_multi_name_attr(node, located_statements:)
+          end
+
+          # Replace the original multi-name call with the generated single-name calls and signatures, one per line.
+          # @overridable
+          #: (Prism::CallNode, located_statements: Array[[String, Integer]]) -> void
+          def replace_multi_name_attr(node, located_statements:)
+            indent = " " * node.location.start_column
+            statements = located_statements.map { |source, _line| source }
+
+            @rewriter << Source::Replace.new(
+              node.location.start_offset,
+              # Prism ends are exclusive; Source::Replace ends are inclusive.
+              node.location.end_offset - 1,
+              statements.join("\n#{indent}"),
+            )
           end
 
           #: (Prism::DefNode, Spoom::RBS::Comments) -> void
