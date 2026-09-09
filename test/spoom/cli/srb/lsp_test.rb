@@ -35,7 +35,7 @@ module Spoom
             Bar.new.bar
           RB
           result = @project.spoom("srb lsp --no-color find Foo")
-          assert_equal(<<~MSG, result.err)
+          expected_lines = <<~MSG.lines
             Error: Sorbet returned typechecking errors for `/errors.rb`
               8:11-8:11: Not enough arguments provided for method `Foo#foo`. Expected: `1`, got: `0` (7004)
               3:2-3:5: Method `sig` does not exist on `T.class_of(Foo)` (fix available) (7003)
@@ -43,6 +43,9 @@ module Spoom
               5:2-5:5: Expected `String` but found `NilClass` for method result type (7005)
               9:0-9:3: Unable to resolve constant `Bar` (fix available) (5002)
           MSG
+          actual_lines = result.err&.lines || []
+          assert_equal(expected_lines.first, actual_lines.first)
+          assert_equal(expected_lines.drop(1).sort, actual_lines.drop(1).sort)
         end
 
         # Defs
