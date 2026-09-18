@@ -488,8 +488,12 @@ module Spoom
               visit_type(type.aliased_type)
             when RBI::Type::Proc
               type.proc_params.each_value { |param| visit_type(param) }
-              visit_type(type.proc_returns) if type.proc_returns
-              visit_type(type.proc_bind) if type.proc_bind
+              if (proc_returns = type.proc_returns)
+                visit_type(proc_returns)
+              end
+              if (proc_bind = type.proc_bind)
+                visit_type(proc_bind)
+              end
             when RBI::Type::Shape
               type.types.each_value { |inner| visit_type(inner) }
             end
