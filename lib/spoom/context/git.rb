@@ -81,10 +81,10 @@ module Spoom
       def git_commit!(message: "message", time: Time.now.utc, allow_empty: false)
         git("add --all")
 
-        args = ["-m '#{message}'", "--date '#{time}'"]
+        args = ["-m #{message.shellescape}", "--date #{time.to_s.shellescape}"]
         args << "--allow-empty" if allow_empty
 
-        exec("GIT_COMMITTER_DATE=\"#{time}\" git -c commit.gpgsign=false commit #{args.join(" ")}")
+        exec("GIT_COMMITTER_DATE=#{time.to_s.shellescape} git -c commit.gpgsign=false commit #{args.join(" ")}")
       end
 
       # Get the current git branch in this context directory

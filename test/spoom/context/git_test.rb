@@ -288,6 +288,26 @@ module Spoom
         context.destroy!
       end
 
+      def test_context_git_commit_does_not_interpret_the_message_as_shell
+        context = Context.mktmp!
+        context.git_init!
+        context.exec("git config user.name 'spoom-tests'")
+        context.exec("git config user.email 'spoom@shopify.com'")
+        context.write!("file")
+
+        message = "ok';touch${IFS}pwned;echo '"
+        context.git_commit!(message: message)
+
+        assert_equal(message, context.git("log -1 --format=%s").out.strip)
+
+        refute(
+          context.file?("pwned"),
+          "the message was re-interpreted by the shell instead of being passed to git as one argument",
+        )
+
+        context.destroy!
+      end
+
       def test_context_git_init_does_not_interpret_the_branch_as_shell
         context = Context.mktmp!
 
