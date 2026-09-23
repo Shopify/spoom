@@ -1,6 +1,8 @@
 # typed: strict
 # frozen_string_literal: true
 
+require "shellwords"
+
 module Spoom
   module Git
     class Commit
@@ -52,7 +54,7 @@ module Spoom
       #: (?branch: String?) -> ExecResult
       def git_init!(branch: nil)
         if branch
-          git("init -b #{branch}")
+          git("init -b #{branch.shellescape}")
         else
           git("init")
         end
@@ -61,16 +63,16 @@ module Spoom
       # Run `git checkout` in this context directory
       #: (?ref: String) -> ExecResult
       def git_checkout!(ref: "main")
-        git("checkout #{ref}")
+        git("checkout #{ref.shellescape}")
       end
 
       # Run `git checkout -b <branch-name> <ref>` in this context directory
       #: (String branch_name, ?ref: String?) -> ExecResult
       def git_checkout_new_branch!(branch_name, ref: nil)
         if ref
-          git("checkout -b #{branch_name} #{ref}")
+          git("checkout -b #{branch_name.shellescape} #{ref.shellescape}")
         else
-          git("checkout -b #{branch_name}")
+          git("checkout -b #{branch_name.shellescape}")
         end
       end
 
@@ -120,7 +122,7 @@ module Spoom
       # Run `git push <remote> <ref>` in this context directory
       #: (String remote, String ref, ?force: bool) -> ExecResult
       def git_push!(remote, ref, force: false)
-        git("push #{force ? "-f" : ""} #{remote} #{ref}")
+        git("push #{force ? "-f" : ""} #{remote.shellescape} #{ref.shellescape}")
       end
 
       #: (*String arg) -> ExecResult

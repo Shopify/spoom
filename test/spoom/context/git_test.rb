@@ -260,6 +260,105 @@ module Spoom
 
         context.destroy!
       end
+
+      def test_context_git_checkout_does_not_interpret_the_ref_as_shell
+        context = Context.mktmp!
+        context.git_init!(branch: "seed")
+        context.exec("git config user.name 'spoom-tests'")
+        context.exec("git config user.email 'spoom@shopify.com'")
+        context.write!("file")
+        context.git_commit!
+
+        payload = "main';touch${IFS}pwned;'"
+        context.git_checkout_new_branch!(payload)
+
+        assert_equal(payload, context.git_current_branch)
+
+        # Everything above is setup, this is the call under test.
+        assert(
+          context.git_checkout!(ref: payload).status,
+          "git did not resolve the escaped ref, so it did not reach git as one argument",
+        )
+
+        refute(
+          context.file?("pwned"),
+          "the ref was re-interpreted by the shell instead of being passed to git as one argument",
+        )
+
+        context.destroy!
+      end
+
+      def test_context_git_init_does_not_interpret_the_branch_as_shell
+        context = Context.mktmp!
+
+        payload = "main';touch${IFS}pwned;'"
+        context.git_init!(branch: payload)
+
+        assert_equal(payload, context.git_current_branch)
+
+        refute(
+          context.file?("pwned"),
+          "the branch name was re-interpreted by the shell instead of being passed to git as one argument",
+        )
+
+        context.destroy!
+      end
+
+      def test_context_git_checkout_new_branch_does_not_interpret_its_arguments_as_shell
+        context = Context.mktmp!
+        context.git_init!(branch: "seed")
+        context.exec("git config user.name 'spoom-tests'")
+        context.exec("git config user.email 'spoom@shopify.com'")
+        context.write!("file")
+        context.git_commit!
+
+        # Both arguments are interpolated, so both carry a payload. They can't carry the same one:
+        # `checkout -b <new> <start-point>` needs the start point to exist and the new name not to.
+        ref = "seed';touch${IFS}pwned;'"
+        context.git_checkout_new_branch!(ref)
+
+        branch_name = "main';touch${IFS}pwned;'"
+        context.git_checkout_new_branch!(branch_name, ref: ref)
+
+        assert_equal(branch_name, context.git_current_branch)
+
+        refute(
+          context.file?("pwned"),
+          "an argument was re-interpreted by the shell instead of being passed to git as one argument",
+        )
+
+        context.destroy!
+      end
+
+      def test_context_git_push_does_not_interpret_its_arguments_as_shell
+        context = Context.mktmp!
+        context.git_init!(branch: "main")
+        context.exec("git config user.name 'spoom-tests'")
+        context.exec("git config user.email 'spoom@shopify.com'")
+        context.write!("file")
+        context.git_commit!
+
+        payload = "main';touch${IFS}pwned;'"
+        context.git_checkout_new_branch!(payload)
+
+        tmp = Context.mktmp!
+        remote = Context.new(File.join(tmp.absolute_path, payload))
+        remote.mkdir!
+        remote.git_init!(branch: "main")
+
+        assert(
+          context.git_push!(remote.absolute_path, payload).status,
+          "git did not resolve the escaped remote and ref, so they did not reach git as one argument each",
+        )
+
+        refute(
+          context.file?("pwned"),
+          "an argument was re-interpreted by the shell instead of being passed to git as one argument",
+        )
+
+        tmp.destroy!
+        context.destroy!
+      end
     end
   end
 end
