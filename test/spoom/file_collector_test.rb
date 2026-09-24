@@ -99,6 +99,27 @@ module Spoom
         context.destroy!
       end
 
+      def test_collect_files_does_not_interpret_file_names_as_shell
+        context = Context.mktmp!
+
+        name = "x'$(touch spoom_mime_injection_marker)'"
+        context.write!(name, "#! /usr/bin/env ruby\n")
+
+        files = collect_files(context, allow_extensions: [".rb"], allow_mime_types: ["text/x-ruby"])
+
+        assert_equal([name], files)
+
+        # If the file name gets interpreted as shell, the `touch` runs in the test process's
+        # working directory (the repo root), not in the temp context, so look for it there.
+        refute(
+          File.exist?(File.join(Dir.pwd, "spoom_mime_injection_marker")),
+          "the file name was re-interpreted by the shell while detecting its mime type",
+        )
+      ensure
+        FileUtils.rm_f(File.join(Dir.pwd, "spoom_mime_injection_marker"))
+        context&.destroy!
+      end
+
       private
 
       #: (

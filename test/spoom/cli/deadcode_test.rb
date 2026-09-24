@@ -344,6 +344,27 @@ module Spoom
         assert_empty(result.out)
         assert(result.status)
       end
+
+      def test_remove_does_not_interpret_the_candidate_path_as_shell
+        path = "lib/safe';touch${IFS}pwned;'.rb"
+        @project.write!(path, <<~RUBY)
+          def foo; end
+          def bar; end
+          def baz; end
+        RUBY
+
+        result = @project.spoom("deadcode remove #{"#{path}:2:0-2:12".shellescape} --no-color")
+
+        assert(
+          result.status,
+          "spoom could not diff the escaped path, so it did not reach `diff` as one argument",
+        )
+
+        refute(
+          File.exist?(File.join(@project.absolute_path, "pwned")),
+          "the candidate path was re-interpreted by the shell during the diff step",
+        )
+      end
     end
   end
 end
