@@ -76,6 +76,10 @@ module Spoom
           case node.superclass&.slice
           when /^(::)?T::Struct$/
             @counters.increment("t_structs")
+          when /^(::)?T::InexactStruct$/
+            @counters.increment("t_inexact_structs")
+          when /^(::)?T::ImmutableStruct$/
+            @counters.increment("t_immutable_structs")
           when /^(::)?T::Enum$/
             @counters.increment("t_enums")
           end
