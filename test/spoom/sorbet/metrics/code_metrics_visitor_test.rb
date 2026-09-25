@@ -39,14 +39,20 @@ module Spoom
             context.write!("foo.rb", <<~RUBY)
               class Struct < T::Struct; end
               class RootStruct < ::T::Struct; end
+              class InexactStruct < T::InexactStruct; end
+              class RootInexactStruct < ::T::InexactStruct; end
+              class ImmutableStruct < T::ImmutableStruct; end
+              class RootImmutableStruct < ::T::ImmutableStruct; end
               class Enum < T::Enum; end
               class RootEnum < ::T::Enum; end
               class Other; end
             RUBY
           end
 
-          assert_equal(5, metrics["classes"])
+          assert_equal(9, metrics["classes"])
           assert_equal(2, metrics["t_structs"])
+          assert_equal(2, metrics["t_inexact_structs"])
+          assert_equal(2, metrics["t_immutable_structs"])
           assert_equal(2, metrics["t_enums"])
         end
 
