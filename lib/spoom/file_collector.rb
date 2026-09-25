@@ -1,6 +1,8 @@
 # typed: strict
 # frozen_string_literal: true
 
+require "open3"
+
 module Spoom
   class FileCollector
     #: Array[String]
@@ -94,7 +96,15 @@ module Spoom
     #: (String path) -> String?
     def mime_type_for(path)
       # The `file` command appears to be hanging on MacOS for some files so we timeout after 1s.
-      %x{timeout 1s file --mime-type -b '#{path}'}.split("; ").first&.strip
+      #
+      # The arguments are passed straight to the process instead of being interpolated into a
+      # shell command: `path` comes from the scanned directory, so a crafted file name could
+      # escape any quoting we applied ourselves and run as a command.
+      out, _status = Open3.capture2("timeout", "1s", "file", "--mime-type", "-b", path)
+      out.split("; ").first&.strip
+    rescue Errno::ENOENT
+      # `timeout` isn't part of a stock MacOS install. The shell used to swallow that for us.
+      nil
     end
   end
 end

@@ -158,7 +158,7 @@ module Spoom
         new_source = remover.remove_location(nil, location)
         context.write!("PATCH", new_source)
 
-        diff = context.exec("diff -u #{location.file} PATCH")
+        diff = context.exec("diff -u #{location.file.shellescape} PATCH")
         $stderr.puts T.must(diff.out.lines[2..-1]).join
         context.remove!("PATCH")
 

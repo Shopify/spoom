@@ -67,6 +67,7 @@ module Spoom
         #: (Prism::DefNode) -> void
         def visit_def_node(node)
           last_sigs = collect_last_sigs
+          last_sigs.reject! { |_, sig| sig.is_abstract } unless @translate_abstract_methods
           return if last_sigs.empty?
 
           apply_member_annotations(last_sigs)
@@ -95,7 +96,7 @@ module Spoom
             @rewriter << Source::Replace.new(node.location.start_offset, node.location.end_offset, out)
           end
 
-          if @translate_abstract_methods && last_sigs.any? { |_, sig| sig.is_abstract }
+          if last_sigs.any? { |_, sig| sig.is_abstract }
             @rewriter << Source::Replace.new(
               node.rparen_loc&.end_offset || node.name_loc.end_offset,
               node.location.end_offset - 1,
@@ -304,7 +305,7 @@ module Spoom
             @rewriter << Source::Insert.new(insert_pos, "# @final\n#{indent}")
           end
 
-          if sigs.any? { |_, sig| sig.is_abstract } && @translate_abstract_methods
+          if sigs.any? { |_, sig| sig.is_abstract }
             @rewriter << Source::Insert.new(insert_pos, "# @abstract\n#{indent}")
           end
 

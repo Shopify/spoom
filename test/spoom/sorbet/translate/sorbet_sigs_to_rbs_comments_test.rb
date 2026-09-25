@@ -129,6 +129,32 @@ module Spoom
           RBS
         end
 
+        def test_translate_to_rbs_skips_abstract_methods_without_runtime
+          contents = <<~RB
+            class Foo
+              T::Sig::WithoutRuntime.sig do
+                abstract.params(query: Collect::PrivateAssociationRelation).returns(T::Array[T.attached_class])
+              end
+              def collect(query); end
+
+              sig { returns(Integer) }
+              def count = 42
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents, translate_abstract_methods: false))
+            class Foo
+              T::Sig::WithoutRuntime.sig do
+                abstract.params(query: Collect::PrivateAssociationRelation).returns(T::Array[T.attached_class])
+              end
+              def collect(query); end
+
+              #: -> Integer
+              def count = 42
+            end
+          RBS
+        end
+
         def test_translate_method_sigs_to_rbs_without_positional_names
           contents = <<~RBI
             class A
