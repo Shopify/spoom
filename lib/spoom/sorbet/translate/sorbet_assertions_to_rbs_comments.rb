@@ -69,6 +69,11 @@ module Spoom
 
         #: (Prism::Node) -> bool
         def maybe_translate_assertion(node)
+          # Most assertions can replace the value on the right-hand side of an assignment.
+          # `T.bind` becomes a standalone RBS comment instead, so replacing an assigned
+          # `T.bind` would leave invalid code such as `bound = #: self as Type`.
+          standalone_assertion = node.is_a?(Prism::CallNode)
+
           node = case node
           when Prism::MultiWriteNode,
                Prism::ClassVariableWriteNode, Prism::ClassVariableAndWriteNode, Prism::ClassVariableOperatorWriteNode, Prism::ClassVariableOrWriteNode,
@@ -89,6 +94,7 @@ module Spoom
 
           return false unless node.is_a?(Prism::CallNode)
           return false unless translatable_annotation?(node)
+          return false if node.name == :bind && !standalone_assertion
           return false unless at_end_of_line?(node)
 
           trailing_comment, comment_end_offset = extract_trailing_comment(node)
