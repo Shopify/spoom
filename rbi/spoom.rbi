@@ -672,27 +672,32 @@ class Spoom::Coverage::D3::ColorPalette
   sig { returns(::String) }
   def false_color; end
 
-  def false_color=(_arg0); end
+  sig { params(false_color: ::String).returns(::String) }
+  def false_color=(false_color); end
 
   sig { returns(::String) }
   def ignore_color; end
 
-  def ignore_color=(_arg0); end
+  sig { params(ignore_color: ::String).returns(::String) }
+  def ignore_color=(ignore_color); end
 
   sig { returns(::String) }
   def strict_color; end
 
-  def strict_color=(_arg0); end
+  sig { params(strict_color: ::String).returns(::String) }
+  def strict_color=(strict_color); end
 
   sig { returns(::String) }
   def strong_color; end
 
-  def strong_color=(_arg0); end
+  sig { params(strong_color: ::String).returns(::String) }
+  def strong_color=(strong_color); end
 
   sig { returns(::String) }
   def true_color; end
 
-  def true_color=(_arg0); end
+  sig { params(true_color: ::String).returns(::String) }
+  def true_color=(true_color); end
 end
 
 class Spoom::Coverage::D3::Pie < ::Spoom::Coverage::D3::Base
@@ -939,62 +944,74 @@ class Spoom::Coverage::Snapshot
   sig { returns(::Integer) }
   def calls_typed; end
 
-  def calls_typed=(_arg0); end
+  sig { params(calls_typed: ::Integer).returns(::Integer) }
+  def calls_typed=(calls_typed); end
 
   sig { returns(::Integer) }
   def calls_untyped; end
 
-  def calls_untyped=(_arg0); end
+  sig { params(calls_untyped: ::Integer).returns(::Integer) }
+  def calls_untyped=(calls_untyped); end
 
   sig { returns(::Integer) }
   def classes; end
 
-  def classes=(_arg0); end
+  sig { params(classes: ::Integer).returns(::Integer) }
+  def classes=(classes); end
 
   sig { returns(T.nilable(::String)) }
   def commit_sha; end
 
-  def commit_sha=(_arg0); end
+  sig { params(commit_sha: T.nilable(::String)).returns(T.nilable(::String)) }
+  def commit_sha=(commit_sha); end
 
   sig { returns(T.nilable(::Integer)) }
   def commit_timestamp; end
 
-  def commit_timestamp=(_arg0); end
+  sig { params(commit_timestamp: T.nilable(::Integer)).returns(T.nilable(::Integer)) }
+  def commit_timestamp=(commit_timestamp); end
 
   sig { returns(::Integer) }
   def duration; end
 
-  def duration=(_arg0); end
+  sig { params(duration: ::Integer).returns(::Integer) }
+  def duration=(duration); end
 
   sig { returns(::Integer) }
   def files; end
 
-  def files=(_arg0); end
+  sig { params(files: ::Integer).returns(::Integer) }
+  def files=(files); end
 
   sig { returns(::Integer) }
   def methods_with_sig; end
 
-  def methods_with_sig=(_arg0); end
+  sig { params(methods_with_sig: ::Integer).returns(::Integer) }
+  def methods_with_sig=(methods_with_sig); end
 
   sig { returns(::Integer) }
   def methods_with_sig_excluding_rbis; end
 
-  def methods_with_sig_excluding_rbis=(_arg0); end
+  sig { params(methods_with_sig_excluding_rbis: ::Integer).returns(::Integer) }
+  def methods_with_sig_excluding_rbis=(methods_with_sig_excluding_rbis); end
 
   sig { returns(::Integer) }
   def methods_without_sig; end
 
-  def methods_without_sig=(_arg0); end
+  sig { params(methods_without_sig: ::Integer).returns(::Integer) }
+  def methods_without_sig=(methods_without_sig); end
 
   sig { returns(::Integer) }
   def methods_without_sig_excluding_rbis; end
 
-  def methods_without_sig_excluding_rbis=(_arg0); end
+  sig { params(methods_without_sig_excluding_rbis: ::Integer).returns(::Integer) }
+  def methods_without_sig_excluding_rbis=(methods_without_sig_excluding_rbis); end
 
   sig { returns(::Integer) }
   def modules; end
 
-  def modules=(_arg0); end
+  sig { params(modules: ::Integer).returns(::Integer) }
+  def modules=(modules); end
 
   sig { params(out: T.any(::IO, ::StringIO), colors: T::Boolean, indent_level: ::Integer).void }
   def print(out: T.unsafe(nil), colors: T.unsafe(nil), indent_level: T.unsafe(nil)); end
@@ -1002,27 +1019,32 @@ class Spoom::Coverage::Snapshot
   sig { returns(::Integer) }
   def rbi_files; end
 
-  def rbi_files=(_arg0); end
+  sig { params(rbi_files: ::Integer).returns(::Integer) }
+  def rbi_files=(rbi_files); end
 
   sig { returns(T::Hash[::String, ::Integer]) }
   def sigils; end
 
-  def sigils=(_arg0); end
+  sig { params(sigils: T::Hash[::String, ::Integer]).returns(T::Hash[::String, ::Integer]) }
+  def sigils=(sigils); end
 
   sig { returns(T::Hash[::String, ::Integer]) }
   def sigils_excluding_rbis; end
 
-  def sigils_excluding_rbis=(_arg0); end
+  sig { params(sigils_excluding_rbis: T::Hash[::String, ::Integer]).returns(T::Hash[::String, ::Integer]) }
+  def sigils_excluding_rbis=(sigils_excluding_rbis); end
 
   sig { returns(::Integer) }
   def singleton_classes; end
 
-  def singleton_classes=(_arg0); end
+  sig { params(singleton_classes: ::Integer).returns(::Integer) }
+  def singleton_classes=(singleton_classes); end
 
   sig { returns(::Integer) }
   def timestamp; end
 
-  def timestamp=(_arg0); end
+  sig { params(timestamp: ::Integer).returns(::Integer) }
+  def timestamp=(timestamp); end
 
   sig { returns(T::Hash[::String, T.untyped]) }
   def to_h; end
@@ -1033,12 +1055,14 @@ class Spoom::Coverage::Snapshot
   sig { returns(T.nilable(::String)) }
   def version_runtime; end
 
-  def version_runtime=(_arg0); end
+  sig { params(version_runtime: T.nilable(::String)).returns(T.nilable(::String)) }
+  def version_runtime=(version_runtime); end
 
   sig { returns(T.nilable(::String)) }
   def version_static; end
 
-  def version_static=(_arg0); end
+  sig { params(version_static: T.nilable(::String)).returns(T.nilable(::String)) }
+  def version_static=(version_static); end
 
   class << self
     sig { params(json: ::String).returns(::Spoom::Coverage::Snapshot) }
@@ -1577,7 +1601,8 @@ class Spoom::Deadcode::Remover::NodeContext
   sig { returns(T::Array[::Prism::Node]) }
   def nesting; end
 
-  def nesting=(_arg0); end
+  sig { params(nesting: T::Array[::Prism::Node]).returns(T::Array[::Prism::Node]) }
+  def nesting=(nesting); end
 
   sig { returns(T.nilable(::Prism::Node)) }
   def next_node; end
@@ -2322,7 +2347,8 @@ class Spoom::LSP::SymbolPrinter < ::Spoom::Printer
   sig { returns(T.nilable(::String)) }
   def prefix; end
 
-  def prefix=(_arg0); end
+  sig { params(prefix: T.nilable(::String)).returns(T.nilable(::String)) }
+  def prefix=(prefix); end
 
   sig { params(objects: T::Array[::Spoom::LSP::PrintableSymbol]).void }
   def print_list(objects); end
@@ -2482,7 +2508,8 @@ class Spoom::Model::Class < ::Spoom::Model::Namespace
   sig { returns(T.nilable(::String)) }
   def superclass_name; end
 
-  def superclass_name=(_arg0); end
+  sig { params(superclass_name: T.nilable(::String)).returns(T.nilable(::String)) }
+  def superclass_name=(superclass_name); end
 end
 
 class Spoom::Model::Comment
@@ -2879,7 +2906,8 @@ class Spoom::Printer
   sig { returns(T.any(::IO, ::StringIO)) }
   def out; end
 
-  def out=(_arg0); end
+  sig { params(out: T.any(::IO, ::StringIO)).returns(T.any(::IO, ::StringIO)) }
+  def out=(out); end
 
   sig { params(string: T.nilable(::String)).void }
   def print(string); end
@@ -2974,7 +3002,8 @@ class Spoom::Sorbet::Config
   sig { returns(T::Boolean) }
   def no_stdlib; end
 
-  def no_stdlib=(_arg0); end
+  sig { params(no_stdlib: T::Boolean).returns(T::Boolean) }
+  def no_stdlib=(no_stdlib); end
 
   sig { returns(::String) }
   def options_string; end
@@ -2982,7 +3011,9 @@ class Spoom::Sorbet::Config
   sig { returns(T::Array[::String]) }
   def paths; end
 
-  def paths=(_arg0); end
+  sig { params(paths: T::Array[::String]).returns(T::Array[::String]) }
+  def paths=(paths); end
+
   def typed_overrides; end
   def typed_overrides=(_arg0); end
 
