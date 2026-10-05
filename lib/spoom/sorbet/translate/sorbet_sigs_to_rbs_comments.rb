@@ -90,14 +90,22 @@ module Spoom
           end
 
           if last_sigs.any? { |_, sig| sig.is_abstract }
+            header = node.rparen_loc || node.parameters&.location || node.name_loc
+            comment = @comments.find do |comment|
+              comment.location.start_line == header.end_line &&
+                comment.location.start_offset >= header.end_offset &&
+                comment.location.end_offset < node.location.end_offset
+            end
+            header_comment = comment ? " #{comment.location.slice}" : ""
+
             @rewriter << Source::Replace.new(
-              node.rparen_loc&.end_offset || node.name_loc.end_offset,
+              header.end_offset,
               node.location.end_offset - 1,
-              if node.name.end_with?("=")
+              if node.name.end_with?("=") || (node.parameters && !node.rparen_loc)
                 indent = " " * node.location.start_column
-                "\n#{indent}  raise NotImplementedError, \"Abstract method called\"\n#{indent}end"
+                "#{header_comment}\n#{indent}  raise NotImplementedError, \"Abstract method called\"\n#{indent}end"
               else
-                " = raise NotImplementedError, \"Abstract method called\""
+                " = raise NotImplementedError, \"Abstract method called\"#{header_comment}"
               end,
             )
           end
