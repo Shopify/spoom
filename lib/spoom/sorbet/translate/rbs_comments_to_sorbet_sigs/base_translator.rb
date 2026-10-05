@@ -215,7 +215,7 @@ module Spoom
           # Called for every overloaded method sig that we discard because it wasn't the last one.
           # @abstract
           #: (Spoom::RBS::Signature) -> void
-          def rewrite_discarded_overload(signature) = raise
+          def rewrite_discarded_overload(signature) = super
 
           #: (PrismTypes::anyScopeNode) -> void
           def apply_class_annotations(node)
@@ -326,17 +326,17 @@ module Spoom
           #|   insert_pos: Integer,
           #|   sorbet_replacement: String?
           #| ) -> void
-          def apply_class_annotation(annotation, parent_node:, insert_pos:, sorbet_replacement:) = raise
+          def apply_class_annotation(annotation, parent_node:, insert_pos:, sorbet_replacement:) = super
 
           # Rewrites the `#: [...]` type params comment (e.g. delete it, or mark it as translated).
           # @abstract
           #: (Spoom::RBS::Signature, type_params: Array[::RBS::AST::TypeParam]) -> void
-          def rewrite_type_params_signature(signature, type_params:) = raise
+          def rewrite_type_params_signature(signature, type_params:) = super
 
           # Inserts a single `type_member` declaration into the class/module body.
           # @abstract
           #: (String type_member, parent_node: PrismTypes::anyScopeNode, insert_pos: Integer) -> void
-          def insert_type_member(type_member, parent_node:, insert_pos:) = raise
+          def insert_type_member(type_member, parent_node:, insert_pos:) = super
 
           #: (Array[Spoom::RBS::Annotation], RBI::Sig) -> Array[Spoom::RBS::Annotation]
           def apply_member_annotations(annotations, sig)
@@ -389,7 +389,7 @@ module Spoom
 
           # @abstract
           #: (String mixin_name, into: PrismTypes::anyScopeNode, at: Integer) -> void
-          def extend_with(mixin_name, into:, at:) = raise
+          def extend_with(mixin_name, into:, at:) = super
 
           #: (Array[Prism::Comment]) -> Array[Spoom::RBS::TypeAlias]
           def collect_type_aliases(comments)

@@ -29,11 +29,11 @@ module Spoom
     class Edit
       # @abstract
       #: (Array[Integer]) -> void
-      def apply(bytes) = raise NotImplementedError, "Abstract method called"
+      def apply(bytes) = super
 
       # @abstract
       #: -> [Integer, Integer]
-      def range = raise NotImplementedError, "Abstract method called"
+      def range = super
     end
 
     class Insert < Edit

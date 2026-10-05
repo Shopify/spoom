@@ -106,37 +106,93 @@ module Spoom
             class Foo
               # @abstract
               #: -> void
-              def foo = raise NotImplementedError, "Abstract method called"
+              def foo = super
 
               class Bar
                 # @abstract
                 #: -> void
-                def bar = raise NotImplementedError, "Abstract method called"
+                def bar = super
               end
 
               # @abstract
               #: (Integer x) -> void
-              def baz(x) = raise NotImplementedError, "Abstract method called" # Keep the header comment
+              def baz(x) = super # Keep the header comment
 
               # @abstract
               #: (Integer x) -> void
               def foo=(x)
-                raise NotImplementedError, "Abstract method called"
+                super
               end
 
               # @abstract
               #: (Integer x) -> void
               def bar=(x) # Keep the setter comment
-                raise NotImplementedError, "Abstract method called"
+                super
               end
 
               # @abstract
               #: (Integer x, Integer y) -> void
               def qux x, y # Keep the unparenthesized header comment
-                raise NotImplementedError, "Abstract method called"
+                super
               end
             end
           RBS
+        end
+
+        def test_translate_to_rbs_abstract_method_forwards_arguments_and_block
+          contents = <<~RB
+            sig do
+              abstract.params(
+                value: Integer,
+                rest: Integer,
+                label: String,
+                options: String,
+                block: T.proc.params(value: String).returns(String)
+              ).returns(String)
+            end
+            def render value, *rest, label:, **options, &block # Keep the header comment
+            end
+          RB
+
+          translated = sorbet_sigs_to_rbs_comments(contents)
+          requirement = Module.new
+          requirement.module_eval(translated)
+          parent = Class.new do
+            def render(value, *rest, label:, **options, &block)
+              block.call("#{label}: #{([value] + rest).join(", ")}#{options.fetch(:suffix)}")
+            end
+          end
+          child = Class.new(parent)
+          child.include(requirement)
+
+          assert_equal(
+            "[values: 1, 2, 3!]",
+            child.new.render(1, 2, 3, label: "values", suffix: "!") { |value| "[#{value}]" },
+          )
+
+          missing_implementation = Class.new
+          missing_implementation.include(requirement)
+          assert_raises(NoMethodError) do
+            missing_implementation.new.render(1, label: "values", suffix: "!") { |value| value }
+          end
+        end
+
+        def test_translate_to_rbs_abstract_setter_forwards_to_inherited_implementation
+          contents = <<~RB
+            sig { abstract.params(value: Integer).void }
+            def value= value # Keep the setter comment
+            end
+          RB
+
+          requirement = Module.new
+          requirement.module_eval(sorbet_sigs_to_rbs_comments(contents))
+          parent = Class.new { attr_accessor :value }
+          child = Class.new(parent)
+          child.include(requirement)
+          instance = child.new
+          instance.value = 42
+
+          assert_equal(42, instance.value)
         end
 
         def test_translate_to_rbs_skips_abstract_methods_without_runtime

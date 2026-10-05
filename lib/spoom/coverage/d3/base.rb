@@ -45,7 +45,7 @@ module Spoom
 
         # @abstract
         #: -> String
-        def script = raise NotImplementedError, "Abstract method called"
+        def script = super
 
         private
 
