@@ -258,6 +258,14 @@ spoom srb sigs translate
 
 Abstract-method translation preserves method parameters and trailing header comments.
 
+Include abstract methods with `--translate-abstract-methods`:
+
+```sh
+spoom srb sigs translate --translate-abstract-methods
+```
+
+Generated abstract bodies call bare `super`, forwarding arguments and blocks to an inherited implementation. This targets the new RBS abstract-method requirement in [Sorbet PR #10707](https://github.com/sorbet/sorbet/pull/10707); Sorbet versions that still require `raise` will reject these bodies.
+
 Translate signatures from RBS comments to RBI:
 
 ```sh

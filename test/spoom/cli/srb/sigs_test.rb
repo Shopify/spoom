@@ -449,7 +449,7 @@ module Spoom
             class A
               # @abstract
               #: -> void
-              def foo = raise NotImplementedError, "Abstract method called"
+              def foo = super
             end
           RB
         end

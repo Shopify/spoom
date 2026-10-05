@@ -103,9 +103,9 @@ module Spoom
               node.location.end_offset - 1,
               if node.name.end_with?("=") || (node.parameters && !node.rparen_loc)
                 indent = " " * node.location.start_column
-                "#{header_comment}\n#{indent}  raise NotImplementedError, \"Abstract method called\"\n#{indent}end"
+                "#{header_comment}\n#{indent}  super\n#{indent}end"
               else
-                " = raise NotImplementedError, \"Abstract method called\"#{header_comment}"
+                " = super#{header_comment}"
               end,
             )
           end
