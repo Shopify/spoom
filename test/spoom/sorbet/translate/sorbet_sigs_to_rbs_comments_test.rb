@@ -84,14 +84,18 @@ module Spoom
               end
 
               sig { abstract.params(x: Integer).void }
-              def baz(x)
+              def baz(x) # Keep the header comment
               end
 
               sig { abstract.params(x: Integer).void }
               def foo=(x); end
 
               sig { abstract.params(x: Integer).void }
-              def bar=(x)
+              def bar=(x) # Keep the setter comment
+              end
+
+              sig { abstract.params(x: Integer, y: Integer).void }
+              def qux x, y # Keep the unparenthesized header comment
               end
             end
           RB
@@ -112,7 +116,7 @@ module Spoom
 
               # @abstract
               #: (Integer x) -> void
-              def baz(x) = raise NotImplementedError, "Abstract method called"
+              def baz(x) = raise NotImplementedError, "Abstract method called" # Keep the header comment
 
               # @abstract
               #: (Integer x) -> void
@@ -122,7 +126,13 @@ module Spoom
 
               # @abstract
               #: (Integer x) -> void
-              def bar=(x)
+              def bar=(x) # Keep the setter comment
+                raise NotImplementedError, "Abstract method called"
+              end
+
+              # @abstract
+              #: (Integer x, Integer y) -> void
+              def qux x, y # Keep the unparenthesized header comment
                 raise NotImplementedError, "Abstract method called"
               end
             end

@@ -256,6 +256,8 @@ Translate signatures from RBI to RBS comments:
 spoom srb sigs translate
 ```
 
+Abstract-method translation preserves method parameters and trailing header comments.
+
 Translate signatures from RBS comments to RBI:
 
 ```sh
