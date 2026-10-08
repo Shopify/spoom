@@ -484,7 +484,9 @@ module Spoom
               visit_type(type.type)
             when RBI::Type::ClassOf
               visit_type(type.type)
-              type.type_parameters.each { |param| visit_type(param) }
+              if (type_parameter = type.type_parameter)
+                visit_type(type_parameter)
+              end
             when RBI::Type::TypeAlias
               visit_type(type.aliased_type)
             when RBI::Type::Proc
