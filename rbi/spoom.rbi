@@ -3611,6 +3611,8 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::Options
 end
 
 Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::Options::ALLOWED_OVERLOAD_STRATEGIES = T.let(T.unsafe(nil), Array)
+Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBS_ANNOTATION_MARKERS = T.let(T.unsafe(nil), Array)
+Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBS_REWRITE_PATTERN = T.let(T.unsafe(nil), Regexp)
 
 class Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments < ::Spoom::Sorbet::Translate::Translator
   sig do

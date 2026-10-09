@@ -5,20 +5,20 @@ module Spoom
   module Sorbet
     module Translate
       module RBSCommentsToSorbetSigs
-        class << self
-          RBS_ANNOTATION_MARKERS = [
-            "# @abstract",
-            "# @interface",
-            "# @sealed",
-            "# @final",
-            "# @requires_ancestor:",
-            "# @override",
-            "# @overridable",
-            "# @without_runtime",
-          ].freeze #: Array[String]
-          RBS_REWRITE_PATTERN = Regexp.union(["#:", "#|", *RBS_ANNOTATION_MARKERS]).freeze #: Regexp
-          private_constant :RBS_ANNOTATION_MARKERS, :RBS_REWRITE_PATTERN
+        RBS_ANNOTATION_MARKERS = [
+          "# @abstract",
+          "# @interface",
+          "# @sealed",
+          "# @final",
+          "# @requires_ancestor:",
+          "# @override",
+          "# @overridable",
+          "# @without_runtime",
+        ].freeze #: Array[String]
+        RBS_REWRITE_PATTERN = Regexp.union(["#:", "#|", *RBS_ANNOTATION_MARKERS]).freeze #: Regexp
+        private_constant :RBS_ANNOTATION_MARKERS
 
+        class << self
           #: (
           #|   String ruby_contents,
           #|   file: String,
