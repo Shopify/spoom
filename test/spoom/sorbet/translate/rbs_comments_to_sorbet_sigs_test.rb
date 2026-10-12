@@ -7,6 +7,14 @@ module Spoom
   module Sorbet
     module Translate
       class RBSCommentsToSorbetSigsTest < Minitest::Test
+        def test_contains_rbs_syntax
+          assert(RBSCommentsToSorbetSigs.contains_rbs_syntax?("#: -> void\ndef foo; end\n"))
+          assert(RBSCommentsToSorbetSigs.contains_rbs_syntax?("#|   String\n"))
+          assert(RBSCommentsToSorbetSigs.contains_rbs_syntax?("# @abstract\nclass A; end\n"))
+          assert(RBSCommentsToSorbetSigs.contains_rbs_syntax?("# typed: false\n#: -> void\ndef foo; end\n"))
+          refute(RBSCommentsToSorbetSigs.contains_rbs_syntax?("# typed: true\ndef foo; end\n"))
+        end
+
         def test_translate_to_rbi_empty
           contents = ""
           assert_rewrites_rbs(

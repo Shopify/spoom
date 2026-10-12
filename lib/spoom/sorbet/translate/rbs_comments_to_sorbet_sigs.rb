@@ -5,20 +5,29 @@ module Spoom
   module Sorbet
     module Translate
       module RBSCommentsToSorbetSigs
-        RBS_ANNOTATION_MARKERS = [
-          "# @abstract",
-          "# @interface",
-          "# @sealed",
-          "# @final",
-          "# @requires_ancestor:",
-          "# @override",
-          "# @overridable",
-          "# @without_runtime",
-        ].freeze #: Array[String]
-        RBS_REWRITE_PATTERN = Regexp.union(["#:", "#|", *RBS_ANNOTATION_MARKERS]).freeze #: Regexp
-        private_constant :RBS_ANNOTATION_MARKERS
-
         class << self
+          RBS_REWRITE_PATTERN = Regexp.union([
+            "#:",
+            "#|",
+            "# @abstract",
+            "# @interface",
+            "# @sealed",
+            "# @final",
+            "# @requires_ancestor:",
+            "# @override",
+            "# @overridable",
+            "# @without_runtime",
+          ]).freeze #: Regexp
+          private_constant :RBS_REWRITE_PATTERN
+
+          # Detects RBS comment markers (`#:`, `#|`, and supported `# @...` annotations).
+          # Use this check to skip parsing files without those markers.
+          # It does not validate RBS syntax or check the `typed:` sigil.
+          #: (String ruby_contents) -> bool
+          def contains_rbs_syntax?(ruby_contents)
+            ruby_contents.match?(RBS_REWRITE_PATTERN)
+          end
+
           #: (
           #|   String ruby_contents,
           #|   file: String,
@@ -34,7 +43,7 @@ module Spoom
             erase_generic_types: false,
             force: false
           )
-            return ruby_contents unless ruby_contents.match?(RBS_REWRITE_PATTERN) &&
+            return ruby_contents unless contains_rbs_syntax?(ruby_contents) &&
               (force || Sigils.contains_valid_sigil?(ruby_contents))
 
             options = Options.new(

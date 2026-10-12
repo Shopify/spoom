@@ -87,8 +87,31 @@ module Spoom
 
       def test_contains_valid_sigil
         assert(Sigils.contains_valid_sigil?("# typed: true\nclass A; end\n"))
+        assert(Sigils.contains_valid_sigil?("# typed: __STDLIB_INTERNAL\n"))
         refute(Sigils.contains_valid_sigil?("class A; end\n"))
         refute(Sigils.contains_valid_sigil?("# typed: foo\nclass A; end\n"))
+      end
+
+      def test_satisfies_minimum_strictness
+        ["true", "strict", "strong"].each do |strictness|
+          assert(Sigils.satisfies_minimum_strictness?("# typed: #{strictness}\n", "true"))
+        end
+
+        ["ignore", "false", "foo", "__STDLIB_INTERNAL", "true#"].each do |strictness|
+          refute(Sigils.satisfies_minimum_strictness?("# typed: #{strictness}\n", "true"))
+        end
+
+        refute(Sigils.satisfies_minimum_strictness?("class A; end\n", "true"))
+        refute(Sigils.satisfies_minimum_strictness?("# typed: false\n# typed: strict\n", "true"))
+        refute(Sigils.satisfies_minimum_strictness?("# typed: true\n", "strict"))
+        assert(Sigils.satisfies_minimum_strictness?("# typed: strict\n", "strict"))
+        assert(Sigils.satisfies_minimum_strictness?("# typed: strong\n", "strict"))
+      end
+
+      def test_satisfies_minimum_strictness_with_invalid_minimum
+        ["", "foo", "__STDLIB_INTERNAL"].each do |minimum_strictness|
+          refute(Sigils.satisfies_minimum_strictness?("# typed: strong\n", minimum_strictness))
+        end
       end
 
       def test_update_sigil_to_use_valid_strictness

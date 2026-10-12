@@ -51,6 +51,21 @@ module Spoom
           !!strictness && valid_strictness?(strictness)
         end
 
+        # returns true if the passed content contains a valid sigil at or above the passed strictness
+        # internal sigils do not satisfy a minimum strictness
+        #: (String content, String strictness) -> bool
+        def satisfies_minimum_strictness?(content, strictness)
+          return false unless contains_valid_sigil?(content)
+
+          current_strictness = strictness_in_content(content)
+          strictness = strictness.strip
+          return false if current_strictness == STRICTNESS_INTERNAL || strictness == STRICTNESS_INTERNAL
+
+          strictness_index = VALID_STRICTNESS.index(current_strictness)
+          minimum_index = VALID_STRICTNESS.index(strictness)
+          !!strictness_index && !!minimum_index && strictness_index >= minimum_index
+        end
+
         # returns a string which is the passed content but with the sigil updated to a new strictness
         #: (String content, String new_strictness) -> String
         def update_sigil(content, new_strictness)
