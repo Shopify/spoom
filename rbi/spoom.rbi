@@ -3247,6 +3247,9 @@ module Spoom::Sorbet::Sigils
     sig { params(path: T.any(::Pathname, ::String)).returns(T.nilable(::String)) }
     def file_strictness(path); end
 
+    sig { params(content: ::String, strictness: ::String).returns(T::Boolean) }
+    def satisfies_minimum_strictness?(content, strictness); end
+
     sig { params(strictness: ::String).returns(::String) }
     def sigil_string(strictness); end
 
@@ -3353,6 +3356,9 @@ end
 
 module Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs
   class << self
+    sig { params(ruby_contents: ::String).returns(T::Boolean) }
+    def contains_rbs_syntax?(ruby_contents); end
+
     sig do
       params(
         ruby_contents: ::String,
@@ -3611,8 +3617,6 @@ class Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::Options
 end
 
 Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::Options::ALLOWED_OVERLOAD_STRATEGIES = T.let(T.unsafe(nil), Array)
-Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBS_ANNOTATION_MARKERS = T.let(T.unsafe(nil), Array)
-Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::RBS_REWRITE_PATTERN = T.let(T.unsafe(nil), Regexp)
 
 class Spoom::Sorbet::Translate::SorbetAssertionsToRBSComments < ::Spoom::Sorbet::Translate::Translator
   sig do
