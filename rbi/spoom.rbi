@@ -614,6 +614,11 @@ class Spoom::Coverage::D3::Base
   sig { returns(::String) }
   def tooltip; end
 
+  private
+
+  sig { params(value: T.untyped).returns(::String) }
+  def js_literal(value); end
+
   class << self
     sig { returns(::String) }
     def header_script; end

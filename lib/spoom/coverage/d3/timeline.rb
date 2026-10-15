@@ -81,7 +81,7 @@ module Spoom
 
               function tooltipTimeline(d, kind) {
                 moveTooltip(d)
-                  .html("commit <b>" + d.data.commit + "</b><br>"
+                  .html("commit <b>" + escapeHtml(d.data.commit) + "</b><br>"
                     + d3.timeFormat("%y/%m/%d")(parseDate(d.data.timestamp)) + "<br><br>"
                     + "<b>typed: " + d.key + "</b><br><br>"
                     + "<b>" + (d.data.values[d.key] ? d.data.values[d.key] : 0) + "</b> " + kind +"<br>"
@@ -97,7 +97,7 @@ module Spoom
           <<~HTML
             #{tooltip}
 
-            var data_#{id} = #{@data.to_json};
+            var data_#{id} = #{js_literal(@data)};
 
             function draw_#{id}() {
               var width_#{id} = document.getElementById("#{id}").clientWidth;
@@ -245,10 +245,10 @@ module Spoom
             <<~JS
               function tooltip_#{id}(d) {
                 moveTooltip(d)
-                  .html("commit <b>" + d.commit + "</b><br>"
+                  .html("commit <b>" + escapeHtml(d.commit) + "</b><br>"
                     + d3.timeFormat("%y/%m/%d")(parseDate(d.timestamp)) + "<br><br>"
-                    + "static: v<b>" + d.static + "</b><br>"
-                    + "runtime: v<b>" + d.runtime + "</b><br><br>"
+                    + "static: v<b>" + escapeHtml(d.static) + "</b><br>"
+                    + "runtime: v<b>" + escapeHtml(d.runtime) + "</b><br><br>"
                     + "versions from<br>Gemfile.lock")
               }
             JS
@@ -294,7 +294,7 @@ module Spoom
             <<~JS
               function tooltip_#{id}(d) {
                 moveTooltip(d)
-                  .html("commit <b>" + d.commit + "</b><br>"
+                  .html("commit <b>" + escapeHtml(d.commit) + "</b><br>"
                     + d3.timeFormat("%y/%m/%d")(parseDate(d.timestamp)) + "<br><br>"
                     + "<b>" + d.runtime + "</b>s<br><br>"
                     + "(sorbet user + system time)")
@@ -330,8 +330,8 @@ module Spoom
             <<~JS
               #{tooltip}
 
-              var data_#{id} = #{@data.to_json};
-              var keys_#{id} = #{T.unsafe(@keys).to_json};
+              var data_#{id} = #{js_literal(@data)};
+              var keys_#{id} = #{js_literal(@keys)};
 
               var stack_#{id} = d3.stack()
                 .keys(keys_#{id})
@@ -515,7 +515,7 @@ module Spoom
             <<~JS
               function tooltip_#{id}(d) {
                 moveTooltip(d)
-                  .html("commit <b>" + d.data.commit + "</b><br>"
+                  .html("commit <b>" + escapeHtml(d.data.commit) + "</b><br>"
                     + d3.timeFormat("%y/%m/%d")(parseDate(d.data.timestamp)) + "<br><br>"
                     + "Files: <b>" + d.data.values.files + "</b><br>"
                     + "RBIs: <b>" + d.data.values.rbis + "</b><br><br>"
@@ -530,8 +530,8 @@ module Spoom
             <<~JS
               #{tooltip}
 
-              var data_#{id} = #{@data.to_json};
-              var keys_#{id} = #{T.unsafe(@keys).to_json};
+              var data_#{id} = #{js_literal(@data)};
+              var keys_#{id} = #{js_literal(@keys)};
 
               var stack_#{id} = d3.stack()
                 .keys(keys_#{id})

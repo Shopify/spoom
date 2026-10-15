@@ -478,6 +478,34 @@ module Spoom
           assert(@project.file?("spoom_report.html"))
         end
 
+        def test_report_escapes_project_data
+          create_git_history!
+          @project.write!("<img src=x onerror=alert(1)>/foo.rb", "# typed: true")
+          @project.spoom("srb coverage timeline --save")
+          @project.write!("spoom_data/zzz.json", {
+            commit_sha: "<img src=x onerror=alert(2)></script><script>alert(3)</script>",
+            commit_timestamp: Time.parse("2030-01-01").to_i,
+            version_static: "<img src=x onerror=alert(4)>",
+            version_runtime: "<img src=x onerror=alert(5)>",
+          }.to_json)
+
+          result = @project.spoom("srb coverage report --no-color")
+          assert(result.status)
+          html = @project.read("spoom_report.html")
+
+          # Snapshot data rendered by Ruby is HTML escaped
+          assert_includes(html, <<~HTML.strip)
+            <span class="badge badge-pill badge-dark" style="font-size: 20%;">&lt;img src=x onerror=alert(2)&gt;&lt;/script&gt;&lt;script&gt;alert(3)&lt;/script&gt;</span>
+          HTML
+
+          # Snapshot data embedded in scripts can't close the script tag
+          refute_includes(html, "</script><script>alert(3)")
+
+          # Tooltips escape data before rendering it as HTML
+          refute_match(/\.html\([^)]*\+ d(\.data)?\.(name|commit|static|runtime) \+/, html)
+          assert_includes(html, "escapeHtml(d.data.name)")
+        end
+
         def test_finish_on_original_branch
           create_git_history!
           assert_equal("main", @project.git_current_branch)

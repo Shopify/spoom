@@ -43,6 +43,14 @@ module Spoom
         # @abstract
         #: -> String
         def script = raise NotImplementedError, "Abstract method called"
+
+        private
+
+        # Serialize `value` as a JavaScript literal that is safe to embed in a `<script>` tag
+        #: (untyped value) -> String
+        def js_literal(value)
+          JSON.generate(value, script_safe: true)
+        end
       end
     end
   end

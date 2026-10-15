@@ -47,7 +47,7 @@ module Spoom
 
               function tooltipMap(d) {
                 moveTooltip(d)
-                  .html("<b>" + d.data.name + "</b>")
+                  .html("<b>" + escapeHtml(d.data.name) + "</b>")
               }
             JS
           end
@@ -57,7 +57,7 @@ module Spoom
         #: -> String
         def script
           <<~JS
-            var root = {children: #{@data.to_json}}
+            var root = {children: #{js_literal(@data)}}
             var dataHeight = treeHeight(root)
 
             var opacity = d3.scaleLinear()
