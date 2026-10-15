@@ -83,8 +83,8 @@ module Spoom
                 moveTooltip(d)
                   .html("commit <b>" + escapeHtml(d.data.commit) + "</b><br>"
                     + d3.timeFormat("%y/%m/%d")(parseDate(d.data.timestamp)) + "<br><br>"
-                    + "<b>typed: " + d.key + "</b><br><br>"
-                    + "<b>" + (d.data.values[d.key] ? d.data.values[d.key] : 0) + "</b> " + kind +"<br>"
+                    + "<b>typed: " + escapeHtml(d.key) + "</b><br><br>"
+                    + "<b>" + escapeHtml(d.data.values[d.key] ? d.data.values[d.key] : 0) + "</b> " + kind +"<br>"
                     + "<b>" + toPercent(d.data.values[d.key] ? d.data.values[d.key] : 0, d.data.total) + "%")
               }
             JS
@@ -296,7 +296,7 @@ module Spoom
                 moveTooltip(d)
                   .html("commit <b>" + escapeHtml(d.commit) + "</b><br>"
                     + d3.timeFormat("%y/%m/%d")(parseDate(d.timestamp)) + "<br><br>"
-                    + "<b>" + d.runtime + "</b>s<br><br>"
+                    + "<b>" + escapeHtml(d.runtime) + "</b>s<br><br>"
                     + "(sorbet user + system time)")
               }
             JS
@@ -517,9 +517,9 @@ module Spoom
                 moveTooltip(d)
                   .html("commit <b>" + escapeHtml(d.data.commit) + "</b><br>"
                     + d3.timeFormat("%y/%m/%d")(parseDate(d.data.timestamp)) + "<br><br>"
-                    + "Files: <b>" + d.data.values.files + "</b><br>"
-                    + "RBIs: <b>" + d.data.values.rbis + "</b><br><br>"
-                    + "Total: <b>" + d.data.total + "</b>")
+                    + "Files: <b>" + escapeHtml(d.data.values.files) + "</b><br>"
+                    + "RBIs: <b>" + escapeHtml(d.data.values.rbis) + "</b><br><br>"
+                    + "Total: <b>" + escapeHtml(d.data.total) + "</b>")
               }
             JS
           end

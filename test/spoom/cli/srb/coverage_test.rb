@@ -498,12 +498,39 @@ module Spoom
             <span class="badge badge-pill badge-dark" style="font-size: 20%;">&lt;img src=x onerror=alert(2)&gt;&lt;/script&gt;&lt;script&gt;alert(3)&lt;/script&gt;</span>
           HTML
 
-          # Snapshot data embedded in scripts can't close the script tag
+          # Data embedded in scripts has `<`, `>`, `&` and `/` escaped so it can't change how the HTML parser
+          # reads the rest of the `<script>` element
           refute_includes(html, "</script><script>alert(3)")
+          assert_includes(html, '"name":"\\u003cimg src=x onerror=alert(1)\\u003e"')
+          assert_includes(html, '"commit":"\\u003cimg src=x onerror=alert(2)\\u003e\\u003c\\/script\\u003e')
 
-          # Tooltips escape data before rendering it as HTML
-          refute_match(/\.html\([^)]*\+ d(\.data)?\.(name|commit|static|runtime) \+/, html)
+          # Tooltips escape every value read from the data before rendering it as HTML: no `+ d.foo +` or
+          # `+ d.data.foo +` concatenation may appear outside of an `escapeHtml()` call
+          refute_match(/\+ d(\.data)?\.[\w.\[\]]+ \+/, html)
           assert_includes(html, "escapeHtml(d.data.name)")
+          assert_includes(html, "escapeHtml(d.data.commit)")
+          assert_includes(html, "escapeHtml(d.commit)")
+          assert_includes(html, "escapeHtml(d.static)")
+          assert_includes(html, "escapeHtml(d.runtime)")
+          assert_includes(html, "escapeHtml(d.data.value)")
+          assert_includes(html, "escapeHtml(d.data.values[d.key] ? d.data.values[d.key] : 0)")
+        end
+
+        def test_report_rejects_snapshots_with_non_integer_counts
+          create_git_history!
+          @project.spoom("srb coverage timeline --save")
+          @project.write!("spoom_data/zzz.json", {
+            commit_sha: "abcd",
+            commit_timestamp: Time.parse("2030-01-01").to_i,
+            calls_typed: "<img src=x onerror=alert(1)>",
+          }.to_json)
+
+          result = @project.spoom("srb coverage report --no-color")
+          refute(result.status)
+          assert_equal(<<~ERR, result.err)
+            Error: Invalid snapshot `spoom_data/zzz.json`: Expected an integer for `calls_typed`, got "<img src=x onerror=alert(1)>"
+          ERR
+          refute(@project.file?("spoom_report.html"))
         end
 
         def test_finish_on_original_branch

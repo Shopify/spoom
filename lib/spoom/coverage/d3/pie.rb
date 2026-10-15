@@ -39,7 +39,7 @@ module Spoom
               function tooltipPie(d, title, kind, sum) {
                 moveTooltip(d)
                   .html("<b>" + escapeHtml(title) + "</b><br><br>"
-                    + "<b>" + d.data.value + "</b> " + kind + "<br>"
+                    + "<b>" + escapeHtml(d.data.value) + "</b> " + kind + "<br>"
                     + "<b>" + toPercent(d.data.value, sum) + "</b>%")
               }
             JS

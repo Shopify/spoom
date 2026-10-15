@@ -153,6 +153,9 @@ module Spoom
           snapshots = files.sort.map do |file|
             json = File.read(file)
             Spoom::Coverage::Snapshot.from_json(json)
+          rescue Spoom::Coverage::Snapshot::Error => e
+            say_error("Invalid snapshot `#{file}`: #{e.message}")
+            exit(1)
           end.filter(&:commit_timestamp).sort_by!(&:commit_timestamp)
 
           palette = Spoom::Coverage::D3::ColorPalette.new(
