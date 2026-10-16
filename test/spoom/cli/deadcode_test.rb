@@ -282,9 +282,16 @@ module Spoom
           end
         RB
 
+        @project.write!(".spoom/deadcode/plugins/bar.rb", <<~RB)
+          module BarHelper; end
+        RB
+
         result = @project.spoom("deadcode --show-plugins --no-color")
         assert_equal(<<~ERR, result.err)
           Collecting files...
+          Warning: Loading custom plugins from `.spoom/deadcode/plugins`. This executes Ruby code from the analyzed project:
+            .spoom/deadcode/plugins/bar.rb
+            .spoom/deadcode/plugins/foo.rb
 
           Loaded 7 plugins
             Spoom::Deadcode::Plugins::Namespaces

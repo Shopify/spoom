@@ -73,7 +73,18 @@ module Spoom
         end
 
         plugin_classes = Spoom::Deadcode.plugins_from_gemfile_lock(context)
-        plugin_classes.merge(Spoom::Deadcode.load_custom_plugins(context))
+
+        custom_plugin_files = context.glob("#{Spoom::Deadcode::DEFAULT_CUSTOM_PLUGINS_PATH}/*.rb")
+        unless custom_plugin_files.empty?
+          say_warning(
+            "Loading custom plugins from `#{Spoom::Deadcode::DEFAULT_CUSTOM_PLUGINS_PATH}`. " \
+              "This executes Ruby code from the analyzed project:",
+          )
+          custom_plugin_files.each do |file|
+            $stderr.puts "  #{gray(file)}"
+          end
+          plugin_classes.merge(Spoom::Deadcode.load_custom_plugins(context))
+        end
         if options[:show_plugins]
           $stderr.puts "\nLoaded #{blue(plugin_classes.size.to_s)} plugins\n"
           plugin_classes.each do |plugin|
