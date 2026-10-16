@@ -38,8 +38,8 @@ module Spoom
             <<~JS
               function tooltipPie(d, title, kind, sum) {
                 moveTooltip(d)
-                  .html("<b>" + title + "</b><br><br>"
-                    + "<b>" + d.data.value + "</b> " + kind + "<br>"
+                  .html("<b>" + escapeHtml(title) + "</b><br><br>"
+                    + "<b>" + escapeHtml(d.data.value) + "</b> " + kind + "<br>"
                     + "<b>" + toPercent(d.data.value, sum) + "</b>%")
               }
             JS
@@ -52,11 +52,11 @@ module Spoom
           <<~JS
             #{tooltip}
 
-            var json_#{id} = #{@data.to_json};
+            var json_#{id} = #{js_literal(@data)};
             var pie_#{id} = d3.pie().value((d) => d.value);
             var data_#{id} = pie_#{id}(d3.entries(json_#{id}));
             var sum_#{id} = d3.sum(data_#{id}, (d) => d.data.value);
-            var title_#{id} = #{@title.to_json};
+            var title_#{id} = #{js_literal(@title)};
 
             function draw_#{id}() {
               var pieSize_#{id} = document.getElementById("#{id}").clientWidth - 10;

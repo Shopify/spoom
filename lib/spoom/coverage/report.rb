@@ -60,7 +60,7 @@ module Spoom
 
       #: -> String
       def header_html
-        "<h1 class='display-3'>#{title}</h1>"
+        "<h1 class='display-3'>#{ERB::Util.html_escape(title)}</h1>"
       end
 
       #: -> String
@@ -219,7 +219,7 @@ module Spoom
           <<~ERB
             <div class="text-center" style="margin-top: 30px">
               Typchecked by Sorbet since <b>#{@sorbet_intro_date&.strftime("%F")}</b>
-              (commit <b>#{@sorbet_intro_commit}</b>).
+              (commit <b>#{ERB::Util.html_escape(@sorbet_intro_commit)}</b>).
             </div>
           ERB
         end
@@ -263,8 +263,8 @@ module Spoom
         last = T.must(@snapshots.last)
         <<~ERB
           <h1 class="display-3">
-            #{@project_name}
-            <span class="badge badge-pill badge-dark" style="font-size: 20%;">#{last.commit_sha}</span>
+            #{ERB::Util.html_escape(@project_name)}
+            <span class="badge badge-pill badge-dark" style="font-size: 20%;">#{ERB::Util.html_escape(last.commit_sha)}</span>
           </h1>
         ERB
       end

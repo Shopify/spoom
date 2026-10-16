@@ -614,6 +614,11 @@ class Spoom::Coverage::D3::Base
   sig { returns(::String) }
   def tooltip; end
 
+  private
+
+  sig { params(value: T.untyped).returns(::String) }
+  def js_literal(value); end
+
   class << self
     sig { returns(::String) }
     def header_script; end
@@ -623,6 +628,7 @@ class Spoom::Coverage::D3::Base
   end
 end
 
+Spoom::Coverage::D3::Base::JS_LITERAL_ESCAPES = T.let(T.unsafe(nil), Hash)
 Spoom::Coverage::D3::COLOR_FALSE = T.let(T.unsafe(nil), String)
 Spoom::Coverage::D3::COLOR_IGNORE = T.let(T.unsafe(nil), String)
 Spoom::Coverage::D3::COLOR_STRICT = T.let(T.unsafe(nil), String)
@@ -1070,9 +1076,15 @@ class Spoom::Coverage::Snapshot
 
     sig { params(obj: T::Hash[::String, T.untyped]).returns(::Spoom::Coverage::Snapshot) }
     def from_obj(obj); end
+
+    private
+
+    sig { params(obj: T::Hash[::String, T.untyped], key: ::String, default: ::Integer).returns(::Integer) }
+    def integer_field(obj, key, default: T.unsafe(nil)); end
   end
 end
 
+class Spoom::Coverage::Snapshot::Error < ::Spoom::Error; end
 Spoom::Coverage::Snapshot::STRICTNESSES = T.let(T.unsafe(nil), Array)
 
 class Spoom::Coverage::SnapshotPrinter < ::Spoom::Printer

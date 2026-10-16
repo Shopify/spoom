@@ -6,6 +6,9 @@ module Spoom
     module D3
       # @abstract
       class Base
+        # Characters that must not appear raw inside a `<script>` element, and their JSON string escapes
+        JS_LITERAL_ESCAPES = { "<" => '\u003c', ">" => '\u003e', "&" => '\u0026' }.freeze #: Hash[String, String]
+
         #: String
         attr_reader :id
 
@@ -43,6 +46,18 @@ module Spoom
         # @abstract
         #: -> String
         def script = raise NotImplementedError, "Abstract method called"
+
+        private
+
+        # Serialize `value` as a JavaScript literal that is safe to embed in a `<script>` tag
+        #
+        # `script_safe` escapes `/` so the data can't contain `</script>`. We also escape `<`, `>` and `&`
+        # so the data can't contain `<!--` or `<script`, which change how the HTML parser reads the rest
+        # of the `<script>` element.
+        #: (untyped value) -> String
+        def js_literal(value)
+          JSON.generate(value, script_safe: true).gsub(/[<>&]/, JS_LITERAL_ESCAPES)
+        end
       end
     end
   end

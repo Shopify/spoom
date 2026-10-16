@@ -4,6 +4,8 @@
 module Spoom
   module Coverage
     class Snapshot
+      class Error < Spoom::Error; end
+
       #: Integer
       attr_accessor :timestamp
 
@@ -173,30 +175,32 @@ module Spoom
         #: (Hash[String, untyped] obj) -> Snapshot
         def from_obj(obj)
           snapshot = Snapshot.new
-          snapshot.timestamp = obj.fetch("timestamp", 0)
-          snapshot.version_static = obj.fetch("version_static", nil)
-          snapshot.version_runtime = obj.fetch("version_runtime", nil)
-          snapshot.duration = obj.fetch("duration", 0)
-          snapshot.commit_sha = obj.fetch("commit_sha", nil)
-          snapshot.commit_timestamp = obj.fetch("commit_timestamp", nil)
-          snapshot.files = obj.fetch("files", 0)
-          snapshot.rbi_files = obj.fetch("rbi_files", 0)
-          snapshot.modules = obj.fetch("modules", 0)
-          snapshot.classes = obj.fetch("classes", 0)
-          snapshot.singleton_classes = obj.fetch("singleton_classes", 0)
-          snapshot.methods_with_sig = obj.fetch("methods_with_sig", 0)
-          snapshot.methods_without_sig = obj.fetch("methods_without_sig", 0)
-          snapshot.calls_typed = obj.fetch("calls_typed", 0)
-          snapshot.calls_untyped = obj.fetch("calls_untyped", 0)
-          snapshot.methods_with_sig_excluding_rbis = obj.fetch("methods_with_sig_excluding_rbis", 0)
-          snapshot.methods_without_sig_excluding_rbis = obj.fetch("methods_without_sig_excluding_rbis", 0)
+          snapshot.timestamp = integer_field(obj, "timestamp")
+          snapshot.version_static = obj.fetch("version_static", nil)&.to_s
+          snapshot.version_runtime = obj.fetch("version_runtime", nil)&.to_s
+          snapshot.duration = integer_field(obj, "duration")
+          snapshot.commit_sha = obj.fetch("commit_sha", nil)&.to_s
+          unless obj.fetch("commit_timestamp", nil).nil?
+            snapshot.commit_timestamp = integer_field(obj, "commit_timestamp")
+          end
+          snapshot.files = integer_field(obj, "files")
+          snapshot.rbi_files = integer_field(obj, "rbi_files")
+          snapshot.modules = integer_field(obj, "modules")
+          snapshot.classes = integer_field(obj, "classes")
+          snapshot.singleton_classes = integer_field(obj, "singleton_classes")
+          snapshot.methods_with_sig = integer_field(obj, "methods_with_sig")
+          snapshot.methods_without_sig = integer_field(obj, "methods_without_sig")
+          snapshot.calls_typed = integer_field(obj, "calls_typed")
+          snapshot.calls_untyped = integer_field(obj, "calls_untyped")
+          snapshot.methods_with_sig_excluding_rbis = integer_field(obj, "methods_with_sig_excluding_rbis")
+          snapshot.methods_without_sig_excluding_rbis = integer_field(obj, "methods_without_sig_excluding_rbis")
 
           sigils = obj.fetch("sigils", {})
           if sigils
             Snapshot::STRICTNESSES.each do |strictness|
               next unless sigils.key?(strictness)
 
-              snapshot.sigils[strictness] = sigils[strictness]
+              snapshot.sigils[strictness] = integer_field(sigils, strictness)
             end
           end
 
@@ -205,11 +209,28 @@ module Spoom
             Snapshot::STRICTNESSES.each do |strictness|
               next unless sigils_excluding_rbis.key?(strictness)
 
-              snapshot.sigils_excluding_rbis[strictness] = sigils_excluding_rbis[strictness]
+              snapshot.sigils_excluding_rbis[strictness] = integer_field(sigils_excluding_rbis, strictness)
             end
           end
 
           snapshot
+        end
+
+        private
+
+        # Read `key` from `obj` as an Integer
+        #
+        # Snapshot files live in the analyzed project and can't be trusted to hold the types spoom wrote.
+        # Raises `Snapshot::Error` if the value can't be interpreted as an Integer.
+        #: (Hash[String, untyped] obj, String key, ?default: Integer) -> Integer
+        def integer_field(obj, key, default: 0)
+          if (value = obj[key])
+            Integer(value)
+          else
+            default
+          end
+        rescue ArgumentError, TypeError
+          raise Error, "Expected an integer for `#{key}`, got #{value.inspect}"
         end
       end
     end
