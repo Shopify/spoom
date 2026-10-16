@@ -387,6 +387,20 @@ Remove a reported dead code candidate:
 spoom deadcode remove path/to/file.rb:42:18-47:23
 ```
 
+#### Custom plugins
+
+Teach `spoom deadcode` about your project's own DSLs by adding plugins to `.spoom/deadcode/plugins/*.rb`. Each file should define a subclass of `Spoom::Deadcode::Plugins::Base`:
+
+```ruby
+# .spoom/deadcode/plugins/my_plugin.rb
+class MyPlugin < Spoom::Deadcode::Plugins::Base
+  ignore_methods_named("my_dsl_method")
+end
+```
+
+> [!WARNING]
+> Custom plugins are loaded with `require`, so `spoom deadcode` executes any Ruby code in `.spoom/deadcode/plugins/` of the project being analyzed. Only run `spoom deadcode` on projects you trust, and inspect or remove `.spoom/deadcode/plugins/` before analyzing untrusted code (such as a pull request from an outside contributor).
+
 ## Ruby API
 
 ### Parsing Sorbet config
