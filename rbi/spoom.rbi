@@ -1080,7 +1080,7 @@ class Spoom::Coverage::Snapshot
     private
 
     sig { params(obj: T::Hash[::String, T.untyped], key: ::String, default: ::Integer).returns(::Integer) }
-    def integer_field(obj, key, default); end
+    def integer_field(obj, key, default: T.unsafe(nil)); end
   end
 end
 
