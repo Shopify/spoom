@@ -595,6 +595,14 @@ module Spoom
           RB
         end
 
+        def test_skip_bind_in_assignment
+          rb = <<~RB
+            bound = T.bind(self, FulfillmentOrderMoverTest)
+          RB
+
+          assert_equal(rb, rbi_to_rbs(rb))
+        end
+
         def test_translate_options
           rb = <<~RB
             T.bind(self, T.class_of(String))
