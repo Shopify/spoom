@@ -101,7 +101,8 @@ module Spoom
             @rewriter << Source::Replace.new(
               header.end_offset,
               node.location.end_offset - 1,
-              if node.name.end_with?("=") || (node.parameters && !node.rparen_loc)
+              if node.name.end_with?("=") || (node.parameters && !node.rparen_loc) ||
+                  header.end_line != node.name_loc.start_line
                 indent = " " * node.location.start_column
                 "#{header_comment}\n#{indent}  super\n#{indent}end"
               else
