@@ -10,7 +10,7 @@ module Spoom
     module PrintableSymbol
       # @abstract
       #: (SymbolPrinter printer) -> void
-      def accept_printer(printer) = raise NotImplementedError, "Abstract method called"
+      def accept_printer(printer) = super
     end
 
     class Position
