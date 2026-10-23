@@ -28,6 +28,7 @@ module Spoom
             @translate_abstract_methods = options.translate_abstract_methods #: bool
             @options = options #: Options
             @type_translator = RBI::RBS::TypeTranslator.new(options: options.rbi_options) #: RBI::RBS::TypeTranslator
+            @scopes = [] #: Array[String | Symbol]
           end
 
           # @override
@@ -45,7 +46,7 @@ module Spoom
           def visit_class_node(node)
             apply_class_annotations(node)
 
-            super
+            with_scope(node.constant_path.slice) { super }
           end
 
           # @override
@@ -53,7 +54,7 @@ module Spoom
           def visit_module_node(node)
             apply_class_annotations(node)
 
-            super
+            with_scope(node.constant_path.slice) { super }
           end
 
           # @override
@@ -61,7 +62,7 @@ module Spoom
           def visit_singleton_class_node(node)
             apply_class_annotations(node)
 
-            super
+            with_scope(node.expression.is_a?(Prism::SelfNode) ? :singleton_of_self : :singleton_of_other) { super }
           end
 
           # @override
@@ -182,6 +183,14 @@ module Spoom
                 sig.without_runtime = true
               end
 
+              # A sig on `C.[]` that mentions a generic application of `C` calls `C.[]` while sorbet-runtime builds it,
+              # and the wrapped `C.[]` builds its sig before running, so evaluating the sig recurses forever.
+              # This happens when a class defines its own `[]` in place of `T::Generic#[]`, typically after dropping
+              # `sorbet-runtime` as a dependency.
+              if applies_own_generic_in_singleton_bracket_sig?(def_node, sig)
+                sig.without_runtime = true
+              end
+
               @rewriter << Source::Replace.new(
                 signature.location.start_offset,
                 signature.location.end_offset,
@@ -191,6 +200,58 @@ module Spoom
 
             if known_annotations
               rewrite_member_annotations(comments.method_annotations, known: known_annotations)
+            end
+          end
+
+          #: (String | Symbol) { -> void } -> void
+          def with_scope(scope, &block)
+            @scopes << scope
+            block.call
+          ensure
+            @scopes.pop
+          end
+
+          #: (Prism::DefNode, RBI::Sig) -> bool
+          def applies_own_generic_in_singleton_bracket_sig?(def_node, sig)
+            return false unless def_node.name == :[]
+
+            receiver = def_node.receiver
+            singleton = if receiver
+              receiver.is_a?(Prism::SelfNode)
+            else
+              @scopes.last == :singleton_of_self
+            end
+            return false unless singleton
+
+            scope_names = @scopes.grep(String)
+            return false if scope_names.empty?
+
+            owner_name = scope_names.map { |name| name.delete_prefix("::") }.join("::")
+
+            types = sig.params.map(&:type) + [sig.return_type]
+            types.any? { |type| type.is_a?(RBI::Type) && applies_generic?(type, owner_name) }
+          end
+
+          #: (RBI::Type, String) -> bool
+          def applies_generic?(type, owner_name)
+            case type
+            when RBI::Type::Generic
+              name = type.name.delete_prefix("::")
+              return true if owner_name == name || owner_name.end_with?("::#{name}")
+
+              type.params.any? { |param| applies_generic?(param, owner_name) }
+            when RBI::Type::Class, RBI::Type::Module, RBI::Type::Nilable
+              applies_generic?(type.type, owner_name)
+            when RBI::Type::Composite, RBI::Type::Tuple
+              type.types.any? { |member| applies_generic?(member, owner_name) }
+            when RBI::Type::Shape
+              type.types.values.any? { |member| applies_generic?(member, owner_name) }
+            when RBI::Type::Proc
+              [*type.proc_params.values, type.proc_returns, type.proc_bind].compact.any? do |member|
+                applies_generic?(member, owner_name)
+              end
+            else
+              false
             end
           end
 
