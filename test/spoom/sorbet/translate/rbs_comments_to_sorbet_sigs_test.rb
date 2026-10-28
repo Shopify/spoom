@@ -1015,6 +1015,37 @@ module Spoom
           )
         end
 
+        def test_translate_multiline_type_alias_with_comments
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              #: type header = Hash[
+              #|   String, # the name
+              #|   String, # the value
+              #| ]
+
+              #: (header) -> void
+              def foo(header); end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              Header = ::T.type_alias { ::T::Hash[String, String] }
+
+              sig { params(header: Header).void }
+              def foo(header); end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              Header = ::T.type_alias { ::T::Hash[String, String] }
+
+
+
+
+              sig { params(header: Header).void }
+              def foo(header); end
+            RUBY
+          )
+        end
+
         def test_translate_type_alias_with_complex_type
           assert_rewrites_rbs(
             from: <<~RUBY,

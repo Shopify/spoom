@@ -408,7 +408,7 @@ module Spoom
 
                 if string.start_with?("type ")
                   continuation_comments.reverse_each do |continuation_comment|
-                    string = "#{string}#{continuation_comment.slice.delete_prefix("#|")}"
+                    string = "#{string}\n#{continuation_comment.slice.delete_prefix("#|")}"
                     location = location.join(continuation_comment.location)
                   end
 
