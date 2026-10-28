@@ -56,6 +56,15 @@ module Spoom
             @rewriter << Source::Insert.new(insert_pos, "\n#{indent}#{type_member}#{newline}")
           end
 
+          # Keeps the comments written inside the RBS comment as lines above the replacement
+          #
+          # @override
+          #: (String replacement, from: Spoom::RBS::Comment) -> String
+          def preserve_comments(replacement, from:)
+            indent = " " * from.location.start_column
+            from.inner_comments.map { |comment| "#{comment}\n#{indent}" }.join + replacement
+          end
+
           # @override
           #: (String mixin_name, into: Prism::Node, at: Integer) -> void
           def extend_with(mixin_name, into:, at:)
