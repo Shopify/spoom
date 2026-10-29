@@ -504,7 +504,6 @@ module Spoom
 
                   class << self
                     extend ::T::Helpers
-
                     final!
                   end
                 end
@@ -519,8 +518,8 @@ module Spoom
                 # RBS_REWRITTEN_ANNOTATION: @sealed
                 module B; extend ::T::Helpers; interface!; sealed!
                   # RBS_REWRITTEN_ANNOTATION: @final
-                  class << self; extend ::T::Helpers; final!
-                  end
+                  class << self; extend ::T::Helpers
+                  final!; end
                 end
               end
             RUBY
@@ -643,18 +642,70 @@ module Spoom
               class Box
                 extend ::T::Helpers
 
-                final!
                 extend ::T::Generic
 
                 T = type_member
+
+                final!
               end
             RUBY
 
             to_line_matched_format_for_machines: <<~RUBY,
               # RBS_REWRITTEN_ANNOTATION: @final
               # RBS_WRITTEN_ANNOTATION: [T]
-              class Box; extend ::T::Helpers; final!; extend ::T::Generic; T = type_member
+              class Box; extend ::T::Helpers; extend ::T::Generic; T = type_member
+              final!; end
+            RUBY
+          )
+        end
+
+        def test_translate_to_rbi_final_after_class_body
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # @final
+              class Box
+                #: -> Integer
+                def value = 1
               end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class Box
+                extend ::T::Helpers
+
+                sig { returns(Integer) }
+                def value = 1
+
+                final!
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_REWRITTEN_ANNOTATION: @final
+              class Box; extend ::T::Helpers
+                sig { returns(Integer) }
+                def value = 1
+              final!; end
+            RUBY
+          )
+        end
+
+        def test_translate_to_rbi_final_in_one_line_class
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # @final
+              class Box; end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class Box
+                extend ::T::Helpers
+              ; final!; end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_REWRITTEN_ANNOTATION: @final
+              class Box; extend ::T::Helpers; final!; end
             RUBY
           )
         end
@@ -672,17 +723,17 @@ module Spoom
               class Box
                 extend ::T::Helpers
 
-                final!
-
                 extend T::Helpers
+
+                final!
               end
             RUBY
 
             to_line_matched_format_for_machines: <<~RUBY,
               # RBS_REWRITTEN_ANNOTATION: @final
-              class Box; extend ::T::Helpers; final!
+              class Box; extend ::T::Helpers
                 extend T::Helpers
-              end
+              final!; end
             RUBY
           )
         end

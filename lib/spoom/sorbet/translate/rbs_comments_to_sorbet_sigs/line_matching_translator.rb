@@ -42,7 +42,8 @@ module Spoom
             end
 
             if sorbet_replacement
-              @rewriter << Source::Insert.new(insert_pos, "; #{sorbet_replacement}")
+              insertion = annotation.string == "@final" ? "final!; " : "; #{sorbet_replacement}"
+              @rewriter << Source::Insert.new(insert_pos, insertion)
             end
           end
 

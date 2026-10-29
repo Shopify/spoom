@@ -36,8 +36,18 @@ module Spoom
             @rewriter << Source::Delete.new(from, to)
 
             indent = " " * (parent_node.location.start_column + 2)
-            newline = parent_node.body.nil? ? "" : "\n"
-            @rewriter << Source::Insert.new(insert_pos, "\n#{indent}#{sorbet_replacement}#{newline}")
+            if annotation.string == "@final"
+              line_start = adjust_to_line_start(insert_pos)
+              if @ruby_bytes[line_start...insert_pos]&.all? { |byte| byte == " ".ord || byte == "\t".ord }
+                newline = parent_node.body.nil? ? "" : "\n"
+                @rewriter << Source::Insert.new(line_start, "#{newline}#{indent}final!\n")
+              else
+                @rewriter << Source::Insert.new(insert_pos, "final!; ")
+              end
+            else
+              newline = parent_node.body.nil? ? "" : "\n"
+              @rewriter << Source::Insert.new(insert_pos, "\n#{indent}#{sorbet_replacement}#{newline}")
+            end
           end
 
           # @override

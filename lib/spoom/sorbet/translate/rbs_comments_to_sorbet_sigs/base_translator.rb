@@ -255,7 +255,13 @@ module Spoom
                   next
                 end
 
-                apply_class_annotation(annotation, parent_node: node, insert_pos:, sorbet_replacement: content)
+                annotation_insert_pos = annotation.string == "@final" ? node.end_keyword_loc.start_offset : insert_pos
+                apply_class_annotation(
+                  annotation,
+                  parent_node: node,
+                  insert_pos: annotation_insert_pos,
+                  sorbet_replacement: content,
+                )
               rescue ::RBS::ParsingError, ::RBI::Error
                 apply_class_annotation(annotation, parent_node: node, insert_pos:, sorbet_replacement: nil)
                 next
