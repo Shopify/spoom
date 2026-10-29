@@ -223,12 +223,14 @@ module Spoom
           #: (Spoom::RBS::Signature) -> void
           def rewrite_discarded_overload(signature) = super
 
-          #: (PrismTypes::anyScopeNode) -> void
-          def apply_class_annotations(node)
-            comments = node_rbs_comments(node)
-            return if comments.empty?
+          MIXIN_METHODS = [:include, :extend, :prepend].freeze #: Array[Symbol]
+          METHOD_DEFINING_CALLS = [
+            :attr, :attr_reader, :attr_writer, :attr_accessor, :alias_method, :define_method, :define_singleton_method,
+          ].freeze #: Array[Symbol]
 
-            insert_pos = case node
+          #: (PrismTypes::anyScopeNode) -> Integer
+          def header_insert_pos(node)
+            case node
             when Prism::ClassNode
               (node.superclass || node.constant_path).location.end_offset
             when Prism::ModuleNode
@@ -236,6 +238,52 @@ module Spoom
             when Prism::SingletonClassNode
               node.expression.location.end_offset
             end
+          end
+
+          #: (PrismTypes::anyScopeNode, Integer) -> Integer
+          def final_insert_pos(node, header_pos)
+            body = node.body
+            body = body.statements if body.is_a?(Prism::BeginNode)
+            return header_pos unless body.is_a?(Prism::StatementsNode)
+
+            last_mixin = nil #: Prism::Node?
+            body.body.each do |statement|
+              break if defines_method?(statement)
+
+              last_mixin = statement if mixin_call?(statement)
+            end
+
+            last_mixin ? last_mixin.location.end_offset : header_pos
+          end
+
+          #: (Prism::Node) -> bool
+          def mixin_call?(node)
+            node.is_a?(Prism::CallNode) &&
+              (node.receiver.nil? || node.receiver.is_a?(Prism::SelfNode)) &&
+              MIXIN_METHODS.include?(node.name)
+          end
+
+          #: (Prism::Node) -> bool
+          def defines_method?(node)
+            case node
+            when Prism::DefNode, Prism::AliasMethodNode
+              true
+            when Prism::CallNode
+              return true if (node.receiver.nil? || node.receiver.is_a?(Prism::SelfNode)) &&
+                METHOD_DEFINING_CALLS.include?(node.name)
+
+              node.arguments&.arguments&.any? { |argument| argument.is_a?(Prism::DefNode) } || false
+            else
+              false
+            end
+          end
+
+          #: (PrismTypes::anyScopeNode) -> void
+          def apply_class_annotations(node)
+            comments = node_rbs_comments(node)
+            return if comments.empty?
+
+            insert_pos = header_insert_pos(node)
 
             # Only translate (and `extend ::T::Helpers`) when there's at least one *known* class
             # annotation. A node with only unknown annotations (e.g. `@private`) is left untouched.
@@ -261,7 +309,13 @@ module Spoom
                   next
                 end
 
-                apply_class_annotation(annotation, parent_node: node, insert_pos:, sorbet_replacement: content)
+                annotation_insert_pos = annotation.string == "@final" ? final_insert_pos(node, insert_pos) : insert_pos
+                apply_class_annotation(
+                  annotation,
+                  parent_node: node,
+                  insert_pos: annotation_insert_pos,
+                  sorbet_replacement: content,
+                )
               rescue ::RBS::ParsingError, ::RBI::Error
                 apply_class_annotation(annotation, parent_node: node, insert_pos:, sorbet_replacement: nil)
                 next

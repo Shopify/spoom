@@ -724,17 +724,222 @@ module Spoom
               class Box
                 extend ::T::Helpers
 
+                extend T::Helpers
+                final!
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_REWRITTEN_ANNOTATION: @final
+              class Box; extend ::T::Helpers
+                extend T::Helpers; final!
+              end
+            RUBY
+          )
+        end
+
+        def test_translate_to_rbi_final_after_leading_mixins
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # @final
+              class Box
+                include Singleton
+                prepend Comparable
+
+                X = 1
+
+                # @final
+                #: -> Integer
+                def value = 1
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class Box
+                extend ::T::Helpers
+
+                include Singleton
+                prepend Comparable
                 final!
 
-                extend T::Helpers
+                X = 1
+
+                # @final
+                sig(:final) { returns(Integer) }
+                def value = 1
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_REWRITTEN_ANNOTATION: @final
+              class Box; extend ::T::Helpers
+                include Singleton
+                prepend Comparable; final!
+
+                X = 1
+
+                # RBS_REWRITTEN_ANNOTATION: @final
+                sig(:final) { returns(Integer) }
+                def value = 1
+              end
+            RUBY
+          )
+        end
+
+        def test_translate_to_rbi_final_after_singleton_class_mixin
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class Box
+                # @final
+                class << self
+                  include(Step)
+                  private
+                  # @final
+                  #: -> Integer
+                  def value = 1
+                end
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class Box
+                class << self
+                  extend ::T::Helpers
+
+                  include(Step)
+                  final!
+                  private
+                  # @final
+                  sig(:final) { returns(Integer) }
+                  def value = 1
+                end
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              class Box
+                # RBS_REWRITTEN_ANNOTATION: @final
+                class << self; extend ::T::Helpers
+                  include(Step); final!
+                  private
+                  # RBS_REWRITTEN_ANNOTATION: @final
+                  sig(:final) { returns(Integer) }
+                  def value = 1
+                end
+              end
+            RUBY
+          )
+        end
+
+        def test_translate_to_rbi_final_before_method_defining_calls
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # @final
+              class Box
+                attr_reader :value
+                include Singleton
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class Box
+                extend ::T::Helpers
+
+                final!
+
+                attr_reader :value
+                include Singleton
               end
             RUBY
 
             to_line_matched_format_for_machines: <<~RUBY,
               # RBS_REWRITTEN_ANNOTATION: @final
               class Box; extend ::T::Helpers; final!
-                extend T::Helpers
+                attr_reader :value
+                include Singleton
               end
+            RUBY
+          )
+        end
+
+        def test_translate_to_rbi_final_before_method_definition
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # @final
+              class Box
+                def value = 1
+                include Singleton
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class Box
+                extend ::T::Helpers
+
+                final!
+
+                def value = 1
+                include Singleton
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_REWRITTEN_ANNOTATION: @final
+              class Box; extend ::T::Helpers; final!
+                def value = 1
+                include Singleton
+              end
+            RUBY
+          )
+        end
+
+        def test_translate_to_rbi_final_after_mixin_with_inline_comment
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # @final
+              class Box
+                include Singleton # defines new
+                def value = 1
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class Box
+                extend ::T::Helpers
+
+                include Singleton # defines new
+                final!
+                def value = 1
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_REWRITTEN_ANNOTATION: @final
+              class Box; extend ::T::Helpers
+                include Singleton; final! # defines new
+                def value = 1
+              end
+            RUBY
+          )
+        end
+
+        def test_translate_to_rbi_final_after_mixin_on_same_line_as_method
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              # @final
+              class Box; include Singleton; def value = 1; end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class Box
+                extend ::T::Helpers
+              ; include Singleton
+                final!; def value = 1; end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              # RBS_REWRITTEN_ANNOTATION: @final
+              class Box; extend ::T::Helpers; include Singleton; final!; def value = 1; end
             RUBY
           )
         end
