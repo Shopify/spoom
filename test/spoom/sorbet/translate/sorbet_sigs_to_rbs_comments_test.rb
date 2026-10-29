@@ -139,6 +139,89 @@ module Spoom
           RBS
         end
 
+        def test_translate_to_rbs_private_abstract_method
+          contents = <<~RB
+            class Foo
+              sig { abstract.returns(Integer) }
+              private def value; end
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            class Foo
+              # @abstract
+              #: -> Integer
+              private def value = super
+            end
+          RBS
+        end
+
+        def test_translate_to_rbs_abstract_singleton_methods
+          contents = <<~RB
+            class Foo
+              sig { abstract.void }
+              def self.prepare; end
+
+              class << self
+                sig { abstract.returns(Integer) }
+                def count; end
+              end
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            class Foo
+              # @abstract
+              #: -> void
+              def self.prepare = super
+
+              class << self
+                # @abstract
+                #: -> Integer
+                def count = super
+              end
+            end
+          RBS
+        end
+
+        def test_translate_to_rbs_abstract_method_with_type_parameters
+          contents = <<~RB
+            class Foo
+              sig do
+                abstract.type_parameters(:U)
+                  .params(block: T.proc.returns(T.type_parameter(:U)))
+                  .returns(T.type_parameter(:U))
+              end
+              def build(&block); end
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            class Foo
+              # @abstract
+              #: [U] { -> U } -> U
+              def build(&block) = super
+            end
+          RBS
+        end
+
+        def test_translate_to_rbs_abstract_method_with_splat_arguments
+          contents = <<~RB
+            class Foo
+              sig { abstract.params(args: T.untyped, kwargs: T.untyped).void }
+              def call(*args, **kwargs); end
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            class Foo
+              # @abstract
+              #: (*untyped args, **untyped kwargs) -> void
+              def call(*args, **kwargs) = super
+            end
+          RBS
+        end
+
         def test_translate_to_rbs_abstract_method_forwards_arguments_and_block
           contents = <<~RB
             sig do
