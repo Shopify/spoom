@@ -127,7 +127,10 @@ module Spoom
               @rewriter << Source::Replace.new(
                 signature.location.start_offset,
                 signature.location.end_offset,
-                pad_out_line_count(of: sig.string(max_line_length: @max_line_length), to_height_of: signature),
+                pad_out_line_count(
+                  of: preserve_comments(sig.string(max_line_length: @max_line_length), from: signature),
+                  to_height_of: signature,
+                ),
               )
             rescue ::RBS::ParsingError, ::RBI::Error
               # Ignore signatures with errors
@@ -185,7 +188,10 @@ module Spoom
               @rewriter << Source::Replace.new(
                 signature.location.start_offset,
                 signature.location.end_offset,
-                pad_out_line_count(of: sig.string(max_line_length: @max_line_length), to_height_of: signature),
+                pad_out_line_count(
+                  of: preserve_comments(sig.string(max_line_length: @max_line_length), from: signature),
+                  to_height_of: signature,
+                ),
               )
             end
 
@@ -408,7 +414,7 @@ module Spoom
 
                 if string.start_with?("type ")
                   continuation_comments.reverse_each do |continuation_comment|
-                    string = "#{string}#{continuation_comment.slice.delete_prefix("#|")}"
+                    string = "#{string}\n#{continuation_comment.slice.delete_prefix("#|")}"
                     location = location.join(continuation_comment.location)
                   end
 
@@ -455,14 +461,18 @@ module Spoom
               )
 
               @rewriter << Source::Delete.new(from, to)
-              content = "#{indent}#{alias_name} = ::T.type_alias { #{sorbet_type.to_rbi} }\n"
-              content = pad_out_line_count(of: content, to_height_of: type_alias)
+              content = preserve_comments("#{alias_name} = ::T.type_alias { #{sorbet_type.to_rbi} }", from: type_alias)
+              content = pad_out_line_count(of: "#{indent}#{content}\n", to_height_of: type_alias)
               @rewriter << Source::Insert.new(insert_pos, content)
             rescue ::RBS::ParsingError, ::RBI::Error
               # Ignore type aliases with errors
               next
             end
           end
+
+          # @overridable
+          #: (String replacement, from: Spoom::RBS::Comment) -> String
+          def preserve_comments(replacement, from:) = replacement # no-op
 
           # @overridable
           #: (of: String, to_height_of: Spoom::RBS::Comment) -> String

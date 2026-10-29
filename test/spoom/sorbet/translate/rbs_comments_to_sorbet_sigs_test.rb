@@ -471,6 +471,58 @@ module Spoom
           )
         end
 
+        def test_translate_to_rbi_multiline_sigs_with_comments
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class Foo
+                #: Hash[
+                #|   String, # the name
+                #|   String # the value
+                #| ]
+                attr_reader :headers
+
+                #: (
+                #|   # the name
+                #|   String name,
+                #|   String value # the value
+                #| ) -> void
+                def foo(name, value); end
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class Foo
+                # the name
+                # the value
+                sig { returns(::T::Hash[String, String]) }
+                attr_reader :headers
+
+                # the name
+                # the value
+                sig { params(name: String, value: String).void }
+                def foo(name, value); end
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              class Foo
+                sig { returns(::T::Hash[String, String]) }
+
+
+
+                attr_reader :headers
+
+                sig { params(name: String, value: String).void }
+
+
+
+
+                def foo(name, value); end
+              end
+            RUBY
+          )
+        end
+
         def test_translate_to_rbi_helpers
           assert_rewrites_rbs(
             from: <<~RUBY,
@@ -1010,6 +1062,45 @@ module Spoom
               sig { params(a: Aliases::Foo).returns(Aliases::MultiLine) }
               def bar(a)
                 42
+              end
+            RUBY
+          )
+        end
+
+        def test_translate_multiline_type_alias_with_comments
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              module Foo
+                #: type header = Hash[
+                #|   String, # the name
+                #|   String, # the value
+                #| ]
+
+                #: (header) -> void
+                def foo(header); end
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              module Foo
+                # the name
+                # the value
+                Header = ::T.type_alias { ::T::Hash[String, String] }
+
+                sig { params(header: Header).void }
+                def foo(header); end
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              module Foo
+                Header = ::T.type_alias { ::T::Hash[String, String] }
+
+
+
+
+                sig { params(header: Header).void }
+                def foo(header); end
               end
             RUBY
           )

@@ -66,6 +66,20 @@ module Spoom
         @string = string
         @location = location
       end
+
+      # The `#` comments written inside this RBS comment (e.g.: #| String, # this is the inner comment)
+      #
+      # The RBS parser discards them, so they are found by lexing the RBS, which unlike looking for `#` doesn't
+      # mistake one written inside a string literal type (e.g. `"#"`) for a comment.
+      #
+      #: -> Array[String]
+      def inner_comments
+        return [] unless @string.include?("#")
+
+        ::RBS::Parser.lex(@string).value.filter_map do |token|
+          token.location.source if token.type == :tCOMMENT || token.type == :tLINECOMMENT
+        end
+      end
     end
 
     class Annotation < Comment
@@ -120,7 +134,7 @@ module Spoom
             continuation_locations = [] #: Array[Prism::Location]
 
             continuation_comments.reverse_each do |continuation_comment|
-              string = "#{string}#{continuation_comment.slice.delete_prefix("#|")}"
+              string = "#{string}\n#{continuation_comment.slice.delete_prefix("#|")}"
               location = location.join(continuation_comment.location)
               continuation_locations << continuation_comment.location
             end
