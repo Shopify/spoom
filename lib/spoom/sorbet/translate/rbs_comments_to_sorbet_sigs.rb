@@ -34,6 +34,7 @@ module Spoom
           #|   ?max_line_length: Integer?,
           #|   ?overloads_strategy: Symbol,
           #|   ?erase_generic_types: bool,
+          #|   ?preserve_class_type_parameters: bool,
           #|   ?force: bool) -> String
           def rewrite_if_needed(
             ruby_contents,
@@ -41,6 +42,7 @@ module Spoom
             max_line_length: nil,
             overloads_strategy: :translate_all,
             erase_generic_types: false,
+            preserve_class_type_parameters: false,
             force: false
           )
             return ruby_contents unless contains_rbs_syntax?(ruby_contents) &&
@@ -49,6 +51,7 @@ module Spoom
             options = Options.new(
               overloads_strategy:,
               erase_generic_types:,
+              preserve_class_type_parameters:,
               output_format: HumanReadableRBIFormat.new(
                 max_line_length:,
               ),

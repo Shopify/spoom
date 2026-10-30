@@ -278,7 +278,7 @@ module Spoom
                 rewrite_type_params_signature(signature, type_params:)
                 next if type_params.empty?
 
-                if @options.erase_generic_types
+                if @options.erase_generic_types && !@options.preserve_class_type_parameters
                   type_params.each do |type_param|
                     insert_type_member(
                       "#{type_param.name} = ::T.type_alias { ::T.anything }",

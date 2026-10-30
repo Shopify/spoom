@@ -30,6 +30,10 @@ module Spoom
           type: :boolean,
           desc: "Drop generic types when translating from RBS to RBI",
           default: false
+        option :preserve_class_type_parameters,
+          type: :boolean,
+          desc: "Keep class type parameters when erasing generic types from RBS to RBI",
+          default: false
         def translate(*paths)
           from = options[:from]
           to = options[:to]
@@ -75,6 +79,7 @@ module Spoom
                 file: file,
                 max_line_length: max_line_length,
                 erase_generic_types: options[:erase_generic_types],
+                preserve_class_type_parameters: options[:preserve_class_type_parameters],
               )
             end
           end

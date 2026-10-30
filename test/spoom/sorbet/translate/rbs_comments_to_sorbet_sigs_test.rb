@@ -837,6 +837,90 @@ module Spoom
           )
         end
 
+        def test_translate_to_rbi_preserves_class_type_parameters_while_erasing_nested_generics
+          assert_rewrites_rbs(
+            erase_generic_types: true,
+            preserve_class_type_parameters: true,
+            from: <<~RB,
+              #: [State]
+              class BaseStep
+                #: (State, Array[String]) -> State
+                def call(state, values)
+                  state
+                end
+
+                #: [Choice] (Choice) -> Choice
+                def identity(value)
+                  value
+                end
+              end
+
+              #: [State = String]
+              class StringStep < BaseStep
+                # @override
+                #: (String, Array[String]) -> String
+                def call(state, values)
+                  state
+                end
+              end
+            RB
+
+            to_pretty_format_for_humans: <<~RB,
+              class BaseStep
+                extend ::T::Generic
+
+                State = type_member
+
+                sig { params(state: State, values: ::Array).returns(State) }
+                def call(state, values)
+                  state
+                end
+
+                sig { params(value: ::T.anything).returns(::T.anything) }
+                def identity(value)
+                  value
+                end
+              end
+
+              class StringStep < BaseStep
+                extend ::T::Generic
+
+                State = type_member {{ fixed: String }}
+
+                # @override
+                sig { override.params(state: String, values: ::Array).returns(String) }
+                def call(state, values)
+                  state
+                end
+              end
+            RB
+
+            to_line_matched_format_for_machines: <<~RB,
+              # RBS_WRITTEN_ANNOTATION: [State]
+              class BaseStep; extend ::T::Generic; State = type_member
+                sig { params(state: State, values: ::Array).returns(State) }
+                def call(state, values)
+                  state
+                end
+
+                sig { params(value: ::T.anything).returns(::T.anything) }
+                def identity(value)
+                  value
+                end
+              end
+
+              # RBS_WRITTEN_ANNOTATION: [State = String]
+              class StringStep < BaseStep; extend ::T::Generic; State = type_member {{ fixed: String }}
+                # RBS_REWRITTEN_ANNOTATION: @override
+                sig { override.params(state: String, values: ::Array).returns(String) }
+                def call(state, values)
+                  state
+                end
+              end
+            RB
+          )
+        end
+
         def test_translate_to_rbi_with_erase_generic_method_types
           assert_rewrites_rbs(
             erase_generic_types: true,
@@ -1659,14 +1743,16 @@ module Spoom
         #|   ?max_line_length: Integer?,
         #|   ?overloads_strategy: Symbol,
         #|   ?translate_abstract_methods: bool,
-        #|   ?erase_generic_types: bool
+        #|   ?erase_generic_types: bool,
+        #|   ?preserve_class_type_parameters: bool
         #| ) -> String
         def rbs_comments_to_sorbet_sigs(
           ruby_contents,
           max_line_length: nil,
           overloads_strategy: :translate_all,
           translate_abstract_methods: true,
-          erase_generic_types: false
+          erase_generic_types: false,
+          preserve_class_type_parameters: false
         )
           RBSCommentsToSorbetSigs::HumanReadableTranslator.new(
             ruby_contents,
@@ -1674,6 +1760,7 @@ module Spoom
             options: RBSCommentsToSorbetSigs::Options.new(
               overloads_strategy:,
               erase_generic_types: erase_generic_types,
+              preserve_class_type_parameters: preserve_class_type_parameters,
               translate_abstract_methods:,
               output_format: RBSCommentsToSorbetSigs::HumanReadableRBIFormat.new(
                 max_line_length:,
@@ -1689,7 +1776,8 @@ module Spoom
         #|   ?max_line_length: Integer?,
         #|   ?overloads_strategy: Symbol,
         #|   ?translate_abstract_methods: bool,
-        #|   ?erase_generic_types: bool
+        #|   ?erase_generic_types: bool,
+        #|   ?preserve_class_type_parameters: bool
         #| ) -> void
         def assert_rewrites_rbs(
           from:,
@@ -1698,7 +1786,8 @@ module Spoom
           max_line_length: nil,
           overloads_strategy: :translate_all,
           translate_abstract_methods: true,
-          erase_generic_types: false
+          erase_generic_types: false,
+          preserve_class_type_parameters: false
         )
           source_with_rbs = from
           expected_pretty_format = to_pretty_format_for_humans
@@ -1711,6 +1800,7 @@ module Spoom
               overloads_strategy:,
               translate_abstract_methods:,
               erase_generic_types:,
+              preserve_class_type_parameters:,
             )
 
             assert_equal(expected_pretty_format, rewritten_output)
@@ -1743,6 +1833,7 @@ module Spoom
                 overloads_strategy:,
                 translate_abstract_methods:,
                 erase_generic_types:,
+                preserve_class_type_parameters:,
                 output_format: RBSCommentsToSorbetSigs::LineMatchedRBIFormat.default,
               ),
             ).rewrite

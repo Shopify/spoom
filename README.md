@@ -268,6 +268,13 @@ Translate signatures from RBS comments to RBI:
 spoom srb sigs translate --from rbs --to rbi path/to/file.rb
 ```
 
+To retain class type parameters for subclass overrides while erasing parameterized types
+such as `Array[String]` and method-level type parameters:
+
+```sh
+spoom srb sigs translate --from rbs --to rbi --erase-generic-types --preserve-class-type-parameters path/to/file.rb
+```
+
 Strip Sorbet signatures from files:
 
 ```sh

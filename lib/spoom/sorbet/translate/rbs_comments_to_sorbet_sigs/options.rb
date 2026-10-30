@@ -47,6 +47,9 @@ module Spoom
           #: bool
           attr_reader :erase_generic_types
 
+          #: bool
+          attr_reader :preserve_class_type_parameters
+
           #: RBI::RBS::MethodTypeTranslator::Options
           attr_reader :rbi_options
 
@@ -59,12 +62,14 @@ module Spoom
           #: (
           #|   ?overloads_strategy: Symbol,
           #|   ?erase_generic_types: bool,
+          #|   ?preserve_class_type_parameters: bool,
           #|   ?output_format: BaseRBIFormat,
           #|   ?translate_abstract_methods: bool,
           #| ) -> void
           def initialize(
             overloads_strategy: :translate_all,
             erase_generic_types: false,
+            preserve_class_type_parameters: false,
             output_format: HumanReadableRBIFormat.default,
             translate_abstract_methods: true
           )
@@ -75,6 +80,7 @@ module Spoom
 
             @overloads_strategy = overloads_strategy
             @erase_generic_types = erase_generic_types
+            @preserve_class_type_parameters = preserve_class_type_parameters
             @rbi_options = RBI::RBS::MethodTypeTranslator::Options.new(erase_generic_types:) #: RBI::RBS::MethodTypeTranslator::Options
             @output_format = output_format
             @translate_abstract_methods = translate_abstract_methods

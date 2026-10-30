@@ -60,15 +60,17 @@ module Spoom
         # Converts all the RBS comments in the given Ruby code to `sig` nodes.
         # It also handles type members and class annotations.
         #: (String ruby_contents, file: String, ?max_line_length: Integer?,
-        #| ?overloads_strategy: Symbol, ?erase_generic_types: bool, ?force: bool) -> String
+        #| ?overloads_strategy: Symbol, ?erase_generic_types: bool,
+        #| ?preserve_class_type_parameters: bool, ?force: bool) -> String
         def rbs_comments_to_sorbet_sigs(ruby_contents, file:, max_line_length: nil, overloads_strategy: :translate_all,
-          erase_generic_types: false, force: false)
+          erase_generic_types: false, preserve_class_type_parameters: false, force: false)
           RBSCommentsToSorbetSigs.rewrite_if_needed(
             ruby_contents,
             file: file,
             max_line_length: max_line_length,
             overloads_strategy: overloads_strategy,
             erase_generic_types: erase_generic_types,
+            preserve_class_type_parameters: preserve_class_type_parameters,
             force: force,
           )
         end
