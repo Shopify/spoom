@@ -83,7 +83,7 @@ module Spoom
 
           files_to_bump = context.srb_files_with_strictness(from, include_rbis: false)
             .map { |file| File.expand_path(file, context.absolute_path) }
-            .select { |file| file.start_with?(directory) }
+            .select { |file| file == directory || file.start_with?(File.join(directory, "")) }
 
           if only
             list = File.read(only).lines.map { |file| File.expand_path(file.strip) }
