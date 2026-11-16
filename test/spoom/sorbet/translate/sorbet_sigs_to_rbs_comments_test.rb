@@ -195,6 +195,32 @@ module Spoom
           assert_equal(42, instance.value)
         end
 
+        def test_translate_to_rbs_abstract_method_with_multiline_parameters
+          contents = <<~RB
+            class Foo
+              sig { abstract.params(query: Integer, options: String).returns(Integer) }
+              def find(
+                query:,
+                options:
+              ) # Keep the header comment
+              end
+            end
+          RB
+
+          assert_equal(<<~RBS, sorbet_sigs_to_rbs_comments(contents))
+            class Foo
+              # @abstract
+              #: (query: Integer, options: String) -> Integer
+              def find(
+                query:,
+                options:
+              ) # Keep the header comment
+                super
+              end
+            end
+          RBS
+        end
+
         def test_translate_to_rbs_skips_abstract_methods_without_runtime
           contents = <<~RB
             class Foo
