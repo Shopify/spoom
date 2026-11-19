@@ -106,6 +106,26 @@ module Spoom
           @project.destroy!
         end
 
+        def test_bump_doesnt_change_sigils_in_sibling_directory_with_same_prefix
+          @project.write!("lib/b/file.rb", "# typed: false")
+          @project.write!("lib/bb/file.rb", "# typed: false")
+
+          result = @project.spoom("srb bump --no-color lib/b")
+          assert_empty(result.err)
+          assert_equal(<<~OUT, result.out)
+            Checking files...
+
+            Bumped `1` file from `false` to `true`:
+             + lib/b/file.rb
+          OUT
+          refute(result.status)
+
+          assert_equal("true", @project.read_file_strictness("lib/b/file.rb"))
+          assert_equal("false", @project.read_file_strictness("lib/bb/file.rb"))
+
+          @project.destroy!
+        end
+
         def test_bump_nondefault_from_to_complete
           @project.write!("file1.rb", <<~RB)
             # typed: false
