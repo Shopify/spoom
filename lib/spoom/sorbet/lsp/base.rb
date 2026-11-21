@@ -35,11 +35,11 @@ module Spoom
       #: Integer
       attr_reader :id
 
-      #: Hash[untyped, untyped]
+      #: Hash[untyped, untyped]?
       attr_reader :params
 
-      #: (Integer id, String method, Hash[untyped, untyped] params) -> void
-      def initialize(id, method, params)
+      #: (Integer id, String method, ?Hash[untyped, untyped]? params) -> void
+      def initialize(id, method, params = nil)
         super()
         @id = id
         @method = method
