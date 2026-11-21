@@ -28,7 +28,7 @@ module Spoom
 
       #: (String json_string) -> void
       def send_raw(json_string)
-        @in.puts("Content-Length:#{json_string.length}\r\n\r\n#{json_string}")
+        @in.write("Content-Length: #{json_string.bytesize}\r\n\r\n#{json_string}")
       end
 
       #: (Message message) -> Hash[untyped, untyped]?
