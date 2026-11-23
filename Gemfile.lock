@@ -103,14 +103,14 @@ GEM
     rubydex (0.4.1-arm64-darwin)
     rubydex (0.4.1-x86_64-darwin)
     rubydex (0.4.1-x86_64-linux)
-    sorbet (0.6.13680)
-      sorbet-static (= 0.6.13680)
-    sorbet-runtime (0.6.13680)
-    sorbet-static (0.6.13680-universal-darwin)
-    sorbet-static (0.6.13680-x86_64-linux)
-    sorbet-static-and-runtime (0.6.13680)
-      sorbet (= 0.6.13680)
-      sorbet-runtime (= 0.6.13680)
+    sorbet (0.6.13707)
+      sorbet-static (= 0.6.13707)
+    sorbet-runtime (0.6.13707)
+    sorbet-static (0.6.13707-universal-darwin)
+    sorbet-static (0.6.13707-x86_64-linux)
+    sorbet-static-and-runtime (0.6.13707)
+      sorbet (= 0.6.13707)
+      sorbet-runtime (= 0.6.13707)
     stringio (3.2.0)
     tapioca (0.20.0)
       benchmark
@@ -197,11 +197,11 @@ CHECKSUMS
   rubydex (0.4.1-arm64-darwin) sha256=d23720253876d88fb98954e5d3a1ef9696a269697acf50e3ab53cdfbb2b66b96
   rubydex (0.4.1-x86_64-darwin) sha256=a9681db5bc9be6a62f226d96d6889b6b600d0b09e7576391702aafd29912145b
   rubydex (0.4.1-x86_64-linux) sha256=4e2c8398c9fc585485b54edd28f5ecf76b5a02255e177b6f8402e9d2afffd51b
-  sorbet (0.6.13680) sha256=5d2c1fe3b225a9707dee34b41c4b22e747888970b603f5831f8c0efc2a3e76d3
-  sorbet-runtime (0.6.13680) sha256=7079ac6d4596767061c99e6678c3636c0da3d8b85dedb592b7274305ee0d7368
-  sorbet-static (0.6.13680-universal-darwin) sha256=5cba6fec0c5057e7230aa5b259a3999ff9506483e21778b1a11ea4558cd4cd5d
-  sorbet-static (0.6.13680-x86_64-linux) sha256=f963f32ec1ea9d14cce94d79363b29c43cf8e265aa1510351c228facbefccda8
-  sorbet-static-and-runtime (0.6.13680) sha256=d1d736fd812dcc47411778262951c213d1c928394b31876c2dc9af2305b9f1ce
+  sorbet (0.6.13707) sha256=33f2b89f6589e395353e6e2dcaa53bab2e0f8d40a07ca71e05bd313d16daed1b
+  sorbet-runtime (0.6.13707) sha256=33681e5d8bb46d6d6b7eb1adb67ed697a6e3e4c2f43af89048f4607979ef7f5c
+  sorbet-static (0.6.13707-universal-darwin) sha256=c41e3e2bfcf9e9e33794ad8b5b4e607313c2a0438883151ffbecc8f2f58be118
+  sorbet-static (0.6.13707-x86_64-linux) sha256=ecc81144d52dca9c7ab196c7a9f60b73489367df7bd055197332d6227514197a
+  sorbet-static-and-runtime (0.6.13707) sha256=5c8af2689b503c65366438cafdc30670b29957f4f7d6bdc1352f710f10177ec7
   spoom (1.8.13)
   stringio (3.2.0) sha256=c37cb2e58b4ffbd33fe5cd948c05934af997b36e0b6ca6fdf43afa234cf222e1
   tapioca (0.20.0) sha256=b375ed7bf51d2c86c09543eafedd0de85513634187c0f7a062615af8bb9347a0
