@@ -3211,6 +3211,9 @@ class Spoom::Sorbet::Metrics::CodeMetricsVisitor < ::Spoom::Visitor
   sig { returns(T::Array[::Prism::CallNode]) }
   def collect_last_srb_sigs; end
 
+  sig { params(node: ::Prism::Node).returns(T::Array[::Spoom::RBS::Signature]) }
+  def collect_rbs_sigs(node); end
+
   sig { params(node: T.any(::Prism::ClassNode, ::Prism::ModuleNode, ::Prism::SingletonClassNode)).returns(::String) }
   def node_key(node); end
 
