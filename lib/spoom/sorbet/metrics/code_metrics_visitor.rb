@@ -42,6 +42,7 @@ module Spoom
 
           @last_sigs = [] #: Array[Prism::CallNode]
           @type_params = [] #: Array[Prism::CallNode]
+          @pending_rbs_sigs = [] #: Array[Array[Spoom::RBS::Signature]]
         end
 
         # @override
@@ -108,11 +109,11 @@ module Spoom
         # @override
         #: (Prism::DefNode) -> void
         def visit_def_node(node)
+          rbs_sigs = collect_rbs_sigs(node)
+          srb_sigs = collect_last_srb_sigs
+
           unless node.name.to_s.start_with?("test_")
             @counters.increment("methods")
-
-            rbs_sigs = node_rbs_comments(node).signatures
-            srb_sigs = collect_last_srb_sigs
 
             if rbs_sigs.any?
               @counters.increment("methods_with_rbs_sig")
@@ -153,7 +154,9 @@ module Spoom
             @counters.increment("T.#{node.name}")
           end
 
+          @pending_rbs_sigs << node_rbs_comments(node).signatures
           super
+          @pending_rbs_sigs.pop
         end
 
         private
@@ -178,7 +181,7 @@ module Spoom
         def visit_attr_accessor(node)
           @counters.increment("accessors")
 
-          rbs_sigs = node_rbs_comments(node).signatures
+          rbs_sigs = collect_rbs_sigs(node)
           srb_sigs = collect_last_srb_sigs
 
           if rbs_sigs.any?
@@ -218,6 +221,13 @@ module Spoom
           @counters.increment(key)
 
           @type_params << node
+        end
+
+        #: (Prism::Node) -> Array[Spoom::RBS::Signature]
+        def collect_rbs_sigs(node)
+          rbs_sigs = node_rbs_comments(node).signatures + @pending_rbs_sigs.flatten
+          @pending_rbs_sigs.each { |pending_sigs| pending_sigs.clear }
+          rbs_sigs
         end
 
         #: -> Array[Prism::CallNode]
