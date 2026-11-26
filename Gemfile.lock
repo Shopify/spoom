@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    spoom (1.8.13)
+    spoom (1.8.14)
       erubi (>= 1.10.0)
       prism (>= 0.28.0)
       rbi (>= 0.4.2)
@@ -202,7 +202,7 @@ CHECKSUMS
   sorbet-static (0.6.13707-universal-darwin) sha256=c41e3e2bfcf9e9e33794ad8b5b4e607313c2a0438883151ffbecc8f2f58be118
   sorbet-static (0.6.13707-x86_64-linux) sha256=ecc81144d52dca9c7ab196c7a9f60b73489367df7bd055197332d6227514197a
   sorbet-static-and-runtime (0.6.13707) sha256=5c8af2689b503c65366438cafdc30670b29957f4f7d6bdc1352f710f10177ec7
-  spoom (1.8.13)
+  spoom (1.8.14)
   stringio (3.2.0) sha256=c37cb2e58b4ffbd33fe5cd948c05934af997b36e0b6ca6fdf43afa234cf222e1
   tapioca (0.20.0) sha256=b375ed7bf51d2c86c09543eafedd0de85513634187c0f7a062615af8bb9347a0
   thor (1.5.0) sha256=e3a9e55fe857e44859ce104a84675ab6e8cd59c650a49106a05f55f136425e73
