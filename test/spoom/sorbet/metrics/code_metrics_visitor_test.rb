@@ -76,13 +76,16 @@ module Spoom
 
                 def m2; end
 
-                def test_is_ignored_because_it_starts_with_test_; end
+                sig { returns(String) }
+                def test_is_ignored_because_it_starts_with_test_
+                  def nested_unsigned_method; end
+                end
               end
             RUBY
           end
 
-          assert_equal(3, metrics["methods"])
-          assert_equal(1, metrics["methods_without_sig"])
+          assert_equal(4, metrics["methods"])
+          assert_equal(2, metrics["methods_without_sig"])
           assert_equal(1, metrics["methods_with_srb_sig"])
           assert_equal(1, metrics["methods_with_rbs_sig"])
           assert_equal(3, metrics["accessors"])
@@ -90,8 +93,43 @@ module Spoom
           assert_equal(1, metrics["accessors_with_srb_sig"])
           assert_equal(1, metrics["accessors_with_rbs_sig"])
 
-          assert_equal(2, metrics["srb_sigs"])
+          assert_equal(3, metrics["srb_sigs"])
           assert_equal(1, metrics["srb_sigs_abstract"])
+        end
+
+        def test_collects_metrics_about_rbs_sigs_on_defs_wrapped_in_sends
+          metrics = collect_metrics do |context|
+            context.write!("foo.rb", <<~RUBY)
+              #: -> void
+              private def private_method; end
+
+              #: -> void
+              protected def protected_method; end
+
+              #: -> void
+              public def public_method; end
+
+              #: -> void
+              memoize def memoized_method; end
+
+              #: -> void
+              x x x x def arbitrarily_wrapped_method; end
+
+              #: -> void
+              x
+
+              def unsigned_method; end # without sig
+
+              #: -> void
+              private def test_ignored
+                def nested_unsigned_method; end # without sig
+              end
+            RUBY
+          end
+
+          assert_equal(7, metrics["methods"])
+          assert_equal(5, metrics["methods_with_rbs_sig"])
+          assert_equal(2, metrics["methods_without_sig"])
         end
 
         def test_collects_metrics_about_generics
