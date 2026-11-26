@@ -283,6 +283,110 @@ module Spoom
           )
         end
 
+        def test_translate_to_rbi_singleton_bracket_applying_own_generic_is_without_runtime
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              module A
+                #: [E]
+                class B
+                  class << self
+                    #: [U] (*Class[U]) -> Class[B[U]]
+                    def [](*types) = self
+                  end
+
+                  #: [U] (Class[U]) -> A::B[U]?
+                  def self.[](type) = nil
+                end
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              module A
+                class B
+                  extend ::T::Generic
+
+                  E = type_member
+
+                  class << self
+                    ::T::Sig::WithoutRuntime.sig { type_parameters(:U).params(types: ::T::Class[::T.type_parameter(:U)]).returns(::T::Class[B[::T.type_parameter(:U)]]) }
+                    def [](*types) = self
+                  end
+
+                  ::T::Sig::WithoutRuntime.sig { type_parameters(:U).params(type: ::T::Class[::T.type_parameter(:U)]).returns(::T.nilable(A::B[::T.type_parameter(:U)])) }
+                  def self.[](type) = nil
+                end
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: <<~RUBY,
+              module A
+                # RBS_WRITTEN_ANNOTATION: [E]
+                class B; extend ::T::Generic; E = type_member
+                  class << self
+                    ::T::Sig::WithoutRuntime.sig { type_parameters(:U).params(types: ::T::Class[::T.type_parameter(:U)]).returns(::T::Class[B[::T.type_parameter(:U)]]) }
+                    def [](*types) = self
+                  end
+
+                  ::T::Sig::WithoutRuntime.sig { type_parameters(:U).params(type: ::T::Class[::T.type_parameter(:U)]).returns(::T.nilable(A::B[::T.type_parameter(:U)])) }
+                  def self.[](type) = nil
+                end
+              end
+            RUBY
+          )
+        end
+
+        def test_translate_to_rbi_keeps_runtime_sigs_that_do_not_call_their_own_bracket_method
+          assert_rewrites_rbs(
+            from: <<~RUBY,
+              class A
+                class << self
+                  #: (*untyped) -> self
+                  def [](*types) = self
+
+                  #: -> A[Integer]
+                  def build = new
+                end
+
+                #: (Integer) -> A[Integer]
+                def [](index) = self
+
+                #: -> Array[A]
+                def self.all = []
+              end
+
+              class C
+                #: (Class[untyped]) -> A[Integer]
+                def self.[](type) = A.new
+              end
+            RUBY
+
+            to_pretty_format_for_humans: <<~RUBY,
+              class A
+                class << self
+                  sig { params(types: ::T.untyped).returns(::T.self_type) }
+                  def [](*types) = self
+
+                  sig { returns(A[Integer]) }
+                  def build = new
+                end
+
+                sig { params(index: Integer).returns(A[Integer]) }
+                def [](index) = self
+
+                sig { returns(::T::Array[A]) }
+                def self.all = []
+              end
+
+              class C
+                sig { params(type: ::T::Class[::T.untyped]).returns(A[Integer]) }
+                def self.[](type) = A.new
+              end
+            RUBY
+
+            to_line_matched_format_for_machines: :same_as_pretty_output,
+          )
+        end
+
         def test_translate_to_rbi_singleton_method_sigs
           assert_rewrites_rbs(
             from: <<~RUBY,
