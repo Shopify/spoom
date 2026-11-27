@@ -34,7 +34,12 @@ module Spoom
       #: (Message message) -> Hash[untyped, untyped]?
       def send(message)
         send_raw(message.to_json)
-        read if message.is_a?(Request)
+        return unless message.is_a?(Request)
+
+        loop do
+          json = read
+          return json if json.nil? || json["id"] == message.id
+        end
       end
 
       #: -> String?
