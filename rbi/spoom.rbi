@@ -2289,13 +2289,13 @@ class Spoom::LSP::Range
 end
 
 class Spoom::LSP::Request < ::Spoom::LSP::Message
-  sig { params(id: ::Integer, method: ::String, params: T::Hash[T.untyped, T.untyped]).void }
-  def initialize(id, method, params); end
+  sig { params(id: ::Integer, method: ::String, params: T.nilable(T::Hash[T.untyped, T.untyped])).void }
+  def initialize(id, method, params = T.unsafe(nil)); end
 
   sig { returns(::Integer) }
   def id; end
 
-  sig { returns(T::Hash[T.untyped, T.untyped]) }
+  sig { returns(T.nilable(T::Hash[T.untyped, T.untyped])) }
   def params; end
 end
 

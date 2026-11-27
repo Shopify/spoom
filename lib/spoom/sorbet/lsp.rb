@@ -225,7 +225,7 @@ module Spoom
 
       #: -> void
       def close
-        send(Request.new(next_id, "shutdown", {}))
+        send(Request.new(next_id, "shutdown"))
         @in.close
         @out.close
         @err.close
